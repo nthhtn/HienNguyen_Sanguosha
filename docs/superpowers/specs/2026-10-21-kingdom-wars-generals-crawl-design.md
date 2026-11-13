@@ -103,7 +103,7 @@ same script run. It lists, and does not resolve:
 
 - Generals only in Kingdom Wars, and only in Identity;
 - Generals whose force differs;
-- skills present on one side only, and skills whose English name or text
+- Skills present on one side only, and skills whose English name or text
   differs (both sides are English, so text is compared; compare after
   whitespace/quote normalisation so cosmetic differences do not drown real
   ones);

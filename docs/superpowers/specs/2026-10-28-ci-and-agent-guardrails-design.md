@@ -62,9 +62,9 @@ human act, always.
 Runs, in this order, stopping at the first failure:
 
 1. `lint`
-2. typecheck
-3. build
-4. test
+2. Typecheck
+3. Build
+4. Test
 
 Cheap checks go first so a typo fails in seconds, not after the 70-second
 test run.

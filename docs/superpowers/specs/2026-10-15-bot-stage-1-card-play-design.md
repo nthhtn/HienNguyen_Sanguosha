@@ -28,8 +28,8 @@ the variant.
 
 In its own Play phase the bot plays a Peach on itself only when it is below
 max HP **and** one of these holds:
-- its HP is 2 or less; or
-- it holds more hand cards than its HP (it would discard at the end of the turn,
+- Its HP is 2 or less; or
+- It holds more hand cards than its HP (it would discard at the end of the turn,
   and playing the Peach both uses a card and raises the hand limit).
 
 Otherwise it keeps the Peach for a dying round. It also keeps its last Peach

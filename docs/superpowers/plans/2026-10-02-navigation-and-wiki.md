@@ -17,8 +17,8 @@
 
 - The Wiki lists data files (`generalsData`, `cardsData`), not just the registry. Silver Lion (registry-only, with no data file) appears nowhere.
 - Badges:
-  - cards: "In the game" when `buildContentRegistry().cards.has(id)`, otherwise "Not in the game yet";
-  - generals: "Skills in game" when `GENERAL_SKILLS.has(id)`, otherwise "Skills not in game yet".
+  - Cards: "In the game" when `buildContentRegistry().cards.has(id)`, otherwise "Not in the game yet";
+  - Generals: "Skills in game" when `GENERAL_SKILLS.has(id)`, otherwise "Skills not in game yet".
 - Badges are computed in `projects/content`, never in the app (CLAUDE.md: the UI never decides game facts).
 - Today's counts:
   - 26 generals, 6 with skills in game: xiahou-dun, sun-shangxiang, zhuge-liang, dong-zhuo, zhao-yun, huang-yueying;
@@ -26,9 +26,9 @@
   - 15 equipment cards, 1 in the game (green-dragon-blade);
   - 12 tools, 2 in the game (duel, wuxie).
 - Order:
-  - generals by kingdom Wei, Shu, Wu, Qun, then by name;
-  - basic cards and tools by name;
-  - equipment by subtype (weapon, armor, horse, treasure), then by name.
+  - Generals by kingdom Wei, Shu, Wu, Qun, then by name;
+  - Basic cards and tools by name;
+  - Equipment by subtype (weapon, armor, horse, treasure), then by name.
 - Gap texts: "Rules text not available" when a card has no text, and "Printings not recorded" when it has no printings. A missing Chinese name or title is left out.
 - Page headings: "Generals", "Basic Cards", "Equipments", "Tools". Equipment sections: "Weapons", "Armor", "Horses", "Treasure".
 - Routes:
@@ -278,8 +278,8 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: `WikiGeneral` and `WikiCard` from `content` (Task 1), and `CardArt` from `../game-board/card-art` (existing: inputs `id`, `label`, `size: 'normal' | 'small' | 'large' | 'tiny'`).
 - Produces:
   - `printingLabel(p: WikiCard['printings'][number]): string`;
-  - the standalone component `WikiGeneralEntry` (selector `app-wiki-general-entry`, required input `general: WikiGeneral`);
-  - the standalone component `WikiCardEntry` (selector `app-wiki-card-entry`, required input `card: WikiCard`).
+  - The standalone component `WikiGeneralEntry` (selector `app-wiki-general-entry`, required input `general: WikiGeneral`);
+  - The standalone component `WikiCardEntry` (selector `app-wiki-card-entry`, required input `card: WikiCard`).
 
   Both render a root `<article class="entry" [attr.data-id]="id">` containing `.badge` (with class `on` when in the game) and `h4 .name`.
 
@@ -602,7 +602,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: `wikiGenerals`, `wikiCards` and `WikiCard` from `content` (Task 1), plus `WikiGeneralEntry` and `WikiCardEntry` (Task 2).
 - Produces:
   - `WIKI_ROUTES: Routes`;
-  - the standalone components `WikiGenerals` and `WikiCards`.
+  - The standalone components `WikiGenerals` and `WikiCards`.
 
   Each page renders `<h2>` with the page name, `.summary`, and one `<section class="group">` per group with a `<h3 class="group-title">` when the page is grouped.
 
@@ -820,7 +820,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: the `/wiki/...` routes (Task 3), and `GameService` (existing; `state(): GameState | null`; `startGame(seatCount, seed?, mode?)`).
 - Produces:
   - `playRedirect: CanActivateFn`, which resolves to a `UrlTree` for `/game` or `/setup`;
-  - a header with `a.nav-play` (routerLink `/play`) and `button.nav-wiki` (opens a `mat-menu` of four `a[mat-menu-item]` links).
+  - A header with `a.nav-play` (routerLink `/play`) and `button.nav-wiki` (opens a `mat-menu` of four `a[mat-menu-item]` links).
 
 - [ ] **Step 1: Write the failing tests**
 

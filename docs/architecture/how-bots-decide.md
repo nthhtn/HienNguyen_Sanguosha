@@ -59,7 +59,7 @@ Then the first step that applies decides:
 | 1 | General selection | Picks the pair with the highest value-table score (section 8). |
 | 1a0 | Arranging cards (Astrology) | Peach, Shan and any Sha on top; everything else at the bottom. |
 | 1a | A selection (cards or seats to pick) | A registry rule, then the per-skill code, then the default: seats only if attackable (else cancel); cards for Axe, Green Dragon Blade, Serpent Spear and conversion skills are the least useful; any other selection is cancelled when allowed. |
-| 1a' | An ability's ask or pick | Synergistic Partners reward: recover if offered, else draw. A "use this?" ask: see below. A pick of a seat, suit or label: registry rule, then per-skill code, else the first option. Gender Swords aimed at it: with 2 or fewer hand cards let the user draw, otherwise discard its least useful card. |
+| 1a' | An ability's ask or pick | • Synergistic Partners reward: recover if offered, else draw.<br>• A "use this?" ask: see below.<br>• A pick of a seat, suit or label: registry rule, then per-skill code, else the first option.<br>• Gender Swords aimed at it: with 2 or fewer hand cards let the user draw, otherwise discard its least useful card. |
 | 1b | A Tool's pick (Steal, Break, Harvest) | From a seat: a weapon, then armour, then a mount, then a card from the hand. From Harvest's face-up cards: the one it most wants to keep. |
 | 2 | A response window aimed at it | Section 7. |
 | 3 | Discard Phase | Throws away the least useful card first (keep order below). |
@@ -149,10 +149,10 @@ leader, and no truce.
 
 | Relation | Who |
 |---|---|
-| self | the bot |
-| ally | as above |
-| truce | a seat of a force that is neither the bot's own nor the leading one, while another force leads (Ambitionists included) |
-| foe | everyone else: the leading force, hidden seats, and everybody when there is no leader or the bot's own force leads |
+| Self | The bot |
+| Ally | As above |
+| Truce | a seat of a force that is neither the bot's own nor the leading one, while another force leads (Ambitionists included) |
+| Foe | Everyone else: the leading force, hidden seats, and everybody when there is no leader or the bot's own force leads |
 
 **Danger** (`danger.ts`): each skill has a hand rating in content data
 (`projects/content/src/data/decks/kingdom-wars/skill-danger.json`): high 2,
@@ -259,18 +259,18 @@ switches (`ResponseRules` in `responses.ts`) are all off in `rule-based`.
 
 | Card or skill | When the bot uses it |
 |---|---|
-| Amass | when it has at least one revealed ally, or a surplus card |
-| Ally Far Attack Near | whenever offered, at the seat it likes least |
-| Harvest | when allies + itself outnumber foes |
-| Ascertain | always as a Recast |
-| Chains | if chained itself: itself plus the best unchained foe (or itself alone); else two unchained foes; else Recast; a surplus card may go on one foe. Never an ally, never a chained foe |
-| Blaze | at the best foe holding a card, while it has 3 other cards or a surplus card |
-| Fire Fan | when every Sha target is a foe, unless the fire would spread through a chain to its own side |
-| Trident Glaive | when a foe sits next to the damaged seat and it has a spare card (keep rank 2 or less); hits the best such foe |
-| Wuxie Kingdom | only to stop Barbarians or Hail of Arrows on itself or a revealed ally; otherwise it plays a plain Wuxie and keeps Wuxie Kingdom |
-| Femme Fatale | whenever offered |
-| Impetus for Conflicts | when a foe shows both Generals and the bot holds an Equipment card it would not equip; picks the higher-valued General |
-| Benevolence | when an ally exists and it holds more than 3 cards, or is hurt and can reach 3 given this turn |
+| Amass | When it has at least one revealed ally, or a surplus card |
+| Ally Far Attack Near | Whenever offered, at the seat it likes least |
+| Harvest | When allies + itself outnumber foes |
+| Ascertain | Always as a Recast |
+| Chains | If chained itself: itself plus the best unchained foe (or itself alone); else two unchained foes; else Recast; a surplus card may go on one foe. Never an ally, never a chained foe |
+| Blaze | At the best foe holding a card, while it has 3 other cards or a surplus card |
+| Fire Fan | When every Sha target is a foe, unless the fire would spread through a chain to its own side |
+| Trident Glaive | When a foe sits next to the damaged seat and it has a spare card (keep rank 2 or less); hits the best such foe |
+| Wuxie Kingdom | Only to stop Barbarians or Hail of Arrows on itself or a revealed ally; otherwise it plays a plain Wuxie and keeps Wuxie Kingdom |
+| Femme Fatale | Whenever offered |
+| Impetus for Conflicts | When a foe shows both Generals and the bot holds an Equipment card it would not equip; picks the higher-valued General |
+| Benevolence | When an ally exists and it holds more than 3 cards, or is hurt and can reach 3 given this turn |
 
 **Waste checks** (`waste.ts`, rules A and B, on through `noWaste`). Facts come
 from content (`wouldStop`, `extraCostOf` in
@@ -349,12 +349,12 @@ in `projects/sim`. Only `rule-based` plays people.
 
 | Id | What it is |
 |---|---|
-| `rule-based` | the shipped bot described here (same picks as `rule-based-picks-kw`) |
-| `rule-based-v1`, `rule-based-v2` | the original bot: weakest-first targeting, highest max HP pairs (v2 kept as Stage 4's baseline) |
-| `rule-based-v3` | before Kingdom Wars Part 1 (value table, no registry) |
-| `rule-based-v4` | end of Part 1 (registry, no table reading) |
-| `rule-based-v5` | end of Part 2 (table reading, no waste rules) |
-| `rule-based-v6` | end of Part 3, with Identity-table picks for every deck; frozen as Part 4's baseline |
+| `rule-based` | The shipped bot described here (same picks as `rule-based-picks-kw`) |
+| `rule-based-v1`, `rule-based-v2` | The original bot: weakest-first targeting, highest max HP pairs (v2 kept as Stage 4's baseline) |
+| `rule-based-v3` | Before Kingdom Wars Part 1 (value table, no registry) |
+| `rule-based-v4` | End of Part 1 (registry, no table reading) |
+| `rule-based-v5` | End of Part 2 (table reading, no waste rules) |
+| `rule-based-v6` | End of Part 3, with Identity-table picks for every deck; frozen as Part 4's baseline |
 | `rule-based-cards` | Stage 1 experiment: every card-play rule on |
 | `rule-based-responses` | Stage 2 experiment: Shan hold and extended Wuxie on |
 | `rule-based-picks` | Stage 4 value table on the original bot |

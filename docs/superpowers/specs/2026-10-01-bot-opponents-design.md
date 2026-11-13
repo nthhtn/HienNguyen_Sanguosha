@@ -27,18 +27,18 @@ Decisions settled during brainstorming:
 ## Scope
 
 In scope:
-- the `bots` library: rule-based and random policies
-- the sim moving onto the `bots` library
+- The `bots` library: rule-based and random policies
+- The sim moving onto the `bots` library
 - app-layer bot orchestration in `GameService`
-- the Setup mode switch
-- board "thinking…" state and gate removal in vs-bots mode
+- The Setup mode switch
+- Board "thinking…" state and gate removal in vs-bots mode
 
 Out of scope:
-- smarter AI (lookahead, card counting, inferring hidden kingdoms)
-- choosing which seat the human sits in
-- bot difficulty levels
-- networking
-- engine rule changes (bots only ever choose among `getLegalActions` results)
+- Smarter AI (lookahead, card counting, inferring hidden kingdoms)
+- Choosing which seat the human sits in
+- Bot difficulty levels
+- Networking
+- Engine rule changes (bots only ever choose among `getLegalActions` results)
 
 ## Layering
 
@@ -154,11 +154,11 @@ startGame(seatCount: number, seed?: number, mode: GameMode = 'vs-bots'): void;
   `botThinkingSeatId` is set and the bot's decision is scheduled after
   `BOT_DELAY_MS` (default 700, injectable via an `InjectionToken` so tests can
   use 0). When it fires, the service:
-  1. recomputes `view = redactStateForSeat(state, botSeat)` and
+  1. Recomputes `view = redactStateForSeat(state, botSeat)` and
      `legal = getLegalActions(state, botSeat, registry)`;
-  2. calls `ruleBasedPolicy.decide`;
-  3. stores the bot's memory;
-  4. resolves the action through the same path as `submit`.
+  2. Calls `ruleBasedPolicy.decide`;
+  3. Stores the bot's memory;
+  4. Resolves the action through the same path as `submit`.
 
   This repeats until a human seat is active or the game ends. Only one bot
   timer is pending at a time. `startGame` cancels any pending timer.
@@ -188,30 +188,30 @@ startGame(seatCount: number, seed?: number, mode: GameMode = 'vs-bots'): void;
 ## Testing
 
 - **bots:** unit tests for every rule above on hand-built states:
-  - general pick by HP
-  - respond vs pass
-  - safety cap
+  - General pick by HP
+  - Respond vs pass
+  - Safety cap
   - non-Play phases end
   - Peach only when hurt
-  - equipment not duplicated
-  - one Sha per turn, at the lowest-HP non-ally
-  - allies never targeted; Qun has no allies
+  - Equipment not duplicated
+  - One Sha per turn, at the lowest-HP non-ally
+  - Allies never targeted; Qun has no allies
   - Duel
-  - fallback
-  - memory reset on a new turn
-  - the returned action is always one of `legal`
+  - Fallback
+  - Memory reset on a new turn
+  - The returned action is always one of `legal`
 - **sim:**
-  - the bot spec and the property test switch to the `bots` library
-  - the property test additionally runs the same seeds with `ruleBasedPolicy`
+  - The bot spec and the property test switch to the `bots` library
+  - The property test additionally runs the same seeds with `ruleBasedPolicy`
     for every seat
-  - every game must terminate with no invariant violations
+  - Every game must terminate with no invariant violations
 - **app:**
   - `GameService` with a 0 ms delay and fake timers:
-    - a vs-bots game marks players human/bot
-    - the human chooses generals, then the bots choose
-    - bots play until the human's turn
-    - the human can respond to a bot's Sha
-    - the loop stops on game over
+    - A vs-bots game marks players human/bot
+    - The human chooses generals, then the bots choose
+    - Bots play until the human's turn
+    - The human can respond to a bot's Sha
+    - The loop stops on game over
     - `startGame` cancels pending bot timers
     - pass-and-play is unchanged
   - Setup mode toggle tests.

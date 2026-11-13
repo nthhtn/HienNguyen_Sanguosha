@@ -11,7 +11,7 @@ Every card and General has two parts that live in different places.
 | Half | Where | What it holds | Written by |
 |---|---|---|---|
 | **Data** | `projects/content/data/` (one JSON file per card or General, plus `decks/` and `locales/`) | name, Kingdom, HP, gender, printed rule text, suit and rank of every printing; each deck's distribution; Vietnamese names and prose | a crawl of a public English Sanguosha reference, then reviewed |
-| **Logic** | `projects/content/src/lib/` (TypeScript) | what the card or skill actually does: targets, effects, triggers, steps | by hand, after the rule text is written |
+| **Logic** | `projects/content/src/lib/` (TypeScript) | What the card or skill actually does: targets, effects, triggers, steps | By hand, after the rule text is written |
 
 `buildContentRegistry()` ([registry.ts](../../projects/content/src/lib/registry.ts))
 merges them into a `ContentRegistry`:
@@ -61,12 +61,12 @@ Identity pool or the Kingdom Wars pool, never both.
 A Kingdom Wars General's skill is resolved in this order
 ([kingdomWarsSkills.ts](../../projects/content/src/lib/kingdomWarsSkills.ts)):
 
-1. a **variant**: a `SkillDefinition` in `generals/kingdom-wars-<force>.ts`,
+1. A **variant**: a `SkillDefinition` in `generals/kingdom-wars-<force>.ts`,
    registered in `KINGDOM_WARS_VARIANTS` by General id and the skill's Chinese
    name. This is for a skill whose rules differ from Identity's.
-2. otherwise the **Identity skill**, when the Kingdom Wars wording was audited and
+2. Otherwise the **Identity skill**, when the Kingdom Wars wording was audited and
    cleared as the same rule (`CLEARED_WORDING`, or a "nil" difference note).
-3. otherwise the skill is *not ready*: it shows in the wiki and the General is
+3. Otherwise the skill is *not ready*: it shows in the wiki and the General is
    playable without it.
 
 `kingdomWarsBase.ts` is a leaf module mapping each variant to the Identity skill
@@ -134,14 +134,14 @@ export const drawTwoCard: CardDefinition = {
 
 | Hook | When the engine calls it |
 |---|---|
-| `legalPlayTargets`, `targetPick` | to build the legal actions for this card |
-| `play` | the card is used; returns the effects to queue |
+| `legalPlayTargets`, `targetPick` | To build the legal actions for this card |
+| `play` | The card is used; returns the effects to queue |
 | `onResponse` | a window this card opened was answered (a Duel turning back) |
 | `onTarget` | a Tool's rule on one target, after its Wuxie check |
 | `onJudged`, `onCleanup` | a delayed Tool read its judgment, or finished its turn in the judgment area |
-| `abilities` | active while the card is worn: triggers, modifiers, conversions |
-| `onUnequip` | the card left an equip slot |
-| `onStep` | one named step of its resolution (a Sha's `sha-shan`) |
+| `abilities` | Active while the card is worn: triggers, modifiers, conversions |
+| `onUnequip` | The card left an equip slot |
+| `onStep` | One named step of its resolution (a Sha's `sha-shan`) |
 
 Cards never touch the state directly. They return **effects**, and the engine
 applies them. A card that changes how other cards behave does it with
@@ -157,13 +157,13 @@ conversions) and adds:
 
 | Field | Meaning |
 |---|---|
-| `compulsory` | applies without asking; off while its General is hidden |
+| `compulsory` | Applies without asking; off while its General is hidden |
 | `lord` | a Lord skill: kept as data but never in play (Guozhan has no Lord yet) |
 | `awakening`, `limited` | once-per-game rules |
 | `active` | a skill used on purpose in the Play Phase: `canUse`, `start`, `usesPerTurn` |
-| `onStep` | the skill's own multi-move resolution |
-| `onJudged` | reading a judgment the skill asked for |
-| `spareGenerals`, `afterDeath` | the two special cases Incarnation and Heartbroken need |
+| `onStep` | The skill's own multi-move resolution |
+| `onJudged` | Reading a judgment the skill asked for |
+| `spareGenerals`, `afterDeath` | The two special cases Incarnation and Heartbroken need |
 
 Most skills are written with the helpers in
 [shared/skills.ts](../../projects/content/src/lib/shared/skills.ts) so they all

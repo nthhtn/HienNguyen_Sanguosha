@@ -9,7 +9,7 @@
 **Architecture:**
 - **Engine (generic, names no card, skill or General):**
   - `Seat.gainedSkills`, `Seat.silenced`, `Seat.forms` (spare Generals), `Seat.stash` (a second face-up pile), `GameState.spareGenerals`, `PendingChoice.secret`, `Turn.resumeAfterSeatId`;
-  - effects `GainSkillEffect`, `SilenceSeatEffect`, `DealSpareGeneralsEffect` (logs nothing: the log is public), `ChooseFormSkillEffect`, `GrantExtraTurnEffect`, with their events;
+  - Effects `GainSkillEffect`, `SilenceSeatEffect`, `DealSpareGeneralsEffect` (logs nothing: the log is public), `ChooseFormSkillEffect`, `GrantExtraTurnEffect`, with their events;
   - `SkillDefinition` flags `awakening`, `limited`, `afterDeath`, `spareGenerals`; `AbilityModifiers.distanceToOthersFrom`; `Conversion.from: 'stash'`;
   - `skillsInPlay` reads gained skills, the chosen Form's skill and silencing; the killer travels with the dying round to `SeatEliminatedEvent`.
 - **Content:** `generals/mountain.ts`; `shared/awaken.ts`, `shared/farm.ts`, `shared/forms.ts`; Guozhan deals the spare pool, deals Forms when Generals are chosen, adds the stash zone, and names the killer.
@@ -85,8 +85,8 @@
 - Produces (Tasks 2–6 rely on these exact names):
   - `Seat.stash?: CardZoneRef`, `Seat.silenced?: true`, `Seat.gainedSkills?: { slot: 'main' | 'deputy'; skillId: string }[]`, `Seat.forms?: { slot: 'main' | 'deputy'; held: string[]; chosen?: { generalId: string; skillId: string } }`;
   - `GameState.spareGenerals?: string[]`; `PendingChoice.secret?: true`; `Turn.resumeAfterSeatId?: string`;
-  - effects `{ kind: 'GainSkillEffect'; seatId; slot; skillId }`, `{ kind: 'SilenceSeatEffect'; seatId }`, `{ kind: 'DealSpareGeneralsEffect'; seatId; slot; count }`, `{ kind: 'ChooseFormSkillEffect'; seatId; generalId; skillId }`, `{ kind: 'GrantExtraTurnEffect'; seatId; resumeAfterSeatId }`;
-  - events `SkillGainedEvent`, `SeatSilencedEvent`, `FormChosenEvent { seatId; generalId; skillId }`, `ExtraTurnGrantedEvent { seatId }`; `SeatEliminatedEvent.killerSeatId?`; `DyingEffect.killerSeatId?`;
+  - Effects `{ kind: 'GainSkillEffect'; seatId; slot; skillId }`, `{ kind: 'SilenceSeatEffect'; seatId }`, `{ kind: 'DealSpareGeneralsEffect'; seatId; slot; count }`, `{ kind: 'ChooseFormSkillEffect'; seatId; generalId; skillId }`, `{ kind: 'GrantExtraTurnEffect'; seatId; resumeAfterSeatId }`;
+  - Events `SkillGainedEvent`, `SeatSilencedEvent`, `FormChosenEvent { seatId; generalId; skillId }`, `ExtraTurnGrantedEvent { seatId }`; `SeatEliminatedEvent.killerSeatId?`; `DyingEffect.killerSeatId?`;
   - `SkillDefinition.awakening?`, `.limited?`, `.afterDeath?`, `.spareGenerals?: number`; `AbilityModifiers.distanceToOthersFrom?(state, seatId): number`; `Conversion.from` gains `'stash'`;
   - `findSkill(registry, skillId): SkillDefinition | undefined` and `findGeneralSkill(registry, generalId, skillId)` in `registry/lookup.ts`.
 
@@ -566,7 +566,7 @@ Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
   - `seatGender` reads the chosen Form's gender (see below);
   - `seatDistance` adds `distanceToOthersFrom`;
   - Guozhan: stash zone per seat, `spareGenerals` at setup, a deal trigger, the killer on `DyingEffect`, the stash discarded on death;
-  - test table `table()` seats have a stash zone `${id}:stash`.
+  - Test table `table()` seats have a stash zone `${id}:stash`.
 
 - [ ] **Step 1: Write the failing spec**
 
@@ -2648,7 +2648,7 @@ export function mountainSelection(view: GameState, me: Seat, selection: PendingS
 - [ ] **Step 4: Wire it in**
 
 In `bots/src/lib/skills.ts`:
-- import `{ mountainChoice, mountainSelection, wantsMountain, wantsMountainActive } from './mountain'`;
+- Import `{ mountainChoice, mountainSelection, wantsMountain, wantsMountainActive } from './mountain'`;
 - `wantsSkill`'s `default:` chain: `... ?? wantsForest(view, me, choice) ?? wantsMountain(view, me, choice, registry)`;
 - `skillSelection`'s `default:` chain: `... ?? forestSelection(view, me, selection, registry) ?? mountainSelection(view, me, selection, registry)`;
 - `skillChoice`'s `default:` chain: `... ?? forestChoice(view, me, choice, registry) ?? mountainChoice(view, me, choice, registry)`;
@@ -2657,8 +2657,8 @@ In `bots/src/lib/skills.ts`:
 - `CONVERSION_SKILLS`: add `'strategic-pass'`.
 
 In `bots/src/lib/rule-based.ts`:
-- the response branch `reason.kind === 'ability' && reason.abilityId === 'upheaval'` becomes `reason.kind === 'ability' && (reason.abilityId === 'upheaval' || reason.abilityId === 'instigate')` (both name the seat the Sha would hit as `reason.targetSeatId`);
-- after `const [breakVia] = conversionsAs('break'); if (breakVia) return take(breakVia);` add `const [stealVia] = conversionsAs('steal'); if (stealVia) return take(stealVia);`.
+- The response branch `reason.kind === 'ability' && reason.abilityId === 'upheaval'` becomes `reason.kind === 'ability' && (reason.abilityId === 'upheaval' || reason.abilityId === 'instigate')` (both name the seat the Sha would hit as `reason.targetSeatId`);
+- After `const [breakVia] = conversionsAs('break'); if (breakVia) return take(breakVia);` add `const [stealVia] = conversionsAs('steal'); if (stealVia) return take(stealVia);`.
 
 - [ ] **Step 5: Run the bots, content and engine projects**
 

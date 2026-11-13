@@ -9,12 +9,12 @@ Today the whole game runs in one browser tab: the Angular app holds the full
 state, runs the engine and the bots in-process, and saves nothing across a
 reload. This spec adds a backend so that:
 
-- people can play Guozhan together online, each on their own device, with
+- People can play Guozhan together online, each on their own device, with
   the server as the only authority on game state;
-- a player can leave and come back to their seat, in online games and in
+- A player can leave and come back to their seat, in online games and in
   Play vs Bots;
-- registered players keep a history of their games;
-- every game is stored so it can be replayed exactly, for debugging.
+- Registered players keep a history of their games;
+- Every game is stored so it can be replayed exactly, for debugging.
 
 It builds on the proposal in `docs/architecture/backend-and-deployment.md` and
 settles that document's open decisions.
@@ -53,30 +53,30 @@ Decisions settled during brainstorming:
 
 In scope:
 
-- the `protocol` and `server` projects
-- the Postgres schema and migrations
-- accounts: registered and guest users, sessions, password reset
-- rooms (open and solo), the lobby, host rules, starting a game
-- the socket protocol: lobby, game updates, chat
-- the server-side game runner: validation, persistence, clocks, bots,
+- The `protocol` and `server` projects
+- The Postgres schema and migrations
+- Accounts: registered and guest users, sessions, password reset
+- Rooms (open and solo), the lobby, host rules, starting a game
+- The socket protocol: lobby, game updates, chat
+- The server-side game runner: validation, persistence, clocks, bots,
   takeover, reclaim, restore
-- engine additions: `defaultActionsFor`, the decision clock and opaque card
+- Engine additions: `defaultActionsFor`, the decision clock and opaque card
   ids, plus a leak test
-- the Angular screens (auth, Rooms, Lobby, My Games) and `RemoteGameService`
+- The Angular screens (auth, Rooms, Lobby, My Games) and `RemoteGameService`
 
 Out of scope (v1):
 
-- room codes or passwords, share links. When a room password is added later,
+- Room codes or passwords, share links. When a room password is added later,
   it is a convenience rather than a secret, so it is stored as plain text
   (`rooms.join_code`), not hashed.
-- spectators
-- emotes and quick reactions
-- a replay viewer UI
-- merging a guest's games into a new account
-- a seat recovery code for guests
-- matchmaking, ratings, friends lists
-- horizontal scaling (more than one server process)
-- requiring email verification
+- Spectators
+- Emotes and quick reactions
+- A replay viewer UI
+- Merging a guest's games into a new account
+- A seat recovery code for guests
+- Matchmaking, ratings, friends lists
+- Horizontal scaling (more than one server process)
+- Requiring email verification
 
 ## Layering
 
@@ -249,7 +249,7 @@ Migrations use Kysely's migrator and live in `server/persistence/migrations`.
 - **Rate limits** (in memory, single process):
   - sign-in: per IP and per email
   - sign-up and guest creation: per IP
-  - forgot password: per IP and per email
+  - Forgot password: per IP and per email
 - A guest who later signs up gets a new account. Their guest games are not
   carried over.
 
@@ -405,25 +405,25 @@ transfer is shown as "Hing is now the host".
 
 | Message | Who | Notes |
 |---|---|---|
-| `hello { protocolVersion, roomId }` | member | first message on a connection |
+| `hello { protocolVersion, roomId }` | Member | First message on a connection |
 | `lobby.addBot` | host, lobby | |
 | `lobby.removePlayer { playerId }` | host, lobby | |
 | `lobby.setRules { seatCount, rules }` | host, lobby | |
-| `lobby.makeHost { playerId }` | host, lobby | target must be registered |
+| `lobby.makeHost { playerId }` | host, lobby | Target must be registered |
 | `lobby.start` | host, lobby | |
-| `room.leave` | member | |
-| `game.submit { gameId, baseSeq, actions: Action[] }` | seated human | `baseSeq` must equal the current `seq`. Actions are resolved atomically |
-| `game.resync` | member | requests a full snapshot |
-| `chat.send { body }` | member | 1–300 characters, at most 5 messages per 10 seconds per member |
+| `room.leave` | Member | |
+| `game.submit { gameId, baseSeq, actions: Action[] }` | Seated human | `baseSeq` must equal the current `seq`. Actions are resolved atomically |
+| `game.resync` | Member | Requests a full snapshot |
+| `chat.send { body }` | Member | 1–300 characters, at most 5 messages per 10 seconds per member |
 
 ### Server → client
 
 | Message | When | Content |
 |---|---|---|
-| `welcome` | reply to `hello` | `you { playerId, seatId \| null }`, `room: RoomSnapshot`, `game: GameUpdate \| null` (full log), `chat`: the last 100 messages |
-| `room.updated` | any membership, host, status or rules change | `RoomSnapshot` |
-| `game.update` | after every accepted input, and on resync | `GameUpdate` |
-| `chat.message` | when a chat message is accepted | `{ id, from { playerId, name }, body, at }` |
+| `welcome` | Reply to `hello` | `you { playerId, seatId \| null }`, `room: RoomSnapshot`, `game: GameUpdate \| null` (full log), `chat`: the last 100 messages |
+| `room.updated` | Any membership, host, status or rules change | `RoomSnapshot` |
+| `game.update` | After every accepted input, and on resync | `GameUpdate` |
+| `chat.message` | When a chat message is accepted | `{ id, from { playerId, name }, body, at }` |
 | `replaced` | a newer connection took over | |
 | `error` | a request was rejected | `{ reqId?, code, message }` |
 
@@ -511,10 +511,10 @@ affected.
   atomically, with `source = 'timeout'`. It returns `Action[]` because one
   default can be several actions (a whole discard).
 - `defaultActionsFor` is a new engine function that holds today's defaults:
-  - a response → No Response
-  - a choice → the first option
-  - the Play phase → End Phase
-  - the Discard phase → the first cards in hand
+  - A response → No Response
+  - A choice → the first option
+  - The Play phase → End Phase
+  - The Discard phase → the first cards in hand
   - General selection → the first legal pair
 
   The server can't see a player's half-made pick, so it always uses the
@@ -529,8 +529,8 @@ affected.
   seat), seat, legal, registry, memory)` with `source = 'bot'`.
 - **Takeover (open rooms only).** A human seat becomes `botControlled` in
   either of these cases:
-  - the member has been disconnected for 60 seconds;
-  - two timeouts in a row happen for that seat while the member is
+  - The member has been disconnected for 60 seconds;
+  - Two timeouts in a row happen for that seat while the member is
     disconnected.
 
   The bot then plays the seat with `source = 'takeover'`, and every member
@@ -551,11 +551,11 @@ affected.
 
 When `state.result` is set, the server:
 
-1. updates `games` with `status = 'finished'`, the `result` and
+1. Updates `games` with `status = 'finished'`, the `result` and
    `finished_at`;
-2. sends a final `game.update`;
-3. returns the room to `lobby` (or, for a solo room, offers Play Again);
-4. drops the runner.
+2. Sends a final `game.update`;
+3. Returns the room to `lobby` (or, for a solo room, offers Play Again);
+4. Drops the runner.
 
 ### Restore on startup
 
@@ -592,20 +592,20 @@ must send `Content-Type: application/json` and a matching `Origin`.
 
 | Route | Who | Purpose |
 |---|---|---|
-| `POST /auth/signup` | anyone | create a registered user and sign in |
-| `POST /auth/signin` | anyone | sign in |
-| `POST /auth/guest` | anyone | create a guest user and sign in |
-| `POST /auth/signout` | signed in | revoke the session |
-| `POST /auth/forgot-password` | anyone | send a reset link |
-| `POST /auth/reset-password` | anyone | set a new password from a token |
-| `GET /me` | signed in | `{ id, kind, displayName, email? }` |
-| `GET /rooms` | signed in | the list of open rooms plus the user's own rooms: `{ id, visibility, hostName, memberCount, capacity, status, youAreMember }` |
-| `POST /rooms` | registered | `{ seatCount, rules, displayName }` → `{ id }` |
-| `POST /rooms/solo` | signed in | `{ seatCount, rules }` → `{ id }`, or `409` with the existing solo room id |
-| `POST /rooms/:id/join` | signed in | `{ displayName }` |
-| `GET /rooms/:id` | member | `RoomSnapshot` |
-| `GET /me/games` | registered | the user's finished games: `{ gameId, finishedAt, players, result, yourSeat }` |
-| `GET /games/:id/replay` | a registered member of that game | finished games only: `{ seed, seats, rules, buildId, actions, chat }`, enough to rebuild the game exactly for debugging. The seed is secret only while a game is running, so revealing it afterwards is safe |
+| `POST /auth/signup` | Anyone | Create a registered user and sign in |
+| `POST /auth/signin` | Anyone | Sign in |
+| `POST /auth/guest` | Anyone | Create a guest user and sign in |
+| `POST /auth/signout` | Signed in | Revoke the session |
+| `POST /auth/forgot-password` | Anyone | Send a reset link |
+| `POST /auth/reset-password` | Anyone | Set a new password from a token |
+| `GET /me` | Signed in | `{ id, kind, displayName, email? }` |
+| `GET /rooms` | Signed in | The list of open rooms plus the user's own rooms: `{ id, visibility, hostName, memberCount, capacity, status, youAreMember }` |
+| `POST /rooms` | Registered | `{ seatCount, rules, displayName }` → `{ id }` |
+| `POST /rooms/solo` | Signed in | `{ seatCount, rules }` → `{ id }`, or `409` with the existing solo room id |
+| `POST /rooms/:id/join` | Signed in | `{ displayName }` |
+| `GET /rooms/:id` | Member | `RoomSnapshot` |
+| `GET /me/games` | Registered | The user's finished games: `{ gameId, finishedAt, players, result, yourSeat }` |
+| `GET /games/:id/replay` | a registered member of that game | Finished games only: `{ seed, seats, rules, buildId, actions, chat }`, enough to rebuild the game exactly for debugging. The seed is secret only while a game is running, so revealing it afterwards is safe |
 
 ## Angular changes
 
@@ -662,14 +662,14 @@ must send `Content-Type: application/json` and a matching `Origin`.
    their ids.
 5. A **leak checker** in `sim`, with a test that runs it over simulated
    games. For every seat and every step, it asserts that:
-   - no view names a hidden General;
-   - no view shows the face of a hidden card;
-   - no hidden card's id contains its card name;
-   - a view carries neither `rng` nor `log` (the view tested is
+   - No view names a hidden General;
+   - No view shows the face of a hidden card;
+   - No hidden card's id contains its card name;
+   - A view carries neither `rng` nor `log` (the view tested is
      `redactStateForSeat` minus `rng` and `log`, the server's mapping);
-   - no log event names a hidden General;
-   - no card move into a hand or the draw pile carries the card's face;
-   - after a reshuffle, no draw-pile card keeps an id it had before.
+   - No log event names a hidden General;
+   - No card move into a hand or the draw pile carries the card's face;
+   - After a reshuffle, no draw-pile card keeps an id it had before.
 
    A self-test plants each kind of leak and checks that the checker reports
    it.
@@ -679,25 +679,25 @@ These change hidden information only. No game rule changes.
 ## Testing
 
 - **Unit tests (in-memory repositories):**
-  - room rules: unique names, capacity, start conditions, the host only ever
+  - Room rules: unique names, capacity, start conditions, the host only ever
     registered, host transfer
-  - solo room behaviour
-  - the decision clock functions and `defaultActionsFor`
-  - view mapping (no `rng`, no `log`)
-  - auth: hashing, session sliding and revocation, reset-token single use and
+  - Solo room behaviour
+  - The decision clock functions and `defaultActionsFor`
+  - View mapping (no `rng`, no `log`)
+  - Auth: hashing, session sliding and revocation, reset-token single use and
     expiry, rate limits
 - **Repository tests:** against a real Postgres (Docker Compose in dev and
   CI), with migrations applied fresh.
 - **End-to-end tests:** the server runs in-process, with `ws` clients that
   use the bot policy to act as humans. They:
-  - play full games;
-  - cover disconnect, takeover and reclaim;
-  - cover the solo pause and resume;
-  - check that a stale `baseSeq` is rejected;
-  - check that an atomic multi-action submit rolls back on failure;
-  - check that a mid-game restart restores with matching hashes, and that a
+  - Play full games;
+  - Cover disconnect, takeover and reclaim;
+  - Cover the solo pause and resume;
+  - Check that a stale `baseSeq` is rejected;
+  - Check that an atomic multi-action submit rolls back on failure;
+  - Check that a mid-game restart restores with matching hashes, and that a
     different `build_id` with a diverging hash gives `broken`;
-  - check chat ordering and `after_seq`.
+  - Check chat ordering and `after_seq`.
 - **Leak test:** as in "Engine changes".
 
 ## Stages
@@ -722,6 +722,6 @@ Each stage has its own plan, branch and merge, as the engine stages did.
 
 ## Open items for deployment (not blocking the design)
 
-- the email provider and the sender domain;
-- the hosting provider and its managed Postgres;
-- how `BUILD_ID` is injected (the git sha at build time).
+- The email provider and the sender domain;
+- The hosting provider and its managed Postgres;
+- How `BUILD_ID` is injected (the git sha at build time).

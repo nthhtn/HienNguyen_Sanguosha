@@ -77,8 +77,8 @@
 
 - [ ] Step 1: tests in `stops.spec.ts`, each building a table with the content test helpers:
   - `wouldStop` is true for a black Sha on a seat wearing Black Shield; false for a red Sha; false when the user wears Black Pommel.
-  - true for a Sha with no nature on Wood Armor; false for a fire Sha.
-  - true for Steal and for Capture on a revealed `kingdomWars:lu-xun`; false for Duel on him; false while his General is hidden.
+  - True for a Sha with no nature on Wood Armor; false for a fire Sha.
+  - True for Steal and for Capture on a revealed `kingdomWars:lu-xun`; false for Duel on him; false while his General is hidden.
   - Pleasure (revealed Liu Shan): user holding only the Sha → `wouldStop` true; user holding a Sha and a Peach → false and `extraCostOf` is `{ basicCards: 1 }`.
   - A source scan: every file under `projects/content/src/lib` (not specs) containing `'no-effect'` is one of `shared/armor.ts`, `shared/cancel.ts`, `generals/mountain.ts`; the message on failure says to declare `stops` on the new trigger and add the file here.
 - [ ] Step 2: `npx jest --selectProjects content -t stops` → FAIL.
@@ -98,10 +98,10 @@
 - In `decide`: when `features.noWaste`, `legal = withoutWaste(view, mine, legal, registry, rank)` right after the template fill. If that empties `legal` while `offered` had an `EndPhaseAction` or `PassAction`, those are never removed (they have no targets), so `legal` cannot become empty.
 
 - [ ] Step 1: tests in `waste.spec.ts` (table helpers from `testing.ts`):
-  - a black Sha's play on a Black Shield wearer is dropped; the same Sha's play on another seat is kept.
+  - A black Sha's play on a Black Shield wearer is dropped; the same Sha's play on another seat is kept.
   - Steal on revealed `kingdomWars:lu-xun` dropped; on hidden Lu Xun kept.
-  - a Sha on revealed Liu Shan with only the Sha in hand: dropped. With Sha + Sha + Shan and another foe ranked higher: dropped (B2a). With Sha + Sha + Shan and Liu Shan the only foe: kept. With Sha + Shan only (paying would spend the last Shan) and Liu Shan at 2 HP: dropped; at 1 HP: kept.
-  - a Play Phase where the only targeted play is stopped: `decideWaste` returns `EndPhaseAction`.
+  - A Sha on revealed Liu Shan with only the Sha in hand: dropped. With Sha + Sha + Shan and another foe ranked higher: dropped (B2a). With Sha + Sha + Shan and Liu Shan the only foe: kept. With Sha + Shan only (paying would spend the last Shan) and Liu Shan at 2 HP: dropped; at 1 HP: kept.
+  - A Play Phase where the only targeted play is stopped: `decideWaste` returns `EndPhaseAction`.
   - `decideWith(ruleBasedV5Policy, …)` on the Black Shield fixture still plays the Sha (switch off).
 - [ ] Step 2: `npx jest --selectProjects bots -t waste` → FAIL.
 - [ ] Step 3: implement.
@@ -141,7 +141,7 @@
 
 - [ ] Step 1: tests:
   - `duelOutlook`: 2 Sha vs opponent with 3 hidden cards → `'outlast'` (2 > 0); 1 Sha vs 4 hidden cards (expected 1.2, 1 round) → `'lose'`; 2 Sha vs revealed Lu Bu with 0 cards → `'outlast'` (1 > 0); 2 Sha vs Lu Bu with 4 hidden cards → `'lose'` (1 vs 1, tie loses); 0 Sha → `'lose'`, no throw.
-  - visible Sha: opponent with one face-shown Sha and 0 hidden cards counts 1.
+  - Visible Sha: opponent with one face-shown Sha and 0 hidden cards counts 1.
   - `exposure`: two seats left (bot and one enemy after it) → the enemy still counts when it acts before the bot; with the bot to act next and no seat between → `threat` 0.
   - 2 HP, one Shan, two enemy seats with 5 cards each acting next → `exposed` true when the hit is taken (`hpAfter` 1); the same seats as allies → false.
 - [ ] Step 2: `npx jest --selectProjects bots -t exposure` → FAIL.
@@ -156,10 +156,10 @@
 **Interfaces:**
 - Consumes: Task 5; `relationOf` (`table.ts`); `dangerOf` (`danger.ts`); `answersNeededAgainst`.
 - Produces: `shouldAnswer(view, me, registry, danger): boolean` for a `card-effect` window whose source card is a Sha, Duel, Hail of Arrows or Barbarians (or a skill window whose answer is a Shan or Sha against damage aimed at the bot):
-  1. the pending hit would leave `combinedHp` ≤ 0 → true;
-  2. the attacker (the source card's user) is a truce partner → `exposed`;
-  3. a Duel against a non-truce seat → `duelOutlook === 'outlast' || exposed`;
-  4. a Sha, Hail of Arrows or Barbarians: if the bot cannot give all `answersNeededAgainst` answers → false (never a partial answer); otherwise `exposed || spare`, where `spare` is: Shan in hand > the number of seats counted as threats in Task 5.
+  1. The pending hit would leave `combinedHp` ≤ 0 → true;
+  2. The attacker (the source card's user) is a truce partner → `exposed`;
+  3. A Duel against a non-truce seat → `duelOutlook === 'outlast' || exposed`;
+  4. A Sha, Hail of Arrows or Barbarians: if the bot cannot give all `answersNeededAgainst` answers → false (never a partial answer); otherwise `exposed || spare`, where `spare` is: Shan in hand > the number of seats counted as threats in Task 5.
   For a Duel, (1) uses the 1 damage the bot would take on losing.
 - `duelWorthStarting(view, me, target, registry): boolean` = `duelOutlook(view, me, target, registry) === 'outlast'` with roles swapped (the target answers first, so a tie wins for the bot).
 - In `decide` (only with `features.noWaste`): in step 2, `worthAnswering` for those windows is `shouldAnswer(...)` instead of `true`; in step 5, Duel plays (`targetedPlays(... 'duel' ...)` and the Dueling Heroes conversion) keep only targets where `duelWorthStarting` holds.

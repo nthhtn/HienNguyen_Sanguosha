@@ -153,7 +153,7 @@ Date: 2026-10-15. Stage 0 implemented as specified. All runs 4 seats.
 | Run | Unmirrored | Mirrored |
 |---|---|---|
 | `rule-based` against `random`, 200 games, seed 0 | +39.3 pp (+34.1 to +44.4), ±5.2 | +41.8 pp (+36.4 to +47.1), ±5.4 over 100 pairs |
-| scored targeting against `rule-based-v1`, 4000 games from seed 10000 (unmirrored: seeds 10000 to 13999; mirrored: 2000 pairs, seeds 10000 to 11999) | +1.2 pp (−0.4 to +2.8), ±1.6 | +1.1 pp (+0.1 to +2.2), ±1.05 over 2000 pairs |
+| Scored targeting against `rule-based-v1`, 4000 games from seed 10000 (unmirrored: seeds 10000 to 13999; mirrored: 2000 pairs, seeds 10000 to 11999) | +1.2 pp (−0.4 to +2.8), ±1.6 | +1.1 pp (+0.1 to +2.2), ±1.05 over 2000 pairs |
 | `rule-based` against `rule-based-v1` (identical behaviour), 4000 games, seed 0 | n/a | 0.0 pp (0.0 to 0.0) over 2000 pairs |
 
 What this says:

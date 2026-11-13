@@ -305,19 +305,19 @@ A judgment is a short chain of its own:
    `JudgmentDoneEffect` moves the card to the discard pile unless the reader
    already took it.
 
-**The judgment notice.** With `state.rules.judgmentNotice` on, `JudgeEffect`
-also sets `state.judgmentView` (the judged seat, the reader, the current card,
-each replacement so far, `settled: false`, and `rounds`: how many times a skill that may change the card has been asked). A changer's ask (`AskUseEffect.judgmentChange`, set by `judgmentChangeAsk` for Devil and Dark Magic) opens one round while the view is unsettled, and the ask and the card pick after it are marked on the pending choice and selection. When `JudgmentShownEffect` finds a
-view, it sets `settled: true` and the pipeline **stops** instead of queueing the
-resolve step: the game now rests at a decision, whose actor is the first living
-human seat (see [The rules engine](rules-engine.md)). `AcknowledgeJudgmentAction`,
-from that seat's Continue or the 5 s notice clock, clears the view, logs
-`JudgmentAcknowledgedEvent` (with who closed it, or that it timed out) and
-queues `JudgmentResolveEffect`. With the rule off, `JudgmentShownEffect` queues
-the resolve step directly, so a game without it plays and replays as before.
-The consequence sentence the popup shows is computed by content's
-`judgmentOutcome` from the same predicate the reader's `onJudged` uses, so the
-text and the rule cannot disagree.
+**The judgment notice.**
+
+- **When it is on** (`state.rules.judgmentNotice`), `JudgeEffect` also sets `state.judgmentView`:
+  - The judged seat and the reader.
+  - The current card, and each replacement so far.
+  - `settled: false`.
+  - `rounds`: how many times a skill that may change the card has been asked.
+- **A changer's ask** (`AskUseEffect.judgmentChange`, set by `judgmentChangeAsk` for Devil and Dark Magic) opens one round while the view is unsettled. The ask and the card pick after it are marked on the pending choice and selection.
+- **The pipeline stops.** When `JudgmentShownEffect` finds a view, it sets `settled: true` and **stops** instead of queueing the resolve step.
+  - The game now rests at a decision, whose actor is the first living human seat (see [The rules engine](rules-engine.md)).
+  - `AcknowledgeJudgmentAction`, from that seat's Continue or the 5 s notice clock, clears the view, logs `JudgmentAcknowledgedEvent` (with who closed it, or that it timed out) and queues `JudgmentResolveEffect`.
+- **With the rule off,** `JudgmentShownEffect` queues the resolve step directly, so a game without it plays and replays as before.
+- **The consequence sentence** the popup shows is computed by content's `judgmentOutcome` from the same predicate the reader's `onJudged` uses, so the text and the rule cannot disagree.
 
 A reading usually sets a **turn flag** (`SetTurnFlagEffect`). `advancePhaseOrTurn`
 passes over any phase whose skip flag (`skipFlagOf(phase)`, e.g. `skipPlay`) is
@@ -378,10 +378,10 @@ belong to content: Sha's are `sha-use`, `sha-targeted`, `sha-armor`,
 
 **Abilities at a step** are `before:CardStepEffect` triggers (content's
 `atStep`). One may:
-- rewrite the step (Ancient Scimitar adds to `data.extra`);
-- replace it with something else (Black Shield's logged `AbilityUsedEffect`,
+- Rewrite the step (Ancient Scimitar adds to `data.extra`);
+- Replace it with something else (Black Shield's logged `AbilityUsedEffect`,
   and the Sha goes no further at that target);
-- or replace it with an ask.
+- Or replace it with an ask.
 
 Each marks the step (`actedOn`) so it has its say once. `previewEffect`
 re-checks each later trigger against the step as rewritten, and stops when
@@ -405,8 +405,8 @@ checks a filled one.
 
 **Conversions.** A worn card's `abilities.conversions` give
 `UseConversionAction`s:
-- in the Play Phase, one per legal target list of the card made;
-- in a window that allows the card made, one each.
+- In the Play Phase, one per legal target list of the card made;
+- In a window that allows the card made, one each.
 
 Each opens a selection of the cards to use. The result is one `UsedCard`
 (`via` names the conversion), which counts toward limits like the real card.
@@ -418,8 +418,8 @@ of different colours: none), and its physical cards.
 
 **Which skills count.** `skillsInPlay(state, seatId, registry)` decides, for
 triggers, conversions, active skills and content's modifiers alike:
-- a revealed General's skills all count;
-- a hidden General's compulsory skills have their modifiers off; its other
+- A revealed General's skills all count;
+- A hidden General's compulsory skills have their modifiers off; its other
   skills count, marked `needsReveal`. Triggers also gather a hidden
   compulsory skill's triggers (`skillsInPlay(…, true)`, `GatheredTrigger.compulsory`),
   so they can ask for the reveal;
@@ -618,7 +618,7 @@ condition.
 | A "may" | `AskUseEffect` (`askAtStep` in content) | Eight Trigrams before a Shan |
 | Picking cards or seats | `OpenSelectionEffect` with a continuation | Axe's 2 cards, Sky Scorcher's targets |
 | Using cards as another card | `conversions` (`cards: 1 \| 2`, `from`, `accepts`, `outsideOwnTurnOnly`) | Serpent Spear, Fighting Saint, First Aid |
-| A General's skill | `SkillDefinition` (abilities, plus `compulsory`, `lord`, `active`, `onJudged`, `onStep`) | the 25 base Generals (`generals/wei.ts` …) |
+| A General's skill | `SkillDefinition` (abilities, plus `compulsory`, `lord`, `active`, `onJudged`, `onStep`) | The 25 base Generals (`generals/wei.ts` …) |
 | A skill used on purpose | `SkillDefinition.active` → `UseSkillAction` | Kindness, Reconsider |
 | Changing or taking a judgment | `before:JudgmentShownEffect` / `before:JudgmentDoneEffect` triggers | Devil, Heaven's Envy |
 | Rewriting the Draw Phase | a `before:DrawPhaseEffect` trigger (content's `atDrawPhase`, asked once per draw via `acted`) | Brave Gesture, Bare the Chest, Raid |
@@ -627,11 +627,11 @@ condition.
 | A seat using a card a skill made | `UseCardEffect` (not counted, outside limits) | Sow Discord's Duel |
 | Showing a card to everyone | `ShowCardEffect` → `CardShownEvent` | Sow Revolt |
 | A card lying as another card | `MoveCardEffect.countsAs` → `CardZone.countsAs` (`cardCountsAs`) | Country Scene's Capture |
-| Skipping the Discard Phase as it begins | the `skipDiscard` turn flag (`discardOwed`) | Self-Restraint |
+| Skipping the Discard Phase as it begins | The `skipDiscard` turn flag (`discardOwed`) | Self-Restraint |
 | A rule change read by content's queries | `AbilityModifiers` (`distanceToOthers`, `toolsIgnoreDistance`, `untargetableWithEmptyHandBy`, `doubleAnswers`) | Horsemanship, Wondrous Talent, Empty City, Matchless |
 | Turning a seat face down | `TurnFaceDownEffect`; its next turn is passed (`SeatTurnedEvent`) | Entrench |
-| Ending a Play Phase already entered | the `endFlagOf('Play')` turn flag | Godspeed |
-| Cards kept under a General | the seat's `pile` zone (`pileZoneOf`) | Refusing Death |
+| Ending a Play Phase already entered | The `endFlagOf('Play')` turn flag | Godspeed |
+| Cards kept under a General | The seat's `pile` zone (`pileZoneOf`) | Refusing Death |
 | A conversion decided later | `Conversion.deferred` → the skill's `deferred` step; a window it answers is set aside, then answered (`UseCardEffect.answering`) or re-opened, only if the seat still has a legal non-Pass answer (else the guarded effect resolves as a Pass) | Bewilder |
 | A skill that gains a skill mid-event, and must fire it for the event in progress | `FireSkillTriggersEffect` (one owner's triggers at a point, for a subject event, queued at the front) | Incarnation's Form choice |
 | A suit that counts as another | `AbilityModifiers.suitAs`, read through content's `suitOf` / `colourFor` | Beauty |
@@ -681,7 +681,7 @@ Three Guozhan triggers react to `after:GeneralRevealedEvent`; the first two with
 A Guozhan trigger on `after:SeatEliminatedEvent` (when `killerSeatId` is
 set, is not the dead seat, and is still living):
 
-- killer has revealed a General and shares the dead seat's Kingdom (Qun is one
+- Killer has revealed a General and shares the dead seat's Kingdom (Qun is one
   Kingdom) → `DiscardZoneEffect` on its hand;
-- otherwise → `DrawCardsEffect` of (living seats of the dead seat's Kingdom + the
+- Otherwise → `DrawCardsEffect` of (living seats of the dead seat's Kingdom + the
   dead seat itself).

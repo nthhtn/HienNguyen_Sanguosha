@@ -29,11 +29,11 @@ the first bundle holds only the shell:
 
 | Route | Screen |
 |---|---|
-| `/setup`, `/game` | local Play vs Bots and Pass and Play |
+| `/setup`, `/game` | Local Play vs Bots and Pass and Play |
 | `/play` | a guard that never renders; it redirects to `/game` when a local game is in progress, otherwise to `/setup` |
-| `/rooms`, `/rooms/:id`, `/my-games` | open rooms, a room's lobby and online game, and finished games; all behind `requireSignIn` |
-| `/sign-in`, `/sign-up`, `/guest`, `/forgot-password`, `/reset-password` | accounts |
-| `/wiki/...` | see "Wiki" below |
+| `/rooms`, `/rooms/:id`, `/my-games` | Open rooms, a room's lobby and online game, and finished games; all behind `requireSignIn` |
+| `/sign-in`, `/sign-up`, `/guest`, `/forgot-password`, `/reset-password` | Accounts |
+| `/wiki/...` | See "Wiki" below |
 
 The guard and the online pages import the engine and content code lazily, so
 those stay out of the initial bundle.
@@ -83,13 +83,13 @@ local game:
 
 | Signal | Meaning |
 |---|---|
-| `state` | the **full**, unredacted `GameState`. Components render from `visibleState`, log included (it is redacted: another seat's hidden skills read `'hidden'`), and must not bypass it; they read `state` only for public facts such as player names |
+| `state` | The **full**, unredacted `GameState`. Components render from `visibleState`, log included (it is redacted: another seat's hidden skills read `'hidden'`), and must not bypass it; they read `state` only for public facts such as player names |
 | `visibleState` | `redactStateForSeat(state, revealedSeat)`: what the current viewer may see |
 | `legalActions` | `getLegalActions` for the active seat, empty while a bot is to move |
 | `activeSeatId` | `getActiveSeatId(state)`: who must decide |
-| `revealedSeatId` | whose view is on screen (the human in vs-bots; the gated seat in pass-and-play) |
-| `botSeatIds`, `botThinkingSeatId` | which seats are bots, and whose move is scheduled |
-| `lastError`, `mode`, `gameNumber` | engine errors, vs-bots or pass-and-play, and a counter that stops one game's bookkeeping leaking into the next |
+| `revealedSeatId` | Whose view is on screen (the human in vs-bots; the gated seat in pass-and-play) |
+| `botSeatIds`, `botThinkingSeatId` | Which seats are bots, and whose move is scheduled |
+| `lastError`, `mode`, `gameNumber` | Engine errors, vs-bots or pass-and-play, and a counter that stops one game's bookkeeping leaking into the next |
 
 Its methods are the whole write API: `startGame(seatCount, seed, mode, names,
 rules)`, `submit(action)`, `submitAll(actions)` (one move made of several
@@ -126,8 +126,8 @@ Over.
 
 | Mode | Seats | Views |
 |---|---|---|
-| Play vs Bots | the human is always `seat-0`; every other seat is a bot | the viewer is fixed on seat 0 |
-| Pass and Play | every seat is human, one device | a gate overlay hides the board between turns; tapping reveals the active seat |
+| Play vs Bots | The human is always `seat-0`; every other seat is a bot | The viewer is fixed on seat 0 |
+| Pass and Play | Every seat is human, one device | a gate overlay hides the board between turns; tapping reveals the active seat |
 
 A new local game starts with `judgmentNotice` on, so the judgment popup pauses
 the game (see "Events become presentation"). Setup also offers the deck and,
@@ -161,17 +161,17 @@ board component. It renders from `visibleState` and nothing else. The pieces:
 
 | Piece | Role |
 |---|---|
-| `round-table`, `table-layout` | seat positions around the table |
+| `round-table`, `table-layout` | Seat positions around the table |
 | `seat-tile`, `seat-avatar`, `avatar-skills` | a seat: General art, HP, hand count, equipment, skill buttons |
-| `hand-view`, `playing-card`, `card-art` | the viewer's cards |
-| `action-list` | the buttons for what the engine says is legal (end phase, use skill) |
-| `action-history-panel`, `discard-pile` | what has happened, and what has been discarded |
-| `phase-indicator`, `game-over`, `victory-board` | turn and result display (see "The Game Over window") |
-| `general-selection`, `reveal-gate-overlay` | the pre-game pick and the pass-and-play hand-off |
-| `selection-roster`, `game-start-countdown` | online only: who has chosen their Generals (Choosing or Ready, from the redacted candidates' keys), and "Game starts in 3" while the server holds the first decision (`gameStartsAt`) |
-| `decision-dock`, `decision-banner`, `minimize-button` | hide a decision dialog to look at the board, with a banner to bring it back |
-| `board-chat`, `chat-panel` (online) | room chat beside the board |
-| `rotate-prompt`, `small-screen-prompt`, `small-screen-notice` | cover or annotate the board in a window too small to play (see "Responsive layout") |
+| `hand-view`, `playing-card`, `card-art` | The viewer's cards |
+| `action-list` | The buttons for what the engine says is legal (end phase, use skill) |
+| `action-history-panel`, `discard-pile` | What has happened, and what has been discarded |
+| `phase-indicator`, `game-over`, `victory-board` | Turn and result display (see "The Game Over window") |
+| `general-selection`, `reveal-gate-overlay` | The pre-game pick and the pass-and-play hand-off |
+| `selection-roster`, `game-start-countdown` | Online only: who has chosen their Generals (Choosing or Ready, from the redacted candidates' keys), and "Game starts in 3" while the server holds the first decision (`gameStartsAt`) |
+| `decision-dock`, `decision-banner`, `minimize-button` | Hide a decision dialog to look at the board, with a banner to bring it back |
+| `board-chat`, `chat-panel` (online) | Room chat beside the board |
+| `rotate-prompt`, `small-screen-prompt`, `small-screen-notice` | Cover or annotate the board in a window too small to play (see "Responsive layout") |
 
 ### Responsive layout
 
@@ -179,9 +179,9 @@ board component. It renders from `visibleState` and nothing else. The pieces:
 
 | Kind | Window | What changes |
 |---|---|---|
-| `large` | 1280 px wide and up, 600 px tall and up | the board's history tiles stay, seats at full size |
-| `medium` | 900 to 1279 px wide, 600 px tall and up | the history folds into a slide-over panel (`panelAsOverlay`), seats scale with the seat count (`seatScale`) |
-| `phone` | anything smaller | means "too small to play" (`canPlay` is false) |
+| `large` | 1280 px wide and up, 600 px tall and up | The board's history tiles stay, seats at full size |
+| `medium` | 900 to 1279 px wide, 600 px tall and up | The history folds into a slide-over panel (`panelAsOverlay`), seats scale with the seat count (`seatScale`) |
+| `phone` | Anything smaller | Means "too small to play" (`canPlay` is false) |
 
 - A game (local or online, General selection included) can be played only at 900 x 600 px or more. Below that, `small-screen-prompt` covers the board; a window that would fit if turned (`fitsIfTurned`, a tablet held upright) gets `rotate-prompt` instead. The game keeps running underneath: local games wait for the player, online games are server-paced.
 - `small-screen-notice` sits beside Start Game, Create Room, Play With Bots, Join, Rejoin and the room Start, which are disabled when `canPlay` is false. Other pages (wiki, sign-in, Rooms list, My Games) stay usable on a phone.
@@ -227,12 +227,12 @@ joining mid-game or starting a new game shows nothing old:
 
 | Derived view | Function | Used for |
 |---|---|---|
-| Action History lines | `actionHistory(log, zones, players, seats)` | the history panel |
-| Discard history | `discardHistory(log, pileId)` | the discard pile |
-| Sounds | `soundsFor(events)` | injure (injure-element for fire and thunder, else injure-hard for 2+ damage), heal, weapon, armor, mount |
-| Seat animations | `damageEffectsFor(events)`, `chainEffectsFor(events)` | one sprite per damage event on the seat, and the chain when a seat turns chained; each plays once from a sheet (`SpriteEffect`, timing in `sprite-plan.ts`, sheets built by `scripts/build-assets.py`), never blocking playback |
-| Compete popup | `competeResults(log, from, seats, players)` | the Compete result dialog |
-| Judgment popup | `judgmentDescription` over `state.judgmentView` | the judgment dialog |
+| Action History lines | `actionHistory(log, zones, players, seats)` | The history panel |
+| Discard history | `discardHistory(log, pileId)` | The discard pile |
+| Sounds | `soundsFor(events)` | Injure (injure-element for fire and thunder, else injure-hard for 2+ damage), heal, weapon, armor, mount |
+| Seat animations | `damageEffectsFor(events)`, `chainEffectsFor(events)` | One sprite per damage event on the seat, and the chain when a seat turns chained; each plays once from a sheet (`SpriteEffect`, timing in `sprite-plan.ts`, sheets built by `scripts/build-assets.py`), never blocking playback |
+| Compete popup | `competeResults(log, from, seats, players)` | The Compete result dialog |
+| Judgment popup | `judgmentDescription` over `state.judgmentView` | The judgment dialog |
 
 **Worked example, the Compete popup.** When a Compete resolves, the engine
 logs two `CardShownEvent`s and an `AbilityUsedEvent` with outcome
@@ -284,11 +284,11 @@ decides a rule.
 
 | Piece | Role |
 |---|---|
-| `PlaybackDirector` ([playback-director.ts](../../projects/app/src/app/game-board/playback/playback-director.ts)) | provided by the board; watches `visibleState`, queues the events past a cursor, plays one beat at a time on timers. Signals: `displayedState`, `current`, `idle`, `playedLogLength`, `centreStack`; `hold()` pauses it until the returned release is called |
-| Beats ([beats.ts](../../projects/app/src/app/game-board/playback/beats.ts)) | `BEATS`, a registry keyed by event kind: a `BeatVisual` (turn, phase, draw, play, pass, move, damage, heal, dying, saved, reveal, eliminated, ability). A beat's duration at Normal speed is not here: it is `BEAT_DURATION_MS` in the engine (`playbackTiming.ts`), shared with the server, which waits for the same animation (see [backend.md](backend.md)). A kind with no entry is a 0 ms beat. A new event gets a beat by adding an entry to both, not by editing the director. A pause of `BATCH_GAP_MS` follows the last beat of each update |
-| Displayed state ([displayed-state.ts](../../projects/app/src/app/game-board/playback/displayed-state.ts)) | `FOLDS`, also keyed by kind: applies one event's recorded facts (HP, a card moving, a seat eliminated, a General revealed, turn, phase) to the state on show. Card faces and identities come from the latest visible state, faces only where the viewer may see them. No rules |
+| `PlaybackDirector` ([playback-director.ts](../../projects/app/src/app/game-board/playback/playback-director.ts)) | • Provided by the board; watches `visibleState`, queues the events past a cursor, plays one beat at a time on timers.<br>• Signals: `displayedState`, `current`, `idle`, `playedLogLength`, `centreStack`; `hold()` pauses it until the returned release is called |
+| Beats ([beats.ts](../../projects/app/src/app/game-board/playback/beats.ts)) | • `BEATS`, a registry keyed by event kind: a `BeatVisual` (turn, phase, draw, play, pass, move, damage, heal, dying, saved, reveal, eliminated, ability).<br>• A beat's duration at Normal speed is not here: it is `BEAT_DURATION_MS` in the engine (`playbackTiming.ts`), shared with the server, which waits for the same animation (see [backend.md](backend.md)).<br>• A kind with no entry is a 0 ms beat.<br>• A new event gets a beat by adding an entry to both, not by editing the director.<br>• A pause of `BATCH_GAP_MS` follows the last beat of each update |
+| Displayed state ([displayed-state.ts](../../projects/app/src/app/game-board/playback/displayed-state.ts)) | • `FOLDS`, also keyed by kind: applies one event's recorded facts (HP, a card moving, a seat eliminated, a General revealed, turn, phase) to the state on show.<br>• Card faces and identities come from the latest visible state, faces only where the viewer may see them.<br>• No rules |
 | Seat cues ([seat-cues.ts](../../projects/app/src/app/game-board/playback/seat-cues.ts)) | pure: the beat on show becomes per-seat cues (impact, callout, spotlight) and the resolution centre (who is targeted) |
-| Layer ([playback-layer.ts](../../projects/app/src/app/game-board/playback/playback-layer.ts)) | the overlay, for the beat on show only: a played card at the centre and white arrows to its targets, both faded out by the end of the beat; the caption and the turn banner. Nothing flies |
+| Layer ([playback-layer.ts](../../projects/app/src/app/game-board/playback/playback-layer.ts)) | The overlay, for the beat on show only: a played card at the centre and white arrows to its targets, both faded out by the end of the beat; the caption and the turn banner. Nothing flies |
 | `PlaybackGate` ([playback-gate.service.ts](../../projects/app/src/app/playback-gate.service.ts)) | a root signal, `idle`, written by the director. Local bots and `DecisionTimer` wait on it; it is idle when no board is on screen, so tests and the simulator never wait |
 
 While beats play, the board renders `displayedState`, not `visibleState`. When
@@ -331,7 +331,7 @@ recomputed at every beat:
 
 | Case | Rule |
 |---|---|
-| Local game | the speed factor alone; no catching up |
+| Local game | The speed factor alone; no catching up |
 | Online | a backlog over `CAP_MS` (30 s, real time) is sped up until what is left fits; a batch the server paced is never that long |
 | Instant | `Infinity`: every duration is 0 |
 
@@ -384,14 +384,14 @@ seat's allegiance and printed Kingdom; `result.winningSeatIds` is read only to
 decide who won (the sole survivor, or a draw when it is empty) and to split
 the Ambitionists:
 
-- a seat's group is its Kingdom, unless its allegiance is `ambitionist`;
+- A seat's group is its Kingdom, unless its allegiance is `ambitionist`;
   a seat with no decided allegiance sits under its printed Kingdom;
 - Ambitionists form two groups, Winning Ambitionist (the seat is a winner and
   the Ambitionist side won) and Losing Ambitionist (every other Ambitionist);
-- the winning group is the winning Kingdom if one is set; otherwise, for a
+- The winning group is the winning Kingdom if one is set; otherwise, for a
   sole survivor, Winning Ambitionist if it is an Ambitionist, else its
   Kingdom; a draw has none;
-- the headline is one of four kinds: Kingdom wins, "{name} wins as the
+- The headline is one of four kinds: Kingdom wins, "{name} wins as the
   Ambitionist!", a lone survivor with no decided allegiance ("{name} wins!"),
   or a draw.
 
@@ -442,19 +442,29 @@ deciding seat's Force; the Compete popup by the source General's.
 
 | Kept by the UI | Kept only by the engine |
 |---|---|
-| selected card, open dialogs, hover | whether a play is legal |
-| which log index sounds and popups have reached | HP, hands, phase, turn, who is dying |
-| countdown seconds, music on/off (`localStorage`), playback speed | who won |
-| what playback has reached: the displayed state, current beat, queue | what the real state is |
+| Selected card, open dialogs, hover | Whether a play is legal |
+| Which log index sounds and popups have reached | HP, hands, phase, turn, who is dying |
+| Countdown seconds, music on/off (`localStorage`), playback speed | Who won |
+| What playback has reached: the displayed state, current beat, queue | What the real state is |
 
-`DecisionTimer` is UI state too, for local games. The engine says which clock a
-decision runs on and how long it has (`DECISION_SECONDS`: a Wuxie 15 s, a dying Peach or other response 20 s, a skill's ask 15 s,
-a pick 30 s, an arrangement 60 s, the Start reveal 20 s, a discard 30 s, the General Selection
-300 s, a whole Play Phase 180 s, a skill's decision to change a judgment 15 s, a settled judgment notice 5 s). A decision that follows an animation has a lead-in (`leadInMs`): its countdown holds its full length and starts only when the animation has played (`startsInMs`). The timer pauses when the decision is
-not on screen, and at zero submits the UI's current pick or an engine-legal
-default (`defaultActionsFor`: No Response, the first option, End Phase).
-Bots are never timed. Online, the server owns the clock and
-`RemoteDecisionClock` only displays it, moved onto this device's time.
+`DecisionTimer` is UI state too, for local games:
+
+- **The clock lives in the engine.** It says which clock a decision runs on and how long it has (`DECISION_SECONDS`):
+  - A Wuxie: 15 s.
+  - A dying Peach or other response: 20 s.
+  - A skill's ask: 15 s.
+  - A pick: 30 s.
+  - An arrangement: 60 s.
+  - The Start reveal: 20 s.
+  - A discard: 30 s.
+  - The General Selection: 300 s.
+  - A whole Play Phase: 180 s.
+  - A skill's decision to change a judgment: 15 s.
+  - A settled judgment notice: 5 s.
+- **A lead-in follows an animation.** A decision that follows an animation has a lead-in (`leadInMs`): its countdown holds its full length and starts only when the animation has played (`startsInMs`).
+- **Pausing and zero.** The timer pauses when the decision is not on screen. At zero it submits the UI's current pick or an engine-legal default (`defaultActionsFor`: No Response, the first option, End Phase).
+- **Bots are never timed.**
+- **Online,** the server owns the clock and `RemoteDecisionClock` only displays it, moved onto this device's time.
 
 ## Wiki
 

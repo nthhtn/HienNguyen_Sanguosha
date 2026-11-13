@@ -101,11 +101,11 @@ the wiki shows them with "Not used in Guozhan".
 
 - **Cai Wenji: Lament** (may). Whenever any seat takes damage from a Sha, she may
   discard 1 card (hand or equipment). The victim then judges:
-  - heart: the victim recovers 1 HP;
-  - diamond: the victim draws 2 cards;
-  - club: the source discards 2 cards (hand or equipment, its choice; all of them
+  - Heart: the victim recovers 1 HP;
+  - Diamond: the victim draws 2 cards;
+  - Club: the source discards 2 cards (hand or equipment, its choice; all of them
     if it holds fewer than 2);
-  - spade: the source turns over.
+  - Spade: the source turns over.
   If the damage has no living source, the club and spade results do nothing.
 - **Cai Wenji: Heartbroken** (compulsory). When a seat kills her, that seat
   loses all of its skills, on both Generals, for the rest of the game

@@ -171,7 +171,7 @@ Equipments
 - **Gaps** show as muted text, never blank:
   - "Rules text not available" for the horses;
   - "Printings not recorded" for equipment;
-  - a missing Chinese name or title is left out.
+  - A missing Chinese name or title is left out.
 - **Phone width:** at 360px, entries stack (art above the text). There is
   no horizontal scroll, and side gutters are 16px.
 

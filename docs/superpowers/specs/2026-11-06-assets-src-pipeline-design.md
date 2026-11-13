@@ -101,9 +101,9 @@ the hash of that master, a hash of the recipe that applies to it, and the hash o
 `npm run assets:check` recomputes the hashes of the masters, recipes and shipped files and fails
 when any of these holds:
 
-- a master or its recipe changed since the lock was written (the derivative is stale);
-- a shipped file's hash differs from the lock (someone edited `assets/` by hand);
-- a recipe produces a file that is missing, or `assets/` holds a file the lock does not know.
+- A master or its recipe changed since the lock was written (the derivative is stale);
+- A shipped file's hash differs from the lock (someone edited `assets/` by hand);
+- A recipe produces a file that is missing, or `assets/` holds a file the lock does not know.
 
 The failure message names the file and says to run `npm run assets:build`.
 

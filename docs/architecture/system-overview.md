@@ -9,17 +9,17 @@ CLAUDE.md requires four layers. Here is where each one lives today.
 
 | Layer | Project | What it holds | Framework |
 |---|---|---|---|
-| Game engine | `projects/engine` | rules, state transitions, actions, effects, triggers, legality, visibility, decision clocks | none (plain TypeScript) |
-| Game content | `projects/content` | cards, generals, skills, decks, the Guozhan mode, display text, card and General data, Vietnamese data | none for logic; data is JSON |
-| Application layer | `projects/server` (authoritative) and `projects/app/src/app/game.service.ts` (local) | the server runs online and solo games, accounts, rooms, persistence; `GameService` runs one in-process game for Pass and Play and Play vs Bots | Node, Fastify, Postgres; Angular (injectable service) |
+| Game engine | `projects/engine` | rules, state transitions, actions, effects, triggers, legality, visibility, decision clocks | None (plain TypeScript) |
+| Game content | `projects/content` | cards, generals, skills, decks, the Guozhan mode, display text, card and General data, Vietnamese data | None for logic; data is JSON |
+| Application layer | `projects/server` (authoritative) and `projects/app/src/app/game.service.ts` (local) | The server runs online and solo games, accounts, rooms, persistence; `GameService` runs one in-process game for Pass and Play and Play vs Bots | Node, Fastify, Postgres; Angular (injectable service) |
 | Presentation layer | `projects/app/src/app` | components, dialogs, wiki, view-model helpers, i18n, `RemoteGameService` | Angular, Material |
 
 Three more projects are not layers but support them:
 
 | Project | Purpose |
 |---|---|
-| `projects/protocol` | the wire contract between app and server: schemas, message types, limits, error codes, `PROTOCOL_VERSION`. Framework-free. |
-| `projects/bots` | computer opponents. Framework-free; they only see a redacted state and the engine's legal actions. |
+| `projects/protocol` | The wire contract between app and server: schemas, message types, limits, error codes, `PROTOCOL_VERSION`. Framework-free. |
+| `projects/bots` | Computer opponents. Framework-free; they only see a redacted state and the engine's legal actions. |
 | `projects/sim` | a headless simulator and invariant checker that plays whole games under Node, plus a leak checker and a bot tournament runner. |
 
 There are two application-layer shapes on purpose. `GameService` is the
@@ -41,7 +41,7 @@ Read as: dependencies point towards `engine`, and `engine` points at nothing. `s
 
 | Project | May import | Must not import |
 |---|---|---|
-| `engine` | nothing outside itself | Angular, browser APIs, content, bots, protocol, server |
+| `engine` | Nothing outside itself | Angular, browser APIs, content, bots, protocol, server |
 | `content` | `engine` | Angular, bots, app, server |
 | `bots` | `engine`, `content` (display and skill helpers the rules bot reads) | Angular, app, server |
 | `sim` | `engine`, `content`, `bots` | Angular, app, server |

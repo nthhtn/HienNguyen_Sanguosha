@@ -14,8 +14,8 @@
   - `GameRunner`: one per running game. It owns the state, the decision clock, bot moves, takeover, reclaim and the solo pause.
 - `RoomService` owns each room's queue, connections and persistence. It starts, finishes and restores games, and wires the runner's timers onto the room queue through a `Scheduler`. Tests drive that scheduler by hand.
 - The Angular Lobby page keeps one socket for the lobby and the game:
-  - while a game runs, it shows the existing `GameBoard`, unchanged, inside an `OnlineGame` wrapper. The wrapper provides `RemoteGameService` in place of `GameService`, and `RemoteDecisionClock` in place of `DecisionTimer`;
-  - when the game ends, it shows the result.
+  - While a game runs, it shows the existing `GameBoard`, unchanged, inside an `OnlineGame` wrapper. The wrapper provides `RemoteGameService` in place of `GameService`, and `RemoteDecisionClock` in place of `DecisionTimer`;
+  - When the game ends, it shows the result.
 - The Rooms page gains Play vs Bots.
 
 **Tech Stack:** Node 24, TypeScript ~6.0, Fastify 5, `ws` 8, @sinclair/typebox 0.34, Kysely 0.28 + pg 8, Postgres 17, Jest 30 + ts-jest, Angular 22 + Material. Engine, content and bots are the workspace packages.
@@ -36,10 +36,10 @@
 ## Global Constraints
 
 - **Everything in the Stage 2 and Stage 3 Global Constraints still holds.** In particular:
-  - the CommonJS-loadable dependency pins;
+  - The CommonJS-loadable dependency pins;
   - `ws` ^8 with no Fastify WebSocket plugin;
-  - rows map to records only in `persistence/postgres/mappers.ts`;
-  - user ids never reach a client.
+  - Rows map to records only in `persistence/postgres/mappers.ts`;
+  - User ids never reach a client.
 - **The local screens stay as they are.** Never modify:
   - `projects/app/src/app/setup/setup.ts`
   - `projects/app/src/app/game-board/**`
@@ -54,11 +54,11 @@
   - When the engine throws on a client's move, the client gets `illegal_action`, and nothing changes.
   - When it throws on a move the server made (a bot, a timeout or a takeover), or while restoring, the game is `broken`.
 - **Timings:**
-  - bot move delay: 700 ms (`BOT_DELAY_MS`);
-  - takeover:
-    - after 60 s away (`TAKEOVER_AWAY_MS`), checked on the 5 s room tick;
-    - or after 2 timeouts in a row while away (`TAKEOVER_TIMEOUTS`);
-  - decision budgets: the engine's `DECISION_SECONDS`, through `describeDecision` and `switchClock`, with the clock key `String(seq)`.
+  - Bot move delay: 700 ms (`BOT_DELAY_MS`);
+  - Takeover:
+    - After 60 s away (`TAKEOVER_AWAY_MS`), checked on the 5 s room tick;
+    - Or after 2 timeouts in a row while away (`TAKEOVER_TIMEOUTS`);
+  - Decision budgets: the engine's `DECISION_SECONDS`, through `describeDecision` and `switchClock`, with the clock key `String(seq)`.
 - **Seeds:** `randomInt(0, 2 ** 31)` from `node:crypto`. Seating uses `shuffle(members, createRng(seed ^ SEATING_SALT))` with `SEATING_SALT = 0x5eed5ea7`, over the members in join order.
 - **State hash:** sha256 (hex) of the state's canonical JSON (object keys sorted recursively, so jsonb's key order doesn't matter) after each action.
 - **User-facing text, verbatim:**
@@ -67,7 +67,7 @@
   - "Hing is back" (the `{name} is back` pattern)
   - "Fill every seat to start"
   - "You have a game against bots in progress"
-  - buttons: "Start Game", "Play Again", "Back to Rooms", "Back to Lobby", "Play vs Bots", "Resume Game", "Abandon and Start New"
+  - Buttons: "Start Game", "Play Again", "Back to Rooms", "Back to Lobby", "Play vs Bots", "Resume Game", "Abandon and Start New"
   - "Reconnecting…"
 - **UI text** follows `CLAUDE.md`: Title Case for titles, buttons and labels, and sentence case for messages.
 - **Code style:**
@@ -80,21 +80,21 @@
 
 1. **Stage boundary.** Stage 5 brings the following, with chat:
    - My Games;
-   - the replay endpoint;
-   - evicting a solo runner after 30 minutes away;
-   - aborting a solo game after 7 days without activity.
+   - The replay endpoint;
+   - Evicting a solo runner after 30 minutes away;
+   - Aborting a solo game after 7 days without activity.
 
    This stage has no in-game "Leave Game" button. The server supports leaving a running game (`room.leave`), and Play vs Bots' "Abandon and Start New" uses it. Closing the tab still works: the seat goes to a bot after 60 s, and a solo game pauses.
 2. **Only offered actions are accepted** (see Global Constraints). A selection's ids, an arrangement's `top` and `bottom`, and the targets on a template that carries `pickTargets` are the only fields a player fills in. The engine checks those when it resolves.
 3. **One route and one socket for the lobby and the game.** `/rooms/:id` shows one of three things:
-   - the Lobby;
-   - the board (`OnlineGame`), while the room is `playing`;
-   - the result of the last game, until the player dismisses it.
+   - The Lobby;
+   - The board (`OnlineGame`), while the room is `playing`;
+   - The result of the last game, until the player dismisses it.
 
    No second socket is opened when a game starts.
 4. **The board is reused as it is.** `OnlineGame` provides these tokens:
    - `GameService` → `RemoteGameService` and `DecisionTimer` → `RemoteDecisionClock` (`useExisting`);
-   - its own `MatDialog` and CDK `Dialog`, so the board's dialogs and their countdowns resolve the remote services.
+   - Its own `MatDialog` and CDK `Dialog`, so the board's dialogs and their countdowns resolve the remote services.
 
    `RemoteGameService.mode()` is always `'pass-and-play'`, because the board offers New Game (to the local Setup) only in `'vs-bots'`. `humanSeatId()` is the player's seat, so the pass-and-play gate never shows. The board's own Game Over card never shows: the page swaps the board for the result as soon as the state has a result.
 5. **`RoomSnapshot.lastResult` becomes `lastGame: LastGame | null`**, and each member gains `seatId` (null in the lobby).
@@ -115,23 +115,23 @@
    `game.submit` carrying another game's `gameId` is `stale`.
 8. **Leaving a running game.**
    - A member of an open room who leaves while others remain:
-     - is `markLeft`;
-     - their seat is played by a bot for the rest of the game (`source = 'takeover'`);
-     - if they were the host, the role passes at once to `successor(false)`, or to nobody.
+     - Is `markLeft`;
+     - Their seat is played by a bot for the rest of the game (`source = 'takeover'`);
+     - If they were the host, the role passes at once to `successor(false)`, or to nobody.
    - When the game ends with no host, it passes then, or the room closes with `host_left`.
    - When the last human leaves (always so in a solo room), the game is `aborted` and the room closes.
 9. **Solo rooms.**
    - `POST /api/rooms/solo { seatCount, rules, replace? }`.
    - The user's live solo room is closed first, and its running game aborted, in two cases:
-     - it has no running game;
+     - It has no running game;
      - `replace: true`.
    - When it is playing and `replace` isn't set, the request gets `409 solo_exists`. The client learns the existing room from the room list (`youAreMember` and `visibility: 'solo'`).
    - The human's room name is their display name. Bots take "Bot 1", "Bot 2" and so on.
    - Play Again is `lobby.start`, which the solo room's human may send although a solo room has no host. Back to Rooms is `room.leave`, which closes the room.
 10. **Restore trusts `games.seats`.** The spec's recomputed-seating check is dropped, because members who left aren't loaded. The replay is checked by hashes when the build differs. Members whose `room_players` row has left get a bot seat.
 11. **Server moves that can't be stored are retried.** If storing a bot, timeout or takeover move fails:
-    - the error is logged;
-    - the runner reschedules, so a bot tries again after its delay, and a timed-out human gets a fresh clock.
+    - The error is logged;
+    - The runner reschedules, so a bot tries again after its delay, and a timed-out human gets a fresh clock.
 
     A human move that can't be stored is refused with `internal`.
 12. **The bot's "thinking…".** While a bot move is pending, `GameUpdate.clock` carries the bot's own timer: the bot's seat, the decision kind, `endsAt` and `totalSeconds = 0.7`. The client shows "thinking…" for a clock on a bot-played seat. It shows a countdown only for the viewer's own seat.
@@ -345,7 +345,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `RoomSnapshot.lastGame: LastGame | null`, replacing `lastResult`
   - `WelcomeMessage.game: GameUpdate | null`
   - `GameUpdateMessage { type: 'game.update'; game: GameUpdate }`, added to `ServerMessage`
-  - client messages `lobby.start`, `game.submit { gameId, baseSeq, actions }` and `game.resync`, which join `RoomCommand` and `RoomRequest` through the schema union
+  - Client messages `lobby.start`, `game.submit { gameId, baseSeq, actions }` and `game.resync`, which join `RoomCommand` and `RoomRequest` through the schema union
   - `ErrorCode` adds `not_full`, `no_game`, `not_your_turn`, `stale`, `illegal_action` and `solo_exists`
 - Produces, from `protocol/schemas`: `ActionSchema`, `SoloRoomBodySchema`, `StartSchema`, `SubmitSchema` and `ResyncSchema`.
 - Server: `RoomErrorCode` adds the six new codes. `ROOM_ERROR_STATUS` maps them per Decision 7. `toRoomSnapshot` emits `seatId: null` and `lastGame: null` for now (Task 7 fills them).
@@ -440,9 +440,9 @@ export const SoloRoomBodySchema = Type.Object({ seatCount: SeatCountSchema, rule
 
 In `projects/protocol/src/schemas/socket.ts`:
 
-- import `MAX_SUBMIT_ACTIONS` alongside `REQ_ID_MAX` from `'../limits'`;
-- add `import { ActionSchema } from './game';`;
-- add these schemas before `ClientMessageSchema`:
+- Import `MAX_SUBMIT_ACTIONS` alongside `REQ_ID_MAX` from `'../limits'`;
+- Add `import { ActionSchema } from './game';`;
+- Add these schemas before `ClientMessageSchema`:
 
 ```ts
 export const StartSchema = Type.Object({ type: Type.Literal('lobby.start'), reqId: ReqId }, strict);
@@ -546,17 +546,17 @@ export const GAME_OUTCOME_MESSAGES: Record<Exclude<GameOutcome, 'finished'>, str
 
 In `projects/protocol/src/rooms.ts`:
 
-- change the engine import to `import type { GameRules } from 'engine';`;
-- add `import type { LastGame } from './game';`;
-- add to `RoomMemberView`, after `kind`:
+- Change the engine import to `import type { GameRules } from 'engine';`;
+- Add `import type { LastGame } from './game';`;
+- Add to `RoomMemberView`, after `kind`:
 
 ```ts
   // The seat this member plays in the running game; null in the lobby.
   seatId: string | null;
 ```
 
-- change the comment on `botControlled` to `// A bot is playing this human's seat in the running game.`;
-- in `RoomSnapshot`, replace `lastResult: GameResult | null;` with:
+- Change the comment on `botControlled` to `// A bot is playing this human's seat in the running game.`;
+- In `RoomSnapshot`, replace `lastResult: GameResult | null;` with:
 
 ```ts
   // The room's last game, until another starts. Kept in memory only.
@@ -565,15 +565,15 @@ In `projects/protocol/src/rooms.ts`:
 
 In `projects/protocol/src/socket.ts`:
 
-- add `import type { GameUpdate } from './game';`;
-- in `WelcomeMessage`, replace the `game` field and its comment with:
+- Add `import type { GameUpdate } from './game';`;
+- In `WelcomeMessage`, replace the `game` field and its comment with:
 
 ```ts
   // The running game with its full log (logFrom 0), or null.
   game: GameUpdate | null;
 ```
 
-- add this message:
+- Add this message:
 
 ```ts
 // The game moved on (or the client asked for game.resync).
@@ -583,7 +583,7 @@ export interface GameUpdateMessage {
 }
 ```
 
-- add `GameUpdateMessage` to the `ServerMessage` union, after `RoomUpdatedMessage`.
+- Add `GameUpdateMessage` to the `ServerMessage` union, after `RoomUpdatedMessage`.
 
 In `projects/protocol/src/errors.ts`, append the six codes to `ErrorCode`, in this order: `not_full`, `no_game`, `not_your_turn`, `stale`, `illegal_action`, `solo_exists`. Append to `ERROR_MESSAGES`:
 
@@ -660,7 +660,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 **Interfaces:**
 - Consumes: `Action`, `GameResult` and `GameRules` (engine types); `ActionSource`, `GameStatus` and `MemberKind` (protocol types).
 - Produces:
-  - records `GameSeat { seatId, roomPlayerId, name, kind }`, `GameRecord` and `GameActionRecord` (the fields are below)
+  - Records `GameSeat { seatId, roomPlayerId, name, kind }`, `GameRecord` and `GameActionRecord` (the fields are below)
   - `StaleGameError`
   - `GameChanges = Partial<Pick<GameRecord, 'status' | 'result' | 'finishedAt'>>`
   - `NewGameAction = Omit<GameActionRecord, 'gameId' | 'createdAt'>`
@@ -677,7 +677,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 In `projects/server/src/persistence/repositoryContract.ts`:
 
-- change the import to:
+- Change the import to:
 
 ```ts
 import { randomUUID } from 'node:crypto';
@@ -686,7 +686,7 @@ import { GameSeat } from './records';
 import { EmailTakenError, NameTakenError, NewGameAction, RepositoryHarness, StaleGameError } from './repositories';
 ```
 
-- add this block inside `describeRepositoryContract`, after the `rooms` block:
+- Add this block inside `describeRepositoryContract`, after the `rooms` block:
 
 ```ts
   describe('games', () => {
@@ -846,14 +846,14 @@ export interface GameActionRecord {
 
 In `projects/server/src/persistence/repositories.ts`:
 
-- change the first import to:
+- Change the first import to:
 
 ```ts
 import type { GameRules } from 'engine';
 import { GameActionRecord, GameRecord, GameSeat, ResetTokenRecord, RoomPlayerRecord, RoomRecord, SessionRecord, UserRecord } from './records';
 ```
 
-- add this class after `NameTakenError`:
+- Add this class after `NameTakenError`:
 
 ```ts
 export class StaleGameError extends Error {
@@ -864,7 +864,7 @@ export class StaleGameError extends Error {
 }
 ```
 
-- add these types and the interface after `RoomRepository`:
+- Add these types and the interface after `RoomRepository`:
 
 ```ts
 export type GameChanges = Partial<Pick<GameRecord, 'status' | 'result' | 'finishedAt'>>;
@@ -887,26 +887,26 @@ export interface GameRepository {
 }
 ```
 
-- add `games: GameRepository;` to `Repositories`, after `rooms`.
+- Add `games: GameRepository;` to `Repositories`, after `rooms`.
 
 - [ ] **Step 4: Implement the in-memory store**
 
 In `projects/server/src/persistence/memory/memoryRepositories.ts`:
 
-- import `GameActionRecord` and `GameRecord` from `'../records'`. Import `GameChanges`, `GameRepository`, `NewGameAction` and `StaleGameError` from `'../repositories'`.
-- add `games: Map<string, GameRecord>;` and `gameActions: Map<string, GameActionRecord>;` to `Store`.
-- set `TABLES` to `['users', 'sessions', 'resetTokens', 'rooms', 'roomPlayers', 'games', 'gameActions']`.
-- in `createMemoryRepositories`, add `games: new Map(), gameActions: new Map()` to the store literal.
-- in `repositoriesOver`, add `games: new MemoryGames(store),` after `rooms`.
-- in `cloneStore`, add `games: cloneMap(store.games),` and `gameActions: cloneMap(store.gameActions),`.
-- replace the comment above `cloneMap` with:
+- Import `GameActionRecord` and `GameRecord` from `'../records'`. Import `GameChanges`, `GameRepository`, `NewGameAction` and `StaleGameError` from `'../repositories'`.
+- Add `games: Map<string, GameRecord>;` and `gameActions: Map<string, GameActionRecord>;` to `Store`.
+- Set `TABLES` to `['users', 'sessions', 'resetTokens', 'rooms', 'roomPlayers', 'games', 'gameActions']`.
+- In `createMemoryRepositories`, add `games: new Map(), gameActions: new Map()` to the store literal.
+- In `repositoriesOver`, add `games: new MemoryGames(store),` after `rooms`.
+- In `cloneStore`, add `games: cloneMap(store.games),` and `gameActions: cloneMap(store.gameActions),`.
+- Replace the comment above `cloneMap` with:
 
 ```ts
 // Records hold dates and objects (rules, seats, results, actions). These are
 // replaced, never mutated in place, so copying each record is a deep enough copy.
 ```
 
-- append the class:
+- Append the class:
 
 ```ts
 const actionKey = (gameId: string, seq: number) => `${gameId}:${seq}`;
@@ -1003,9 +1003,9 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 **Interfaces:**
 - Consumes: `GameRepository`, `StaleGameError`, `GameRecord`, `GameActionRecord` and `GameSeat` (Task 3).
 - Produces:
-  - tables `games` and `game_actions`;
+  - Tables `games` and `game_actions`;
   - `toGameRecord` and `toGameActionRecord` mappers;
-  - a `PostgresGames` repository wired into `createPostgresRepositories`.
+  - A `PostgresGames` repository wired into `createPostgresRepositories`.
 
 - [ ] **Step 1: Confirm the contract fails against Postgres**
 
@@ -1068,9 +1068,9 @@ In `projects/server/src/persistence/migrate.ts`, add `import * as games from './
 
 In `projects/server/src/persistence/postgres/schema.ts`:
 
-- change the engine import to `import type { Action, GameResult, GameRules } from 'engine';`;
-- add `import type { GameSeat } from '../records';`;
-- add these tables before `Database`:
+- Change the engine import to `import type { Action, GameResult, GameRules } from 'engine';`;
+- Add `import type { GameSeat } from '../records';`;
+- Add these tables before `Database`:
 
 ```ts
 export interface GamesTable {
@@ -1099,12 +1099,12 @@ export interface GameActionsTable {
 }
 ```
 
-- add `games: GamesTable;` and `game_actions: GameActionsTable;` to `Database`.
+- Add `games: GamesTable;` and `game_actions: GameActionsTable;` to `Database`.
 
 In `projects/server/src/persistence/postgres/mappers.ts`:
 
-- import `GameActionRecord` and `GameRecord` from `'../records'`, and `GameActionsTable` and `GamesTable` from `'./schema'`;
-- append:
+- Import `GameActionRecord` and `GameRecord` from `'../records'`, and `GameActionsTable` and `GamesTable` from `'./schema'`;
+- Append:
 
 ```ts
 export function toGameRecord(row: Selectable<GamesTable>): GameRecord {
@@ -1140,11 +1140,11 @@ export function toGameActionRecord(row: Selectable<GameActionsTable>): GameActio
 
 In `projects/server/src/persistence/postgres/postgresRepositories.ts`:
 
-- import `GameActionRecord` and `GameRecord` from `'../records'`;
-- add `GameChanges`, `GameRepository`, `NewGameAction` and `StaleGameError` to the `'../repositories'` import;
-- add `toGameActionRecord` and `toGameRecord` to the mappers import;
-- add `games: new PostgresGames(db),` to `createPostgresRepositories`, after `rooms`;
-- append the class:
+- Import `GameActionRecord` and `GameRecord` from `'../records'`;
+- Add `GameChanges`, `GameRepository`, `NewGameAction` and `StaleGameError` to the `'../repositories'` import;
+- Add `toGameActionRecord` and `toGameRecord` to the mappers import;
+- Add `games: new PostgresGames(db),` to `createPostgresRepositories`, after `rooms`;
+- Append the class:
 
 ```ts
 class PostgresGames implements GameRepository {
@@ -1251,7 +1251,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 **Interfaces:**
 - Consumes, from `engine`:
   - `createGame`, `createRng`, `shuffle`, `resolve`, `getActiveSeatId`, `getLegalActions`, `isOfferedAction` (Task 1) and `redactStateForSeat`
-  - types `Action`, `ContentRegistry`, `EngineContext`, `GameRules` and `GameState`
+  - Types `Action`, `ContentRegistry`, `EngineContext`, `GameRules` and `GameState`
 - Consumes: `guozhanMode` from `content`; `GameSeat`, `GameRecord` and `GameActionRecord` (Task 3); `GameUpdate`, `GameClockView`, `SeatView` and `MemberKind` from `protocol`.
 - Produces:
   - `SEATING_SALT = 0x5eed5ea7`
@@ -1264,7 +1264,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `applyMove(ctx, state, seatId, actions): GameState[]`: the state after each action. It throws `IllegalMoveError` on any problem.
   - `applyActions(ctx, state, actions): GameState[]`: no checks; it throws whatever the engine throws.
   - `replay(ctx, game, actions, checkHashes): GameState`
-  - in `views/game.ts`:
+  - In `views/game.ts`:
     - `toSeatView(state, seatId): SeatView`
     - `GameUpdateInput`
     - `toGameUpdate(input): GameUpdate`
@@ -2399,7 +2399,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `tick` runs `runner.tick()` for playing rooms.
   - `Room.lastGame: LastGame | null`.
   - `toRoomSnapshot(room, seatLimits, seating: SeatingView | null)` fills `seatId`, `botControlled` and `lastGame`.
-  - private helpers that Task 8 reuses:
+  - Private helpers that Task 8 reuses:
     - `startGame(entry)`
     - `run(entry, game, state, seq)`
     - `closeGame(entry, game, outcome, result)`
@@ -2718,8 +2718,8 @@ Expected: FAIL. `RoomServiceDeps` has no `scheduler` or `registry`, and `lobby.s
 
 In `projects/server/src/rooms/room.ts`:
 
-- change the protocol import to `import type { LastGame, MemberKind } from 'protocol';`;
-- add this field to the `Room` class, after `lastActivityAt`:
+- Change the protocol import to `import type { LastGame, MemberKind } from 'protocol';`;
+- Add this field to the `Room` class, after `lastActivityAt`:
 
 ```ts
   // The last game's outcome, until another starts. In memory only.
@@ -2780,10 +2780,10 @@ export function toRoomListItem(room: Room, userId: string): RoomListItem {
 
 Replace `projects/server/src/rooms/roomService.ts` with the version below. Every Stage 3 method keeps its behaviour. The changes are:
 
-- the new deps;
+- The new deps;
 - `LiveRoom.runner`;
 - `connect`, `disconnect`, `command`, `tick`, `leave` and `dropRoom`;
-- the new game methods.
+- The new game methods.
 
 ```ts
 import { randomInt } from 'node:crypto';
@@ -3428,7 +3428,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `RoomService.createSolo(user, body: SoloRoomBody): Promise<string>`;
   - `RoomService.restore()` now also restores playing rooms;
   - `RoomService.stop(): Promise<void>`;
-  - the route `POST /api/rooms/solo` → `201 { id }`, or `409 solo_exists`;
+  - The route `POST /api/rooms/solo` → `201 { id }`, or `409 solo_exists`;
   - `createServer` builds the registry once and passes `registry` and `buildId: config.buildId`. It calls `rooms.stop()` on close.
 
 - [ ] **Step 1: Write the failing solo-room tests**
@@ -3785,10 +3785,10 @@ Expected: FAIL. There is no `createSolo`, no `stop` and no solo route, and `rest
 
 In `projects/server/src/rooms/roomService.ts`:
 
-- add `SoloRoomBody` to the `protocol` type import;
-- change the `./room` import to `import { memberFrom, Room, RoomMember, sameName } from './room';`;
-- add `replay` to the `../game/engineGame` import;
-- add this helper below `requireName`:
+- Add `SoloRoomBody` to the `protocol` type import;
+- Change the `./room` import to `import { memberFrom, Room, RoomMember, sameName } from './room';`;
+- Add `replay` to the `../game/engineGame` import;
+- Add this helper below `requireName`:
 
 ```ts
 // "Bot 1", "Bot 2", … skipping the player's own name.
@@ -3799,7 +3799,7 @@ function botNamesBeside(name: string, count: number): string[] {
 }
 ```
 
-- replace `restore()` with:
+- Replace `restore()` with:
 
 ```ts
   // Reloads every live room from the store after a restart. Nobody is
@@ -3826,7 +3826,7 @@ function botNamesBeside(name: string, count: number): string[] {
   }
 ```
 
-- add `createSolo` after `join`:
+- Add `createSolo` after `join`:
 
 ```ts
   // Play vs Bots (spec "Solo rooms"): an unlisted room with the user and
@@ -3862,7 +3862,7 @@ function botNamesBeside(name: string, count: number): string[] {
   }
 ```
 
-- add these private methods after `closeGame`:
+- Add these private methods after `closeGame`:
 
 ```ts
   // Rebuilds a room's running game from its stored actions (spec "Restore on
@@ -3916,10 +3916,10 @@ In `projects/server/src/http/roomRoutes.ts`, add `SoloRoomBodySchema` to the `pr
 
 In `projects/server/src/server.ts`:
 
-- build the registry once, before `new RoomService`: `const registry = buildContentRegistry();`;
-- pass `registry`, `buildId: config.buildId`, and `seatLimits: { min: MIN_SEATS, max: guozhanMaxSeats(registry) }`;
-- in `close`, call `await rooms.stop();` after `clearInterval(housekeeping);` and before `await app.close();`;
-- update the comment above `createServer` to mention that running games are restored with the rooms, and that closing stops game timers first.
+- Build the registry once, before `new RoomService`: `const registry = buildContentRegistry();`;
+- Pass `registry`, `buildId: config.buildId`, and `seatLimits: { min: MIN_SEATS, max: guozhanMaxSeats(registry) }`;
+- In `close`, call `await rooms.stop();` after `clearInterval(housekeeping);` and before `await app.close();`;
+- Update the comment above `createServer` to mention that running games are restored with the rooms, and that closing stops game timers first.
 
 In `projects/server/README.md`, add a short "Games" section after the rooms section:
 
@@ -3953,7 +3953,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Interfaces:**
 - Consumes:
-  - everything above;
+  - Everything above;
   - `buildApp`;
   - `TestClient`;
   - `RoomService` with `botDelayMs` and `takeoverAwayMs` (Task 7);
@@ -3968,8 +3968,8 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 In `projects/server/src/socket/testClient.ts`:
 
-- add `private readonly messageListeners: ((message: ServerMessage) => void)[] = [];` to `TestClient`;
-- change the `'message'` handler in the constructor to:
+- Add `private readonly messageListeners: ((message: ServerMessage) => void)[] = [];` to `TestClient`;
+- Change the `'message'` handler in the constructor to:
 
 ```ts
     ws.on('message', (data) => {
@@ -3980,7 +3980,7 @@ In `projects/server/src/socket/testClient.ts`:
     });
 ```
 
-- add this method to `TestClient`:
+- Add this method to `TestClient`:
 
 ```ts
   // Called with every message as it arrives, before any `next` sees it.
@@ -3989,7 +3989,7 @@ In `projects/server/src/socket/testClient.ts`:
   }
 ```
 
-- add these imports at the top:
+- Add these imports at the top:
 
 ```ts
 import { ruleBasedPolicy } from 'bots';
@@ -4000,7 +4000,7 @@ import type { GameUpdate } from 'protocol';
 
   (`ServerMessage` is already imported as a type.)
 
-- append this class:
+- Append this class:
 
 ```ts
 // Plays a seat over the socket the way a person's client would (spec
@@ -4293,9 +4293,9 @@ The Lobby page keeps its one socket and decides what to show from the room and t
 **Interfaces:**
 - Consumes:
   - `SocketService` (Stage 3): `status`, `messages` and `request`;
-  - the protocol's `GameUpdate`, `LastGame`, `RoomSnapshot` and `ServerMessage`;
+  - The protocol's `GameUpdate`, `LastGame`, `RoomSnapshot` and `ServerMessage`;
   - `GameService`, `GameMode` and `DecisionTimer` (types only);
-  - from the engine: `getActiveSeatId` and `previewEffect`.
+  - From the engine: `getActiveSeatId` and `previewEffect`.
 - Produces:
   - `BoardGame`: the `Pick` of `GameService` that `GameBoard` reads;
   - `RemoteGameService implements BoardGame`, injectable, provided by the Lobby page. Besides `BoardGame` it has:
@@ -4306,7 +4306,7 @@ The Lobby page keeps its one socket and decides what to show from the room and t
     - `dismiss(): void`
   - `LocalClock { seatId, endsAt, totalSeconds }`, in this device's time;
   - `RemoteDecisionClock`, which implements `Pick<DecisionTimer, 'secondsLeft' | 'totalSeconds' | 'attach' | 'setTimeoutChoice'>`;
-  - in `testing.ts`:
+  - In `testing.ts`:
     - `GAME_ID`
     - `gameUpdates(): [GameUpdate, GameUpdate]`: Ann's (seat-0) view at the start, then after her first move
     - `PLAYING: RoomSnapshot`
@@ -4317,7 +4317,7 @@ The Lobby page keeps its one socket and decides what to show from the room and t
 
 In `projects/app/src/app/online/testing.ts`:
 
-- add these imports:
+- Add these imports:
 
 ```ts
 import { buildContentRegistry, guozhanMode } from 'content';
@@ -4326,7 +4326,7 @@ import type { Action, GameState } from 'engine';
 import type { GameUpdate, LastGame } from 'protocol';
 ```
 
-- replace `welcome` with:
+- Replace `welcome` with:
 
 ```ts
 export function welcome(room: RoomSnapshot = ROOM, playerId = 'p-ann', game: GameUpdate | null = null): ServerMessage {
@@ -4335,7 +4335,7 @@ export function welcome(room: RoomSnapshot = ROOM, playerId = 'p-ann', game: Gam
 }
 ```
 
-- append:
+- Append:
 
 ```ts
 export const GAME_ID = '9a1e7c52-1b0f-4f7e-8d2a-3c4b5d6e7f80';
@@ -4801,7 +4801,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - Task 10's `RemoteGameService` (`ending`, `playing` and `dismiss`) and `RemoteDecisionClock`, plus its fixtures;
   - `GameBoard`, `GameService` and `DecisionTimer`, all unchanged;
   - `GAME_OUTCOME_MESSAGES`;
-  - from `labels.ts`: `forceOf`, `kingdomDisplayName` and `seatName`.
+  - From `labels.ts`: `forceOf`, `kingdomDisplayName` and `seatName`.
 - Produces:
   - `OnlineGame`: the `<app-online-game>` component;
   - `OnlineResult`: `<app-online-result [ending] [solo] [canAct] (backToLobby) (playAgain) (backToRooms)>`;
@@ -4809,7 +4809,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
     - `isSolo`
     - `canStart`
     - `start(): Promise<boolean>`
-    - the "{name} is back" notice
+    - The "{name} is back" notice
   - The Lobby page shows the result, the board or the lobby. It provides `RemoteGameService` and `RemoteDecisionClock`.
 
 - [ ] **Step 1: Write the failing tests**
@@ -4952,13 +4952,13 @@ In `projects/app/src/app/online/lobby.service.spec.ts`, add `PLAYING` to the `./
 
 In `projects/app/src/app/online/lobby-page.spec.ts`:
 
-- import `LastGame` (type) from `protocol`, `OnlineGame` from `./online-game`, `RemoteGameService` from `./remote-game.service`, and `LAST_GAME` from `./testing`;
-- in `fakeLobby`:
-  - add `const isSolo = signal(false);`;
-  - return `isSolo`;
-  - return `canStart: computed(() => room()?.status === 'lobby' && (room()?.hostPlayerId === you() || isSolo()))`;
-  - return `start: jest.fn(async () => true)`;
-- add:
+- Import `LastGame` (type) from `protocol`, `OnlineGame` from `./online-game`, `RemoteGameService` from `./remote-game.service`, and `LAST_GAME` from `./testing`;
+- In `fakeLobby`:
+  - Add `const isSolo = signal(false);`;
+  - Return `isSolo`;
+  - Return `canStart: computed(() => room()?.status === 'lobby' && (room()?.hostPlayerId === you() || isSolo()))`;
+  - Return `start: jest.fn(async () => true)`;
+- Add:
 
 ```ts
 function fakeGame() {
@@ -4966,9 +4966,9 @@ function fakeGame() {
 }
 ```
 
-- add `let game: ReturnType<typeof fakeGame>;`, and set `game = fakeGame();` in `beforeEach`;
-- in `render`, change the override to `{ set: { providers: [{ provide: LobbyService, useValue: lobby }, { provide: RemoteGameService, useValue: game }] } }`. Before it, add `TestBed.overrideComponent(OnlineGame, { set: { imports: [], providers: [], template: '' } });` so the board stays out of these tests;
-- add:
+- Add `let game: ReturnType<typeof fakeGame>;`, and set `game = fakeGame();` in `beforeEach`;
+- In `render`, change the override to `{ set: { providers: [{ provide: LobbyService, useValue: lobby }, { provide: RemoteGameService, useValue: game }] } }`. Before it, add `TestBed.overrideComponent(OnlineGame, { set: { imports: [], providers: [], template: '' } });` so the board stays out of these tests;
+- Add:
 
 ```ts
   it('gives the host Start Game, held back with a hint until every seat is filled', async () => {
@@ -5135,7 +5135,7 @@ Every game's seats are in `LastGame.seats`, so the `?? id` fallback never shows 
 
 In `projects/app/src/app/online/lobby.service.ts`:
 
-- add these after `waitingForHost`:
+- Add these after `waitingForHost`:
 
 ```ts
   readonly isSolo = computed(() => this._room()?.visibility === 'solo');
@@ -5143,7 +5143,7 @@ In `projects/app/src/app/online/lobby.service.ts`:
   readonly canStart = computed(() => this._room()?.status === 'lobby' && (this.isHost() || this.isSolo()));
 ```
 
-- add after `setRules`:
+- Add after `setRules`:
 
 ```ts
   start(): Promise<boolean> {
@@ -5151,8 +5151,8 @@ In `projects/app/src/app/online/lobby.service.ts`:
   }
 ```
 
-- in `receive`, call `this.noteChanges(this._room(), message.room);` in place of both `this.noteHostChange(…)` calls;
-- replace `noteHostChange` with:
+- In `receive`, call `this.noteChanges(this._room(), message.room);` in place of both `this.noteHostChange(…)` calls;
+- Replace `noteHostChange` with:
 
 ```ts
   // What changed hands, as a notice: "Hing is now the host", "Hing is back".
@@ -5176,18 +5176,18 @@ In `projects/app/src/app/online/lobby.service.ts`:
   }
 ```
 
-- update the comment on `notice` to `// The latest change of hands, as "Hing is now the host" or "Hing is back".`
+- Update the comment on `notice` to `// The latest change of hands, as "Hing is now the host" or "Hing is back".`
 
 - [ ] **Step 5: Let the Lobby page show the result, the board or the lobby**
 
 In `projects/app/src/app/online/lobby-page.ts`:
 
-- import `OnlineGame` from `./online-game`, `OnlineResult` from `./online-result`, and `RemoteDecisionClock` and `RemoteGameService` from `./remote-game.service`;
-- add `OnlineGame` and `OnlineResult` to `imports`;
-- set `providers: [SocketService, LobbyService, RemoteGameService, RemoteDecisionClock]`;
-- add `protected readonly game = inject(RemoteGameService);` below `lobby`;
-- change the class comment to: `// A room over its socket: the lobby (members, host controls, Start Game, Leave Room), the board while a game runs, and how the last game ended.`;
-- wrap the existing template's outer `<div class="online-page">…</div>` as the last branch of this:
+- Import `OnlineGame` from `./online-game`, `OnlineResult` from `./online-result`, and `RemoteDecisionClock` and `RemoteGameService` from `./remote-game.service`;
+- Add `OnlineGame` and `OnlineResult` to `imports`;
+- Set `providers: [SocketService, LobbyService, RemoteGameService, RemoteDecisionClock]`;
+- Add `protected readonly game = inject(RemoteGameService);` below `lobby`;
+- Change the class comment to: `// A room over its socket: the lobby (members, host controls, Start Game, Leave Room), the board while a game runs, and how the last game ended.`;
+- Wrap the existing template's outer `<div class="online-page">…</div>` as the last branch of this:
 
 ```html
     @if (game.ending(); as ending) {
@@ -5216,7 +5216,7 @@ In `projects/app/src/app/online/lobby-page.ts`:
     }
 ```
 
-- inside the lobby's `.players` section, after the `</ul>`, add:
+- Inside the lobby's `.players` section, after the `</ul>`, add:
 
 ```html
               @if (lobby.canStart() && isFull() === false) {
@@ -5224,7 +5224,7 @@ In `projects/app/src/app/online/lobby-page.ts`:
               }
 ```
 
-- in `<mat-card-actions>`, in the branch that isn't `lobby.ended()`, add before the Add Bot button:
+- In `<mat-card-actions>`, in the branch that isn't `lobby.ended()`, add before the Add Bot button:
 
 ```html
             @if (lobby.canStart()) {
@@ -5282,7 +5282,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `PlayVsBotsDialogData { seatLimits; existingRoomId: string | null }`
   - `PlayVsBotsDialog`, which closes with a room id to open, or nothing
   - `roomTitle(room)`
-  - a **Play vs Bots** button on the Rooms screen
+  - A **Play vs Bots** button on the Rooms screen
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -5560,9 +5560,9 @@ The first test expects `rules: { firstRevealDraw: true }` at 5 seats, and `rules
 
 In `projects/app/src/app/online/rooms-page.ts`:
 
-- import `PlayVsBotsDialog` and `PlayVsBotsDialogData` from `./play-vs-bots-dialog`, and `roomTitle` from `./room-labels`;
-- add `protected readonly roomTitle = roomTitle;`;
-- in the `.toolbar`, after the Create Room button and its hint, add:
+- Import `PlayVsBotsDialog` and `PlayVsBotsDialogData` from `./play-vs-bots-dialog`, and `roomTitle` from `./room-labels`;
+- Add `protected readonly roomTitle = roomTitle;`;
+- In the `.toolbar`, after the Create Room button and its hint, add:
 
 ```html
             <button mat-stroked-button type="button" class="play-vs-bots" [disabled]="!rooms.list()" (click)="playVsBots()">
@@ -5570,8 +5570,8 @@ In `projects/app/src/app/online/rooms-page.ts`:
             </button>
 ```
 
-- replace `{{ room.hostName ?? 'Room' }}` with `{{ roomTitle(room) }}`;
-- add the method:
+- Replace `{{ room.hostName ?? 'Room' }}` with `{{ roomTitle(room) }}`;
+- Add the method:
 
 ```ts
   // Your running game against bots is offered first; otherwise a new one.
@@ -5589,7 +5589,7 @@ In `projects/app/src/app/online/rooms-page.ts`:
   }
 ```
 
-- update the class comment to mention Play vs Bots, which any signed-in player can start.
+- Update the class comment to mention Play vs Bots, which any signed-in player can start.
 
 - [ ] **Step 5: Run the app tests and the build**
 

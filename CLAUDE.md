@@ -104,12 +104,12 @@ Every piece of visible text MUST follow these casing rules:
   lines. Examples: "Bots are choosing their Generals…", "Pass the device to
   Hing", "Nothing yet", "Seat 1 used Sha (7 ♠) on Hing".
 - **Keywords keep their capitals inside sentences:**
-  - player and seat names, card names, general names;
-  - forces (Wei, Shu, Wu, Qun);
-  - card types (Basic, Tool, Equipment, Weapon, Armor, Mount);
-  - phase names ("Play Phase");
-  - game mode names ("Guozhan");
-  - the term General(s), including Main General and Deputy General;
+  - Player and seat names, card names, general names;
+  - Forces (Wei, Shu, Wu, Qun);
+  - Card types (Basic, Tool, Equipment, Weapon, Armor, Mount);
+  - Phase names ("Play Phase");
+  - Game mode names ("Guozhan");
+  - The term General(s), including Main General and Deputy General;
   - HP.
 - Ids are never shown as they are: show "Seat 0", not `seat-0`.
 

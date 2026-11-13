@@ -44,7 +44,7 @@ All times are from the popup opening, at normal speed. They are a starting point
 | 500 | The rule line appears (what makes this judgment good or bad, one sentence). |
 | 1000 | The card is laid face down, then turns face up (about 600 ms). |
 | 2100 | Decision rounds, only if a changer is to be asked (below). |
-| next | Check or cross is drawn over about 750 ms; the card gets a ring in the verdict colour. Skipped when the verdict is neutral. |
+| Next | Check or cross is drawn over about 750 ms; the card gets a ring in the verdict colour. Skipped when the verdict is neutral. |
 | +900 | The consequence plays in the area under the card (see below). |
 | +1100 | Continue unlocks; the 3 s bar starts. |
 | +3000 | The popup closes on its own, or on Continue. |
@@ -122,27 +122,27 @@ judgmentOutcome(state, view, registry): { readerId, key, seats, verdict, effect 
 
 | Reader | Key | Verdict | Effect |
 |---|---|---|---|
-| Lightning | struck | bad | damage 3, seat |
-| Lightning | moves, stays | good | pass-on, none |
-| Capture | skip | bad | skip-phase Play |
-| Capture | spared | good | keep-phase Play |
-| Starvation | skip | bad | skip-phase Draw |
-| Starvation | spared | good | keep-phase Draw |
-| Eight Trigrams, Eight Arrays | shan | good | none |
-| Eight Trigrams, Eight Arrays | none | bad | none |
-| Unyielding | discard-or-damage, damage | good | damage 1, source (damage only) |
-| Unyielding | spared | bad | none |
-| River Goddess, Goddess Luo | again | good | none |
-| River Goddess, Goddess Luo | ends | bad | none |
-| Iron Cavalry | unblockable | good | none |
-| Iron Cavalry | none | bad | none |
-| Lightning Strike (both) | damage | bad | damage 2, seat |
-| Lightning Strike (both) | none | good | none |
-| Dueling Heroes | red, black | neutral | none |
-| Military Farm | farm | good | none |
-| Military Farm | discard | bad | none |
-| Lament | heal, draw, discard2, discard1, face-down, face-up | good | none |
-| Lament | none | bad | none |
+| Lightning | Struck | Bad | Damage 3, seat |
+| Lightning | moves, stays | Good | pass-on, none |
+| Capture | Skip | Bad | skip-phase Play |
+| Capture | Spared | Good | keep-phase Play |
+| Starvation | Skip | Bad | skip-phase Draw |
+| Starvation | Spared | Good | keep-phase Draw |
+| Eight Trigrams, Eight Arrays | Shan | Good | None |
+| Eight Trigrams, Eight Arrays | None | Bad | None |
+| Unyielding | discard-or-damage, damage | Good | Damage 1, source (damage only) |
+| Unyielding | Spared | Bad | None |
+| River Goddess, Goddess Luo | Again | Good | None |
+| River Goddess, Goddess Luo | Ends | Bad | None |
+| Iron Cavalry | Unblockable | Good | None |
+| Iron Cavalry | None | Bad | None |
+| Lightning Strike (both) | Damage | Bad | Damage 2, seat |
+| Lightning Strike (both) | None | Good | None |
+| Dueling Heroes | red, black | Neutral | None |
+| Military Farm | Farm | Good | None |
+| Military Farm | Discard | Bad | None |
+| Lament | heal, draw, discard2, discard1, face-down, face-up | Good | None |
+| Lament | None | Bad | None |
 
 ## Clocks
 

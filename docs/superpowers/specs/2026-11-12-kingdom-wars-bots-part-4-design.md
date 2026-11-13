@@ -14,9 +14,9 @@ table was measured once, on 20,000 Identity-deck games at 4 seats
 (`npm run sim -- fit-generals 20000 4 500000`, `{ deck: 'identity' }` in
 `projects/sim/src/fitGenerals.ts`). Kingdom Wars is the deck people play, so:
 
-- a Kingdom Wars variant is scored as its Identity base (`baseGeneralId`);
+- A Kingdom Wars variant is scored as its Identity base (`baseGeneralId`);
 - Kingdom Wars-only Generals score 0 and are rarely picked;
-- the values come from bots older than Parts 1–3.
+- The values come from bots older than Parts 1–3.
 
 The table also feeds Part 2's danger rating (a General's danger is its skill
 rating plus 10 × its value), so it shapes whom bots attack as well as whom they
@@ -401,14 +401,14 @@ and how often the first leading force won:
 
 | Seats, seed | Policy | Wei | Shu | Wu | Qun | Ambitionist | Gap | Leader won (95%) |
 |---|---|---|---|---|---|---|---|---|
-| 6, 2500000 | challenger | 29.1 | 20.2 | 16.7 | 47.4 | 14.7 | 32.7 | 46.7% (44.5 to 48.9) |
-| | baseline | 35.6 | 44.2 | 12.7 | 11.2 | 11.6 | 33.0 | 54.4% (52.2 to 56.6) |
-| 6, 2600000 | challenger | 26.6 | 19.2 | 16.5 | 48.8 | 10.1 | 38.7 | 44.7% (42.5 to 46.9) |
-| | baseline | 33.3 | 46.2 | 15.4 | 10.8 | 9.8 | 36.4 | 55.3% (53.1 to 57.4) |
-| 8, 2500000 | challenger | 20.2 | 11.2 | 11.0 | 46.5 | 23.1 | 35.5 | 35.1% (33.0 to 37.2) |
-| | baseline | 28.6 | 41.7 | 10.3 | 9.1 | 11.5 | 32.6 | 49.2% (47.0 to 51.4) |
-| 8, 2600000 * | challenger | 20.8 | 12.7 | 11.5 | 44.2 | 0.0 | 44.2 | 37.9% (35.8 to 40.0) |
-| | baseline | 29.7 | 41.5 | 11.2 | 10.4 | 9.2 | 32.3 | 48.6% (46.4 to 50.8) |
+| 6, 2500000 | Challenger | 29.1 | 20.2 | 16.7 | 47.4 | 14.7 | 32.7 | 46.7% (44.5 to 48.9) |
+| | Baseline | 35.6 | 44.2 | 12.7 | 11.2 | 11.6 | 33.0 | 54.4% (52.2 to 56.6) |
+| 6, 2600000 | Challenger | 26.6 | 19.2 | 16.5 | 48.8 | 10.1 | 38.7 | 44.7% (42.5 to 46.9) |
+| | Baseline | 33.3 | 46.2 | 15.4 | 10.8 | 9.8 | 36.4 | 55.3% (53.1 to 57.4) |
+| 8, 2500000 | Challenger | 20.2 | 11.2 | 11.0 | 46.5 | 23.1 | 35.5 | 35.1% (33.0 to 37.2) |
+| | Baseline | 28.6 | 41.7 | 10.3 | 9.1 | 11.5 | 32.6 | 49.2% (47.0 to 51.4) |
+| 8, 2600000 * | Challenger | 20.8 | 12.7 | 11.5 | 44.2 | 0.0 | 44.2 | 37.9% (35.8 to 40.0) |
+| | Baseline | 29.7 | 41.5 | 11.2 | 10.4 | 9.2 | 32.3 | 48.6% (46.4 to 50.8) |
 
 Leader won, challenger minus baseline (paired by seed): 6 seats -7.6 pp
 (-10.7 to -4.4) and -10.4 pp (-13.5 to -7.3); 8 seats -14.1 pp (-17.1 to -11.1)

@@ -218,10 +218,10 @@ App (Jest):
   stay unchanged.
 
 Live check, at 1400px, 1024px, 800px and 360px:
-- the panel's behaviour at each width;
-- every tab of every page;
-- a deep link to `?tab=delayed`;
-- the game board still fitting beside the panel at 1024px;
+- The panel's behaviour at each width;
+- Every tab of every page;
+- A deep link to `?tab=delayed`;
+- The game board still fitting beside the panel at 1024px;
 - Play Game resuming a game in progress.
 
 ## Out of scope

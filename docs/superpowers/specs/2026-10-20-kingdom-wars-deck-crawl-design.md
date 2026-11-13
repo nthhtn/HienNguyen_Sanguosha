@@ -67,18 +67,18 @@ later decision. The crawl records them without judging.
 
 ## Data shape (what each card record must carry)
 
-- the Chinese name (`nameZh`) exactly as printed, and the category (Basic,
+- The Chinese name (`nameZh`) exactly as printed, and the category (Basic,
   Tool, Equipment) and for equipment the subtype (Weapon, Armor, Mount)
-- the printings: one entry per physical card, `{suit, rank}`, with suits
+- The printings: one entry per physical card, `{suit, rank}`, with suits
   `spade | heart | club | diamond` and ranks 1–13 as Identity already stores
   them (A = 1, J = 11, Q = 12, K = 13); `count` equals the number of
   printings
-- the effect text as printed (Chinese)
-- for equipment, the range or distance (a number for weapon attack range;
+- The effect text as printed (Chinese)
+- For equipment, the range or distance (a number for weapon attack range;
   how mounts are expressed is for the builder)
-- the Identity card id it corresponds to, matched through `nameZh`, or null
+- The Identity card id it corresponds to, matched through `nameZh`, or null
   when Identity has no such card
-- a source block (url, crawl date), like Identity's cards carry
+- A source block (url, crawl date), like Identity's cards carry
 
 Each deck is identified by a name (`default`, `Kingdom Wars`) so the structure
 can hold more decks and later per-deck General skill variants. Identity's

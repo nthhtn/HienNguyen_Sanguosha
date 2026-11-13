@@ -24,7 +24,7 @@ All phone-only board code: the short-phone and tall-phone tuning, seat scales of
 - `board.small.title` "Larger Screen Needed"
 - `board.small.hint` "Guozhan needs a tablet or computer screen. Use a larger device to play."
 - `play.needsLargerScreen` "Playing needs a tablet or computer screen."
-- changed `board.rotate.hint` (above), Vietnamese drafts for all four.
+- Changed `board.rotate.hint` (above), Vietnamese drafts for all four.
 
 ## How to check it
 

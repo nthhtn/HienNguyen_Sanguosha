@@ -657,7 +657,7 @@ In `projects/engine/src/lib/pipeline/resolve.ts`:
 - In `useCard`, pass the registry to `onResponse`: `.onResponse?.(afterLog, { pending, seatId, cardInstanceId, card: used }, ctx.registry)`.
 - In `continueSelection`:
   - `give`: the option effects become `[...moves, ...(then.tally ? [{ kind: 'IncrementEffect' as const, scope: 'turn' as const, key: then.tally, by: ids.length }] : []), ...(then.then ?? [])]`.
-  - add the case:
+  - Add the case:
 
 ```ts
     case 'skill-step':
@@ -1294,7 +1294,7 @@ In `projects/content/src/lib/shared/choices.ts` (import `toolsIgnoreDistance` an
           (maxDistance === undefined || toolsIgnoreDistance(state, ctx.seatId, registry) || seatDistance(state, ctx.seatId, target.seatId, registry) <= maxDistance)
 ```
 
-- its `play` becomes `(state, ctx) => (ctx.respondingTo || ctx.targets.length === 0 ? [] : toolOnTargets(ctx.card, ctx.seatId, [ctx.targets[0]]))`.
+- Its `play` becomes `(state, ctx) => (ctx.respondingTo || ctx.targets.length === 0 ? [] : toolOnTargets(ctx.card, ctx.seatId, [ctx.targets[0]]))`.
 
 In `projects/content/src/lib/shared/delayed.ts`:
 
@@ -4365,8 +4365,8 @@ and only applies when the choice is an ask (`choiceNow.verb === 'use'`). Right a
 ```
 
 5. Step 5 (Play Phase):
-   - after the Peach Garden line: `const early = pickActiveSkill(view, self, legal, registry, 'early'); if (early) return take(early);`
-   - after the Steal/Break grab: conversions into a Break or a Capture, under the same rules as the cards:
+   - After the Peach Garden line: `const early = pickActiveSkill(view, self, legal, registry, 'early'); if (early) return take(early);`
+   - After the Steal/Break grab: conversions into a Break or a Capture, under the same rules as the cards:
 
 ```ts
     const conversionsAs = (as: string) =>
@@ -4388,8 +4388,8 @@ const conversionAs = (a: UseConversion, view: GameState, registry: ContentRegist
 ```
 
      (import `conversionsOf`, `sameAbilityOwner` from `engine`).
-   - the Serpent Spear branch becomes "a conversion into a Sha": filter `conversionAs(a, view, registry) === 'sha'` and replace `spareForConversion(view, self, registry)` with `conversionSpare(view, self, conversion, registry)`; it still only runs when no real Sha was offered.
-   - just before `if (endPhase) return take(endPhase);`: `const late = pickActiveSkill(view, self, legal, registry, 'late'); if (late) return take(late);`
+   - The Serpent Spear branch becomes "a conversion into a Sha": filter `conversionAs(a, view, registry) === 'sha'` and replace `spareForConversion(view, self, registry)` with `conversionSpare(view, self, conversion, registry)`; it still only runs when no real Sha was offered.
+   - Just before `if (endPhase) return take(endPhase);`: `const late = pickActiveSkill(view, self, legal, registry, 'late'); if (late) return take(late);`
 
 - [ ] **Step 6: Run the tests**
 
@@ -4645,7 +4645,7 @@ Spec: General Skills spec, "UI". Stage 6 built the windows; this task gives them
 **Interfaces:**
 - Consumes: outcomes `used`, `more-damage`, `unblockable`, `moved`, `took-hand-card`; `CardShownEvent`; `CardZone.countsAs`; `skill-step` continuations.
 - Produces:
-  - content `selectionText(abilityId): { prompt: string; confirm: string; cancel?: string } | null`; `ABILITY_HINTS` entries for every asked skill.
+  - Content `selectionText(abilityId): { prompt: string; confirm: string; cancel?: string } | null`; `ABILITY_HINTS` entries for every asked skill.
   - `SelectionDescription.cancelLabel: string`.
   - `SeatTile` input `judgmentCountsAs: Record<string, string>` (default `{}`).
 
@@ -4845,7 +4845,7 @@ const usedLabel = (used: UsedCard) => {
 ```
 
 - `pickLine`'s `tool`: `const tool = made.reason.kind === 'choice' ? ` with ${cardName(made.reason.card.as)}` : made.reason.kind === 'ability' ? ` with ${abilityName(made.reason.abilityId)}` : '';`
-- a new case:
+- A new case:
 
 ```ts
       case 'CardShownEvent':
@@ -4853,7 +4853,7 @@ const usedLabel = (used: UsedCard) => {
         break;
 ```
 
-- in `AbilityUsedEvent`, after the `counts-as-shan` branch:
+- In `AbilityUsedEvent`, after the `counts-as-shan` branch:
 
 ```ts
         } else if (event.outcome === 'more-damage') {
@@ -4886,8 +4886,8 @@ const usedLabel = (used: UsedCard) => {
 ```
 
 `projects/app/src/app/game-board/seat-tile.ts`:
-- add the input `readonly judgmentCountsAs = input<Record<string, string>>({});` next to `judgment`.
-- in the judgment slot, the title becomes `'Judgment Area: ' + cardIdDisplayName(card.definitionId) + (judgmentCountsAs()[card.instanceId] ? ' as ' + cardIdDisplayName(judgmentCountsAs()[card.instanceId]) : '')`, and after the card button add:
+- Add the input `readonly judgmentCountsAs = input<Record<string, string>>({});` next to `judgment`.
+- In the judgment slot, the title becomes `'Judgment Area: ' + cardIdDisplayName(card.definitionId) + (judgmentCountsAs()[card.instanceId] ? ' as ' + cardIdDisplayName(judgmentCountsAs()[card.instanceId]) : '')`, and after the card button add:
 
 ```html
                 @if (judgmentCountsAs()[card.instanceId]; as countsAs) {
@@ -4947,7 +4947,7 @@ In `docs/architecture/event-chain.md`:
 | Showing a card to everyone | `ShowCardEffect` → `CardShownEvent` | Sow Revolt |
 | Using one card as another | `Conversion` with `cards: 1`, `from`, `accepts`, `outsideOwnTurnOnly` | Fighting Saint, First Aid |
 | A card lying as another card | `MoveCardEffect.countsAs` → `CardZone.countsAs` | Country Scene's Capture |
-| Skipping the Discard Phase as it begins | the `skipDiscard` turn flag (`discardOwed`) | Self-Restraint |
+| Skipping the Discard Phase as it begins | The `skipDiscard` turn flag (`discardOwed`) | Self-Restraint |
 | A rule change read by content's queries | `AbilityModifiers` (`distanceToOthers`, `toolsIgnoreDistance`, `untargetableWithEmptyHandBy`, `doubleAnswers`) | Horsemanship, Wondrous Talent, Empty City, Matchless |
 
 - Add a short section "Judgment changers' order": the `JUDGMENT_CHANGERS` set and `nextToChange` (content), with the rule "from the judged seat; after a replacement, from the seat after the one that replaced it".

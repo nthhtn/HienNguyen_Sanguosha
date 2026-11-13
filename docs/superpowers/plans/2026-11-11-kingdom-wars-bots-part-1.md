@@ -104,12 +104,12 @@ Where `decide` consults `features.rules` (only when not `null`), and with which 
 
 | Ladder step | Id looked up | Hook | When it returns `undefined` |
 |---|---|---|---|
-| 1a selection | `reason.abilityId` (reason `ability`), else `reason.card.as` (reason `card-effect`) | `select` | the existing code runs |
-| 1a' choice, verb `use` | `reason.abilityId` | `wantsToUse` (a compulsory skill still says Use) | the existing code runs |
-| 1a' choice, verb `pick` / `give` | `reason.abilityId` | `choose` (must return one of the offered option ids) | the existing code runs |
-| 2 responding | each answer's card `definitionId` | `answer` of the first rule whose id matches an answer | the existing `best` is kept |
-| 5 Play Phase, right after Peach Garden | every rule in insertion order with `play.when === 'early'` | `play.pick` | next rule, then the existing ladder |
-| 5 Play Phase, right before the `late` active skills | every rule with `play.when === 'late'` | `play.pick` | next rule, then the existing ladder |
+| 1a selection | `reason.abilityId` (reason `ability`), else `reason.card.as` (reason `card-effect`) | `select` | The existing code runs |
+| 1a' choice, verb `use` | `reason.abilityId` | `wantsToUse` (a compulsory skill still says Use) | The existing code runs |
+| 1a' choice, verb `pick` / `give` | `reason.abilityId` | `choose` (must return one of the offered option ids) | The existing code runs |
+| 2 responding | Each answer's card `definitionId` | `answer` of the first rule whose id matches an answer | The existing `best` is kept |
+| 5 Play Phase, right after Peach Garden | Every rule in insertion order with `play.when === 'early'` | `play.pick` | Next rule, then the existing ladder |
+| 5 Play Phase, right before the `late` active skills | Every rule with `play.when === 'late'` | `play.pick` | Next rule, then the existing ladder |
 
 `ctx.legal` is the filled `legal` list `decide` already builds (target templates filled by `fillPick`). A hook's returned action must be in `ctx.legal` (or a `SelectAction` / option id built from the pending decision); `decide` does not re-check.
 

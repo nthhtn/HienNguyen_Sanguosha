@@ -38,8 +38,8 @@ There are two policies:
 
 | Policy | File | Behavior |
 |---|---|---|
-| Random | `random.ts` (`pickRandomAction`) | uniformly picks a legal action, with sane fills for templates. Used by the simulator to explore many unusual lines of play. |
-| Rule-based | `rule-based.ts` (`ruleBasedPolicy`) | the opponent a person plays against. Its heuristics include: treat same-Kingdom seats as allies, rank non-allies by the table (below), keep Peach, Shan and Sha on top when arranging, cancel harmful Tools aimed at itself, and discard its least useful cards. |
+| Random | `random.ts` (`pickRandomAction`) | Uniformly picks a legal action, with sane fills for templates. Used by the simulator to explore many unusual lines of play. |
+| Rule-based | `rule-based.ts` (`ruleBasedPolicy`) | • The opponent a person plays against.<br>• Its heuristics include: treat same-Kingdom seats as allies, rank non-allies by the table (below), keep Peach, Shan and Sha on top when arranging, cancel harmful Tools aimed at itself, and discard its least useful cards. |
 
 The rule-based bot's per-pack knowledge sits beside it (`wind.ts`, `fire.ts`,
 `forest.ts`, `mountain.ts`, `skills.ts`), each answering questions such as
@@ -221,15 +221,15 @@ tests did not think of:
 | Check | Catches |
 |---|---|
 | a living seat is never at 0 HP or below without a rescue round pending | a missed dying round |
-| pending responses, choices, selections and arrangements never name an unknown or eliminated seat | a decision opened for a dead or missing seat |
-| every card instance is in exactly one zone, once | a duplicated or lost card |
+| Pending responses, choices, selections and arrangements never name an unknown or eliminated seat | a decision opened for a dead or missing seat |
+| Every card instance is in exactly one zone, once | a duplicated or lost card |
 | General selection is cleared once it ends; every seat has Generals | a broken setup |
 | a General is held by one seat only; a seat's Generals match its Kingdom | a bad deal or choice |
-| an equip zone holds at most one card per slot; a judgment zone holds no duplicate delayed Tool | a broken equip or delay rule |
-| an eliminated seat holds no cards | a missed elimination discard |
+| An equip zone holds at most one card per slot; a judgment zone holds no duplicate delayed Tool | a broken equip or delay rule |
+| An eliminated seat holds no cards | a missed elimination discard |
 | a `GameResult` names known seats once each | a malformed result |
 | a hidden General never fires a compulsory skill (`checkCompulsoryWhileHidden`) | a reveal-to-use bug |
-| the game rests only where someone must decide (`checkRestingState`) | the engine stalling mid-chain |
+| The game rests only where someone must decide (`checkRestingState`) | The engine stalling mid-chain |
 
 The specs also check that every game **terminates**, and that the final state
 survives a JSON round trip unchanged, which is the serializability property the
@@ -266,13 +266,13 @@ environment and import aliases:
 
 | Project | Environment | What its tests are |
 |---|---|---|
-| `engine` | node | the pipeline, legality, redaction, phases, triggers, clocks, with tiny hand-written content so the engine is tested without the real cards |
-| `content` | node | each card and skill, on small hand-built `GameState`s (`table()` and `harness()` in `generals/skills.testing.ts`); the Guozhan mode; decks; the data, wiki and Vietnamese-data checks |
-| `bots` | node | bot decisions on built states |
-| `sim` | node | whole simulated games, invariants, leaks and per-skill firing |
-| `protocol` | node | schemas and shared validators (names, chat) |
+| `engine` | node | The pipeline, legality, redaction, phases, triggers, clocks, with tiny hand-written content so the engine is tested without the real cards |
+| `content` | node | Each card and skill, on small hand-built `GameState`s (`table()` and `harness()` in `generals/skills.testing.ts`); the Guozhan mode; decks; the data, wiki and Vietnamese-data checks |
+| `bots` | node | Bot decisions on built states |
+| `sim` | node | Whole simulated games, invariants, leaks and per-skill firing |
+| `protocol` | node | Schemas and shared validators (names, chat) |
 | `server` | node | accounts, rooms, the game runner and the socket end to end, on the in-memory store; `npm run test:db` also runs the repository contract on Postgres |
-| `app` | jsdom (`jest-preset-angular`) | the services, view-model functions, dialogs, board behavior and the Vietnamese catalogs |
+| `app` | Jsdom (`jest-preset-angular`) | The services, view-model functions, dialogs, board behavior and the Vietnamese catalogs |
 
 Habits that keep the suite useful:
 

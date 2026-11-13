@@ -118,7 +118,7 @@ players answer every update, so the load is heavier than real play.
 |---|---|---|---|
 | 10 rooms of 7 (70 players) | 1 to 5% | 187 MB | 16 ms / 265 ms |
 | 15 rooms of 9 (135 players) | 6 to 10% | 236 MB | 1.2 s / 12.6 s |
-| 20 rooms of 9 (180 players) | pinned at 10% | 232 MB | 1.0 s / 10.3 s |
+| 20 rooms of 9 (180 players) | Pinned at 10% | 232 MB | 1.0 s / 10.3 s |
 
 Memory is never the limit; CPU is. Up to about 10 busy rooms is comfortable.
 Around 15 rooms of 9 the CPU is saturated and moves take seconds. For more, use

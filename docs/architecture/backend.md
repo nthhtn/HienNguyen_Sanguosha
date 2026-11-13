@@ -27,8 +27,8 @@ own how-to-run notes are in [projects/server/README.md](../../projects/server/RE
 
 | Project | Role | Framework |
 |---|---|---|
-| `projects/protocol` | every HTTP body and socket message as a TypeBox schema plus a TypeScript type, `PROTOCOL_VERSION`, and the shared limits and error codes. May import engine *types* (`Action`, `GameState`, `EngineEvent`, `GameRules`, `GameResult`); never server or database types. Its `public-api` is browser-safe, with the schemas behind `protocol/schemas`. | none |
-| `projects/server` | the application layer, authoritative side: accounts, rooms, the game runner, persistence, the socket. Imports `engine`, `content`, `bots` and `protocol`; nothing imports it. | Fastify, `ws`, Kysely on Postgres |
+| `projects/protocol` | • Every HTTP body and socket message as a TypeBox schema plus a TypeScript type, `PROTOCOL_VERSION`, and the shared limits and error codes.<br>• May import engine *types* (`Action`, `GameState`, `EngineEvent`, `GameRules`, `GameResult`); never server or database types.<br>• Its `public-api` is browser-safe, with the schemas behind `protocol/schemas`. | None |
+| `projects/server` | The application layer, authoritative side: accounts, rooms, the game runner, persistence, the socket. Imports `engine`, `content`, `bots` and `protocol`; nothing imports it. | Fastify, `ws`, Kysely on Postgres |
 
 Database rows never cross the wire. `server/persistence` maps rows to domain
 records, and `server/views` maps records and engine state to wire shapes.
@@ -37,13 +37,13 @@ records, and `server/views` maps records and engine state to wire shapes.
 
 | Concern | Browser | Server |
 |---|---|---|
-| Game state | only the latest `SeatView` it was sent | the full `GameState` per running game |
-| Rules | none | `resolve`, `getLegalActions`, the mode and content |
-| Randomness | none | the seeded RNG; the seed never leaves the server |
-| Seats | shows "you are Seat 2" | draws seats from the seed at start and binds each member to one |
-| Bots | none | `ruleBasedPolicy` for bot seats, after the animation before them plus a 1.5 s thinking gap |
-| Decision clocks | displays the remaining time | owns the clock; at zero it submits the engine's default |
-| Dialogs, sounds, popups, history lines | derived from the event log | sends the log; nothing else |
+| Game state | Only the latest `SeatView` it was sent | The full `GameState` per running game |
+| Rules | None | `resolve`, `getLegalActions`, the mode and content |
+| Randomness | None | The seeded RNG; the seed never leaves the server |
+| Seats | Shows "you are Seat 2" | Draws seats from the seed at start and binds each member to one |
+| Bots | None | `ruleBasedPolicy` for bot seats, after the animation before them plus a 1.5 s thinking gap |
+| Decision clocks | Displays the remaining time | Owns the clock; at zero it submits the engine's default |
+| Dialogs, sounds, popups, history lines | Derived from the event log | Sends the log; nothing else |
 
 The browser's `RemoteGameService` exposes the same surface the board reads from
 `GameService` (the `BoardGame` type), so the board is the same component in
@@ -83,11 +83,16 @@ behind a reverse proxy (the README explains the accepted values).
 
 ## Rooms and the socket
 
-An **open** room is listed, and anyone signed in can join while it has space.
-A **solo** room is unlisted and holds one person against bots; it backs
-Play vs Bots. Names are unique within a room; a bot's stored name is `[Bot] <English name>` with a `botNameId` (see content's bot names), and a person's name may not start with `[Bot]`. The lobby holds the members, the
-seat count and the rules (`GameRules`). The host chooses the deck only. First Reveal Bonus is not a choice: `rulesFrom` turns `firstRevealDraw` on from `FIRST_REVEAL_MIN_SEATS` (5) seats and leaves it off below, whatever the client asked. When the game starts the server adds `judgmentNotice`, `logPasses` and `partnerReward`, which a stored game keeps so it replays the same. **Seats are drawn at random from the game seed when the host
-starts** (`drawSeats`), so join order gives no position.
+- An **open** room is listed, and anyone signed in can join while it has space.
+- A **solo** room is unlisted and holds one person against bots; it backs Play vs Bots.
+- Names are unique within a room.
+  - A bot's stored name is `[Bot] <English name>` with a `botNameId` (see content's bot names).
+  - A person's name may not start with `[Bot]`.
+- The lobby holds the members, the seat count and the rules (`GameRules`).
+  - The host chooses the deck only.
+  - First Reveal Bonus is not a choice: `rulesFrom` turns `firstRevealDraw` on from `FIRST_REVEAL_MIN_SEATS` (5) seats and leaves it off below, whatever the client asked.
+  - When the game starts the server adds `judgmentNotice`, `logPasses` and `partnerReward`, which a stored game keeps so it replays the same.
+- **Seats are drawn at random from the game seed when the host starts** (`drawSeats`), so join order gives no position.
 
 `RoomService` keeps live rooms in memory and writes every change through to
 Postgres. Each room runs its inputs one at a time through a serial queue
@@ -101,8 +106,8 @@ member replaces the first.
 
 | Direction | Messages |
 |---|---|
-| client to server | `lobby.addBot`, `lobby.removePlayer`, `lobby.setRules`, `lobby.makeHost`, `lobby.start`, `room.leave`, `game.submit`, `game.resync`, `chat.send` |
-| server to client | `welcome` (the room, the running game with its full log, recent chat), `room.updated`, `game.update`, `chat.message`, `room.left`, `replaced`, `ack`, `error` |
+| Client to server | `lobby.addBot`, `lobby.removePlayer`, `lobby.setRules`, `lobby.makeHost`, `lobby.start`, `room.leave`, `game.submit`, `game.resync`, `chat.send` |
+| Server to client | `welcome` (the room, the running game with its full log, recent chat), `room.updated`, `game.update`, `chat.message`, `room.left`, `replaced`, `ack`, `error` |
 
 Every client message carries a `reqId` that the server echoes in its `ack` or
 `error`.
@@ -203,7 +208,7 @@ JSON with sorted keys, so Postgres `jsonb` key order cannot change it).
 
 On start the server rebuilds each running game by replaying its log:
 
-- the **same build** replays it as stored;
+- The **same build** replays it as stored;
 - **another build** checks every hash, and a game whose hash differs stops with
   outcome `outdated` ("This game can't continue after an update").
 
@@ -240,9 +245,9 @@ chat.
 
 | | Pass and Play | Play vs Bots (Setup) | Online room, Play vs Bots (Rooms) |
 |---|---|---|---|
-| Engine runs | in the tab | in the tab | on the server |
+| Engine runs | In the tab | In the tab | On the server |
 | Saved across reload | no | no | yes |
-| Hidden hands | gate overlay (honor system) | viewer fixed on seat 0 | redacted view per seat |
+| Hidden hands | Gate overlay (honor system) | Viewer fixed on seat 0 | Redacted view per seat |
 | Needs an account | no | no | yes (guest is enough) |
 
 ## Not done

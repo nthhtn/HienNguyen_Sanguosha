@@ -41,7 +41,7 @@ permission. A new push to a pull request cancels its in-flight run.
 | Job | Runs | Required to merge |
 | --- | --- | --- |
 | `verify` | `npm run verify`: lint, typecheck, build | yes |
-| `test` | against a `postgres:17` service: `npm run test:guardrails`, `npm run test:assets` (after `pip install pillow` and installing `ffmpeg`), then `npm run test:coverage` (the whole jest suite, database specs included); writes a coverage table to the run summary and uploads `coverage/` as an artifact | yes |
+| `test` | Against a `postgres:17` service: `npm run test:guardrails`, `npm run test:assets` (after `pip install pillow` and installing `ffmpeg`), then `npm run test:coverage` (the whole jest suite, database specs included); writes a coverage table to the run summary and uploads `coverage/` as an artifact | yes |
 | `coverage` | `npm run coverage:check` on the artifact `test` uploaded: fails below 90% statements, lines or functions | no |
 
 "Required" is set in the repository's branch ruleset (Settings, Rules), not in
@@ -63,7 +63,7 @@ if you want to know before CI does.
 - `git push` to `main` in any spelling (`origin main`, `HEAD:main`,
   `HEAD:refs/heads/main`, `+main`, with options before or after), also behind
   `git -C dir` or `git -c k=v`;
-- any force push (`-f`, `--force`, `--force-with-lease`, `+refspec`);
+- Any force push (`-f`, `--force`, `--force-with-lease`, `+refspec`);
 - `git push` with no branch named (`git push`, `git push origin`,
   `git push origin HEAD`) and `--all`, `--mirror` and `--tags`, because they push
   whatever branch is checked out, which could be `main`. Push a feature branch

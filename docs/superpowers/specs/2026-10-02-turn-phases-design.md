@@ -56,12 +56,12 @@ resolved, the phase passes to the next one, unless it waits for the player:
 
 | Phase | Waits for the player when… | Otherwise |
 |---|---|---|
-| Start | never (no Start skills exist yet) | passes |
-| Judgment | never (no delayed tools can be played yet) | passes |
-| Draw | never | passes after the draw triggers (2 cards, plus Insight) |
-| Play | always | — |
-| Discard | the hand holds more cards than the hand limit | passes |
-| End | never | passes and starts the next turn |
+| Start | Never (no Start skills exist yet) | Passes |
+| Judgment | Never (no delayed tools can be played yet) | Passes |
+| Draw | Never | Passes after the draw triggers (2 cards, plus Insight) |
+| Play | Always | — |
+| Discard | The hand holds more cards than the hand limit | Passes |
+| End | Never | Passes and starts the next turn |
 
 A phase never passes while a response is pending or after the game has
 ended.

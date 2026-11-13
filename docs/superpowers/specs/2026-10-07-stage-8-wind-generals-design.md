@@ -210,13 +210,13 @@ Generic; the engine names no card or skill.
 
 - **Engine:**
   - face-down turn skipping;
-  - the pile zone, and its discard on elimination;
-  - a Play Phase skipped mid-phase;
+  - The pile zone, and its discard on elimination;
+  - A Play Phase skipped mid-phase;
   - `DyingEffect.acted` and `pointsBelowOne`;
   - `ReplaceJudgmentEffect.oldTo`;
-  - deferred conversions, answering included;
+  - Deferred conversions, answering included;
   - Wuxie through a conversion;
-  - serialisation of every new piece.
+  - Serialisation of every new piece.
 - **Content:** one test per rule bullet per skill, including:
   - Zhou Tai: a duplicate rank; two points below 1 turning two cards; a heal
     discarding one;

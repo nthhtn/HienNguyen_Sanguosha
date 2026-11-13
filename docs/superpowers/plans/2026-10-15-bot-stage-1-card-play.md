@@ -33,13 +33,13 @@
 | File | Responsibility |
 |---|---|
 | `projects/bots/src/lib/card-play.ts` (create) | `CardPlayRules`, `peachWorthPlaying`, `wineWorthPlaying`, `isEquipUpgrade`, `discardRank` |
-| `projects/bots/src/lib/card-play.spec.ts` (create) | specs for the above |
-| `projects/bots/src/lib/rule-based.ts` (modify) | take `rules`, apply them in the Play and Discard phases |
+| `projects/bots/src/lib/card-play.spec.ts` (create) | Specs for the above |
+| `projects/bots/src/lib/rule-based.ts` (modify) | Take `rules`, apply them in the Play and Discard phases |
 | `projects/bots/src/lib/rule-based.spec.ts` (modify) | specs: rules off = old behaviour, rules on = new actions |
-| `projects/bots/src/lib/policies.ts` (modify) | mutable registry, `registerPolicy`, `policyIds`, `rule-based-cards` |
-| `projects/bots/src/lib/policies.spec.ts` (modify) | follow the registry change |
-| `projects/bots/src/public-api.ts` (modify) | export `card-play` |
-| `projects/sim/src/runGame.ts` (modify) | bot kinds follow the registry |
+| `projects/bots/src/lib/policies.ts` (modify) | Mutable registry, `registerPolicy`, `policyIds`, `rule-based-cards` |
+| `projects/bots/src/lib/policies.spec.ts` (modify) | Follow the registry change |
+| `projects/bots/src/public-api.ts` (modify) | Export `card-play` |
+| `projects/sim/src/runGame.ts` (modify) | Bot kinds follow the registry |
 | `docs/superpowers/specs/2026-10-15-bot-stage-1-card-play-design.md` (modify) | Results |
 
 ---

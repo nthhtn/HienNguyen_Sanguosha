@@ -38,7 +38,7 @@ A pure function over the final state (an app-side view-model module, unit-tested
 - The **winning group**:
   - `result.winningSeatIds` empty: none (a draw).
   - `result.winningKingdom` set: that Kingdom.
-  - otherwise (a sole survivor): the group of that one seat. An Ambitionist survivor gives the Winning Ambitionist column; a Kingdom seat that is the last one alive lights its own Kingdom's column.
+  - Otherwise (a sole survivor): the group of that one seat. An Ambitionist survivor gives the Winning Ambitionist column; a Kingdom seat that is the last one alive lights its own Kingdom's column.
 - **Ambitionist columns:** when the winning group is Ambitionist, that seat is the only member of "Winning Ambitionist" and every other Ambitionist is in "Losing Ambitionist". Otherwise every Ambitionist is in "Losing Ambitionist". The loser label is plural when two or more seats are in it.
 - **Input and output shape** *(designer's call)*: the function takes plain per-seat data (seat id, display name, allegiance, Kingdom, General ids, eliminated, viewer or not) and the result, not the whole state, so the local game and a protocol summary (the online result) feed it the same way. It returns `{ columns, winningGroup, headlineKind }` where `headlineKind` is `'kingdom' | 'ambitionist' | 'lone-survivor' | 'draw'`.
 - **"You" tag:** only when the local game has one human seat (Play vs Bots: that seat). In Pass and Play, and for a viewer with no seat, no member is tagged.
@@ -68,7 +68,7 @@ All Generals (full definitions, not only the `revealed` flags) and allegiances a
 |---|---|
 | 50 | Headline and sub-headline fade up. |
 | 500 | Columns rise in one after another, about 130 ms apart. |
-| after the last column + 500 | The winner is lit (glow, tint, Winners tag, slight lift); every other column loses colour and dims. |
+| After the last column + 500 | The winner is lit (glow, tint, Winners tag, slight lift); every other column loses colour and dims. |
 
 With `prefers-reduced-motion`, show the end state at once. The window is not blocking: the button is usable immediately.
 

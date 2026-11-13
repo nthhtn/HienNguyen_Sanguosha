@@ -10,7 +10,7 @@ Date: 2026-10-01
    times, in any phase. This is the engine spec's deferred "card playability"
    gap (I2). This change makes each card declare its own legal plays. It adds
    the rules the user asked for:
-   - at most one Sha per turn;
+   - At most one Sha per turn;
    - Sha only at a seat within attack range, where distance counts mounts and
      range comes from the weapon.
 
@@ -127,11 +127,11 @@ redundant but harmless.
 - **Table:** `max-width` 960px → 1280px. The aspect ratio is unchanged, so it
   is about 1.33× wider and taller on large screens.
 - **Seat tile, about twice as large:**
-  - font `0.8em` → `1.1em`
-  - general portraits `small` (44×60) → `normal` (70×96)
-  - equipment slots `tiny` (26×36) → `small` (44×60)
+  - Font `0.8em` → `1.1em`
+  - General portraits `small` (44×60) → `normal` (70×96)
+  - Equipment slots `tiny` (26×36) → `small` (44×60)
   - `min-width` 108px → 200px
-  - padding and badges scaled to match
+  - Padding and badges scaled to match
 - **Phone width:** the existing ≤600px media query scales the tiles down
   (`scale(0.55)`), so they still fit around the table.
 
@@ -148,7 +148,7 @@ redundant but harmless.
   - Each card's rule from the table, including:
     - Sha range at distance 1 vs 2 with no weapon
     - Sha range with Green Dragon Blade (3)
-    - the second Sha blocked
+    - The second Sha blocked
     - Peach only when hurt
     - Shan and Wuxie never proactive
   - `seatDistance` with a +1 mount on the target and a −1 mount on the

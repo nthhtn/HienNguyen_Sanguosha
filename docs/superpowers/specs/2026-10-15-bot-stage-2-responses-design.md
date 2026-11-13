@@ -39,9 +39,9 @@ the variant.
 
 When the bot could answer with a **Shan** and the window's `outcome` is a
 `DamageEffect` on the bot itself, it passes (takes the hit) when all three hold:
-- the damage would not kill it: `damage.amount < HP`;
-- its HP is above 2;
-- it holds fewer than 2 Shan.
+- The damage would not kill it: `damage.amount < HP`;
+- Its HP is above 2;
+- It holds fewer than 2 Shan.
 
 Otherwise it answers as today. The idea: a lone Shan is worth more against a
 lethal hit later than against a 1 HP loss now. A Peach, Wine or Sha answer, and
@@ -51,8 +51,8 @@ any window without a `DamageEffect` on the bot, are not affected.
 
 In a Wuxie check, besides cancelling a harmful Tool aimed at itself, the bot
 cancels:
-- a **harmful** Tool aimed at a **revealed ally** (same list of harmful Tools);
-- a **helpful** Tool (Draw Two, Peach Garden, Harvest) aimed at a **known foe**
+- A **harmful** Tool aimed at a **revealed ally** (same list of harmful Tools);
+- A **helpful** Tool (Draw Two, Peach Garden, Harvest) aimed at a **known foe**
   (a seat whose kingdom is revealed and is not the bot's own).
 
 It never cancels a Tool its own seat or a revealed ally used, and it still never
@@ -114,8 +114,8 @@ All runs: 4 seats, mirrored pairs, 4000 games (2000 pairs), challenger against `
 
 | Run | First seed | Difference | 95% interval | Verdict |
 |---|---|---|---|---|
-| `rule-based-responses` (both rules) | 300000 | -2.0 pp | -3.0 to -1.1 | baseline is better |
-| `shanHold` alone | 300000 | -2.5 pp | -3.4 to -1.5 | baseline is better |
+| `rule-based-responses` (both rules) | 300000 | -2.0 pp | -3.0 to -1.1 | Baseline is better |
+| `shanHold` alone | 300000 | -2.5 pp | -3.4 to -1.5 | Baseline is better |
 | `wuxie` alone | 300000 | +0.1 pp | -0.3 to +0.5 | no clear difference |
 
 **Nothing ships.** The combined variant failed on the first range, so the second range (400000) was

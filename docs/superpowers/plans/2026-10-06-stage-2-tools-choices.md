@@ -75,7 +75,7 @@
   - `cards/steal.ts`, `cards/break.ts`, `cards/harvest.ts`, `cards/coerce.ts`
 - Modify:
   - `cards/sha.ts` (export `shaWindow`), `shared/tools.ts` (`toolOnTargets` gains `extra`), `modes/guozhan.ts` (the `processing` zone), `registry.ts`
-  - tests: `cards/tools.spec.ts`, `registry.spec.ts`, `wiki.spec.ts`, `modes/guozhan.spec.ts`
+  - Tests: `cards/tools.spec.ts`, `registry.spec.ts`, `wiki.spec.ts`, `modes/guozhan.spec.ts`
 
 **Bots:** modify `projects/bots/src/lib/rule-based.ts` and `rule-based.spec.ts`.
 

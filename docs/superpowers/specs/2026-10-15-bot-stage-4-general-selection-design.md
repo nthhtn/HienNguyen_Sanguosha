@@ -103,9 +103,9 @@ Committed as `general-values.data.ts`.
 
 | Run | First seed | Difference | 95% interval | Verdict |
 |---|---|---|---|---|
-| `rule-based-picks` vs `rule-based` | 600000 | +3.3 pp | +2.1 to +4.4 | challenger is better |
-| `rule-based-picks` vs `rule-based` | 700000 | +4.6 pp | +3.4 to +5.8 | challenger is better |
-| shipped `rule-based` vs frozen `rule-based-v2` (record) | 800000 | +2.5 pp | +1.3 to +3.7 | challenger is better |
+| `rule-based-picks` vs `rule-based` | 600000 | +3.3 pp | +2.1 to +4.4 | Challenger is better |
+| `rule-based-picks` vs `rule-based` | 700000 | +4.6 pp | +3.4 to +5.8 | Challenger is better |
+| Shipped `rule-based` vs frozen `rule-based-v2` (record) | 800000 | +2.5 pp | +1.3 to +3.7 | Challenger is better |
 
 **Shipped.** The whole interval is above 0 on both fresh ranges, and no range used to judge was used to
 fit. Tuning sets 2 and 3 were not needed. `rule-based` now chooses with the table; the old bot is frozen

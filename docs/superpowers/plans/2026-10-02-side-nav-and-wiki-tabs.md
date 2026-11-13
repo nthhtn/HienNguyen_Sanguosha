@@ -25,14 +25,14 @@
 - Tab label text: `<Label> (<count>)`. An empty tab shows "Nothing here yet".
 - The URL query parameter is `tab=<key>`. A missing or unknown value selects the first tab. Changing tabs uses `replaceUrl: true`.
 - Data facts:
-  - plus mounts: di-lu, shadow-runner, storm-runner;
-  - minus mounts: red-hare, da-yuan, zi-xing (both read from the printed "+1" / "−1" on the card art);
-  - delayed Tools: capture, lightning (from the spreadsheet's "Delay Tool" type).
+  - Plus mounts: di-lu, shadow-runner, storm-runner;
+  - Minus mounts: red-hare, da-yuan, zi-xing (both read from the printed "+1" / "−1" on the card art);
+  - Delayed Tools: capture, lightning (from the spreadsheet's "Delay Tool" type).
 - Wine:
-  - name `Wine`, nameZh `酒`, count 5;
-  - printings ♠3 ♠9 ♣3 ♣9 ♦9;
-  - text: `When a player is on the brink of death, that player can use play wine to restore one health. Also any player can play this card once during their turn. If they do, the damage of the next attack is increased by one.` This is verbatim, including the source's "use play wine";
-  - source url `https://sites.google.com/site/englishsanguosha/expansions/original/army/wine`, with `expansion: "Army"`.
+  - Name `Wine`, nameZh `酒`, count 5;
+  - Printings ♠3 ♠9 ♣3 ♣9 ♦9;
+  - Text: `When a player is on the brink of death, that player can use play wine to restore one health. Also any player can play this card once during their turn. If they do, the damage of the next attack is increased by one.` This is verbatim, including the source's "use play wine";
+  - Source url `https://sites.google.com/site/englishsanguosha/expansions/original/army/wine`, with `expansion: "Army"`.
 - Counts:
   - Generals: Wei 7 · Shu 7 · Wu 8 · Heroes 4;
   - Basic: 1 per tab;

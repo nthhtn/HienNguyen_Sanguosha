@@ -92,10 +92,10 @@ rules.
 Each event kind maps to a beat definition in a registry keyed by event kind,
 in line with CLAUDE.md's extensibility rule. A beat definition gives:
 
-- its duration at Normal speed (a function of the event, so a fan-out to five
+- Its duration at Normal speed (a function of the event, so a fan-out to five
   targets can take longer than one);
-- what it shows (flight, line, impact, callout, banner, caption);
-- the sound or voice it plays, moved here from the batch-level `soundsFor` and
+- What it shows (flight, line, impact, callout, banner, caption);
+- The sound or voice it plays, moved here from the batch-level `soundsFor` and
   `voicesFor`, so a sound plays with its beat and not when the batch arrives.
 
 An event kind with no registered beat gets a zero-length default: its state
@@ -104,23 +104,23 @@ registering one beat; nothing else changes.
 
 Starting durations at Normal speed, taken from the prototype:
 
-| Event | Beat | ms |
+| Event | Beat | Ms |
 |---|---|---|
-| `TurnAdvancedEvent` | turn banner, spotlight moves to the new turn owner | 1000 |
-| `PhaseChangedEvent` | phase chip on the turn owner | 250 |
-| `CardsDrawnEvent` | card backs fly from the Draw Pile to the seat, staggered | 500 + 140 per card |
-| `CardPlayedEvent` | callout with the card name; the card flies from the seat to the centre; a line to each target. A response lands on the stack and greys the line it answers. | 900, plus 150 for a fan-out to more than two targets |
-| `ResponsePassedEvent` (new, section 6) | grey callout on the seat: "No Dodge" | 700 |
+| `TurnAdvancedEvent` | Turn banner, spotlight moves to the new turn owner | 1000 |
+| `PhaseChangedEvent` | Phase chip on the turn owner | 250 |
+| `CardsDrawnEvent` | Card backs fly from the Draw Pile to the seat, staggered | 500 + 140 per card |
+| `CardPlayedEvent` | Callout with the card name; the card flies from the seat to the centre; a line to each target. A response lands on the stack and greys the line it answers. | 900, plus 150 for a fan-out to more than two targets |
+| `ResponsePassedEvent` (new, section 6) | Grey callout on the seat: "No Dodge" | 700 |
 | `CardMovedEvent` to the Discard Pile | a card not on the centre stack flies to the Discard Pile. The stack itself (and its lines and spotlight) stays, across idle, until the next non-response play replaces it or a turn or phase change clears it; it then sweeps to the Discard Pile | 400 |
-| `CardMovedEvent` elsewhere (equip, judgment area, hand to hand) | the card flies between the zones, face down unless the move is public (section 4) | 500 |
-| `DamageDealtEvent`, `HpLostEvent` | tile shakes and flashes red, "−N" floats up, the HP pip pops | 900 |
-| `HealEvent` | green glow, "+N" | 800 |
+| `CardMovedEvent` elsewhere (equip, judgment area, hand to hand) | The card flies between the zones, face down unless the move is public (section 4) | 500 |
+| `DamageDealtEvent`, `HpLostEvent` | Tile shakes and flashes red, "−N" floats up, the HP pip pops | 900 |
+| `HealEvent` | Green glow, "+N" | 800 |
 | `SeatDyingEvent` | "Help!" callout; the tile pulses until saved or eliminated | 900 |
-| `SeatSavedEvent` | the pulse stops | 300 |
-| `GeneralRevealedEvent` | the portrait flips | 700 |
+| `SeatSavedEvent` | The pulse stops | 300 |
+| `GeneralRevealedEvent` | The portrait flips | 700 |
 | `SeatEliminatedEvent` | "Eliminated" stamp, the tile greys | 1400 |
-| `AbilityUsedEvent` | callout with the skill's name on its owner | 700 |
-| everything else | none | 0 |
+| `AbilityUsedEvent` | Callout with the skill's name on its owner | 700 |
+| Everything else | None | 0 |
 
 The durations are a starting point to tune by eye. Between batches (one
 `resolve` call each) there is a 350 ms gap at Normal.
@@ -137,12 +137,12 @@ The fold is a pure module (`displayed-state.ts`) that applies **only what an
 event records**. It never works out what the rules would do:
 
 - HP (`DamageDealtEvent`, `HpLostEvent`, `HealEvent`, `MaxHpReducedEvent`);
-- card zones (`CardMovedEvent`, `CardsDrawnEvent`, `CardPlayedEvent`): a card
+- Card zones (`CardMovedEvent`, `CardsDrawnEvent`, `CardPlayedEvent`): a card
   leaves one zone and enters another, so hand counts, equipment, judgment
   areas and the Discard Pile follow;
-- dying, saved and eliminated seats;
-- revealed and hidden Generals;
-- turn owner and phase.
+- Dying, saved and eliminated seats;
+- Revealed and hidden Generals;
+- Turn owner and phase.
 
 The log itself is cut to the events already played, so the Action History
 panel, the centre ribbon and the discard history show nothing the playback has
