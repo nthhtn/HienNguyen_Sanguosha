@@ -40,9 +40,9 @@ permission. A new push to a pull request cancels its in-flight run.
 
 | Job | Runs | Required to merge |
 | --- | --- | --- |
-| `verify` | `npm run verify`: lint, typecheck, build | yes |
-| `test` | Against a `postgres:17` service: `npm run test:guardrails`, `npm run test:assets` (after `pip install pillow` and installing `ffmpeg`), then `npm run test:coverage` (the whole jest suite, database specs included); writes a coverage table to the run summary and uploads `coverage/` as an artifact | yes |
-| `coverage` | `npm run coverage:check` on the artifact `test` uploaded: fails below 90% statements, lines or functions | no |
+| `verify` | `npm run verify`: lint, typecheck, build | Yes |
+| `test` | Against a `postgres:17` service: `npm run test:guardrails`, `npm run test:assets` (after `pip install pillow` and installing `ffmpeg`), then `npm run test:coverage` (the whole jest suite, database specs included); writes a coverage table to the run summary and uploads `coverage/` as an artifact | Yes |
+| `coverage` | `npm run coverage:check` on the artifact `test` uploaded: fails below 90% statements, lines or functions | No |
 
 "Required" is set in the repository's branch ruleset (Settings, Rules), not in
 the workflow: the ruleset's "Require status checks to pass" rule lists `verify`

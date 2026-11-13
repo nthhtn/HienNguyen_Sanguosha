@@ -22,7 +22,7 @@ browser APIs, or UI state. The game engine SHOULD be executable
 independently of the Angular UI so it can be tested through automated
 simulations. UI components MUST NOT directly implement game rules.
 
-Current status: the engine (Guozhan), content, bots and
+Current status: The engine (Guozhan), content, bots and
 simulator, the Angular presentation layer, and a Node server with a shared
 `protocol` project are all built and in use. `docs/architecture/` is the
 guide to how they fit together; read it before changing structure. The
@@ -96,10 +96,10 @@ legal actions available to the player.
 
 Every piece of visible text MUST follow these casing rules:
 
-- **Title Case for names and short labels:** titles, headings that name
+- **Title Case for names and short labels:** Titles, headings that name
   something, buttons, tabs and field labels. Examples: "Response Needed",
   "Start Game", "Discard Pile", "Your Name".
-- **Sentence case for anything that reads as a sentence:** announcements,
+- **Sentence case for anything that reads as a sentence:** Announcements,
   status lines, prompts, descriptions, hints, empty states and Action History
   lines. Examples: "Bots are choosing their Generals…", "Pass the device to
   Hing", "Nothing yet", "Seat 1 used Sha (7 ♠) on Hing".
@@ -121,7 +121,7 @@ follows its own (the full terminology is in
 
 - **Sentence case everywhere**, labels and buttons included ("Kết thúc giai
   đoạn", "Bỏ bài"), with a capital only on the first word.
-- **Keywords keep their capitals inside sentences:** player and seat names,
+- **Keywords keep their capitals inside sentences:** Player and seat names,
   card names (Sát, Đào, Quyết Đấu), General names, game mode names (Quốc
   chiến) and the terms Tướng, Chủ tướng, Phó tướng and Sinh lực. Forces are
   Ngụy, Thục, Ngô, Quần.

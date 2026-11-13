@@ -27,8 +27,8 @@ offers:
 | `getActingSeatIds(state)` | Every seat that may act now: during General Selection all seats that still have candidates (they choose at the same time, in any order), otherwise the active seat alone |
 | `previewEffect(state, effect, ctx)` | What would this pending effect really do once before-triggers rewrite it? |
 | `redactStateForSeat(state, seatId)` | The state as that seat is allowed to see it |
-| `createGame(mode, registry, seatIds, seed, rules?)` | a new game, in the General Selection phase |
-| `redactEventsForSeat(state, events, seatId)` | a slice of the log as that seat may see it |
+| `createGame(mode, registry, seatIds, seed, rules?)` | A new game, in the General Selection phase |
+| `redactEventsForSeat(state, events, seatId)` | A slice of the log as that seat may see it |
 | `isOfferedAction(action, legal)` | Is this action one of the offered ones, allowing for the fields a player fills in on a template? (the server's check on every submit) |
 | `describeDecision`, `switchClock`, `expireClock`, `clockRemainingMs` | What a seat must decide, which clock it runs on, and the clock's arithmetic (see "Decision clocks") |
 | `defaultActionsFor(state, legal)` | What to submit when a decision's clock runs out |
@@ -44,19 +44,19 @@ These are the concepts CLAUDE.md asks for, with where they live in
 | Concept | Type | Notes |
 |---|---|---|
 | Game | `GameState` | The whole game, plain serializable data |
-| Seat | `Seat` | position, Kingdom, two Generals, combined HP, zone references, flags (face down, silenced…) |
+| Seat | `Seat` | Position, Kingdom, two Generals, combined HP, zone references, flags (face down, silenced…) |
 | Player | `Player` | Name and human or bot; a seat's stable key is its seat id |
 | General | `GeneralInstance`, `GeneralDefinition` | An instance records which General a seat holds and whether it is revealed; the definition is content |
-| Skill | `SkillDefinition` | content; owned at run time through an `AbilityOwner` |
+| Skill | `SkillDefinition` | Content; owned at run time through an `AbilityOwner` |
 | Card definition / instance | `CardDefinition`, `CardInstance` | The definition is content; an instance is one physical card (id, suit, rank) |
 | Deck, Card Zone | `CardZone` | The draw pile, discard pile, "processing" area, and each seat's hand, equipment, judgment area and piles are all zones distinguished by `kind` |
-| Target | `Target` | a seat, or one of a seat's Generals |
+| Target | `Target` | A seat, or one of a seat's Generals |
 | Action | `Action` | The only input from outside |
 | Effect | `Effect` | An instruction to change the state |
-| Event | `EngineEvent` | a record that something happened, appended to `state.log` |
-| Damage | `Damage` | source, target, amount, nature (`normal`, `fire` or `thunder`), and what caused it. A seat that is *chained* passes fire and thunder damage along the chain. |
+| Event | `EngineEvent` | A record that something happened, appended to `state.log` |
+| Damage | `Damage` | Source, target, amount, nature (`normal`, `fire` or `thunder`), and what caused it. A seat that is *chained* passes fire and thunder damage along the chain. |
 | Turn, Phase | `Turn`, `Phase` | The turn owner, per-turn counters and flags; `GeneralSelection`, `Start`, `Judgment`, `Draw`, `Play`, `Discard`, `End`. A human's turn rests in `Start` while `Turn.startWindow` is open (see below). |
-| Judgment | `Judgment`, `JudgmentView` | a judgment under way, and the public view of it while the game waits on its popup |
+| Judgment | `Judgment`, `JudgmentView` | A judgment under way, and the public view of it while the game waits on its popup |
 | Response | `PendingResponse` | An open window where one seat may answer with a card |
 | Game Result | `GameResult` | Winners and losers, when the mode's win check says so |
 
@@ -121,8 +121,8 @@ in `state.resolutionQueue`, and a decision is a field on the state:
 | `pendingSelection` | One seat picks cards or seats (Axe's two cards, a skill's targets) |
 | `pendingArrangement` | One seat orders cards from the draw pile |
 | `judgmentView` with `settled: true` | With the `judgmentNotice` rule, the game waits for the judgment popup to be closed (`AcknowledgeJudgmentAction`) |
-| none, in `Start` with `Turn.startWindow` | a human turn owner who still holds a hidden General may reveal it before the turn begins, then confirms (`ConfirmRevealsAction`) |
-| none, in `Play` or `Discard` | The turn owner acts: play a card, use a skill, end the phase, discard |
+| None, in `Start` with `Turn.startWindow` | A human turn owner who still holds a hidden General may reveal it before the turn begins, then confirms (`ConfirmRevealsAction`) |
+| None, in `Play` or `Discard` | The turn owner acts: play a card, use a skill, end the phase, discard |
 
 `advanceToDecision` drains the queue until one of these appears (or the game
 ends), then returns. The next `resolve` call carries the player's answer and
@@ -152,8 +152,8 @@ How long a person has is a rule, so the engine owns it, in
 | `discard` | 30 | One per decision |
 | `selection` (General Selection) | 300 | One per seat for the whole pick |
 | `play` | 180 | One for the whole Play Phase, paused while a response is under way |
-| `judgmentChange` | 15 | a skill's decision (ask, then card pick) to change an unsettled judgment, one clock per ask |
-| `notice` | 5 | a settled judgment popup, after its animation |
+| `judgmentChange` | 15 | A skill's decision (ask, then card pick) to change an unsettled judgment, one clock per ask |
+| `notice` | 5 | A settled judgment popup, after its animation |
 
 `GAME_START_LEAD_IN_MS` (3000) is the wait after the last seat has chosen its Generals, before the first decision of the game: the server holds its clocks, bot moves and legal actions for that long and the app shows "Game starts in 3".
 

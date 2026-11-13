@@ -67,7 +67,7 @@ Then the first step that applies decides:
 | 1a0 | Arranging cards (Astrology) | Peach, Shan and any Sha on top; everything else at the bottom. |
 | 1a | A selection (cards or seats to pick) | A registry rule, then the per-skill code, then the default: seats only if attackable (else cancel); cards for Axe, Green Dragon Blade, Serpent Spear and conversion skills are the least useful; any other selection is cancelled when allowed. |
 | 1a' | An ability's ask or pick | • Synergistic Partners reward: recover if offered, else draw.<br>• A "use this?" ask: see below.<br>• A pick of a seat, suit or label: registry rule, then per-skill code, else the first option.<br>• Gender Swords aimed at it: with 2 or fewer hand cards let the user draw, otherwise discard its least useful card. |
-| 1b | A Tool's pick (Steal, Break, Harvest) | From a seat: a weapon, then armour, then a mount, then a card from the hand. From Harvest's face-up cards: the one it most wants to keep. |
+| 1b | A Tool's pick (Steal, Break, Harvest) | From a seat: A weapon, then armour, then a mount, then a card from the hand. From Harvest's face-up cards: the one it most wants to keep. |
 | 2 | A response window aimed at it | Section 7. |
 | 3 | Discard Phase | Throws away the least useful card first (keep order below). |
 | 4 | Safety cap | 30 actions this turn: end the phase. |
@@ -158,8 +158,8 @@ leader, and no truce.
 |---|---|
 | Self | The bot |
 | Ally | As above |
-| Truce | a seat of a force that is neither the bot's own nor the leading one, while another force leads (Ambitionists included) |
-| Foe | Everyone else: the leading force, hidden seats, and everybody when there is no leader or the bot's own force leads |
+| Truce | A seat of a force that is neither the bot's own nor the leading one, while another force leads (Ambitionists included) |
+| Foe | Everyone else: The leading force, hidden seats, and everybody when there is no leader or the bot's own force leads |
 
 **Danger** (`danger.ts`):
 
@@ -183,9 +183,9 @@ Break, Capture, Starvation, Barbarians, Hail of Arrows or Lightning at them
 Nothing is announced and no rule of the game changes; each bot just behaves
 as if the forces outside the leader have agreed to gang up on it.
 
-**When it forms:** as soon as a force leads (section 3) and the bot is not in
+**When it forms:** As soon as a force leads (section 3) and the bot is not in
 it. Every seat of every other force (not the bot's own) becomes a truce
-partner. **When it ends:** the moment the leader is weakened or a force is
+partner. **When it ends:** The moment the leader is weakened or a force is
 wiped out so nobody leads, or the bot's own force becomes the leader. It is
 recomputed on every decision.
 
@@ -278,7 +278,7 @@ switches (`ResponseRules` in `responses.ts`) are all off in `rule-based`.
 | Ally Far Attack Near | Whenever offered, at the seat it likes least |
 | Harvest | When allies + itself outnumber foes |
 | Ascertain | Always as a Recast |
-| Chains | If chained itself: itself plus the best unchained foe (or itself alone); else two unchained foes; else Recast; a surplus card may go on one foe. Never an ally, never a chained foe |
+| Chains | If chained itself: Itself plus the best unchained foe (or itself alone); else two unchained foes; else Recast; a surplus card may go on one foe. Never an ally, never a chained foe |
 | Blaze | At the best foe holding a card, while it has 3 other cards or a surplus card |
 | Fire Fan | When every Sha target is a foe, unless the fire would spread through a chain to its own side |
 | Trident Glaive | When a foe sits next to the damaged seat and it has a spare card (keep rank 2 or less); hits the best such foe |

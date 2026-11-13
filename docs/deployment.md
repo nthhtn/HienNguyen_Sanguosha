@@ -48,7 +48,7 @@ server does.
 2. New, Web Service, pick the repository. Language: **Docker**. Region:
    **Singapore**. Instance type: **Free**. Branch: `main` (use
    `ops/pre-deployment` for a test deploy before merging).
-3. Advanced: health check path `/health`; auto-deploy **on**, so every merge to
+3. Advanced: Health check path `/health`; auto-deploy **on**, so every merge to
    `main` deploys.
 4. Environment variables (the image already sets `NODE_ENV=production`,
    `HOST=0.0.0.0`, `PORT=8080` and `STATIC_DIR`):

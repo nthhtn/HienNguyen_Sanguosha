@@ -248,7 +248,7 @@ bots ([tournament.ts](../../projects/sim/src/tournament.ts)):
   - The results are in
     [the Kingdom Wars bots spec](../superpowers/specs/2026-11-11-kingdom-wars-bots-design.md).
 
-The report ends with a **usage table**: for each card and skill that offered a
+The report ends with a **usage table**: For each card and skill that offered a
 decision, how often it was offered and how often the bot used it, per side
 ([usage.ts](../../projects/sim/src/usage.ts)). `Part 1 uses per game` is the
 challenger's uses of the Kingdom Wars keys (`PART_1_KEYS`) minus the
@@ -263,15 +263,15 @@ tests did not think of:
 
 | Check | Catches |
 |---|---|
-| a living seat is never at 0 HP or below without a rescue round pending | a missed dying round |
-| Pending responses, choices, selections and arrangements never name an unknown or eliminated seat | a decision opened for a dead or missing seat |
-| Every card instance is in exactly one zone, once | a duplicated or lost card |
-| General selection is cleared once it ends; every seat has Generals | a broken setup |
-| a General is held by one seat only; a seat's Generals match its Kingdom | a bad deal or choice |
-| An equip zone holds at most one card per slot; a judgment zone holds no duplicate delayed Tool | a broken equip or delay rule |
-| An eliminated seat holds no cards | a missed elimination discard |
-| a `GameResult` names known seats once each | a malformed result |
-| a hidden General never fires a compulsory skill (`checkCompulsoryWhileHidden`) | a reveal-to-use bug |
+| A living seat is never at 0 HP or below without a rescue round pending | A missed dying round |
+| Pending responses, choices, selections and arrangements never name an unknown or eliminated seat | A decision opened for a dead or missing seat |
+| Every card instance is in exactly one zone, once | A duplicated or lost card |
+| General selection is cleared once it ends; every seat has Generals | A broken setup |
+| A General is held by one seat only; a seat's Generals match its Kingdom | A bad deal or choice |
+| An equip zone holds at most one card per slot; a judgment zone holds no duplicate delayed Tool | A broken equip or delay rule |
+| An eliminated seat holds no cards | A missed elimination discard |
+| A `GameResult` names known seats once each | A malformed result |
+| A hidden General never fires a compulsory skill (`checkCompulsoryWhileHidden`) | A reveal-to-use bug |
 | The game rests only where someone must decide (`checkRestingState`) | The engine stalling mid-chain |
 
 The specs also check that every game **terminates**, and that the final state
@@ -319,12 +319,12 @@ environment and import aliases:
 
 | Project | Environment | What its tests are |
 |---|---|---|
-| `engine` | node | The pipeline, legality, redaction, phases, triggers, clocks, with tiny hand-written content so the engine is tested without the real cards |
-| `content` | node | Each card and skill, on small hand-built `GameState`s (`table()` and `harness()` in `generals/skills.testing.ts`); the Guozhan mode; decks; the data, wiki and Vietnamese-data checks |
-| `bots` | node | Bot decisions on built states |
-| `sim` | node | Whole simulated games, invariants, leaks and per-skill firing |
-| `protocol` | node | Schemas and shared validators (names, chat) |
-| `server` | node | accounts, rooms, the game runner and the socket end to end, on the in-memory store; `npm run test:db` also runs the repository contract on Postgres |
+| `engine` | Node | The pipeline, legality, redaction, phases, triggers, clocks, with tiny hand-written content so the engine is tested without the real cards |
+| `content` | Node | Each card and skill, on small hand-built `GameState`s (`table()` and `harness()` in `generals/skills.testing.ts`); the Guozhan mode; decks; the data, wiki and Vietnamese-data checks |
+| `bots` | Node | Bot decisions on built states |
+| `sim` | Node | Whole simulated games, invariants, leaks and per-skill firing |
+| `protocol` | Node | Schemas and shared validators (names, chat) |
+| `server` | Node | Accounts, rooms, the game runner and the socket end to end, on the in-memory store; `npm run test:db` also runs the repository contract on Postgres |
 | `app` | Jsdom (`jest-preset-angular`) | The services, view-model functions, dialogs, board behavior and the Vietnamese catalogs |
 
 Habits that keep the suite useful:

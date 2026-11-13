@@ -30,7 +30,7 @@ the first bundle holds only the shell:
 | Route | Screen |
 |---|---|
 | `/setup`, `/game` | Local Play vs Bots and Pass and Play |
-| `/play` | a guard that never renders; it redirects to `/game` when a local game is in progress, otherwise to `/setup` |
+| `/play` | A guard that never renders; it redirects to `/game` when a local game is in progress, otherwise to `/setup` |
 | `/rooms`, `/rooms/:id`, `/my-games` | Open rooms, a room's lobby and online game, and finished games; all behind `requireSignIn` |
 | `/sign-in`, `/sign-up`, `/guest`, `/forgot-password`, `/reset-password` | Accounts |
 | `/wiki/...` | See "Wiki" below |
@@ -135,7 +135,7 @@ Three members serve battle playback (see "Battle playback"):
 | Mode | Seats | Views |
 |---|---|---|
 | Play vs Bots | The human is always `seat-0`; every other seat is a bot | The viewer is fixed on seat 0 |
-| Pass and Play | Every seat is human, one device | a gate overlay hides the board between turns; tapping reveals the active seat |
+| Pass and Play | Every seat is human, one device | A gate overlay hides the board between turns; tapping reveals the active seat |
 
 A new local game starts with `judgmentNotice` on, so the judgment popup pauses
 the game (see "Events become presentation"). Setup also offers the deck and,
@@ -176,13 +176,13 @@ board component. It renders from `visibleState` and nothing else. The pieces:
 | Piece | Role |
 |---|---|
 | `round-table`, `table-layout` | Seat positions around the table |
-| `seat-tile`, `seat-avatar`, `avatar-skills` | a seat: General art, HP, hand count, equipment, skill buttons |
+| `seat-tile`, `seat-avatar`, `avatar-skills` | A seat: General art, HP, hand count, equipment, skill buttons |
 | `hand-view`, `playing-card`, `card-art` | The viewer's cards |
 | `action-list` | The buttons for what the engine says is legal (end phase, use skill) |
 | `action-history-panel`, `discard-pile` | What has happened, and what has been discarded |
 | `phase-indicator`, `game-over`, `victory-board` | Turn and result display (see "The Game Over window") |
 | `general-selection`, `reveal-gate-overlay` | The pre-game pick and the pass-and-play hand-off |
-| `selection-roster`, `game-start-countdown` | Online only: who has chosen their Generals (Choosing or Ready, from the redacted candidates' keys), and "Game starts in 3" while the server holds the first decision (`gameStartsAt`) |
+| `selection-roster`, `game-start-countdown` | Online only: Who has chosen their Generals (Choosing or Ready, from the redacted candidates' keys), and "Game starts in 3" while the server holds the first decision (`gameStartsAt`) |
 | `decision-dock`, `decision-banner`, `minimize-button` | Hide a decision dialog to look at the board, with a banner to bring it back |
 | `board-chat`, `chat-panel` (online) | Room chat beside the board |
 | `rotate-prompt`, `small-screen-prompt`, `small-screen-notice` | Cover or annotate the board in a window too small to play (see "Responsive layout") |
@@ -304,7 +304,7 @@ logs two `CardShownEvent`s and an `AbilityUsedEvent` with outcome
   - Then
     a 5 s countdown closes it, with no button to skip it; its timeout submits the
     acknowledgement.
-- A skill that may change the card is asked **inside the popup**: the Ask and
+- A skill that may change the card is asked **inside the popup**: The Ask and
   Selection dialogs are built from `AskPanel` and `SelectionPanel`, which the
   decision area reuses, and the board does not open those dialogs for a pending
   decision marked `judgmentChange` while the popup is open.
@@ -330,9 +330,9 @@ decides a rule.
 | `PlaybackDirector` ([playback-director.ts](../../projects/app/src/app/game-board/playback/playback-director.ts)) | • Provided by the board; watches `visibleState`, queues the events past a cursor, plays one beat at a time on timers.<br>• Signals: `displayedState`, `current`, `idle`, `playedLogLength`, `centreStack`; `hold()` pauses it until the returned release is called |
 | Beats ([beats.ts](../../projects/app/src/app/game-board/playback/beats.ts)) | • `BEATS`, a registry keyed by event kind: a `BeatVisual` (turn, phase, draw, play, pass, move, damage, heal, dying, saved, reveal, eliminated, ability).<br>• A beat's duration at Normal speed is not here: it is `BEAT_DURATION_MS` in the engine (`playbackTiming.ts`), shared with the server, which waits for the same animation (see [backend.md](backend.md)).<br>• A kind with no entry is a 0 ms beat.<br>• A new event gets a beat by adding an entry to both, not by editing the director.<br>• A pause of `BATCH_GAP_MS` follows the last beat of each update |
 | Displayed state ([displayed-state.ts](../../projects/app/src/app/game-board/playback/displayed-state.ts)) | • `FOLDS`, also keyed by kind: applies one event's recorded facts (HP, a card moving, a seat eliminated, a General revealed, turn, phase) to the state on show.<br>• Card faces and identities come from the latest visible state, faces only where the viewer may see them.<br>• No rules |
-| Seat cues ([seat-cues.ts](../../projects/app/src/app/game-board/playback/seat-cues.ts)) | pure: the beat on show becomes per-seat cues (impact, callout, spotlight) and the resolution centre (who is targeted) |
+| Seat cues ([seat-cues.ts](../../projects/app/src/app/game-board/playback/seat-cues.ts)) | Pure: The beat on show becomes per-seat cues (impact, callout, spotlight) and the resolution centre (who is targeted) |
 | Layer ([playback-layer.ts](../../projects/app/src/app/game-board/playback/playback-layer.ts)) | The overlay, for the beat on show only: a played card at the centre and white arrows to its targets, both faded out by the end of the beat; the caption and the turn banner. Nothing flies |
-| `PlaybackGate` ([playback-gate.service.ts](../../projects/app/src/app/playback-gate.service.ts)) | a root signal, `idle`, written by the director. Local bots and `DecisionTimer` wait on it; it is idle when no board is on screen, so tests and the simulator never wait |
+| `PlaybackGate` ([playback-gate.service.ts](../../projects/app/src/app/playback-gate.service.ts)) | A root signal, `idle`, written by the director. Local bots and `DecisionTimer` wait on it; it is idle when no board is on screen, so tests and the simulator never wait |
 
 While beats play, the board renders `displayedState`, not `visibleState`.
 
@@ -387,7 +387,7 @@ recomputed at every beat:
 | Case | Rule |
 |---|---|
 | Local game | The speed factor alone; no catching up |
-| Online | a backlog over `CAP_MS` (30 s, real time) is sped up until what is left fits; a batch the server paced is never that long |
+| Online | A backlog over `CAP_MS` (30 s, real time) is sped up until what is left fits; a batch the server paced is never that long |
 | Instant | `Infinity`: every duration is 0 |
 
 Owing a decision no longer speeds the queue up: the clock starts after the animation, and a person may act at once without it.
@@ -409,11 +409,11 @@ pass.
 
 ### Resolution notices
 
-A card or skill with a visible outcome gets a **Resolution Notice**: a centred, force-themed dialog laid
+A card or skill with a visible outcome gets a **Resolution Notice**: A centred, force-themed dialog laid
 out like the Compete and Judgment popups (source, the seats involved, steps, cards, outcome), with a
 countdown (5 seconds by default; a notice can ask for more, Harvest 10) at its foot.
 
-- It closes itself: no button, no skip.
+- It closes itself: No button, no skip.
 - Like the Compete popup, **locally**
   it blocks (the director holds playback from the beat that publishes it until it is dismissed, so no later
   beat, bot move or decision clock runs under it).

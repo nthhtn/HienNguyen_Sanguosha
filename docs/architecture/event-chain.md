@@ -463,7 +463,7 @@ A General's ability owner is `{ kind: 'general', seatId, slot, skillId }`.
   rewrites, so content must ask instead.
 - A hidden compulsory skill's *before*-trigger
   does not run its content: `rewriteEffect` turns the effect into an `AskUseEffect`:
-  - Use: reveal, then the effect runs again and the now-revealed skill rewrites it as
+  - Use: Reveal, then the effect runs again and the now-revealed skill rewrites it as
     usual.
   - Don't: `UnaskedEffect { effect, declined }` runs it with the first `declined`
     before-triggers not asking, a count so a pending choice names no hidden skill.
@@ -665,7 +665,7 @@ mixed pick.
 | A General's skill | `SkillDefinition` (abilities, plus `compulsory`, `lord`, `active`, `onJudged`, `onStep`) | The 25 base Generals (`generals/wei.ts` …) |
 | A skill used on purpose | `SkillDefinition.active` → `UseSkillAction` | Kindness, Reconsider |
 | Changing or taking a judgment | `before:JudgmentShownEffect` / `before:JudgmentDoneEffect` triggers | Devil, Heaven's Envy |
-| Rewriting the Draw Phase | a `before:DrawPhaseEffect` trigger (content's `atDrawPhase`, asked once per draw via `acted`) | Brave Gesture, Bare the Chest, Raid |
+| Rewriting the Draw Phase | A `before:DrawPhaseEffect` trigger (content's `atDrawPhase`, asked once per draw via `acted`) | Brave Gesture, Bare the Chest, Raid |
 | Arranging the draw pile | `OpenArrangementEffect` (`drawPileTop` for the cards) | Astrology |
 | A skill deciding in several moves | `SkillStepEffect` → `SkillDefinition.onStep`; a selection's `skill-step` continuation | Raid, Kindness, Sow Revolt |
 | A seat using a card a skill made | `UseCardEffect` (not counted, outside limits) | Sow Discord's Duel |

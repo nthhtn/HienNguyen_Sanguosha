@@ -163,7 +163,7 @@ When an item is done, delete its entry and say where it went in the commit.
 - **Why it waits.**
   - Decided on 2026-10-26 to accept the sleep for now.
   - On 2026-11-04 the pinger was documented (the monitor itself is set up outside the repo).
-  - Games survive it: the server rebuilds each running game by replaying its action log.
+  - Games survive it: The server rebuilds each running game by replaying its action log.
 - **Revisit when.**
   - The cold start gets in the way of playing.
   - A pinger on `/health` (set up in [deployment.md](deployment.md), "Keeping it awake"), or an always-on host such as an Oracle Always Free VM, would fix it.

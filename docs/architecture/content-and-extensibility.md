@@ -10,7 +10,7 @@ Every card and General has two parts that live in different places.
 
 | Half | Where | What it holds | Written by |
 |---|---|---|---|
-| **Data** | `projects/content/data/` (one JSON file per card or General, plus `decks/` and `locales/`) | name, Kingdom, HP, gender, printed rule text, suit and rank of every printing; each deck's distribution; Vietnamese names and prose | a crawl of a public English Sanguosha reference, then reviewed |
+| **Data** | `projects/content/data/` (one JSON file per card or General, plus `decks/` and `locales/`) | Name, Kingdom, HP, gender, printed rule text, suit and rank of every printing; each deck's distribution; Vietnamese names and prose | A crawl of a public English Sanguosha reference, then reviewed |
 | **Logic** | `projects/content/src/lib/` (TypeScript) | What the card or skill actually does: targets, effects, triggers, steps | By hand, after the rule text is written |
 
 `buildContentRegistry()` ([registry.ts](../../projects/content/src/lib/registry.ts))
@@ -63,7 +63,7 @@ Identity pool or the Kingdom Wars pool, never both.
 A Kingdom Wars General's skill is resolved in this order
 ([kingdomWarsSkills.ts](../../projects/content/src/lib/kingdomWarsSkills.ts)):
 
-1. A **variant**: a `SkillDefinition` in `generals/kingdom-wars-<force>.ts`,
+1. A **variant**: A `SkillDefinition` in `generals/kingdom-wars-<force>.ts`,
    registered in `KINGDOM_WARS_VARIANTS` by General id and the skill's Chinese
    name. This is for a skill whose rules differ from Identity's.
 2. Otherwise the **Identity skill**, when the Kingdom Wars wording was audited and
@@ -95,15 +95,15 @@ hint text), `glossary.json` and `review.json`.
 
 Bots are named after Three Kingdoms figures who are not Generals in any deck.
 
-- **Pool:** a flat list in `data/botNames.json` (id to English name, no force: a
+- **Pool:** A flat list in `data/botNames.json` (id to English name, no force: a
   name never decides a bot's force), with Vietnamese names in
   `data/locales/vi/bot-names.json`.
 - **Drawing:** `botNames.ts` draws distinct ids from an injected random function,
   so the engine's RNG is never used; `botNames.spec.ts` checks the pool against both
   General rosters.
-- **Storage:** a bot carries the plain id as `botNameId` next to a stored `name` of
+- **Storage:** A bot carries the plain id as `botNameId` next to a stored `name` of
   `[Bot] <English name>`.
-- **Display:** clients show `[Bot] ` plus the name in the viewer's language
+- **Display:** Clients show `[Bot] ` plus the name in the viewer's language
   (`playerName` in `labels.ts`), and a person's name may not start with `[Bot]`, so
   the two never collide.
 - **Old bots** without an id show the name they were stored with.
@@ -118,16 +118,16 @@ crawl date, dimensions).
   `projects/content/assets/` (committed, never edited by hand); `npm run assets:check`
   fails when they are out of date, and the recipes that decide what each folder
   becomes are in `asset-recipes.json`.
-- **Provenance:** where the masters came from and the terms they are used under are
+- **Provenance:** Where the masters came from and the terms they are used under are
   in the [README](../../projects/content/assets-src/README.md).
 - **Serving:** `angular.json` serves the images at `/images/...` and the audio files
   at `/audio/...`; both mirror the folders under `assets/` (the layout and its naming
   rules are in the
   [assets restructure spec](../superpowers/specs/2026-11-06-assets-restructure-design.md)).
-- **Resolving:** the assets module (`assets.ts`) resolves a card's or General's image
+- **Resolving:** The assets module (`assets.ts`) resolves a card's or General's image
   for the UI; references in `manifest.json` and `skins.json` carry no file extension,
   and `assetFile()` adds the one the recipes ship.
-- **Design:** it is in the
+- **Design:** It is in the
   [assets-src pipeline spec](../superpowers/specs/2026-11-06-assets-src-pipeline-design.md).
 
 ## Writing a card
@@ -150,9 +150,9 @@ export const drawTwoCard: CardDefinition = {
 |---|---|
 | `legalPlayTargets`, `targetPick` | To build the legal actions for this card |
 | `play` | The card is used; returns the effects to queue |
-| `onResponse` | a window this card opened was answered (a Duel turning back) |
-| `onTarget` | a Tool's rule on one target, after its Wuxie check |
-| `onJudged`, `onCleanup` | a delayed Tool read its judgment, or finished its turn in the judgment area |
+| `onResponse` | A window this card opened was answered (a Duel turning back) |
+| `onTarget` | A Tool's rule on one target, after its Wuxie check |
+| `onJudged`, `onCleanup` | A delayed Tool read its judgment, or finished its turn in the judgment area |
 | `abilities` | Active while the card is worn: triggers, modifiers, conversions |
 | `onUnequip` | The card left an equip slot |
 | `onStep` | One named step of its resolution (a Sha's `sha-shan`) |
@@ -174,9 +174,9 @@ conversions) and adds:
 | Field | Meaning |
 |---|---|
 | `compulsory` | Applies without asking; off while its General is hidden |
-| `lord` | a Lord skill: kept as data but never in play (Guozhan has no Lord yet) |
+| `lord` | A Lord skill: Kept as data but never in play (Guozhan has no Lord yet) |
 | `awakening`, `limited` | once-per-game rules |
-| `active` | a skill used on purpose in the Play Phase: `canUse`, `start`, `usesPerTurn` |
+| `active` | A skill used on purpose in the Play Phase: `canUse`, `start`, `usesPerTurn` |
 | `onStep` | The skill's own multi-move resolution |
 | `onJudged` | Reading a judgment the skill asked for |
 | `spareGenerals`, `afterDeath` | The two special cases Incarnation and Heartbroken need |

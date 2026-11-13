@@ -5,7 +5,7 @@ The game runs two ways today:
 - **Local**: Pass and Play, and Play vs Bots from the Game Setup screen, run
   in one browser tab. `GameService` holds the state and runs the engine and
   bots in-process. Nothing is saved across a reload.
-- **Server-authoritative**: online rooms and Play vs Bots from the Rooms
+- **Server-authoritative**: Online rooms and Play vs Bots from the Rooms
   screen run on the Node server in `projects/server`. The server holds every
   game's full state, the browser only ever sees a redacted view, and a game
   survives a reload, a disconnect and a server restart.
@@ -261,9 +261,9 @@ chat.
 | | Pass and Play | Play vs Bots (Setup) | Online room, Play vs Bots (Rooms) |
 |---|---|---|---|
 | Engine runs | In the tab | In the tab | On the server |
-| Saved across reload | no | no | yes |
+| Saved across reload | No | No | Yes |
 | Hidden hands | Gate overlay (honor system) | Viewer fixed on seat 0 | Redacted view per seat |
-| Needs an account | no | no | yes (guest is enough) |
+| Needs an account | No | No | Yes (guest is enough) |
 
 ## Not done
 
