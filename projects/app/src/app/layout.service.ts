@@ -1,4 +1,5 @@
 import { DestroyRef, Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
+import { DISPLAY_MODE_OVERRIDE } from './display-mode-override';
 import { FEATURE_FLAGS } from './feature-flags';
 
 // The wide layouts need room in both directions: a short window (a phone on its side) gets the phone layout however wide it is.
@@ -43,8 +44,10 @@ export class Layout {
   private readonly _panelOpen = signal(false);
 
   private readonly flags = inject(FEATURE_FLAGS);
+  private readonly forcedMode = inject(DISPLAY_MODE_OVERRIDE);
   private readonly _displayMode = signal<DisplayMode>(readDisplayMode());
-  readonly displayMode = this._displayMode.asReadonly();
+  // The browser's answer, unless dev forced one (`?display=`).
+  readonly displayMode = computed(() => this.forcedMode ?? this._displayMode());
   // Running as the installed app.
   readonly installed = computed(() => this.displayMode() !== 'browser');
   // The phone board may be used: the installed app, with the board turned on.

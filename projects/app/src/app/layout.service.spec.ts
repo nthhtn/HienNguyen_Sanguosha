@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { DISPLAY_MODE_OVERRIDE } from './display-mode-override';
 import { FEATURE_FLAGS } from './feature-flags';
 import { Layout, LayoutKind, layoutFor } from './layout.service';
 import { clearDisplayMode, resizeTo, stubDisplayMode } from './layout.testing';
@@ -328,5 +329,17 @@ describe('Layout with the phone board', () => {
     expect(layout.kind()).toBe('phone');
     expect(layout.canPlay()).toBe(false);
     expect(layout.installWouldHelp()).toBe(false);
+  });
+});
+
+describe('Layout with a forced display mode', () => {
+  afterEach(() => clearDisplayMode());
+
+  it('uses the forced mode over what the browser says', () => {
+    TestBed.configureTestingModule({ providers: [{ provide: DISPLAY_MODE_OVERRIDE, useValue: 'standalone' }] });
+    stubDisplayMode('browser');
+    const layout = TestBed.inject(Layout);
+    expect(layout.displayMode()).toBe('standalone');
+    expect(layout.installed()).toBe(true);
   });
 });
