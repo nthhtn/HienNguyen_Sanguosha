@@ -50,8 +50,8 @@ count, in the stage that makes its rules work.
 
 | # | Stage | Spec |
 |---|---|---|
-| 0 | Rename Trick to Tool | this spec |
-| 0b | Split-portrait seat avatar | this spec |
+| 0 | Rename Trick to Tool | This spec |
+| 0b | Split-portrait seat avatar | This spec |
 | 1 | Resolution queue and Wuxie checks. Draw Two, Barbarians, Hail of Arrows, Peach Garden. Duel on the Tool lifecycle. | Tools, stage 1 |
 | 2 | Choices. Steal, Break, Harvest, Coerce. | Tools, stage 2 |
 | 3 | Judgments. Capture, Lightning, Starvation. | Tools, stage 3, plus this spec |

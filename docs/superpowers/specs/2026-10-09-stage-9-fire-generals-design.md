@@ -16,12 +16,12 @@ stage 6 skill engine and the stage 7–8 helpers.
 ## Common rules
 
 Stage 7's and stage 8's common rules hold unchanged:
-- reveal to use;
-- gender;
+- Reveal to use;
+- Gender;
 - Lord skills inactive;
-- losing HP is not damage;
+- Losing HP is not damage;
 - "may" always asks;
-- no elemental damage (a skill that deals elemental damage deals plain damage).
+- No elemental damage (a skill that deals elemental damage deals plain damage).
 
 The skill text is the crawled data's standard edition, applied to Guozhan
 .
@@ -104,10 +104,10 @@ weapon, and whom it attacks) keeps its two-step menu.
   hand card and draw 1 card (Chains' recast).
 - **Pang Tong: Nirvana** (may, once per game). When you would enter the dying
   round, you may instead:
-  - discard every card you hold (hand, equipment, Judgment slot);
-  - draw 3 cards;
-  - recover to 3 HP (at most your max HP);
-  - turn face up, if you are face down.
+  - Discard every card you hold (hand, equipment, Judgment slot);
+  - Draw 3 cards;
+  - Recover to 3 HP (at most your max HP);
+  - Turn face up, if you are face down.
 - **Fire Zhuge Liang: Eight Arrays** (compulsory). While you wear no armour,
   you have Eight Trigrams' ability. Black Pommel ignores it, as it ignores
   armour.
@@ -252,7 +252,7 @@ pieces.
 - **Engine:** same-suit selections; a card out of the deck; `TurnFaceUpEffect`;
   serialisation.
 - **Content:** one test per rule bullet, including:
-  - a competing tie loses;
+  - A competing tie loses;
   - Assault's range after the weapon is discarded;
   - Nirvana only once per game;
   - Heaven's Justice's win and loss;
@@ -262,13 +262,13 @@ pieces.
   - See Through in a Wuxie check;
   - Eight Arrays off with armour worn, and ignored by Black Pommel.
 - **Several targets:**
-  - the one-target menu when the maximum is 1, the template when it is more;
-  - submitted targets checked (unlisted, repeated, too many rejected);
+  - The one-target menu when the maximum is 1, the template when it is more;
+  - Submitted targets checked (unlisted, repeated, too many rejected);
   - Heaven's Justice's extra target at any distance;
   - Sky Scorcher and Heaven's Justice together (up to 4 targets);
-  - a Sha made by a conversion taking extra targets;
-  - each target dodging or not on its own;
-  - one Sha counted once.
+  - A Sha made by a conversion taking extra targets;
+  - Each target dodging or not on its own;
+  - One Sha counted once.
 - **Fillers:** existing specs use the test-only fillers; a check that no filler
   is in the real registry.
 - **Bots:** each rule above.

@@ -13,9 +13,9 @@
   - `DiscardZoneEffect.acted`, so an ask before a seat's death discard can be declined without asking twice;
   - `PendingResponse.sourceSkill`, so answering a skill's own window queues one of its steps with the answering card.
 - **Content:**
-  - four new `AbilityModifiers` fields, read by content queries only;
+  - Four new `AbilityModifiers` fields, read by content queries only;
   - `generals/forest.ts`;
-  - the Guozhan dying order honours Complete Kill.
+  - The Guozhan dying order honours Complete Kill.
 - **Around it:** bots play the Forest skills, the sim adds a Forest batch and forced pairings, the app gains the Upheaval window, the new prompts and history lines.
 
 **Tech Stack:** TypeScript, Jest (ts-jest), Angular 22 (app task).
@@ -1464,8 +1464,8 @@ Delete the previous four-entry `FOREST_GENERALS` block.
 
 Run: `npx jest projects/content/src/lib/generals/forest-wu.spec.ts`
 Expected: PASS. Two spots to check if a test fails on a detail rather than the rule:
-- the `'his equipment pays too'` test reads `eligibleIds` order (`ownCards` is hand first, then worn); adjust the expected order if the hand zone lists differently;
-- the last line of that test builds a state with no pending decision to ask `canUse` once the turn count is spent; if `h.legal` still lists the skill because the selection left state pending, assert `t.turn.abilityUses` records the use instead.
+- The `'his equipment pays too'` test reads `eligibleIds` order (`ownCards` is hand first, then worn); adjust the expected order if the hand zone lists differently;
+- The last line of that test builds a state with no pending decision to ask `canUse` once the turn count is spent; if `h.legal` still lists the skill because the selection left state pending, assert `t.turn.abilityUses` records the use instead.
 
 - [ ] **Step 5: Run the whole content project**
 

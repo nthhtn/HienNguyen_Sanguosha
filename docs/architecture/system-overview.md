@@ -1,6 +1,6 @@
 # System overview
 
-This doc maps the whole system: the projects, the rules about who may import
+This doc maps the whole system: The projects, the rules about who may import
 whom, and the path one player move takes from a click to a new screen.
 
 ## Layers and projects
@@ -9,18 +9,18 @@ CLAUDE.md requires four layers. Here is where each one lives today.
 
 | Layer | Project | What it holds | Framework |
 |---|---|---|---|
-| Game engine | `projects/engine` | rules, state transitions, actions, effects, triggers, legality, visibility, decision clocks | none (plain TypeScript) |
-| Game content | `projects/content` | cards, generals, skills, decks, the Guozhan mode, display text, card and General data, Vietnamese data | none for logic; data is JSON |
-| Application layer | `projects/server` (authoritative) and `projects/app/src/app/game.service.ts` (local) | the server runs online and solo games, accounts, rooms, persistence; `GameService` runs one in-process game for Pass and Play and Play vs Bots | Node, Fastify, Postgres; Angular (injectable service) |
-| Presentation layer | `projects/app/src/app` | components, dialogs, wiki, view-model helpers, i18n, `RemoteGameService` | Angular, Material |
+| Game engine | `projects/engine` | Rules, state transitions, actions, effects, triggers, legality, visibility, decision clocks | None (plain TypeScript) |
+| Game content | `projects/content` | Cards, generals, skills, decks, the Guozhan mode, display text, card and General data, Vietnamese data | None for logic; data is JSON |
+| Application layer | `projects/server` (authoritative) and `projects/app/src/app/game.service.ts` (local) | The server runs online and solo games, accounts, rooms, persistence; `GameService` runs one in-process game for Pass and Play and Play vs Bots | Node, Fastify, Postgres; Angular (injectable service) |
+| Presentation layer | `projects/app/src/app` | Components, dialogs, wiki, view-model helpers, i18n, `RemoteGameService` | Angular, Material |
 
 Three more projects are not layers but support them:
 
 | Project | Purpose |
 |---|---|
-| `projects/protocol` | the wire contract between app and server: schemas, message types, limits, error codes, `PROTOCOL_VERSION`. Framework-free. |
-| `projects/bots` | computer opponents. Framework-free; they only see a redacted state and the engine's legal actions. |
-| `projects/sim` | a headless simulator and invariant checker that plays whole games under Node, plus a leak checker and a bot tournament runner. |
+| `projects/protocol` | The wire contract between app and server: Schemas, message types, limits, error codes, `PROTOCOL_VERSION`. Framework-free. |
+| `projects/bots` | Computer opponents. Framework-free; they only see a redacted state and the engine's legal actions. |
+| `projects/sim` | A headless simulator and invariant checker that plays whole games under Node, plus a leak checker and a bot tournament runner. |
 
 There are two application-layer shapes on purpose. `GameService` is the
 in-tab one. The server is the authoritative one, and the app talks to it
@@ -37,25 +37,29 @@ engine  <--  content  <--  bots  <--  sim
   +-------------+------------+------  app     -->  protocol
 ```
 
-Read as: dependencies point towards `engine`, and `engine` points at nothing. `server` also imports `bots`, and `sim` imports `engine`, `content` and `bots`.
+Read as: Dependencies point towards `engine`, and `engine` points at nothing. `server` also imports `bots`, and `sim` imports `engine`, `content` and `bots`.
 
 | Project | May import | Must not import |
 |---|---|---|
-| `engine` | nothing outside itself | Angular, browser APIs, content, bots, protocol, server |
+| `engine` | Nothing outside itself | Angular, browser APIs, content, bots, protocol, server |
 | `content` | `engine` | Angular, bots, app, server |
 | `bots` | `engine`, `content` (display and skill helpers the rules bot reads) | Angular, app, server |
 | `sim` | `engine`, `content`, `bots` | Angular, app, server |
-| `protocol` | `engine` types, TypeBox | server, content, Angular |
+| `protocol` | `engine` types, TypeBox | Server, content, Angular |
 | `server` | `engine`, `content`, `bots`, `protocol`, Node libraries | Angular, app |
-| `app` | `engine`, `content`, `bots`, `protocol`, Angular | server, nothing else forbidden, but see below |
+| `app` | `engine`, `content`, `bots`, `protocol`, Angular | Server, nothing else forbidden, but see below |
 
-This is checked by the build, not only by convention: each project is mapped
-by a path alias in the root [tsconfig.json](../../tsconfig.json) (`engine`,
-`content`, `bots`, `protocol`, `protocol/schemas`) and a per-project Jest
-config in [jest.config.js](../../jest.config.js). The engine's suite runs in a
-plain `node` environment with no alias to anything else, so an import of
-content or Angular from the engine fails its tests. `content` has its own
-`importGraph.spec.ts` guarding its internal layering.
+This is checked by the build, not only by convention:
+
+- **Path aliases:** Each project is mapped by a path alias in the root
+  [tsconfig.json](../../tsconfig.json) (`engine`, `content`, `bots`, `protocol`,
+  `protocol/schemas`).
+- **Jest configs:** Each project has its own config in
+  [jest.config.js](../../jest.config.js). The engine's suite runs in a plain
+  `node` environment with no alias to anything else, so an import of content or
+  Angular from the engine fails its tests.
+- **Content layering:** `content` has its own `importGraph.spec.ts` guarding its
+  internal layering.
 
 What the app must not do, even though it can import everything it needs:
 
@@ -123,7 +127,7 @@ design leans on them:
    pending decisions and the resolution queue are part of the state, so a game
    can be saved and resumed at any decision.
 
-The simulator checks the third property on every game: it round-trips the final
+The simulator checks the third property on every game: It round-trips the final
 state through JSON and compares it.
 
 ## Tooling

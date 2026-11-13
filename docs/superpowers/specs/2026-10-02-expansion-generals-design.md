@@ -57,12 +57,12 @@ spreadsheet first, then stripped page text, and never guess.
    a Health value.
 2. **Names, title and skills** come from each general's page, fetched and
    stripped to plain text. Every page has the same structure:
-   - the general's name line;
+   - The general's name line;
    - `<Name> <中文名>`, which gives `name` and `nameZh`;
    - `<Title> <中文称号>`, which gives `title` and `titleZh`;
-   - one block per skill: a heading line `<Skill name> <中文>` (an English
+   - One block per skill: a heading line `<Skill name> <中文>` (an English
      name followed by Chinese characters), then its rules text;
-   - the first `Clarification` line, which ends the skills.
+   - The first `Clarification` line, which ends the skills.
 
    A skill's text is every line between its heading and the next heading or
    `Clarification`, joined with single spaces and kept verbatim (typos
@@ -156,7 +156,7 @@ spreadsheet first, then stripped page text, and never guess.
 Content (Jest):
 - **`wikiGenerals()`:**
   - 57 entries; 5 with `skillsInGame` (the ids above);
-  - the expansion counts are Base 25 (26 Base generals less the placeholder
+  - The expansion counts are Base 25 (26 Base generals less the placeholder
     Dong Zhuo), Wind 8, Fire 8, Forest 8, Mountain 8;
   - `fire-zhuge-liang` is Shu, Fire, titled "Sleeping Dragon";
   - `dong-zhuo` is Qun, Forest, maxHp 8;
@@ -178,9 +178,9 @@ App: the Setup seat options run 2 to 10, and the Generals page shows the Qun
 tab and expansion chips.
 
 Live check:
-- a 10-seat vs-bots game at 1400, 1024 and 360px, with tiles that don't
+- A 10-seat vs-bots game at 1400, 1024 and 360px, with tiles that don't
   overlap and stay on screen;
-- the Generals Wiki tabs with expansion chips and the new art.
+- The Generals Wiki tabs with expansion chips and the new art.
 
 ## Out of scope
 

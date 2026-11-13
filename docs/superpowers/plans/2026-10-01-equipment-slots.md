@@ -42,8 +42,8 @@
 
 **Interfaces:**
 - Produces:
-  - in `engine`: `type EquipSlot`, `const EQUIP_SLOTS: readonly EquipSlot[]`, and `CardDefinition.equipSlot?: EquipSlot`
-  - in `content`: `equipSlotOf(definitionId: string): EquipSlot | null`, plus `greenDragonBladeCard` and `silverLionCard` carrying their slots
+  - In `engine`: `type EquipSlot`, `const EQUIP_SLOTS: readonly EquipSlot[]`, and `CardDefinition.equipSlot?: EquipSlot`
+  - In `content`: `equipSlotOf(definitionId: string): EquipSlot | null`, plus `greenDragonBladeCard` and `silverLionCard` carrying their slots
 
 - [ ] **Step 1: Write the failing tests**
 

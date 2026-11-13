@@ -299,7 +299,7 @@ forbids, so `rule-based` stays as it was (`noWaste: false`, the same as
 
 The likely reason, read from the usage counts (not measured on its own): at a
 mixed table the challenger plays far fewer Sha (30270 against 37699 at seed
-1500000) and Shan (10329 used of 22849 offered, against 18329 of 18329), and
+1500000) And Shan (10329 used of 22849 offered, against 18329 of 18329), and
 fewer Duels, Steals and Fire Attacks. When every seat plays the same bot that
 restraint costs no one more than another, but next to `rule-based-v5`, which
 spends every card and answers every hit, the restrained seats are outpaced:

@@ -35,14 +35,14 @@
 |---|---|
 | `projects/bots/src/lib/helpers.ts` (modify) | `TargetRanker` type, `weakestFirst` ranker, `fillPick` takes a ranker |
 | `projects/bots/src/lib/rule-based.ts` (modify) | `createRuleBasedPolicy(id, rank)`; all target sorts use `rank` |
-| `projects/bots/src/lib/policies.ts` (create) | registry of policies by id, `policyById` |
+| `projects/bots/src/lib/policies.ts` (create) | Registry of policies by id, `policyById` |
 | `projects/bots/src/lib/targeting.ts` (create) | `targetScore` and its weights |
-| `projects/bots/src/public-api.ts` (modify) | export `policies`, `targeting` |
+| `projects/bots/src/public-api.ts` (modify) | Export `policies`, `targeting` |
 | `projects/sim/src/runGame.ts` (modify) | `BOT_KINDS`, `parseBotKind`, per-seat `policyFor` |
 | `projects/sim/src/tournament.ts` (create) | pairing, scoring, statistics, report text |
 | `projects/sim/src/cli.ts` (modify) | `tournament` command |
 | `package.json` (modify) | `sim` script |
-| `docs/architecture/bots-and-simulation.md` (modify) | document the tournament |
+| `docs/architecture/bots-and-simulation.md` (modify) | Document the tournament |
 
 ---
 

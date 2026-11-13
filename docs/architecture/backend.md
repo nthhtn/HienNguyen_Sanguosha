@@ -5,12 +5,12 @@ The game runs two ways today:
 - **Local**: Pass and Play, and Play vs Bots from the Game Setup screen, run
   in one browser tab. `GameService` holds the state and runs the engine and
   bots in-process. Nothing is saved across a reload.
-- **Server-authoritative**: online rooms and Play vs Bots from the Rooms
+- **Server-authoritative**: Online rooms and Play vs Bots from the Rooms
   screen run on the Node server in `projects/server`. The server holds every
   game's full state, the browser only ever sees a redacted view, and a game
   survives a reload, a disconnect and a server restart.
 
-This doc describes the second one: what each part is, how a move travels, and
+This doc describes the second one: What each part is, how a move travels, and
 what is deliberately not done yet. How it is hosted is in [Deployment](../deployment.md). The original design and its reasoning are in
 `docs/superpowers/specs/2026-10-13-backend-multiplayer-design.md`; the server's
 own how-to-run notes are in [projects/server/README.md](../../projects/server/README.md).
@@ -27,8 +27,8 @@ own how-to-run notes are in [projects/server/README.md](../../projects/server/RE
 
 | Project | Role | Framework |
 |---|---|---|
-| `projects/protocol` | every HTTP body and socket message as a TypeBox schema plus a TypeScript type, `PROTOCOL_VERSION`, and the shared limits and error codes. May import engine *types* (`Action`, `GameState`, `EngineEvent`, `GameRules`, `GameResult`); never server or database types. Its `public-api` is browser-safe, with the schemas behind `protocol/schemas`. | none |
-| `projects/server` | the application layer, authoritative side: accounts, rooms, the game runner, persistence, the socket. Imports `engine`, `content`, `bots` and `protocol`; nothing imports it. | Fastify, `ws`, Kysely on Postgres |
+| `projects/protocol` | • Every HTTP body and socket message as a TypeBox schema plus a TypeScript type, `PROTOCOL_VERSION`, and the shared limits and error codes.<br>• May import engine *types* (`Action`, `GameState`, `EngineEvent`, `GameRules`, `GameResult`); never server or database types.<br>• Its `public-api` is browser-safe, with the schemas behind `protocol/schemas`. | None |
+| `projects/server` | The application layer, authoritative side: Accounts, rooms, the game runner, persistence, the socket. Imports `engine`, `content`, `bots` and `protocol`; nothing imports it. | Fastify, `ws`, Kysely on Postgres |
 
 Database rows never cross the wire. `server/persistence` maps rows to domain
 records, and `server/views` maps records and engine state to wire shapes.
@@ -37,13 +37,13 @@ records, and `server/views` maps records and engine state to wire shapes.
 
 | Concern | Browser | Server |
 |---|---|---|
-| Game state | only the latest `SeatView` it was sent | the full `GameState` per running game |
-| Rules | none | `resolve`, `getLegalActions`, the mode and content |
-| Randomness | none | the seeded RNG; the seed never leaves the server |
-| Seats | shows "you are Seat 2" | draws seats from the seed at start and binds each member to one |
-| Bots | none | `ruleBasedPolicy` for bot seats, after the animation before them plus a 1.5 s thinking gap |
-| Decision clocks | displays the remaining time | owns the clock; at zero it submits the engine's default |
-| Dialogs, sounds, popups, history lines | derived from the event log | sends the log; nothing else |
+| Game state | Only the latest `SeatView` it was sent | The full `GameState` per running game |
+| Rules | None | `resolve`, `getLegalActions`, the mode and content |
+| Randomness | None | The seeded RNG; the seed never leaves the server |
+| Seats | Shows "you are Seat 2" | Draws seats from the seed at start and binds each member to one |
+| Bots | None | `ruleBasedPolicy` for bot seats, after the animation before them plus a 1.5 s thinking gap |
+| Decision clocks | Displays the remaining time | Owns the clock; at zero it submits the engine's default |
+| Dialogs, sounds, popups, history lines | Derived from the event log | Sends the log; nothing else |
 
 The browser's `RemoteGameService` exposes the same surface the board reads from
 `GameService` (the `BoardGame` type), so the board is the same component in
@@ -83,11 +83,16 @@ behind a reverse proxy (the README explains the accepted values).
 
 ## Rooms and the socket
 
-An **open** room is listed, and anyone signed in can join while it has space.
-A **solo** room is unlisted and holds one person against bots; it backs
-Play vs Bots. Names are unique within a room; a bot's stored name is `[Bot] <English name>` with a `botNameId` (see content's bot names), and a person's name may not start with `[Bot]`. The lobby holds the members, the
-seat count and the rules (`GameRules`). The host chooses the deck only. First Reveal Bonus is not a choice: `rulesFrom` turns `firstRevealDraw` on from `FIRST_REVEAL_MIN_SEATS` (5) seats and leaves it off below, whatever the client asked. When the game starts the server adds `judgmentNotice`, `logPasses` and `partnerReward`, which a stored game keeps so it replays the same. **Seats are drawn at random from the game seed when the host
-starts** (`drawSeats`), so join order gives no position.
+- An **open** room is listed, and anyone signed in can join while it has space.
+- A **solo** room is unlisted and holds one person against bots; it backs Play vs Bots.
+- Names are unique within a room.
+  - A bot's stored name is `[Bot] <English name>` with a `botNameId` (see content's bot names).
+  - A person's name may not start with `[Bot]`.
+- The lobby holds the members, the seat count and the rules (`GameRules`).
+  - The host chooses the deck only.
+  - First Reveal Bonus is not a choice: `rulesFrom` turns `firstRevealDraw` on from `FIRST_REVEAL_MIN_SEATS` (5) seats and leaves it off below, whatever the client asked.
+  - When the game starts the server adds `judgmentNotice`, `logPasses` and `partnerReward`, which a stored game keeps so it replays the same.
+- **Seats are drawn at random from the game seed when the host starts** (`drawSeats`), so join order gives no position.
 
 `RoomService` keeps live rooms in memory and writes every change through to
 Postgres. Each room runs its inputs one at a time through a serial queue
@@ -101,8 +106,8 @@ member replaces the first.
 
 | Direction | Messages |
 |---|---|
-| client to server | `lobby.addBot`, `lobby.removePlayer`, `lobby.setRules`, `lobby.makeHost`, `lobby.start`, `room.leave`, `game.submit`, `game.resync`, `chat.send` |
-| server to client | `welcome` (the room, the running game with its full log, recent chat), `room.updated`, `game.update`, `chat.message`, `room.left`, `replaced`, `ack`, `error` |
+| Client to server | `lobby.addBot`, `lobby.removePlayer`, `lobby.setRules`, `lobby.makeHost`, `lobby.start`, `room.leave`, `game.submit`, `game.resync`, `chat.send` |
+| Server to client | `welcome` (the room, the running game with its full log, recent chat), `room.updated`, `game.update`, `chat.message`, `room.left`, `replaced`, `ack`, `error` |
 
 Every client message carries a `reqId` that the server echoes in its `ack` or
 `error`.
@@ -126,17 +131,25 @@ Every client message carries a `reqId` that the server echoes in its `ack` or
 
 A `GameUpdate` carries the seat's `SeatView`, its legal actions (empty unless
 it must act now), the new events, the running clock and a `paused` flag. The
-client keeps its own log: if `logFrom` does not line up with what it holds it
+client keeps its own log: If `logFrom` does not line up with what it holds it
 sends `game.resync`, and the server answers with the whole log.
 
 ### Visibility
 
-`SeatView` is `redactStateForSeat` minus two fields: `rng`, which holds the
-seed, and `log`, which travels separately as `events`, each slice masked by
-`redactEventsForSeat`. Card ids are opaque (`card-<position>` after the
-shuffle, `r<counter>-<position>` after a reshuffle), so neither a masked card
-nor the draw-pile order can be read from ids. `projects/sim/src/leaks.ts`
-checks views, the log and reshuffles over simulated games.
+`SeatView` is `redactStateForSeat` minus two fields:
+
+- **`rng`:** It holds the seed.
+- **`log`:** It travels separately as `events`, each slice masked by
+  `redactEventsForSeat`.
+
+Card ids are opaque, so neither a masked card nor the draw-pile order can be
+read from ids:
+
+- **After the shuffle:** `card-<position>`.
+- **After a reshuffle:** `r<counter>-<position>`.
+
+`projects/sim/src/leaks.ts` checks views, the log and reshuffles over simulated
+games.
 
 ## The game runner
 
@@ -166,7 +179,7 @@ the only code that changes a running game's state. It owns:
   its own, which a bot's instant pick does not pause. A bot-played seat chooses
   at once, with no move delay. At zero each seat still choosing is defaulted
   (source `timeout`, not counted towards takeover). After the last choice the
-  first decision is held `GAME_START_LEAD_IN_MS` (3 s): no actions are offered
+  first decision is held `GAME_START_LEAD_IN_MS` (3 s): No actions are offered
   or accepted, no bot moves, the first clock's `startsAt` is the end of the
   hold, and a wake-up republishes when it ends. `startHoldMs` (runner options,
   `RoomService` deps) overrides the length; tests pass 0. The hold is not
@@ -183,7 +196,7 @@ the only code that changes a running game's state. It owns:
   away rule. Both this clock and a judgment-change decision's 15 s clock start
   after a lead-in (below), and a bot that may change a judgment waits for the
   same lead-in while a person is at the table; with none, every lead-in is 0.
-- **Clock lead-in.** `GameClockView` carries `startsAt` beside `endsAt`: the
+- **Clock lead-in.** `GameClockView` carries `startsAt` beside `endsAt`: The
   moment the countdown starts, after the judgment animation the decision follows
   (the card turning up, a replacement's swap, the verdict). Until then the clock
   shows its full length. The lead-ins are fixed constants the app and the server
@@ -203,7 +216,7 @@ JSON with sorted keys, so Postgres `jsonb` key order cannot change it).
 
 On start the server rebuilds each running game by replaying its log:
 
-- the **same build** replays it as stored;
+- The **same build** replays it as stored;
 - **another build** checks every hash, and a game whose hash differs stops with
   outcome `outdated` ("This game can't continue after an update").
 
@@ -213,21 +226,28 @@ debugging; there is no replay viewer in the app.
 
 Postgres tables (migrations in `persistence/migrations`): `users`, `sessions`,
 `password_reset_tokens`, `rooms`, `room_players`, `games`, `game_actions` and
-`chat_messages`. Without `DATABASE_URL` the server uses an in-memory store and
-forgets everything on restart; that is for local runs only, and production
-requires `DATABASE_URL` and an `https` `PUBLIC_ORIGIN`. One repository contract
-suite runs against both stores (`npm run test:db`).
+`chat_messages`.
+
+- **Without `DATABASE_URL`:** The server uses an in-memory store and forgets
+  everything on restart. That is for local runs only.
+- **In production:** It requires `DATABASE_URL` and an `https` `PUBLIC_ORIGIN`.
+- **Tests:** One repository contract suite runs against both stores
+  (`npm run test:db`).
 
 ### The finished game and `LastGame.finalSeats`
 
 When a game ends, the room keeps `lastGame` (game id, outcome, `result`, the
-seats' names) for the lobby that follows. `LastGame.finalSeats` is a required
-list of `FinalSeatView` (seat, both Generals, printed Kingdom, allegiance,
-eliminated), built by the protocol's `finalSeatViews(state)` from the **full** final state
-on the server, so every member can show who was on which side whatever their
-own seat could see. It is held in memory with the room only, never written to
-Postgres, and is `[]` for a `broken` or `outdated` game. Adding it moved
-`PROTOCOL_VERSION` to 2; an older tab is asked to reload.
+seats' names) for the lobby that follows. `LastGame.finalSeats` is:
+
+- **Shape:** A required list of `FinalSeatView` (seat, both Generals, printed
+  Kingdom, allegiance, eliminated).
+- **Source:** Built by the protocol's `finalSeatViews(state)` from the **full**
+  final state on the server, so every member can show who was on which side
+  whatever their own seat could see.
+- **Storage:** Held in memory with the room only, never written to Postgres.
+  It is `[]` for a `broken` or `outdated` game.
+- **Versioning:** Adding it moved `PROTOCOL_VERSION` to 2; an older tab is asked
+  to reload.
 
 ## Chat
 
@@ -240,10 +260,10 @@ chat.
 
 | | Pass and Play | Play vs Bots (Setup) | Online room, Play vs Bots (Rooms) |
 |---|---|---|---|
-| Engine runs | in the tab | in the tab | on the server |
-| Saved across reload | no | no | yes |
-| Hidden hands | gate overlay (honor system) | viewer fixed on seat 0 | redacted view per seat |
-| Needs an account | no | no | yes (guest is enough) |
+| Engine runs | In the tab | In the tab | On the server |
+| Saved across reload | No | No | Yes |
+| Hidden hands | Gate overlay (honor system) | Viewer fixed on seat 0 | Redacted view per seat |
+| Needs an account | No | No | Yes (guest is enough) |
 
 ## Not done
 

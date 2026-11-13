@@ -32,10 +32,10 @@
 | File | Responsibility |
 |---|---|
 | `projects/sim/src/tournament.ts` (modify) | `mirrored` option, `pairMeans`, pair-based interval, report wording |
-| `projects/sim/src/tournament.spec.ts` (modify) | specs for the above |
-| `projects/sim/src/cli.ts` (modify) | trailing `mirrored` / `unmirrored` argument, default mirrored |
-| `docs/architecture/bots-and-simulation.md` (modify) | document mirrored mode |
-| `docs/superpowers/specs/2026-10-15-bot-improvement-roadmap-design.md` (modify) | record Stage 0 results |
+| `projects/sim/src/tournament.spec.ts` (modify) | Specs for the above |
+| `projects/sim/src/cli.ts` (modify) | Trailing `mirrored` / `unmirrored` argument, default mirrored |
+| `docs/architecture/bots-and-simulation.md` (modify) | Document mirrored mode |
+| `docs/superpowers/specs/2026-10-15-bot-improvement-roadmap-design.md` (modify) | Record Stage 0 results |
 
 ---
 

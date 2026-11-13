@@ -22,15 +22,15 @@
 - **Ids:** the kebab-cased name. The one collision with a Base id gets an expansion prefix: `fire-zhuge-liang`. `dong-zhuo` keeps its id and is replaced by the Forest data.
 - **Source fields:** each file has `source: { crawledAt: '2026-10-02', expansion: '<Wind|Fire|Forest|Mountain>', site: 'English Sanguosha (Jason Keeney and Scott Maresh)', url: '<page url>' }`.
 - **Counts:**
-  - pool 57;
-  - tabs Wei 15 · Shu 15 · Wu 15 · Qun 12;
-  - expansions Base 25 · Wind 8 · Fire 8 · Forest 8 · Mountain 8;
-  - coded skills 5: xiahou-dun, sun-shangxiang, zhuge-liang, zhao-yun, huang-yueying.
+  - Pool 57;
+  - Tabs Wei 15 · Shu 15 · Wu 15 · Qun 12;
+  - Expansions Base 25 · Wind 8 · Fire 8 · Forest 8 · Mountain 8;
+  - Coded skills 5: xiahou-dun, sun-shangxiang, zhuge-liang, zhao-yun, huang-yueying.
 - **Seat cap:** `Math.min(MAX_GUOZHAN_SEATS, Math.floor(pool / GENERALS_PER_SEAT))`, with `MAX_GUOZHAN_SEATS = 10`. Today that is 10.
 - **Wiki:**
   - Generals tab keys and labels: `wei` Wei · `shu` Shu · `wu` Wu · `qun` Qun;
   - `WikiGeneral.expansion` is `'Base' | 'Wind' | 'Fire' | 'Forest' | 'Mountain'`, defaulting to `'Base'`;
-  - summary: "57 generals · 5 with skills in the game".
+  - Summary: "57 generals · 5 with skills in the game".
 - **Tests:** `npx jest --selectProjects <content|app|sim> --testPathPatterns <pattern>`; full suite `npx jest`; build `npx ng build app` (no warnings).
 - **Commits** end with exactly `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
 - **The scratchpad** for crawl artifacts is `/private/tmp/claude-503/-Users-hing-Workspace-my-sanguosha/fa6a3f8f-2141-4e69-9c34-3cc2ab986dc0/scratchpad/gen` (`$S` below).
@@ -249,9 +249,9 @@ Expected: `32 written; problems:` with no problem lines, and 31 new files plus `
 For each of the 32 entries in `$S/report.json`, open `$S/text/<slug>.txt` and check the record against the text above the first `Clarification`:
 - `name` / `nameZh` match the second line exactly;
 - `title` / `titleZh` match the third line;
-- every skill heading became one skill, with its name and nameZh;
-- every rules-text line belongs to the right skill, in order and verbatim;
-- no strengths, weaknesses or clarification text leaked in;
+- Every skill heading became one skill, with its name and nameZh;
+- Every rules-text line belongs to the right skill, in order and verbatim;
+- No strengths, weaknesses or clarification text leaked in;
 - `maxHp` matches the spreadsheet row.
 
 Fix any mismatch by editing that JSON file by hand from the page text, or report a page that really doesn't show a field by leaving the field out. Then append to the ledger one line per general, `Task 1: checked <id> — ok`, or `Task 1: checked <id> — fixed <what>`.
@@ -420,7 +420,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 **Interfaces:**
 - Produces:
   - `WikiGeneral.expansion: 'Base' | 'Wind' | 'Fire' | 'Forest' | 'Mountain'`;
-  - the generals tab key and label `qun` / `Qun` replace `heroes` / `Heroes`;
+  - The generals tab key and label `qun` / `Qun` replace `heroes` / `Heroes`;
   - `WikiGeneralEntry` renders `.expansion-tag`.
 
 - [ ] **Step 1: Write the failing tests**
@@ -449,16 +449,16 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 `wiki-pages.spec.ts`, in "shows Generals in Wei, Shu, Wu and Heroes tabs, opening on Wei":
-- rename it to "…Wei, Shu, Wu and Qun tabs…";
-- the summary becomes `'57 generals · 5 with skills in the game'`;
-- the labels become `['Wei (15)', 'Shu (15)', 'Wu (15)', 'Qun (12)']`;
-- the selected tab becomes `'Wei (15)'`;
-- the entry count becomes 15.
+- Rename it to "…Wei, Shu, Wu and Qun tabs…";
+- The summary becomes `'57 generals · 5 with skills in the game'`;
+- The labels become `['Wei (15)', 'Shu (15)', 'Wu (15)', 'Qun (12)']`;
+- The selected tab becomes `'Wei (15)'`;
+- The entry count becomes 15.
 
 `wiki-entries.spec.ts`:
-- add `expansion: 'Base'` to the `caoCao` fixture;
-- add `expect(el.querySelector('.expansion-tag')!.textContent!.trim()).toBe('Base');` to "shows names, title, kingdom, HP and skills";
-- add the test below.
+- Add `expansion: 'Base'` to the `caoCao` fixture;
+- Add `expect(el.querySelector('.expansion-tag')!.textContent!.trim()).toBe('Base');` to "shows names, title, kingdom, HP and skills";
+- Add the test below.
 
 ```ts
   it('shows an expansion general’s expansion', () => {
@@ -540,8 +540,8 @@ Name every such test in the commit message.
 
 With `npx ng serve --port 4300` running, start a 10-seat vs-bots game at 1400, 1024 and 360px wide. For each, record:
 - `document.documentElement.scrollWidth` against the viewport width;
-- the left and right extent of every `app-round-table .seat` against `main.content`;
-- whether any two seat tiles' rectangles intersect.
+- The left and right extent of every `app-round-table .seat` against `main.content`;
+- Whether any two seat tiles' rectangles intersect.
 
 Also check that selection shows both Zhuge Liangs distinguishably if dealt (their titles differ), and screenshot each width.
 
@@ -550,8 +550,8 @@ Expected: no horizontal overflow, every tile inside the content area, and no two
 - [ ] **Step 4: If tiles overlap or overflow, shrink them for big tables**
 
 In `projects/app/src/app/game-board/round-table.ts`:
-- add `[class.crowded]="state().seats.length > 6"` on the `.table` element;
-- add the CSS below, after the existing container rules, so a crowded table's tiles shrink a further 25% at every width.
+- Add `[class.crowded]="state().seats.length > 6"` on the `.table` element;
+- Add the CSS below, after the existing container rules, so a crowded table's tiles shrink a further 25% at every width.
 
 ```css
     /* More than six seats crowd the rim: shrink every tile a further 25%. */
@@ -578,6 +578,6 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 With the dev server still running, open `/wiki/generals` and each of its four tabs at 1400px and 360px. Expected:
 - Wei (15) · Shu (15) · Wu (15) · Qun (12);
-- every entry shows an expansion chip;
-- new generals show their art (or the labelled placeholder for any skipped in Task 1 Step 7);
-- no console errors.
+- Every entry shows an expansion chip;
+- New generals show their art (or the labelled placeholder for any skipped in Task 1 Step 7);
+- No console errors.

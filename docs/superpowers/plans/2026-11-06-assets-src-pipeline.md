@@ -38,12 +38,12 @@
 |---|---|
 | `scripts/build-assets.py` | CLI: `build` and `check`; exits 1 with messages |
 | `scripts/assetlib/layout.py` | `Layout` (paths) and `default_layout()` |
-| `scripts/assetlib/recipes.py` | load recipes, longest-key lookup, canonical hashing |
+| `scripts/assetlib/recipes.py` | Load recipes, longest-key lookup, canonical hashing |
 | `scripts/assetlib/lockfile.py` | `sha256_file`, read and write the lock |
-| `scripts/assetlib/plan.py` | outputs each recipe produces, and their input hashes (stdlib only) |
-| `scripts/assetlib/check.py` | compare the plan with the lock (stdlib only) |
+| `scripts/assetlib/plan.py` | Outputs each recipe produces, and their input hashes (stdlib only) |
+| `scripts/assetlib/check.py` | Compare the plan with the lock (stdlib only) |
 | `scripts/assetlib/ops.py`, `sheets.py` | copy, crop, sprite sheets (Pillow imported lazily) |
-| `scripts/assetlib/build.py` | incremental build, stray removal, lock write |
+| `scripts/assetlib/build.py` | Incremental build, stray removal, lock write |
 | `scripts/assetlib/test_*.py` | `unittest` tests, run by `npm run test:assets` |
 
 ### Task 1: Planning, lock and check (stdlib only)

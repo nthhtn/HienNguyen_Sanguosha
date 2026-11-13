@@ -21,11 +21,11 @@
 - Material components are used only in `GeneralSelection`. Setup and Board are not restyled.
 - Commits end with the trailer `Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>`. Commit only the files a task touches, because the working tree has unrelated uncommitted work.
 - Type-check commands (Jest does not type-check here, because tsconfig uses `isolatedModules`):
-  - engine: `npx tsc -p projects/engine/tsconfig.spec.json --noEmit`
-  - content: `npx tsc -p projects/content/tsconfig.spec.json --noEmit`
-  - sim: `npx tsc -p projects/sim/tsconfig.json --noEmit`
-  - app: `npx tsc -p projects/app/tsconfig.spec.json --noEmit`
-  - app templates: `npx ng build app --configuration development`
+  - Engine: `npx tsc -p projects/engine/tsconfig.spec.json --noEmit`
+  - Content: `npx tsc -p projects/content/tsconfig.spec.json --noEmit`
+  - Sim: `npx tsc -p projects/sim/tsconfig.json --noEmit`
+  - App: `npx tsc -p projects/app/tsconfig.spec.json --noEmit`
+  - App templates: `npx ng build app --configuration development`
 
 ## Review Focus
 

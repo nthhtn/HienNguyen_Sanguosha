@@ -26,12 +26,12 @@
 - **What `protocol` may import:** type-only imports from `engine` (`GameRules`, `GameResult`). The main entry still has no runtime TypeBox import.
 - **Database rows never cross the wire.** Rows map to records in `persistence/postgres/mappers.ts`. Records and the in-memory `Room` map to wire shapes only in `server/src/views/`. User ids are never sent in a `RoomSnapshot`.
 - **Timings:**
-  - host away in the lobby: 60 s (`HOST_AWAY_MS`);
-  - lobby idle close: 30 min (`LOBBY_IDLE_MS`);
-  - room housekeeping tick: every 5 s;
-  - socket ping: every 15 s, and two missed pongs drop the connection;
-  - hello timeout: 10 s;
-  - client reconnect backoff: 1 s, doubling, up to 15 s;
+  - Host away in the lobby: 60 s (`HOST_AWAY_MS`);
+  - Lobby idle close: 30 min (`LOBBY_IDLE_MS`);
+  - Room housekeeping tick: every 5 s;
+  - Socket ping: every 15 s, and two missed pongs drop the connection;
+  - Hello timeout: 10 s;
+  - Client reconnect backoff: 1 s, doubling, up to 15 s;
   - Rooms list poll: every 5 s.
 - **Names:**
   - A room name is normalized with `normalizeDisplayName`.
@@ -60,8 +60,8 @@
 
 1. **Stage boundary.** Each of the following arrives in a later stage, with what it depends on:
    - Start Game (`lobby.start`), seating and the `games` table: Stage 4, with the `GameRunner`;
-   - solo rooms and Play vs Bots: Stage 4;
-   - chat: Stage 5.
+   - Solo rooms and Play vs Bots: Stage 4;
+   - Chat: Stage 5.
 
    In this stage a room is always in `lobby`, and the Lobby has no Start Game button. The types already carry `status: 'playing'`, `lastResult` and `botControlled`, so Stage 4 adds no new fields.
 2. **One live open room per user.** Creating or joining an open room while already a member of another non-closed open room fails with `already_in_room` ("You're already in another room. Leave it first"). This keeps one person from piling up memberships and ghost hosts. Rejoining your own room is unaffected.
@@ -106,10 +106,10 @@
 4. **A second tab, then the first tab's late close.** The old connection receives `replaced` and closes. Its close event, which arrives after the new connection registered, must not mark the member away. Tests: Task 5 (unit) and Task 7 (end to end).
 5. **Malformed socket input.** All of these get `error invalid_message` (with `reqId` when the client sent one) and the socket stays open:
    - non-JSON text;
-   - a binary frame;
-   - an unknown `type`;
-   - extra fields;
-   - a command before `hello`.
+   - A binary frame;
+   - An unknown `type`;
+   - Extra fields;
+   - A command before `hello`.
 
    A message over 16 KiB closes the socket (the `ws` library does this). Test: Task 7.
 
@@ -135,11 +135,11 @@
 - Consumes: `GameRules`, `GameResult` (types) from `engine`; the Stage 2 `ErrorCode` and `ERROR_MESSAGES`.
 - Produces, from `protocol`:
   - `MIN_SEATS = 2` and `REQ_ID_MAX = 64`
-  - types `RoomVisibility`, `RoomStatus`, `MemberKind`, `SeatLimits`, `RoomMemberView`, `RoomSnapshot`, `RoomListItem`, `RoomList`, `RoomCreated`, `CreateRoomBody` and `JoinRoomBody`
-  - types `ClientMessage`, `HelloMessage`, `RoomCommand` and `RoomRequest` (a `RoomCommand` without `reqId`)
-  - types `WelcomeMessage`, `RoomUpdatedMessage`, `RoomLeftReason`, `RoomLeftMessage`, `ReplacedMessage`, `AckMessage`, `ErrorMessage` and `ServerMessage`
+  - Types `RoomVisibility`, `RoomStatus`, `MemberKind`, `SeatLimits`, `RoomMemberView`, `RoomSnapshot`, `RoomListItem`, `RoomList`, `RoomCreated`, `CreateRoomBody` and `JoinRoomBody`
+  - Types `ClientMessage`, `HelloMessage`, `RoomCommand` and `RoomRequest` (a `RoomCommand` without `reqId`)
+  - Types `WelcomeMessage`, `RoomUpdatedMessage`, `RoomLeftReason`, `RoomLeftMessage`, `ReplacedMessage`, `AckMessage`, `ErrorMessage` and `ServerMessage`
   - `ROOM_LEFT_MESSAGES`, `REPLACED_MESSAGE` and `SOCKET_PATH = '/api/ws'`
-  - the new `ErrorCode` members
+  - The new `ErrorCode` members
 - Produces, from `protocol/schemas`: `SeatCountSchema`, `RoomRulesSchema`, `RoomIdSchema`, `RoomParamsSchema`, `CreateRoomBodySchema`, `JoinRoomBodySchema` and `ClientMessageSchema` (plus one schema per client message).
 
 - [ ] **Step 1: Create the branch**
@@ -958,8 +958,8 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 **Interfaces:**
 - Consumes: `RoomRepository`, `RoomChanges`, `LiveRoomRecord`, `NameTakenError`, `RoomRecord` and `RoomPlayerRecord` (Task 2).
 - Produces:
-  - tables `rooms` and `room_players`;
-  - the unique index `room_players_current_name`, on `(room_id, lower(display_name)) WHERE left_at IS NULL`;
+  - Tables `rooms` and `room_players`;
+  - The unique index `room_players_current_name`, on `(room_id, lower(display_name)) WHERE left_at IS NULL`;
   - `toRoomRecord` and `toRoomPlayerRecord`;
   - `Repositories.rooms` on Postgres.
 
@@ -3603,12 +3603,12 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
     - `show(text: string): void`
     - `take(): string | null`, which returns the message once and then clears it
   - `RoomsService`, provided in root:
-    - signals `list: Signal<RoomList | null>` and `error: Signal<string | null>`
+    - Signals `list: Signal<RoomList | null>` and `error: Signal<string | null>`
     - `pollMs = 5000`
     - `refresh(): Promise<void>`, `startPolling(): void` and `stopPolling(): void`
     - `create(body: CreateRoomBody): Promise<string>` and `join(roomId, displayName): Promise<void>`, which reject with `ApiError`
   - `SocketService`, provided per component:
-    - signal `status: Signal<SocketStatus>`, where `SocketStatus = 'idle' | 'connecting' | 'open' | 'reconnecting' | 'ended'`
+    - Signal `status: Signal<SocketStatus>`, where `SocketStatus = 'idle' | 'connecting' | 'open' | 'reconnecting' | 'ended'`
     - `messages: Observable<ServerMessage>`
     - `connect(roomId): void`
     - `request(command: RoomRequest): Promise<void>`, which rejects with `ApiError`
@@ -4298,12 +4298,12 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `AuthService` (`me` and `isRegistered`) and `ApiError` (Stage 2);
   - `FIRST_REVEAL_MIN_SEATS` from `content`; `DISPLAY_NAME_MAX` and `ERROR_MESSAGES` from `protocol`.
 - Produces:
-  - the route `/rooms` → `RoomsPage`, guarded by `requireSignIn`
+  - The route `/rooms` → `RoomsPage`, guarded by `requireSignIn`
   - `roomStatusLabel(room: RoomListItem): 'Waiting for Players' | 'Full' | 'In Progress'` and `canJoin(room: RoomListItem): boolean`
   - `CreateRoomDialog`, which takes `CreateRoomDialogData { seatLimits: SeatLimits; displayName: string }` and closes with the new room id
   - `JoinRoomDialog`, which takes `JoinRoomDialogData { roomId: string; hostName: string | null; displayName: string }` and closes with `true` once joined
   - `online-page.css`, shared with the Lobby in Task 10
-  - the toolbar item **Online**: `a.nav-online`, icon `public`, linking to `/rooms`, active on `/rooms` and below it
+  - The toolbar item **Online**: `a.nav-online`, icon `public`, linking to `/rooms`, active on `/rooms` and below it
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -5152,8 +5152,8 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `FIRST_REVEAL_MIN_SEATS` from `content`.
 - Produces:
   - `LobbyService`, provided per component next to `SocketService`:
-    - signals `room`, `you`, `notice`, `ended`, `error` and `status`;
-    - computed `isHost`, `host`, `waitingForHost` and `canAct`;
+    - Signals `room`, `you`, `notice`, `ended`, `error` and `status`;
+    - Computed `isHost`, `host`, `waitingForHost` and `canAct`;
     - `open(roomId)`;
     - `addBot()`, `removePlayer(id)`, `makeHost(id)` and `setRules(seatCount, rules)`, each returning `Promise<boolean>`;
     - `leave(): Promise<void>`.

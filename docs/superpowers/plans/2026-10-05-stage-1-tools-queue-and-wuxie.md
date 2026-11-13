@@ -1151,13 +1151,13 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 **Interfaces:**
 - Consumes (Task 2):
   - `usedCardOf` and `livingSeatOrderFrom`;
-  - the `ToolOnTargetEffect` shape;
+  - The `ToolOnTargetEffect` shape;
   - `CardDefinition.onTarget`;
-  - the `'card-effect'` `DecisionReason`.
+  - The `'card-effect'` `DecisionReason`.
 - Produces:
   - `COUNTER_CARD_IDS = ['wuxie']`;
   - `toolOnTargets(state, userSeatId, cardInstanceId, targets): Effect[]`;
-  - the cards `drawTwoCard`, `barbariansCard`, `hailOfArrowsCard` and `peachGardenCard`.
+  - The cards `drawTwoCard`, `barbariansCard`, `hailOfArrowsCard` and `peachGardenCard`.
 
 - [ ] **Step 1: Rewrite the Tool tests**
 
@@ -1778,15 +1778,15 @@ Read each spec file's existing fixture helpers first, and write the tests in the
 
 | Reason | Expected |
 |---|---|
-| `wuxie`: Seat 1's Barbarians on `seat-0`, viewer `seat-0`, `allowedCardIds: ['wuxie']` | source `"Seat 1 used Barbarians on you"`, prompt `"Play Wuxie Kongjie to cancel it?"`, outcome `"Barbarians takes effect on you"` |
-| `wuxie`: Seat 1's Draw Two on `seat-1` (itself), viewer `seat-0` | source `"Seat 1 used Draw Two"`, outcome `"Draw Two takes effect"` |
-| `counter-wuxie`: `wuxieSeatId: 'seat-2'`, viewer `seat-0` | source `"Seat 2 played Wuxie Kongjie"`, prompt `"Play Wuxie Kongjie to cancel it?"`, outcome `"Seat 2's Wuxie Kongjie stands"` |
+| `wuxie`: Seat 1's Barbarians on `seat-0`, viewer `seat-0`, `allowedCardIds: ['wuxie']` | Source `"Seat 1 used Barbarians on you"`, prompt `"Play Wuxie Kongjie to cancel it?"`, outcome `"Barbarians takes effect on you"` |
+| `wuxie`: Seat 1's Draw Two on `seat-1` (itself), viewer `seat-0` | Source `"Seat 1 used Draw Two"`, outcome `"Draw Two takes effect"` |
+| `counter-wuxie`: `wuxieSeatId: 'seat-2'`, viewer `seat-0` | Source `"Seat 2 played Wuxie Kongjie"`, prompt `"Play Wuxie Kongjie to cancel it?"`, outcome `"Seat 2's Wuxie Kongjie stands"` |
 
 `response-description.spec.ts` also covers `waitingLine(state)`:
 
 | Pending | Expected |
 |---|---|
-| none | `null` |
+| None | `null` |
 | `dying` (seat-2) for `seat-0` | `"Waiting on Hing to save Seat 2"` |
 | `wuxie` for `seat-0` | `"Waiting on Hing: Wuxie Kongjie?"` |
 | `card-effect` (Barbarians) for `seat-1` | `"Waiting on Seat 1 to answer Barbarians"` |

@@ -7,20 +7,20 @@
 **Architecture:**
 - **Engine (generic):**
   - face-down seats;
-  - a face-up `pile` zone per seat;
-  - a Play Phase flagged to skip ends at once;
+  - A face-up `pile` zone per seat;
+  - A Play Phase flagged to skip ends at once;
   - `acted` on damage and dying, plus `pointsBelowOne` on dying;
   - `ReplaceJudgmentEffect.oldTo`;
   - `DecisionReason` ability `cardId`;
   - `onJudged` gets the registry;
-  - deferred conversions, which suspend the window they answer;
+  - Deferred conversions, which suspend the window they answer;
   - `UseCardEffect.counted` / `answering`;
   - Wuxie checks ask a seat that can make a Wuxie by conversion;
   - `Conversion.accepts(card, state, seatId)`.
 - **Content:**
   - `suitOf` / `colourFor`, applying the `suitAs` modifier, read by every suit rule;
   - `JUDGMENT_CHANGERS` becomes a map from skill to the cards it may change with;
-  - one file, `generals/wind.ts`.
+  - One file, `generals/wind.ts`.
 - **Around it:** bots by the spec's rules; a sim with base + Wind Generals and a forced pairing per Wind General; app badges, pile row, Bewilder's doubt wording and history lines.
 
 **Tech Stack:** TypeScript, Jest (ts-jest), Angular 22 (app task).
@@ -28,12 +28,12 @@
 **Spec:** `docs/superpowers/specs/2026-10-07-stage-8-wind-generals-design.md` (binding). Stage 7's General Skills spec "Common rules" still hold.
 
 **Built in earlier stages (reused, not redone):**
-- skill steps, `UseCardEffect`, `ShowCardEffect`;
+- Skill steps, `UseCardEffect`, `ShowCardEffect`;
 - one-card conversions and `playConversionCards`;
 - `countsAs`, `discardOwed`;
 - `askAtStep` / `atStep`, `atDrawPhase`, `shared/skills.ts`;
 - `nextToChange`;
-- forced pairings and `firedSkills` in the sim.
+- Forced pairings and `firedSkills` in the sim.
 
 **Where this plan departs from the spec, and why:**
 - **No separate naming dialog for Bewilder.** Each card Yu Ji can name is a deferred conversion, so the action list already offers "As Sha · Bewilder" with its targets, like every conversion. Naming and targets come from one button.
@@ -81,7 +81,7 @@
   - `src/lib/generals/{wei,shu,wu,qun}.ts` (suit readers, `accepts` signature);
   - `src/lib/modes/guozhan.ts` (pile zones, `pointsBelowOne`, pile discard);
   - `src/lib/display.ts`, `src/public-api.ts`;
-  - specs that use Wind Generals as fillers.
+  - Specs that use Wind Generals as fillers.
 
 **Bots / sim:** `bots/src/lib/skills.ts`, `bots/src/lib/wind.ts` (new), `bots/src/lib/rule-based.ts`, specs; `sim/src/forcedPairing.ts`, `sim/src/invariants.ts`, `sim/src/wind.spec.ts` (new).
 
@@ -1978,19 +1978,19 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - [ ] **Step 1: Write the failing tests**
 
 - `display.spec.ts`:
-  - every Wind ask has a hint: `entrench`, `godspeed`, `strong-bow`, `fantasy`, `refusing-death`, `lightning-strike`, `dark-magic`;
+  - Every Wind ask has a hint: `entrench`, `godspeed`, `strong-bow`, `fantasy`, `refusing-death`, `lightning-strike`, `dark-magic`;
   - `selectionText('fantasy')` is `{ prompt: 'Choose a heart card to discard', confirm: 'Discard' }`;
   - `selectionText('godspeed')` is `{ prompt: 'Choose an Equipment card to discard', confirm: 'Discard' }`.
 - `seat-tile.spec.ts`:
-  - a seat with `faceDown: true` shows a "Face Down" badge, and its avatar has a `face-down` class;
+  - A seat with `faceDown: true` shows a "Face Down" badge, and its avatar has a `face-down` class;
   - `pile` cards render as small face-up cards with `aria-label="Under General"` on their row.
 - `choice-description.spec.ts`: a Bewilder doubt choice (reason `cardId: 'sha'`, owner seat-1, labels Believe/Doubt) describes as `{ title: 'Bewilder', prompt: 'Seat 1 claims Sha. Believe or doubt?', confirmLabel: 'Choose' }`.
 - `action-history.spec.ts`:
   - `SeatTurnedEvent` face down → "Seat 0 turned face down"; with `passedTurn` → "Seat 0 turned face up and passed the turn";
-  - a `CardMovedEvent` into `seat-0:pile` with a face → "Seat 0 put Sha (7 ♠) under their General";
-  - outcomes `stays-alive` → "Seat 0's Refusing Death: no match, Seat 0 stays alive"; `matched` → "Seat 0's Refusing Death: a rank matched";
-  - a Bewilder `ChoiceMadeEvent` (label Doubt, reason `cardId: 'sha'`, owner seat-1) → "Seat 0 doubted Seat 1's Sha"; Believe → "Seat 0 believed Seat 1's Sha";
-  - outcomes `claim-true` → "Seat 1's Sha was true", `claim-false` → "Seat 1's Sha was a bluff", `claim-believed` → no line.
+  - A `CardMovedEvent` into `seat-0:pile` with a face → "Seat 0 put Sha (7 ♠) under their General";
+  - Outcomes `stays-alive` → "Seat 0's Refusing Death: no match, Seat 0 stays alive"; `matched` → "Seat 0's Refusing Death: a rank matched";
+  - A Bewilder `ChoiceMadeEvent` (label Doubt, reason `cardId: 'sha'`, owner seat-1) → "Seat 0 doubted Seat 1's Sha"; Believe → "Seat 0 believed Seat 1's Sha";
+  - Outcomes `claim-true` → "Seat 1's Sha was true", `claim-false` → "Seat 1's Sha was a bluff", `claim-believed` → no line.
 
 Add a `pile` zone to the history spec's `zones` fixture.
 
@@ -2016,9 +2016,9 @@ Expected: FAIL on each new case.
 and `SELECTION_TEXT` gains `fantasy`, `godspeed` (above), `'refusing-death': { prompt: 'Choose a card under your General to discard', confirm: 'Discard', cancel: 'Keep Them' }`, `'dark-magic': { prompt: 'Choose a black card to replace the judgment', confirm: 'Replace' }`.
 
 `seat-tile.ts`:
-- a `readonly pile = input<CardInstance[]>([])`;
-- in the avatar's section, `@if (seat().faceDown) { <span class="badge face-down-badge">Face Down</span> }`, and `[class.face-down]="seat().faceDown"` on the avatar wrapper, styled `filter: grayscale(0.6) brightness(0.8)`;
-- under the avatar, `@if (pile().length) { <div class="pile" aria-label="Under General">@for (card of pile(); track card.instanceId) { <app-playing-card size="small" [card]="card" /> }</div> }` with `.pile { display: flex; gap: 2px; flex-wrap: wrap; }`.
+- A `readonly pile = input<CardInstance[]>([])`;
+- In the avatar's section, `@if (seat().faceDown) { <span class="badge face-down-badge">Face Down</span> }`, and `[class.face-down]="seat().faceDown"` on the avatar wrapper, styled `filter: grayscale(0.6) brightness(0.8)`;
+- Under the avatar, `@if (pile().length) { <div class="pile" aria-label="Under General">@for (card of pile(); track card.instanceId) { <app-playing-card size="small" [card]="card" /> }</div> }` with `.pile { display: flex; gap: 2px; flex-wrap: wrap; }`.
 
 `round-table.ts` / `game-board.ts`: bind `[pile]="zoneCards(seat.pile?.zoneId ?? '')"` (round-table's `judgmentOf`).
 
@@ -2043,9 +2043,9 @@ and `SELECTION_TEXT` gains `fantasy`, `godspeed` (above), `'refusing-death': { p
 Run: `npx jest`. Expected: PASS. `npx ng build app` builds.
 
 Drive the app as in stage 7: dev server, headless Chrome, states built by the engine loaded through `GameService`. Screenshot:
-- a face-down seat;
+- A face-down seat;
 - Zhou Tai with two cards under him;
-- a Bewilder doubt dialog seen by a human seat.
+- A Bewilder doubt dialog seen by a human seat.
 
 ```bash
 git add projects/content projects/app
@@ -2068,7 +2068,7 @@ Add rows to "Plugging into the chain":
 | To add… | Write… | Example |
 |---|---|---|
 | Turning a seat face down | `TurnFaceDownEffect`; its next turn is passed (`SeatTurnedEvent`) | Entrench |
-| Cards kept under a General | the seat's `pile` zone (`pileZoneOf`) | Refusing Death |
+| Cards kept under a General | The seat's `pile` zone (`pileZoneOf`) | Refusing Death |
 | A conversion decided later | `Conversion.deferred` → the skill's `deferred` step; a window it answers is set aside (`UseCardEffect.answering`) | Bewilder |
 | A suit that counts as another | `AbilityModifiers.suitAs`, read through content's `suitOf` | Beauty |
 

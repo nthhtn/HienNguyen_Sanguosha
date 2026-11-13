@@ -24,14 +24,14 @@ the change is not presented as an improvement.
 
 In scope:
 - `runGame` accepting a policy per seat
-- a tournament module and CLI command in `sim`
-- a `targeting` module in `bots`, and the rules that choose targets using it
-- keeping the previous behaviour available as `rule-based-v1`
+- A tournament module and CLI command in `sim`
+- A `targeting` module in `bots`, and the rules that choose targets using it
+- Keeping the previous behaviour available as `rule-based-v1`
 
 Out of scope (later stages of the bot roadmap):
 - hidden-kingdom inference
-- card counting, response judgement, General selection, lookahead
-- engine changes, app screens, bot pacing
+- Card counting, response judgement, General selection, lookahead
+- Engine changes, app screens, bot pacing
 
 Layering is unchanged: `engine ← content ← bots ← sim`. Both parts are plain
 TypeScript with no Angular, DOM or timers.
@@ -68,8 +68,8 @@ policy that played it, so a team made of both policies that wins gives each
 policy wins for its own seats. Tallies per policy:
 
 - seat-games (one per seat per game) and seat-wins, hence win rate
-- a breakdown by the seat's kingdom at game end
-- games that ended without a result inside the action cap (`maxActions`),
+- A breakdown by the seat's kingdom at game end
+- Games that ended without a result inside the action cap (`maxActions`),
   reported separately and excluded from win rates
 
 Because seats within one game are not independent, the comparison is made
@@ -182,7 +182,7 @@ Three tuning attempts, each 4000 games on seed 20000, changing one idea:
 | Attempt | Change | Difference |
 |---|---|---|
 | A | `threat` 60 → 300 | +1.8 pp (+0.2 to +3.4) |
-| B | defence terms off (`trigrams`, `perHandCard`, `emptyHand` = 0) | +2.5 pp (+0.9 to +4.1) |
+| B | Defence terms off (`trigrams`, `perHandCard`, `emptyHand` = 0) | +2.5 pp (+0.9 to +4.1) |
 | C | `perHp` −10 → −40 | +2.0 pp (+0.4 to +3.6) |
 
 The best of the three, B, was confirmed on a fresh range (4000 games, seed

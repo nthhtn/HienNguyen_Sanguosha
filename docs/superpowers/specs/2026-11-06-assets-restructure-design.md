@@ -59,7 +59,7 @@ assets/
 | `cards/{basic,tool,equipment}/**` | `playing-cards/full/**` |
 | `cards/cropped/**` | `playing-cards/cropped/**` |
 | `cards/back.jpg` | `playing-cards/back.jpg` |
-| `cards/skins/back.png`, `unknown.png` | deleted (nothing references them) |
+| `cards/skins/back.png`, `unknown.png` | Deleted (nothing references them) |
 | `generals/{ambitionist,hidden}.jpg`, `placeholder.svg`, `ambitionist_icon.png` | `generals/special/` (`ambitionist-icon.png`) |
 | `animation/sheets/**` | `effects/sheets/**` |
 | `animation/<id>.png` | `effects/stills/<id>.png` (`slash_fire` to `slash-fire`, `slash_lightning` to `slash-lightning`) |

@@ -22,7 +22,7 @@ browser APIs, or UI state. The game engine SHOULD be executable
 independently of the Angular UI so it can be tested through automated
 simulations. UI components MUST NOT directly implement game rules.
 
-Current status: the engine (Guozhan), content, bots and
+Current status: The engine (Guozhan), content, bots and
 simulator, the Angular presentation layer, and a Node server with a shared
 `protocol` project are all built and in use. `docs/architecture/` is the
 guide to how they fit together; read it before changing structure. The
@@ -70,14 +70,14 @@ to code for non-trivial mechanics. Trivial additions that just reuse an
 already-specified pattern don't need a fresh round of spec-writing.
 
 `npm run verify` runs the static pre-merge checks (lint, typecheck, build) and CI runs it, with the tests, on every pull request;
-merging is human-only: the agent never merges or pushes to `main`. See
+merging is human-only: The agent never merges or pushes to `main`. See
 `docs/ci-and-guardrails.md`.
 
 ## Presentation layer (Angular)
 
 Game rules MUST be implemented independently from presentation.
 
-Angular components SHOULD primarily be responsible for: rendering game
+Angular components SHOULD primarily be responsible for: Rendering game
 state, receiving user interaction, dispatching player actions, presenting
 available actions, and managing UI-specific state. Components MUST NOT
 contain substantial game-rule logic; game behavior SHOULD be implemented
@@ -96,22 +96,22 @@ legal actions available to the player.
 
 Every piece of visible text MUST follow these casing rules:
 
-- **Title Case for names and short labels:** titles, headings that name
+- **Title Case for names and short labels:** Titles, headings that name
   something, buttons, tabs and field labels. Examples: "Response Needed",
   "Start Game", "Discard Pile", "Your Name".
-- **Sentence case for anything that reads as a sentence:** announcements,
+- **Sentence case for anything that reads as a sentence:** Announcements,
   status lines, prompts, descriptions, hints, empty states and Action History
   lines. Examples: "Bots are choosing their Generals…", "Pass the device to
   Hing", "Nothing yet", "Seat 1 used Sha (7 ♠) on Hing".
 - **Keywords keep their capitals inside sentences:**
-  - player and seat names, card names, general names;
-  - forces (Wei, Shu, Wu, Qun);
-  - card types (Basic, Tool, Equipment, Weapon, Armor, Mount);
-  - phase names ("Play Phase");
-  - game mode names ("Guozhan");
-  - the term General(s), including Main General and Deputy General;
+  - Player and seat names, card names, general names;
+  - Forces (Wei, Shu, Wu, Qun);
+  - Card types (Basic, Tool, Equipment, Weapon, Armor, Mount);
+  - Phase names ("Play Phase");
+  - Game mode names ("Guozhan");
+  - The term General(s), including Main General and Deputy General;
   - HP.
-- Ids are never shown as they are: show "Seat 0", not `seat-0`.
+- Ids are never shown as they are: Show "Seat 0", not `seat-0`.
 
 #### Other languages
 
@@ -121,7 +121,7 @@ follows its own (the full terminology is in
 
 - **Sentence case everywhere**, labels and buttons included ("Kết thúc giai
   đoạn", "Bỏ bài"), with a capital only on the first word.
-- **Keywords keep their capitals inside sentences:** player and seat names,
+- **Keywords keep their capitals inside sentences:** Player and seat names,
   card names (Sát, Đào, Quyết Đấu), General names, game mode names (Quốc
   chiến) and the terms Tướng, Chủ tướng, Phó tướng and Sinh lực. Forces are
   Ngụy, Thục, Ngô, Quần.
@@ -137,6 +137,17 @@ and replaceable infrastructure. The application SHOULD favor standalone
 Angular components and modern Angular patterns rather than legacy
 NgModule-heavy architecture.
 
+## Documentation style
+
+These rules apply to every Markdown document: README, this file, and everything under `docs/`. They OVERRIDE default behavior — follow them exactly when writing or editing a doc.
+
+- **Bullets over paragraphs.** A paragraph longer than about 400 characters becomes a short lead sentence plus a bullet list, with sub-bullets for parts or sequences. Use numbered lists for ordered steps.
+- **Bold the key term.** Start a bullet with a **bold label** when it names a thing, a rule or a step.
+- **Table cells stay short.** A cell longer than about 220 characters is a sign the content wants its own section or a bullet list, not a table.
+- **Capitalize.** Every sentence, heading, list item and table cell starts with a capital letter. So does the first word after a colon, even in the middle of a sentence: "Merging is human-only: The agent never merges". Code spans and identifiers keep their own case.
+- **Spacing.** One space after a list marker, a heading `#` and a table pipe.
+- **Content stays intact.** When reformatting, keep every fact, identifier, number and link. Do not change meaning, and keep headings and anchors so cross-references still work.
+
 ## Application / backend layer
 
 Communication with a backend MUST use explicit application/domain
@@ -146,6 +157,6 @@ layer between them is expected, not a shortcut to avoid.
 
 The architecture SHOULD allow the game engine to eventually run
 authoritatively on a server. This should be a natural extension rather
-than a redesign: the engine is a pure, framework-free TypeScript package,
+than a redesign: The engine is a pure, framework-free TypeScript package,
 executable under plain Node (proven by the headless simulation harness in
 the engine sub-project), and its state is plain serializable data.

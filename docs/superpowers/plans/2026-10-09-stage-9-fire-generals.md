@@ -17,12 +17,12 @@
   - Sha's `targetPick`: Sky Scorcher becomes a modifier, not an ask; the turn-long Sha flags.
   - `shared/compete.ts`;
   - Eight Trigrams' ability shared with Eight Arrays;
-  - the Blaze card (out of the deck);
+  - The Blaze card (out of the deck);
   - `generals/fire.ts`.
 - **Around it:**
-  - bots fill target templates, compete and use the Fire skills;
-  - the sim adds base + Wind + Fire batches and Fire forced pairings;
-  - the app gains the Choose Targets window, competing and Blaze prompts, and history lines.
+  - Bots fill target templates, compete and use the Fire skills;
+  - The sim adds base + Wind + Fire batches and Fire forced pairings;
+  - The app gains the Choose Targets window, competing and Blaze prompts, and history lines.
 
 **Tech Stack:** TypeScript, Jest (ts-jest), Angular 22 (app task).
 
@@ -74,7 +74,7 @@
   - `src/lib/shared/queries.ts`;
   - `src/lib/modes/guozhan.ts`, `src/lib/registry.ts`;
   - `src/lib/generals/index.ts`, `src/lib/display.ts`, `src/public-api.ts`;
-  - specs using real Generals as fillers.
+  - Specs using real Generals as fillers.
 
 **Bots / sim:** `bots/src/lib/fire.ts` (new), `bots/src/lib/skills.ts`, `bots/src/lib/rule-based.ts`, `bots/src/lib/random.ts`, `bots/src/lib/testing.ts`, specs; `sim/src/fire.spec.ts` (new).
 
@@ -92,7 +92,7 @@ The specs use real expansion Generals as skill-less fillers, and each stage has 
 - Create: `projects/content/src/lib/generals/fillers.testing.ts`, `projects/content/src/lib/generals/fire.ts`
 - Modify:
   - `projects/content/src/lib/generals/index.ts`, `index.spec.ts`, `base.spec.ts`, `skills.testing.ts`, `projects/content/src/public-api.ts`;
-  - every content spec and the bots' `testing.ts` / specs that name an expansion General as a filler.
+  - Every content spec and the bots' `testing.ts` / specs that name an expansion General as a filler.
 
 **Interfaces:**
 - Produces:
@@ -171,7 +171,7 @@ Export it from `public-api.ts`.
 
 In `base.spec.ts`:
 - "only base and Wind Generals have skills" also allows `FIRE_GENERAL_IDS`;
-- add an `it.todo` for the Fire skills' data check (made real in Task 6).
+- Add an `it.todo` for the Fire skills' data check (made real in Task 6).
 
 - [ ] **Step 5: Move the specs to the fillers**
 
@@ -566,9 +566,9 @@ describe('Eight Trigrams', () => {
 ```
 
 Also, in `sha-equipment.spec.ts`, rewrite the Sky Scorcher cases for the window:
-- with the last hand card, the play template allows up to 3 targets within range;
-- no ask is ever opened;
-- a non-last Sha still has one target per action.
+- With the last hand card, the play template allows up to 3 targets within range;
+- No ask is ever opened;
+- A non-last Sha still has one target per action.
 
 - [ ] **Step 2: Run them to see them fail**
 
@@ -1079,10 +1079,10 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 `fire-shu.spec.ts`, one `it` per bullet:
 - **Shackle:**
-  - offered with a club hand card;
-  - discards the picked club and draws 1;
-  - may be used again in the same turn;
-  - not offered with no club.
+  - Offered with a club hand card;
+  - Discards the picked club and draws 1;
+  - May be used again in the same turn;
+  - Not offered with no club.
 - **Nirvana:**
   - Pang Tong at 1 HP, with hand, equipment and a delayed Tool, takes 2 damage and is asked.
   - Use: every card of his is in the discard pile, he holds 3 new cards, has 3 HP and is face up (start him face down). No dying round opens.
@@ -1487,12 +1487,12 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Modify:
   - `projects/app/src/app/game-board/hand-view.ts`, `action-list.ts`, `game-board.ts`;
   - `selection-description.ts` (or wherever selection prompts live), `action-history.ts`, `labels.ts`;
-  - their specs.
+  - Their specs.
 
 **Interfaces:**
 - `TargetsDialog` (standalone, `MatDialog`):
-  - data `{ title: string; pick: TargetPick; state: GameState }`;
-  - closes with the picked seat ids, or `undefined` on Cancel.
+  - Data `{ title: string; pick: TargetPick; state: GameState }`;
+  - Closes with the picked seat ids, or `undefined` on Cancel.
 - `hand-view.ts`: a card whose play is a template shows one Play button. It opens the dialog and emits the action with `targets` filled and `pickTargets` dropped.
 - `action-list.ts`: a conversion template does the same, then the engine's card selection follows as today.
 
@@ -1505,9 +1505,9 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - **`hand-view.spec.ts`:** a template play opens `TargetsDialog`, stubbed with `MatDialog` returning `['seat-1', 'seat-2']`, and emits `{ ...template, targets: [seat-1, seat-2] }` without `pickTargets`. Cancel emits nothing.
 - **`action-list.spec.ts`:** the same for a conversion template.
 - **Prompts:**
-  - a `compete-user` / `compete-target` selection reads "Choose a hand card to compete with";
-  - a `blaze-shown` selection reads "Choose a hand card to show";
-  - a `blaze-hit` selection reads "Discard a card of the same suit to deal 1 damage".
+  - A `compete-user` / `compete-target` selection reads "Choose a hand card to compete with";
+  - A `blaze-shown` selection reads "Choose a hand card to show";
+  - A `blaze-hit` selection reads "Discard a card of the same suit to deal 1 damage".
 - **History:**
   - "Seat 1 competed with Seat 2: 9 ♠ against 7 ♥, Seat 1 won" (or "…, Seat 2 won" on a loss or tie). Build it from the two `CardShownEvent`s before the `compete-won`/`compete-lost` outcome.
   - "Pang Tong rose from the ashes" for `reborn`.
@@ -1643,8 +1643,8 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - [ ] **Step 1: Docs**
 
 - **`event-chain.md`:**
-  - target templates (`targetPick` → `pickTargets` → `fitsPick` on resolve);
-  - competing as skill steps;
+  - Target templates (`targetPick` → `pickTargets` → `fitsPick` on resolve);
+  - Competing as skill steps;
   - Blaze's steps;
   - Nirvana before the dying round;
   - Sudden Attack at `sha-dodged`.

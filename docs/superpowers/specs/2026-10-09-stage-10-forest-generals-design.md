@@ -17,13 +17,13 @@ data holds 8 Forest Generals with 17 skills, 2 of them Lord skills.)
 ## Common rules
 
 Stage 7's, 8's and 9's common rules hold unchanged:
-- reveal to use;
-- gender;
+- Reveal to use;
+- Gender;
 - Lord skills inactive;
-- losing HP is not damage;
+- Losing HP is not damage;
 - "may" always asks;
-- no elemental damage;
-- synthetic `filler-<id>` Generals in the specs.
+- No elemental damage;
+- Synthetic `filler-<id>` Generals in the specs.
 
 The skill text is the crawled data's standard edition, applied to Guozhan.
 In that text, "Escape" is Shan, "Barbarians" is the Barbarians Tool, "flip
@@ -73,8 +73,8 @@ skills, so they are inactive. The wiki shows them with "Not used in Guozhan
 - **Sun Jian: Brave Spirit** (may). At the start of your Prepare Phase, if you
   are damaged, you may choose any seat (yourself included) and set X to the HP
   you are missing. It picks one:
-  - draw X cards, then discard 1;
-  - draw 1 card, then discard X.
+  - Draw X cards, then discard 1;
+  - Draw 1 card, then discard X.
 - **Lu Su: Charity** (may). In your Draw Phase you may draw 2 extra cards.
   Afterwards, if you hold more than 5 hand cards, you give half of them
   (rounded down) to the seat with the fewest hand cards, other than you. If
@@ -238,7 +238,7 @@ Generic; the engine names no card or skill.
 - **Simulator:**
   - Base, Wind, Fire and Forest Generals (49 Generals, so up to 8 seats at
     2, 5 and 8 seats);
-  - a forced pairing per Forest General, with every skill that leaves a trace
+  - A forced pairing per Forest General, with every skill that leaves a trace
     fired.
 - **App:** the Upheaval prompt, Collapse choice, and the new history lines.
 

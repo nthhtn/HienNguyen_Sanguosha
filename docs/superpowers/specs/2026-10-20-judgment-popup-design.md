@@ -87,23 +87,23 @@ Texts (draft English; final copy follows CLAUDE.md casing; the builder checks ea
 | Reader | Final card / state | English text |
 |---|---|---|
 | Lightning (card) | Spade 2–9 | "{seat} takes 3 thunder damage" |
-| Lightning | otherwise | "Lightning moves to the next seat" |
-| Capture (card) | not Heart | "{seat} skips the Play Phase" |
+| Lightning | Otherwise | "Lightning moves to the next seat" |
+| Capture (card) | Not Heart | "{seat} skips the Play Phase" |
 | Capture | Heart | "Nothing happens" |
-| Starvation (card) | not Club | "{seat} skips the Draw Phase" |
+| Starvation (card) | Not Club | "{seat} skips the Draw Phase" |
 | Starvation | Club | "Nothing happens" |
 | Eight Trigrams, Eight Arrays | Red | "{seat} counts as having played a Shan" |
 | Eight Trigrams, Eight Arrays | Black | "Nothing happens" |
-| Unyielding | not Heart, source alive | "{source} discards 2 cards or takes 1 damage" |
+| Unyielding | Not Heart, source alive | "{source} discards 2 cards or takes 1 damage" |
 | Unyielding | Heart, or source gone | "Nothing happens" |
 | River Goddess | Black | "{seat} takes the card and judges again" |
 | River Goddess | Red | "The card is discarded and the judging ends" |
 | Iron Cavalry | Red | "The Sha cannot be dodged" |
 | Iron Cavalry | Black | "Nothing happens" |
 | Lightning Strike | Spade | "{seat} takes 2 thunder damage" |
-| Lightning Strike | otherwise | "Nothing happens" |
+| Lightning Strike | Otherwise | "Nothing happens" |
 | Dueling Heroes | Red / Black | "{owner} takes the card and may play {red or black} hand cards as Duel this turn" |
-| Military Farm | not Heart | "{owner} stashes the card as a Farm" |
+| Military Farm | Not Heart | "{owner} stashes the card as a Farm" |
 | Military Farm | Heart | "The card is discarded" |
 | Lament | Heart | "{seat} heals 1 HP" |
 | Lament | Diamond | "{seat} draws 2 cards" |

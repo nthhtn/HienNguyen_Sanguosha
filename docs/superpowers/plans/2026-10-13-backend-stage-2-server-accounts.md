@@ -6,9 +6,9 @@
 
 **Architecture:** `projects/protocol` holds wire types, limits, error codes and TypeBox schemas (schemas behind a separate `protocol/schemas` entry so the Angular bundle never pulls TypeBox in). `projects/server` is a Fastify app. Its layers are:
 
-- the HTTP routes;
-- an `AccountService`, which holds the domain logic and takes an injected clock;
-- repository interfaces with in-memory and Postgres (Kysely) implementations, both checked by one shared contract test suite.
+- The HTTP routes;
+- An `AccountService`, which holds the domain logic and takes an injected clock;
+- Repository interfaces with in-memory and Postgres (Kysely) implementations, both checked by one shared contract test suite.
 
 The Angular app gets `AuthService` (signals) plus five lazy-loaded auth screens and an account menu in the toolbar.
 
@@ -25,8 +25,8 @@ The Angular app gets `AuthService` (signals) plus five lazy-loaded auth screens 
 - **App imports.** The app never imports `protocol/schemas`, and never imports `server`.
 - **Database rows never cross the wire.** Postgres rows map to domain records in `persistence/postgres/mappers.ts`. Domain records map to wire shapes in `server/src/views/`.
 - **Hashing.** Hash only these:
-  - passwords: scrypt (Node `crypto.scrypt`, random 16-byte salt, parameters stored in the hash string);
-  - session tokens and reset tokens: sha256.
+  - Passwords: scrypt (Node `crypto.scrypt`, random 16-byte salt, parameters stored in the hash string);
+  - Session tokens and reset tokens: sha256.
 
   Nothing else is hashed.
 - **Session cookie.**
@@ -73,8 +73,8 @@ The Angular app gets `AuthService` (signals) plus five lazy-loaded auth screens 
 1. **Email casing and whitespace.** `"Ann@Example.com "` signs up, and `"ann@example.com"` then signs in. A second sign-up with any casing gets `email_taken`. Tests: Task 3 contract and Task 5 AccountService.
 2. **A stale, expired, revoked or garbage session cookie** gets `401 not_signed_in` from `/api/me` with the cookie cleared, never a 500. Test: Task 6.
 3. **Reset links:**
-   - a reused or expired link gets `invalid_reset_token`;
-   - a weak new password does **not** burn the link;
+   - A reused or expired link gets `invalid_reset_token`;
+   - A weak new password does **not** burn the link;
    - forgot-password for an unknown email or a guest gives the same response and sends no mail.
 
    Tests: Task 5 and Task 6.
@@ -873,10 +873,10 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 **Interfaces:**
 - Consumes: `UserKind` from `protocol`.
 - Produces:
-  - from `records.ts`: `UserRecord`, `SessionRecord`, `ResetTokenRecord`
-  - from `repositories.ts`: `EmailTakenError`, `UserRepository`, `SessionRepository`, `ResetTokenRepository`, `Repositories`, `RepositoryHarness`
-  - from `repositoryContract.ts`: `describeRepositoryContract(open: () => Promise<RepositoryHarness>): void`
-  - from `memoryRepositories.ts`: `createMemoryRepositories(): Repositories`
+  - From `records.ts`: `UserRecord`, `SessionRecord`, `ResetTokenRecord`
+  - From `repositories.ts`: `EmailTakenError`, `UserRepository`, `SessionRepository`, `ResetTokenRepository`, `Repositories`, `RepositoryHarness`
+  - From `repositoryContract.ts`: `describeRepositoryContract(open: () => Promise<RepositoryHarness>): void`
+  - From `memoryRepositories.ts`: `createMemoryRepositories(): Repositories`
 
 - [ ] **Step 1: Write the records and interfaces**
 
@@ -1360,11 +1360,11 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 **Interfaces:**
 - Consumes: from Task 3, `Repositories`, `RepositoryHarness`, `EmailTakenError`, the records and `describeRepositoryContract`.
 - Produces:
-  - from `schema.ts`: `Database` (the Kysely table types)
-  - from `db.ts`: `createDb(url: string): Kysely<Database>`
-  - from `migrate.ts`: `migrateToLatest(db: Kysely<Database>): Promise<void>`
-  - from `postgresRepositories.ts`: `createPostgresRepositories(db: Kysely<Database>): Repositories`
-  - from `testDatabase.ts`: `createTestDatabase(adminUrl: string): Promise<{ db: Kysely<Database>; drop(): Promise<void> }>`
+  - From `schema.ts`: `Database` (the Kysely table types)
+  - From `db.ts`: `createDb(url: string): Kysely<Database>`
+  - From `migrate.ts`: `migrateToLatest(db: Kysely<Database>): Promise<void>`
+  - From `postgresRepositories.ts`: `createPostgresRepositories(db: Kysely<Database>): Repositories`
+  - From `testDatabase.ts`: `createTestDatabase(adminUrl: string): Promise<{ db: Kysely<Database>; drop(): Promise<void> }>`
 
 - [ ] **Step 1: Compose and scripts**
 
@@ -1809,13 +1809,13 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Interfaces:**
 - Consumes:
-  - from Task 1: `normalizeDisplayName`, `PASSWORD_MIN`, `ErrorCode`
-  - from Task 2: `hashPassword`, `verifyPassword`, `newToken`, `hashToken`
-  - from Task 3: `Repositories`, `EmailTakenError`, `UserRecord`, `SessionRecord`, `createMemoryRepositories`
+  - From Task 1: `normalizeDisplayName`, `PASSWORD_MIN`, `ErrorCode`
+  - From Task 2: `hashPassword`, `verifyPassword`, `newToken`, `hashToken`
+  - From Task 3: `Repositories`, `EmailTakenError`, `UserRecord`, `SessionRecord`, `createMemoryRepositories`
 - Produces:
-  - from `mailer.ts`: `Mailer`, `PasswordResetMail`, `ConsoleMailer`
-  - from `recordingMailer.ts`: `RecordingMailer`, with `sent: PasswordResetMail[]`
-  - from `accounts.ts`: `AccountService`, `AuthError` (field `code: AuthErrorCode`), `AuthErrorCode`, `SignedIn`, `Authenticated`, and the constants `SESSION_DAYS`, `RESET_TOKEN_MS`, `GUEST_IDLE_DAYS`
+  - From `mailer.ts`: `Mailer`, `PasswordResetMail`, `ConsoleMailer`
+  - From `recordingMailer.ts`: `RecordingMailer`, with `sent: PasswordResetMail[]`
+  - From `accounts.ts`: `AccountService`, `AuthError` (field `code: AuthErrorCode`), `AuthErrorCode`, `SignedIn`, `Authenticated`, and the constants `SESSION_DAYS`, `RESET_TOKEN_MS`, `GUEST_IDLE_DAYS`
 
 ```ts
 export type AuthErrorCode = Extract<ErrorCode, 'email_taken' | 'invalid_credentials' | 'invalid_reset_token' | 'invalid_name' | 'weak_password'>;
@@ -2287,14 +2287,14 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Interfaces:**
 - Consumes:
-  - from Task 5: `AccountService`, `AuthError`, `SignedIn`, `Authenticated`, `RecordingMailer`
-  - from Task 2: `AuthRateLimits`, `RATE_LIMITS`
-  - from Task 3: `createMemoryRepositories`
-  - from Task 1, from `protocol`: `ERROR_MESSAGES`, `ErrorBody`, `ErrorCode`, `Me`, `FORGOT_PASSWORD_MESSAGE`; from `protocol/schemas`: the body schemas
+  - From Task 5: `AccountService`, `AuthError`, `SignedIn`, `Authenticated`, `RecordingMailer`
+  - From Task 2: `AuthRateLimits`, `RATE_LIMITS`
+  - From Task 3: `createMemoryRepositories`
+  - From Task 1, from `protocol`: `ERROR_MESSAGES`, `ErrorBody`, `ErrorCode`, `Me`, `FORGOT_PASSWORD_MESSAGE`; from `protocol/schemas`: the body schemas
 - Produces:
-  - from `app.ts`: `buildApp(deps: AppDeps): Promise<FastifyInstance>`, and `AppDeps`
-  - from `session.ts`: `SESSION_COOKIE = 'sgs_session'`
-  - from `me.ts`: `toMe(user: UserRecord): Me`
+  - From `app.ts`: `buildApp(deps: AppDeps): Promise<FastifyInstance>`, and `AppDeps`
+  - From `session.ts`: `SESSION_COOKIE = 'sgs_session'`
+  - From `me.ts`: `toMe(user: UserRecord): Me`
 
 ```ts
 export interface AppDeps {
@@ -3041,7 +3041,7 @@ pkill -f 'projects/server/src/main.ts'
 
 Expected:
 - `HTTP/1.1 401 Unauthorized`
-- then `HTTP/1.1 201 Created`, plus a `set-cookie: sgs_session=…; …HttpOnly; SameSite=Lax` line.
+- Then `HTTP/1.1 201 Created`, plus a `set-cookie: sgs_session=…; …HttpOnly; SameSite=Lax` line.
 
 If Docker is running, repeat the smoke test with `DATABASE_URL=postgres://sanguosha:sanguosha@localhost:5433/sanguosha`. Expect the same results, with migrations applied on start.
 
@@ -3416,9 +3416,9 @@ Expected: FAIL. The new tests can't find `a.sign-in` or `button.account`, and `l
 - [ ] **Step 5: Add the account area to the toolbar**
 
 In `projects/app/src/app/app.ts`:
-- add `import { AuthService } from './auth/auth.service';`;
-- add these members to the class;
-- extend the constructor as shown.
+- Add `import { AuthService } from './auth/auth.service';`;
+- Add these members to the class;
+- Extend the constructor as shown.
 
 ```ts
   protected readonly auth = inject(AuthService);
@@ -3514,8 +3514,8 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: from Task 8, `AuthService` and `ApiError`; from `protocol`, `ERROR_MESSAGES`, `DISPLAY_NAME_MAX`, `PASSWORD_MAX`, `EMAIL_MAX` and `PASSWORD_MIN`.
 - Produces:
   - `safeReturnUrl(raw: string | null): string` and `returnUrlParams(raw: string | null): Record<string, string>`
-  - the components `SignIn`, `SignUp` and `PlayAsGuest`, each with public signals for their fields, `error: Signal<string | null>`, `busy`, and `submit(): Promise<void>`
-  - the routes `/sign-in`, `/sign-up` and `/guest`
+  - The components `SignIn`, `SignUp` and `PlayAsGuest`, each with public signals for their fields, `error: Signal<string | null>`, `busy`, and `submit(): Promise<void>`
+  - The routes `/sign-in`, `/sign-up` and `/guest`
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -4080,13 +4080,13 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Interfaces:**
 - Consumes:
-  - from Task 8: `AuthService.forgotPassword` and `AuthService.resetPassword`, plus `ApiError`
-  - from Task 9: `auth-card.css`
-  - from `protocol`: `ERROR_MESSAGES`, `EMAIL_MAX`, `PASSWORD_MAX` and `PASSWORD_MIN`
+  - From Task 8: `AuthService.forgotPassword` and `AuthService.resetPassword`, plus `ApiError`
+  - From Task 9: `auth-card.css`
+  - From `protocol`: `ERROR_MESSAGES`, `EMAIL_MAX`, `PASSWORD_MAX` and `PASSWORD_MIN`
 - Produces:
-  - the component `ForgotPassword`, with the signals `email`, `sentMessage`, `error` and `busy`, and `submit()`
-  - the component `ResetPassword`, with the signals `password`, `error` and `busy`, the field `token: string | null`, and `submit()`
-  - the routes `/forgot-password` and `/reset-password`
+  - The component `ForgotPassword`, with the signals `email`, `sentMessage`, `error` and `busy`, and `submit()`
+  - The component `ResetPassword`, with the signals `password`, `error` and `busy`, the field `token: string | null`, and `submit()`
+  - The routes `/forgot-password` and `/reset-password`
 
 - [ ] **Step 1: Write the failing tests**
 

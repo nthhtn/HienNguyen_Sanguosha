@@ -8,7 +8,7 @@ design and its reasoning are in
 
 One command runs the static checks, in this order, and stops at the first failure:
 
-1. `npm run assets:check`: fails when the generated files in
+1. `npm run assets:check`: Fails when the generated files in
    `projects/content/assets/` are out of date with their masters in `assets-src/`
    (a hash comparison against `asset-lock.json`, standard-library Python only; it fails
    with the file's name and says to run `npm run assets:build`).
@@ -16,20 +16,20 @@ One command runs the static checks, in this order, and stops at the first failur
 3. `npm run typecheck`: `tsc --noEmit` over protocol, server, bots, sim, the
    app, and the spec files of the app, engine and content. Jest does not
    typecheck, so this is the only thing that catches a type error in a spec.
-4. `npm run build`: engine, content and the Angular app. The CSS budget warning
+4. `npm run build`: Engine, content and the Angular app. The CSS budget warning
    on `judgment-stage.ts` is a warning, not a failure.
 
 Cheap checks come first, so a typo fails in seconds. Tests are not part of
 `verify`; they are separate commands:
 
-- `npm test`: the whole jest suite (about 75 s).
-- `npm run test:coverage`: the same suite with coverage. Then
+- `npm test`: The whole jest suite (about 75 s).
+- `npm run test:coverage`: The same suite with coverage. Then
   `npm run coverage:check` fails if statements, lines or functions are below 90%.
   Branches (88% today) are reported, not gated.
-- `npm run test:guardrails`: the tests for the deny rules below (`node --test`).
-- `npm run test:assets`: the tests for the asset pipeline (`scripts/assetlib`, Python
+- `npm run test:guardrails`: The tests for the deny rules below (`node --test`).
+- `npm run test:assets`: The tests for the asset pipeline (`scripts/assetlib`, Python
   `unittest`; they need Pillow, and `ffmpeg` for the video tests, which skip without it; CI installs both).
-- `npm run test:db` (needs Postgres, `npm run db:up`): the server specs against a
+- `npm run test:db` (needs Postgres, `npm run db:up`): The server specs against a
   real database.
 
 ## GitHub Actions
@@ -40,18 +40,18 @@ permission. A new push to a pull request cancels its in-flight run.
 
 | Job | Runs | Required to merge |
 | --- | --- | --- |
-| `verify` | `npm run verify`: lint, typecheck, build | yes |
-| `test` | against a `postgres:17` service: `npm run test:guardrails`, `npm run test:assets` (after `pip install pillow` and installing `ffmpeg`), then `npm run test:coverage` (the whole jest suite, database specs included); writes a coverage table to the run summary and uploads `coverage/` as an artifact | yes |
-| `coverage` | `npm run coverage:check` on the artifact `test` uploaded: fails below 90% statements, lines or functions | no |
+| `verify` | `npm run verify`: Lint, typecheck, build | Yes |
+| `test` | Against a `postgres:17` service: `npm run test:guardrails`, `npm run test:assets` (after `pip install pillow` and installing `ffmpeg`), then `npm run test:coverage` (the whole jest suite, database specs included); writes a coverage table to the run summary and uploads `coverage/` as an artifact | Yes |
+| `coverage` | `npm run coverage:check` on the artifact `test` uploaded: Fails below 90% statements, lines or functions | No |
 
 "Required" is set in the repository's branch ruleset (Settings, Rules), not in
-the workflow: the ruleset's "Require status checks to pass" rule lists `verify`
+the workflow: The ruleset's "Require status checks to pass" rule lists `verify`
 and `test`. `coverage` is deliberately left out, so a red `coverage` is a warning
 on the pull request and the merge button stays enabled. It reads the coverage
 `test` already measured, so the suite runs once. If `test` fails, `coverage` is
 skipped.
 
-Opening a pull request is not gated locally: run `npm run verify` yourself first
+Opening a pull request is not gated locally: Run `npm run verify` yourself first
 if you want to know before CI does.
 
 ## Merging is human-only
@@ -63,7 +63,7 @@ if you want to know before CI does.
 - `git push` to `main` in any spelling (`origin main`, `HEAD:main`,
   `HEAD:refs/heads/main`, `+main`, with options before or after), also behind
   `git -C dir` or `git -c k=v`;
-- any force push (`-f`, `--force`, `--force-with-lease`, `+refspec`);
+- Any force push (`-f`, `--force`, `--force-with-lease`, `+refspec`);
 - `git push` with no branch named (`git push`, `git push origin`,
   `git push origin HEAD`) and `--all`, `--mirror` and `--tags`, because they push
   whatever branch is checked out, which could be `main`. Push a feature branch

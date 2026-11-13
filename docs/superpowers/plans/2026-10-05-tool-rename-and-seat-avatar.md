@@ -6,13 +6,13 @@
 
 **Architecture:**
 - **Stage 0** is a behaviour-free rename:
-  - the engine's card category literal;
-  - the content data and asset folders, plus the asset manifest;
-  - the generated data index, scripts, tests and docs.
+  - The engine's card category literal;
+  - The content data and asset folders, plus the asset manifest;
+  - The generated data index, scripts, tests and docs.
 - **Stage 0b** is presentation only:
-  - a new `SeatAvatar` component, which `SeatTile` uses;
-  - a new `GeneralInfoDialog` that opens when you click an avatar half;
-  - one new content export for the hidden-General art URL.
+  - A new `SeatAvatar` component, which `SeatTile` uses;
+  - A new `GeneralInfoDialog` that opens when you click an avatar half;
+  - One new content export for the hidden-General art URL.
 
   No engine change.
 
@@ -24,8 +24,8 @@
 
 - After stage 0, `grep -rIi trick` over the repo finds no matches, with three exclusions:
   - `node_modules`, `dist`, `.angular`, `.git`;
-  - the roadmap spec, whose Stage 0 section describes the rename;
-  - this plan file.
+  - The roadmap spec, whose Stage 0 section describes the rename;
+  - This plan file.
 - Spec and plan **file names** stay unchanged, so links keep working. Only `projects/content/src/lib/cards/tricks.spec.ts` (code) is renamed.
 - Behaviour doesn't change in stage 0. The full suite (`npx jest`) passes with only renamed literals.
 - UI text follows CLAUDE.md's "UI text style":
@@ -160,7 +160,7 @@ Expected: an `updated` line for each of these files. The script turns, for examp
 - `category: 'trick'` into `category: 'tool'`;
 - `"localPath": "cards/trick/duel.jpg"` into `"localPath": "cards/tool/duel.jpg"`;
 - `{ ..., trick: 'Tools' }` into `{ ..., tool: 'Tools' }`;
-- the test title `'discards a trick before equipment, ...'` into `'discards a tool before equipment, ...'`.
+- The test title `'discards a trick before equipment, ...'` into `'discards a tool before equipment, ...'`.
 
 - [ ] **Step 5: Check that nothing is left in code**
 

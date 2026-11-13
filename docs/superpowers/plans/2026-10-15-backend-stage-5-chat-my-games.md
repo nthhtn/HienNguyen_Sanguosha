@@ -28,10 +28,10 @@
 ## Global Constraints
 
 - **Everything in the Stage 2, 3 and 4 Global Constraints still holds.** In particular:
-  - the CommonJS-loadable dependency pins;
-  - rows map to records only in `persistence/postgres/mappers.ts`;
-  - only `server/src/views/` turns records into wire data;
-  - user ids never reach a client. Chat messages are known by room player id (`from.playerId`).
+  - The CommonJS-loadable dependency pins;
+  - Rows map to records only in `persistence/postgres/mappers.ts`;
+  - Only `server/src/views/` turns records into wire data;
+  - User ids never reach a client. Chat messages are known by room player id (`from.playerId`).
 - **The local screens stay as they are.** Never modify:
   - `projects/app/src/app/setup/setup.ts`
   - `projects/app/src/app/game-board/**`
@@ -39,33 +39,33 @@
   - `projects/app/src/app/decision-timer.service.ts`
   - `projects/app/src/app/play-redirect.ts`
 - **Chat rules, verbatim from the spec:**
-  - a message has 1 to 300 characters (`CHAT_BODY_MAX = 300`), counted in code points after normalizing;
-  - at most 5 messages per 10 seconds per member (`CHAT_RATE_LIMIT = 5`, `CHAT_RATE_WINDOW_MS = 10_000`);
+  - A message has 1 to 300 characters (`CHAT_BODY_MAX = 300`), counted in code points after normalizing;
+  - At most 5 messages per 10 seconds per member (`CHAT_RATE_LIMIT = 5`, `CHAT_RATE_WINDOW_MS = 10_000`);
   - `welcome.chat` carries the last 100 messages (`CHAT_HISTORY = 100`), oldest first;
-  - solo (Play vs Bots) rooms have no chat.
+  - Solo (Play vs Bots) rooms have no chat.
 - **Replay rules:**
-  - finished games only (`status = 'finished'`);
-  - only a registered member of that game may read it;
-  - the body is exactly `{ seed, seats, rules, buildId, actions, chat }`.
+  - Finished games only (`status = 'finished'`);
+  - Only a registered member of that game may read it;
+  - The body is exactly `{ seed, seats, rules, buildId, actions, chat }`.
 - **Out of scope** (do not touch): every item deferred from Stages 3 and 4. That is:
-  - socket lifetime on session revoke;
-  - the client's 401 retry;
-  - the "Not found" text for a closed room;
-  - the grace-period text;
+  - Socket lifetime on session revoke;
+  - The client's 401 retry;
+  - The "Not found" text for a closed room;
+  - The grace-period text;
   - `room_players` rows on close;
-  - the lobby rate limit;
-  - the membership queue;
-  - restore retry;
-  - shutdown refusal;
+  - The lobby rate limit;
+  - The membership queue;
+  - Restore retry;
+  - Shutdown refusal;
   - JSON target comparison;
-  - solo eviction and the 7-day abort;
-  - the Leave Game button;
-  - the "Draw — No survivors." casing;
-  - the manual two-browser check.
+  - Solo eviction and the 7-day abort;
+  - The Leave Game button;
+  - The "Draw — No survivors." casing;
+  - The manual two-browser check.
 - **User-facing text, verbatim:**
-  - titles and labels: "Chat", "My Games", "Message", "Send", "Back to Rooms", "Close Chat";
-  - sentences: "No messages yet", "No finished games yet", "Loading games…", "Say something…";
-  - error messages: see Task 1.
+  - Titles and labels: "Chat", "My Games", "Message", "Send", "Back to Rooms", "Close Chat";
+  - Sentences: "No messages yet", "No finished games yet", "Loading games…", "Say something…";
+  - Error messages: see Task 1.
 - **UI text** follows `CLAUDE.md`: Title Case for names and short labels, sentence case for anything that reads as a sentence, keywords keep their capitals, and ids are never shown.
 - **Code style:**
   - Use bracket access on index signatures.
@@ -115,36 +115,36 @@
 | File | Responsibility |
 |---|---|
 | `projects/protocol/src/chat.ts` | `ChatMessage`, `normalizeChatBody`, `chatLength` |
-| `projects/protocol/src/chat.spec.ts` | tests for both functions |
+| `projects/protocol/src/chat.spec.ts` | Tests for both functions |
 | `projects/protocol/src/history.ts` | `GameSummary`, `MyGames`, `GameReplay` and their parts |
-| `projects/server/src/persistence/migrations/0004_chat.ts` | the `chat_messages` table |
+| `projects/server/src/persistence/migrations/0004_chat.ts` | The `chat_messages` table |
 | `projects/server/src/views/chat.ts` | `ChatMessageRecord` → `ChatMessage` |
-| `projects/server/src/views/history.ts` | records → `GameSummary` and `GameReplay` |
+| `projects/server/src/views/history.ts` | Records → `GameSummary` and `GameReplay` |
 | `projects/server/src/rooms/chatService.ts` | validation, the rate window, storage |
-| `projects/server/src/rooms/chatService.spec.ts` | its tests |
-| `projects/server/src/rooms/roomChat.spec.ts` | chat through `RoomService` |
+| `projects/server/src/rooms/chatService.spec.ts` | Its tests |
+| `projects/server/src/rooms/roomChat.spec.ts` | Chat through `RoomService` |
 | `projects/server/src/game/history.ts` | `GameHistory`: My Games and replay |
-| `projects/server/src/http/gameRoutes.ts` | the two history routes |
-| `projects/server/src/http/gameRoutes.spec.ts` | their tests |
-| `projects/server/src/socket/chatSocket.spec.ts` | chat over a real socket |
-| `projects/app/src/app/online/chat.service.ts` | the Lobby's chat state |
-| `projects/app/src/app/online/chat-panel.ts` | messages and the input |
-| `projects/app/src/app/online/board-chat.ts` | the board's collapsible side panel |
+| `projects/server/src/http/gameRoutes.ts` | The two history routes |
+| `projects/server/src/http/gameRoutes.spec.ts` | Their tests |
+| `projects/server/src/socket/chatSocket.spec.ts` | Chat over a real socket |
+| `projects/app/src/app/online/chat.service.ts` | The Lobby's chat state |
+| `projects/app/src/app/online/chat-panel.ts` | Messages and the input |
+| `projects/app/src/app/online/board-chat.ts` | The board's collapsible side panel |
 | `projects/app/src/app/online/game-labels.ts` | My Games result and player labels |
 | `projects/app/src/app/online/my-games.service.ts` | `GET /api/me/games` |
-| `projects/app/src/app/online/my-games-page.ts` | the My Games screen |
-| `*.spec.ts` beside each of the six Angular files above | their tests |
+| `projects/app/src/app/online/my-games-page.ts` | The My Games screen |
+| `*.spec.ts` beside each of the six Angular files above | Their tests |
 
 **Modified:**
 
 | File | Change |
 |---|---|
 | `projects/protocol/src/{limits,errors,socket,public-api}.ts`, `schemas/{socket,game}.ts` | constants, codes, messages, schemas |
-| `projects/server/src/persistence/{records,repositories,migrate}.ts`, `postgres/{schema,mappers,postgresRepositories}.ts`, `memory/memoryRepositories.ts`, `repositoryContract.ts` | the chat store and per-user game queries |
-| `projects/server/src/rooms/{errors,roomService,roomService.spec}.ts` | chat command, welcome history |
-| `projects/server/src/http/{app,errors,guard,roomRoutes}.ts` and the four specs that call `buildApp` | history routes and wiring |
-| `projects/server/src/server.ts` | builds `GameHistory` |
-| `projects/app/src/app/online/{lobby-page,lobby-page.spec,rooms-page,rooms-page.spec,testing}.ts`, `app/app.routes.ts`, `app/app.ts`, `app/app.spec.ts` | chat in the Lobby and on the board, the My Games link and route |
+| `projects/server/src/persistence/{records,repositories,migrate}.ts`, `postgres/{schema,mappers,postgresRepositories}.ts`, `memory/memoryRepositories.ts`, `repositoryContract.ts` | The chat store and per-user game queries |
+| `projects/server/src/rooms/{errors,roomService,roomService.spec}.ts` | Chat command, welcome history |
+| `projects/server/src/http/{app,errors,guard,roomRoutes}.ts` and the four specs that call `buildApp` | History routes and wiring |
+| `projects/server/src/server.ts` | Builds `GameHistory` |
+| `projects/app/src/app/online/{lobby-page,lobby-page.spec,rooms-page,rooms-page.spec,testing}.ts`, `app/app.routes.ts`, `app/app.ts`, `app/app.spec.ts` | Chat in the Lobby and on the board, the My Games link and route |
 
 ---
 

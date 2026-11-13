@@ -781,8 +781,8 @@ const CONFIRM_KEYS = {
 (add `import type { MessageKey } from '../i18n/messages';` to the imports.)
 
 `describeSelection`: change the signature to end with `tr: Translator = englishTranslator`, then change these lines inside it:
-- the unseen-card fallback: `{ id, label: tr('selection.cardFallback') }`
-- the card label: `label: tr('card.named', { name: cardName(card.definitionId), face: cardFaceLabel(card) })`
+- The unseen-card fallback: `{ id, label: tr('selection.cardFallback') }`
+- The card label: `label: tr('card.named', { name: cardName(card.definitionId), face: cardFaceLabel(card) })`
 - `title: reason.kind === 'ability' ? abilityName(reason.abilityId) : reason.kind === 'choice' ? cardName(reason.card.as) : tr('selection.title')`
 - `prompt: text?.prompt ?? selectionPrompt(state, selection, items, tr)`
 - `confirmLabel: text?.confirm ?? tr(CONFIRM_KEYS[selection.then.kind])`

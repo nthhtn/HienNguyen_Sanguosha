@@ -213,7 +213,7 @@ Durations at Normal, from the spec's table:
 | GeneralRevealedEvent | 700 |
 | SeatEliminatedEvent | 1400 |
 | AbilityUsedEvent | 700 |
-| anything else | 0, visual `null` |
+| Anything else | 0, visual `null` |
 
 `BeatContext` supplies what the event alone doesn't say: a zone's kind, and the event before it. `BeatDefinition` functions take `(event, context)`.
 
@@ -267,13 +267,13 @@ What it folds (only what each event records):
 | HpLostEvent | `combinedHp -= amount` |
 | HealEvent | `combinedHp += amount` on `target.seatId` |
 | MaxHpReducedEvent | `maxCombinedHp = event.maxHp`; `combinedHp = min(combinedHp, maxHp)` |
-| CardMovedEvent | remove `cardInstanceId` from `fromZoneId`; add to `toZoneId` the card as `target` shows it in any zone, else `event.card`, else a masked copy (`definitionId: 'hidden'`) |
-| CardsDrawnEvent | move each id from the `drawPile` zone to the seat's hand zone, with the face as above |
+| CardMovedEvent | Remove `cardInstanceId` from `fromZoneId`; add to `toZoneId` the card as `target` shows it in any zone, else `event.card`, else a masked copy (`definitionId: 'hidden'`) |
+| CardsDrawnEvent | Move each id from the `drawPile` zone to the seat's hand zone, with the face as above |
 | SeatEliminatedEvent | `eliminated = true` |
-| GeneralRevealedEvent, GeneralHiddenEvent | copy that seat's `generals` from `target` |
+| GeneralRevealedEvent, GeneralHiddenEvent | Copy that seat's `generals` from `target` |
 | TurnAdvancedEvent | `turn.ownerSeatId = seatId` |
 | PhaseChangedEvent | `phase = event.phase` |
-| anything else | unchanged |
+| Anything else | Unchanged |
 
 Dying needs no field: the board's `isSeatDying` already reads `combinedHp`.
 
@@ -323,7 +323,7 @@ git commit -am "feat(app): fold played events into the displayed state"
   - Instant (`speedFactor === Infinity`) → `Infinity`;
   - `!catchUp` → `speedFactor`;
   - `owesDecision` → `max(speedFactor, queuedMs / RUSH_MS)`;
-  - otherwise → `max(speedFactor, queuedMs / CAP_MS)`.
+  - Otherwise → `max(speedFactor, queuedMs / CAP_MS)`.
 - Produces: `BoardGame` gains `clockWaitsForPlayback: boolean` (`true` in `GameService`, `false` in `RemoteGameService`) and `lastMoveStart: Signal<GameState | null>` (`RemoteGameService`: always `null`).
 - Produces: `@Injectable() class PlaybackDirector` (provided by `GameBoard`, so it is scoped to the board) with:
   - `readonly displayedState: Signal<GameState | null>`
@@ -480,11 +480,11 @@ Visuals from the prototype: shake and red flash, "−N" floating up, the HP icon
 - [ ] **Step 1: Write the failing tests**
 
 `seat-cues.spec.ts`:
-- a damage beat → `{ impact: 'hit', floatText: '−1' }` on the target;
-- a play → `callout.text` is `cue.play` with the card name, on its user;
-- a pass → `callout.tone` is `'pass'`;
-- an ability beat → a callout with the skill's name (content's `abilityName`) on its owner;
-- dying → `callout.text` is `cue.help` with tone `'red'`;
+- A damage beat → `{ impact: 'hit', floatText: '−1' }` on the target;
+- A play → `callout.text` is `cue.play` with the card name, on its user;
+- A pass → `callout.tone` is `'pass'`;
+- An ability beat → a callout with the skill's name (content's `abilityName`) on its owner;
+- Dying → `callout.text` is `cue.help` with tone `'red'`;
 - `involved` is `true` for the source, the targets and the responder, and `false` for the rest.
 
 `seat-tile.spec.ts`: `renders the callout text` and `adds the hit class for a hit cue`.

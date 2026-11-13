@@ -87,10 +87,10 @@
   - CLI: `sim fit-generals <games-per-seat-count> <minSeats>-<maxSeats> <firstSeed> [identity|kingdomWars]`; `kingdomWars` prints `formatDeckTable`, `identity` prints today's `formatTable` (single seat count allowed, `4-4`). Seat counts use consecutive seed blocks: seat count `s` starts at `firstSeed + (s − minSeats) × games`.
 
 - [ ] Step 1: tests on synthetic samples:
-  - two seat counts with different base win rates: a General that wins at each count's own rate scores ~0 (not biased by count);
-  - weights: 10 samples at 4 seats and 1000 at 8 contribute equally;
+  - Two seat counts with different base win rates: a General that wins at each count's own rate scores ~0 (not biased by count);
+  - Weights: 10 samples at 4 seats and 1000 at 8 contribute equally;
   - `fitPairs`: a pair whose seats win 0.2 above `overall + vA + vB` over 200 samples gets `0.2 × 200/400 = 0.1`; a pair at or below expectation gets no bonus; an unseen candidate has count 0 and no bonus;
-  - a seat count with no samples: no throw, no NaN;
+  - A seat count with no samples: no throw, no NaN;
   - `formatDeckTable` output parses as TypeScript exporting both constants (string checks on the export lines).
 - [ ] Step 2: run → FAIL. Step 3: implement. Step 4: `npx jest --selectProjects sim` → PASS.
 - [ ] Step 5: smoke: `npm run sim -- fit-generals 20 4-5 2000000 kingdomWars` prints a table with `kingdomWars:` ids.
@@ -124,8 +124,8 @@
 
 - [ ] Step 1: tests:
   - `pairScore` with a plain record equals today's value on a Kingdom Wars choice (base-id lookup) — frozen behaviour;
-  - with `PickTables`, a Kingdom Wars choice uses full-id values and adds the pair bonus; an Identity choice (unprefixed ids) ignores the KW table;
-  - a `kingdomWars:` id absent from the table counts 0;
+  - With `PickTables`, a Kingdom Wars choice uses full-id values and adds the pair bonus; an Identity choice (unprefixed ids) ignores the KW table;
+  - A `kingdomWars:` id absent from the table counts 0;
   - `decidePicksKw` on a General-selection fixture picks the pair the KW table plus bonus rates highest; `rule-based-v6` still picks today's pair (pin from Task 1 stays green);
   - Impetus for Conflicts under `decidePicksKw` chooses by the KW value; under v6 by the old value.
 - [ ] Step 2: run → FAIL. Step 3: implement. Step 4: `npx jest --selectProjects bots` → PASS; `danger.spec.ts` unchanged and green.

@@ -74,8 +74,8 @@ today.
     that replaced the card.
 - **Xiahou Dun: Unyielding** (may). After another seat damages you, you may
   judge. If the card isn't a heart, that seat chooses one of two outcomes:
-  - discard 2 hand cards;
-  - take 1 damage from you.
+  - Discard 2 hand cards;
+  - Take 1 damage from you.
 
   A seat with fewer than 2 hand cards must take the damage.
 - **Xu Chu: Bare the Chest** (may). In your Draw Phase you may draw 1 fewer
