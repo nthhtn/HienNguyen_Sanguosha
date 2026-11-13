@@ -203,6 +203,17 @@ board component. It renders from `visibleState` and nothing else. The pieces:
 
 Designs: [mobile landscape](../superpowers/specs/2026-11-03-mobile-landscape-design.md) (medium and large layouts stand) and [block play on phones](../superpowers/specs/2026-11-04-block-play-on-phones-design.md) (supersedes its phone parts).
 
+### Installed app
+
+The live site can be installed from Chrome on Android as a full-screen, landscape app (a web app manifest; no service worker, no APK).
+
+- **Manifest:** [manifest.webmanifest](../../projects/app/public/manifest.webmanifest), linked from `index.html` with the theme colour. Its icons are masters in `projects/content/assets-src/ui/brand/` (`icon-192.png`, `icon-512.png`, `icon-maskable-512.png`), shipped at `/images/ui/brand/`. The server sends it as `application/manifest+json`.
+- **Display mode:** `Layout.displayMode` is `fullscreen`, `standalone` (installed, status bar kept) or `browser`, read from `(display-mode: …)` media queries and followed while the page is open. `Layout.installed` is true for the first two.
+- **Device Info:** [device-info.ts](../../projects/app/src/app/device-info.ts) at `/device-info` shows the window size, display mode, orientation, layout and pixel ratio. It needs no sign-in and is the last link in the navigation drawer (not in the wide toolbar), since the installed app has no address bar.
+- **Not yet used:** `canPlay` ignores the display mode, so an installed phone still gets the small-screen prompt. The phone board comes later.
+
+Design: [phone app](../superpowers/specs/2026-11-13-phone-app-design.md).
+
 ### Decisions become dialogs
 
 A decision is state (`pendingResponse`, `pendingChoice`, `pendingSelection`,
