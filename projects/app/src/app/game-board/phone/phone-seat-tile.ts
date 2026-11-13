@@ -33,14 +33,14 @@ const JUDGMENT_BOXES = 3;
           <img class="ambitionist-mark" [src]="ambitionistIcon" [alt]="'label.kingdom.Ambitionist' | t" />
         }
         <span class="name" [attr.title]="name()">{{ name() }}</span>
-        @if (isBot()) {
+        @if (isBot() && !slim()) {
           <mat-icon class="bot" [attr.aria-label]="'seat.computerAria' | t">smart_toy</mat-icon>
         }
         @if (isViewer()) {
           <span class="you">{{ 'seat.you' | t }}</span>
         }
         <span class="judgment" [attr.aria-label]="'seat.judgment' | t">
-          @for (box of judgmentBoxes(); track $index) {
+          @for (box of slim() ? judgment() : judgmentBoxes(); track $index) {
             <span
               class="judgment-box"
               [class.filled]="box"
@@ -60,7 +60,11 @@ const JUDGMENT_BOXES = 3;
         }
       </div>
       <div class="stats">
-        <span class="hp">{{ 'seat.hp' | t: { hp: seat().combinedHp, max: seat().maxCombinedHp } }}</span>
+        @if (slim()) {
+          <span class="hp" [attr.aria-label]="'seat.hp' | t: { hp: seat().combinedHp, max: seat().maxCombinedHp }"><mat-icon aria-hidden="true">favorite</mat-icon>{{ seat().combinedHp }}/{{ seat().maxCombinedHp }}</span>
+        } @else {
+          <span class="hp">{{ 'seat.hp' | t: { hp: seat().combinedHp, max: seat().maxCombinedHp } }}</span>
+        }
         <span class="hand" [attr.aria-label]="'seat.handAria' | t: { n: handCount() }"><mat-icon aria-hidden="true">style</mat-icon>{{ handCount() }}</span>
         @if (seat().chained) {
           <mat-icon class="chain-mark" role="img" [attr.aria-label]="'seat.chained' | t">link</mat-icon>
@@ -134,7 +138,10 @@ const JUDGMENT_BOXES = 3;
     .general.own-hidden img { opacity: 0.6; }
     .damage-fx { position: absolute; inset: 0; pointer-events: none; }
     .stats { display: flex; align-items: center; gap: 6px; padding: 0 5px; white-space: nowrap; font-weight: 500; }
-    .hp { color: #b23a2e; }
+    .hp { display: inline-flex; align-items: center; color: #b23a2e; }
+    .hp mat-icon { width: 14px; height: 14px; font-size: 14px; }
+    .slim .stats { gap: 4px; padding: 0 3px; }
+    .slim .name-row { padding: 1px 3px; }
     .hand { display: inline-flex; align-items: center; }
     .hand mat-icon { width: 14px; height: 14px; font-size: 14px; }
     .chain-mark { margin-left: auto; width: 16px; height: 16px; font-size: 16px; color: #4a443d; }

@@ -113,7 +113,11 @@ import { PhoneSeatTile } from './phone-seat-tile';
     .own { flex: none; width: 150px; }
     .own .seat { height: 100%; }
     .hand { flex: 1 1 auto; min-width: 0; align-self: end; }
-    .actions { flex: none; width: 128px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
+    .actions {
+      flex: none; width: 128px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto;
+      --mat-button-outlined-label-text-color: #fbf7ec; --mat-button-outlined-outline-color: rgb(251 247 236 / 0.5);
+      --mat-button-outlined-disabled-label-text-color: rgb(251 247 236 / 0.45);
+    }
     .actions .skill { min-height: 44px; font-size: 14px; }
     .actions app-action-list ::ng-deep button { min-height: 44px; font-size: 14px; }
   `,
@@ -123,8 +127,8 @@ export class PhoneBoard {
   readonly viewerSeatId = input<string | null>(null);
   readonly thinkingSeatId = input<string | null>(null);
   readonly botSeatIds = input<string[]>([]);
-  readonly cues = input<Record<string, SeatCue>>({});
-  readonly damageEffects = input<Record<string, ShownDamage>>({});
+  readonly cues = input<Partial<Record<string, SeatCue>>>({});
+  readonly damageEffects = input<Partial<Record<string, ShownDamage>>>({});
   readonly resolving = input(false);
   readonly hand = input<CardInstance[]>([]);
   readonly handActions = input<Action[]>([]);

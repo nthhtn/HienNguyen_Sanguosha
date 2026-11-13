@@ -218,6 +218,18 @@ The live site can be installed from Chrome on Android as a full-screen, landscap
 
 Design: [phone app](../superpowers/specs/2026-11-13-phone-app-design.md).
 
+### Phone board
+
+On the `compact` layout (the installed app on a landscape phone), `GameBoard` renders [PhoneBoard](../../projects/app/src/app/game-board/phone/phone-board.ts) instead of the round table. New components beside the web board, so the medium and large layouts cannot change:
+
+- **Placement:** [phone-seat-layout.ts](../../projects/app/src/app/game-board/phone/phone-seat-layout.ts) puts opponents along the top, then down the sides from 9 seats (1, 2 or 2 per side), turn order running up the right, along the top and down the left. `phoneSizes` gives the bottom row (30% of the height, 104 to 124 px), tile heights and widths; a tile under 110 px is slim, never under 76 px.
+- **Seat tile:** `PhoneSeatTile`: Name with up to 3 Judgment boxes, both Generals, HP and hand count with the chained mark, 4 Equipment boxes. A slim tile drops the bot icon, shows only filled Judgment boxes and HP as numbers. An opponent's tile is one button (`opened`; Seat Details comes in Part 2b-2).
+- **Centre band:** `PhoneCentreBand` reuses `app-phase-indicator` and shows the newest Action History line, the turned-up cards, and Menu and History buttons.
+- **Bottom row:** The viewer's tile, `HandView` with `fit="overlap"` (`handStep`: cards overlap, never less than 44 px showing, then the row scrolls), and the action column with the viewer's usable skills above the board actions.
+- **Toolbar:** `PhoneBoard` calls `Layout.setBoardOpen`; while `Layout.toolbarHidden`, `App` drops the toolbar and `<html data-board="open">` sets the toolbar height to 0.
+- **Sizes:** No text under 12 px, 14 px for names, numbers, card names and buttons, 44 px tap targets, nothing scaled (`seatScale` and `centreScale` are not used).
+- **Preview:** The `phone-4`, `phone-8` and `phone-12` scenarios at `/preview`, opened at a phone size with `?display=fullscreen`.
+
 ### Decisions become dialogs
 
 A decision is state (`pendingResponse`, `pendingChoice`, `pendingSelection`,

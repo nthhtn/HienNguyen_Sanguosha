@@ -200,6 +200,10 @@ export function handStep(width: number, count: number, cardWidth: number, gap: n
     .hand-row.overlap .hand-card:focus-within { z-index: 1; }
     .hand-row.overlap .overlay { top: auto; bottom: 0; min-height: 100%; }
     .hand-row.overlap .overlay button { height: auto; min-height: 44px; font-size: 14px; }
+    .hand-row.overlap ::ng-deep app-playing-card .name {
+      font-size: 14px; line-height: 1.1; white-space: normal; overflow-wrap: anywhere;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    }
   `,
 })
 export class HandView {

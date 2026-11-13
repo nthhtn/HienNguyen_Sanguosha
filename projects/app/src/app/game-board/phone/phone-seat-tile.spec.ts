@@ -60,8 +60,13 @@ describe('PhoneSeatTile', () => {
     expect(tile.classList).toContain('responding');
   });
 
-  it('is slim when asked', () => {
-    expect(render(testSeat('seat-3', 3), { slim: true }).querySelector('.tile')!.classList).toContain('slim');
+  it('is slim when asked, giving the name row to the name: no bot icon, only filled Judgment boxes, HP as numbers', () => {
+    const el = render(testSeat('seat-3', 3, { combinedHp: 3, maxCombinedHp: 4 }), { slim: true, isBot: true, judgment: [card('j1', 'lightning')] });
+    expect(el.querySelector('.tile')!.classList).toContain('slim');
+    expect(el.querySelector('.bot')).toBeNull();
+    expect(el.querySelectorAll('.judgment-box')).toHaveLength(1);
+    expect(el.querySelector('.hp')!.textContent!.trim()).toBe('favorite3/4');
+    expect(el.querySelector('.hp')!.getAttribute('aria-label')).toBe('HP 3/4');
   });
 
   it("opens on a tap on an opponent's tile, but not on the viewer's", () => {
