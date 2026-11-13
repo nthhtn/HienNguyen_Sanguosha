@@ -1,12 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Layout, layoutFor } from './layout.service';
-
-function resizeTo(width: number, height: number): void {
-  Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
-  Object.defineProperty(window, 'innerHeight', { configurable: true, value: height });
-  window.dispatchEvent(new Event('resize'));
-  TestBed.tick();
-}
+import { clearDisplayMode, resizeTo, stubDisplayMode } from './layout.testing';
 
 describe('layoutFor', () => {
   it.each([
@@ -186,5 +180,52 @@ describe('Layout play check', () => {
     const layout = TestBed.inject(Layout);
     expect(layout.canPlay()).toBe(false);
     expect(layout.fitsIfTurned()).toBe(true);
+  });
+});
+
+describe('Layout display mode', () => {
+  beforeEach(() => resizeTo(1366, 768));
+  afterEach(() => clearDisplayMode());
+
+  it('is browser, and not installed, when the window has no matchMedia', () => {
+    const layout = TestBed.inject(Layout);
+    expect(layout.displayMode()).toBe('browser');
+    expect(layout.installed()).toBe(false);
+  });
+
+  it('is browser, and not installed, in a browser tab', () => {
+    stubDisplayMode('browser');
+    const layout = TestBed.inject(Layout);
+    expect(layout.displayMode()).toBe('browser');
+    expect(layout.installed()).toBe(false);
+  });
+
+  it.each(['fullscreen', 'standalone'] as const)('is installed in %s mode', (mode) => {
+    stubDisplayMode(mode);
+    const layout = TestBed.inject(Layout);
+    expect(layout.displayMode()).toBe(mode);
+    expect(layout.installed()).toBe(true);
+  });
+
+  it('follows the mode when it changes while the page is open', () => {
+    const display = stubDisplayMode('browser');
+    const layout = TestBed.inject(Layout);
+    display.set('standalone');
+    expect(layout.displayMode()).toBe('standalone');
+    expect(layout.installed()).toBe(true);
+  });
+
+  it('stops listening when it is destroyed', () => {
+    const display = stubDisplayMode('browser');
+    TestBed.inject(Layout);
+    expect(display.listeners.size).toBeGreaterThan(0);
+    TestBed.resetTestingModule();
+    expect(display.listeners.size).toBe(0);
+  });
+
+  it('does not change which windows can play', () => {
+    stubDisplayMode('fullscreen');
+    resizeTo(915, 412);
+    expect(TestBed.inject(Layout).canPlay()).toBe(false);
   });
 });
