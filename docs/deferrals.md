@@ -214,6 +214,14 @@ From [Backend](architecture/backend.md#not-done), which holds the detail:
 
 From the Resolution Notice, picker and Judgment work (PR #62, 2026-11-09). The design is in `docs/superpowers/specs/2026-11-09-resolution-notice-and-pickers-design.md`.
 
+### The phone board is off in production
+
+- **What is missing.**
+  - `FeatureFlags.phoneBoard` (`projects/app/src/app/feature-flags.ts`) is off in a production build.
+  - So the installed app on a phone is still blocked from playing, and a phone browser gets no install hint.
+- **Why it waits.** The board itself is Part 2b of the phone app (`docs/superpowers/specs/2026-11-13-phone-app-design.md`, section 3). Until it exists, an installed phone that could play would get a board built for tablets.
+- **Revisit when.** Part 2b is built: Turn the flag on (or remove it) in that pull request.
+
 ### Notices for skills and equipment abilities
 
 - **What is missing.**

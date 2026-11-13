@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { Layout } from '../layout.service';
 import { TPipe } from '../i18n/t.pipe';
+import { InstallHint } from '../install-hint';
 
 // Shown over the board while the window is too small to play (a phone, however it is held): the Guozhan board needs a
 // tablet or computer screen. A window that would be big enough turned sideways (a tablet held upright) is asked to
@@ -8,7 +9,7 @@ import { TPipe } from '../i18n/t.pipe';
 // underneath; nothing is paused or hidden.
 @Component({
   selector: 'app-small-screen-prompt',
-  imports: [TPipe],
+  imports: [TPipe, InstallHint],
   template: `
     <div class="prompt" role="status">
       @if (layout.fitsIfTurned()) {
@@ -18,6 +19,7 @@ import { TPipe } from '../i18n/t.pipe';
       } @else {
         <strong>{{ 'board.small.title' | t }}</strong>
         <span>{{ 'board.small.hint' | t }}</span>
+        <app-install-hint />
       }
     </div>
   `,

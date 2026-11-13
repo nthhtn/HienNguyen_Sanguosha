@@ -85,6 +85,16 @@ Four parts. The first is small and comes first, because it tests the one assumpt
 - **Install hint:** In a browser on a too-small window, the blocking screen and the notice beside the disabled controls gain one sentence telling the player to install the app. Where Chrome offers it (`beforeinstallprompt`), an **Install App** button sits beside the sentence. Shown only when not installed.
 - **Navigation, Rooms, lobby, sign-in, wiki, My Games** keep the layout they have today under 900 px (menu drawer). No redesign.
 
+### 2b. Staying connected on a phone
+
+Added by the developer on 2026-11-13, built with the layout rules. Both apply on every device, not only the installed app; neither changes how a game is played.
+
+- **Reconnect on return:** When the page becomes visible again (`visibilitychange` to `visible`) and the room socket is waiting to retry after a drop, it retries at once and starts its backoff again from the first delay. A socket that is open, connecting or ended is left alone; a dead socket that still looks open is found by the server's heartbeat, as today.
+- **Screen stays on during a game:** While a game board is open and the game is not over, the app asks the browser to keep the screen on (Screen Wake Lock, `navigator.wakeLock.request('screen')`).
+  - The browser drops the lock when the page is hidden, so it is asked again each time the page becomes visible while the game is still running.
+  - The lock is released at Game Over and when the board closes.
+  - Where the browser has no Wake Lock, or refuses, nothing happens and nothing is shown.
+
 ### 3. The phone board
 
 Reference size: 915 × 412 px (Honor 400 Pro class). It must also work at 780 × 360 px (Galaxy S24) and at the floor, 760 × 340 px.

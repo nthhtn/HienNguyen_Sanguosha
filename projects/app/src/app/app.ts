@@ -13,6 +13,7 @@ import { BATTLEFIELD_BACKGROUNDS, BattlefieldBackgrounds } from './battlefield-b
 import { AuthService } from './auth/auth.service';
 import { FEATURE_FLAGS } from './feature-flags';
 import { LanguageSwitcher } from './i18n/language-switcher';
+import { InstallPrompt } from './install-prompt.service';
 import { Layout } from './layout.service';
 import { MusicService, SoundEffects } from './music.service';
 import { PLAYBACK_SPEEDS, PlaybackSpeed } from './playback-speed.service';
@@ -92,6 +93,8 @@ export class App {
 
   protected readonly auth = inject(AuthService);
   protected readonly layout = inject(Layout);
+  // Listens from the start: Chrome offers to install once, early.
+  private readonly installPrompt = inject(InstallPrompt);
 
   constructor() {
     // Choosing a page from the drawer, or any other way of navigating, leaves the drawer closed.

@@ -137,4 +137,76 @@ describe('SocketService', () => {
     jest.advanceTimersByTime(60_000);
     expect(sockets).toHaveLength(1);
   });
+
+  describe('when the page comes back', () => {
+    const becomes = (state: 'visible' | 'hidden') => {
+      Object.defineProperty(document, 'visibilityState', { configurable: true, value: state });
+      document.dispatchEvent(new Event('visibilitychange'));
+    };
+    afterEach(() => Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' }));
+
+    // Three drops in a row: the next retry waits 4 s.
+    function waitingFourSeconds(): void {
+      connected();
+      latest().serverCloses();
+      jest.advanceTimersByTime(1_000);
+      latest().serverCloses();
+      jest.advanceTimersByTime(2_000);
+      latest().serverCloses();
+    }
+
+    it('retries at once instead of waiting, and only once', () => {
+      waitingFourSeconds();
+      const before = sockets.length;
+      becomes('hidden');
+      expect(sockets.length).toBe(before);
+      becomes('visible');
+      expect(sockets.length).toBe(before + 1);
+      jest.advanceTimersByTime(15_000);
+      expect(sockets.length).toBe(before + 1);
+    });
+
+    it('starts the waits again from 1 s', () => {
+      waitingFourSeconds();
+      becomes('visible');
+      const before = sockets.length;
+      latest().serverCloses();
+      jest.advanceTimersByTime(999);
+      expect(sockets.length).toBe(before);
+      jest.advanceTimersByTime(1);
+      expect(sockets.length).toBe(before + 1);
+    });
+
+    it('leaves an open, connecting or idle socket alone', () => {
+      becomes('visible');
+      expect(sockets).toHaveLength(0);
+      service.connect(ROOM.id);
+      becomes('visible');
+      expect(sockets).toHaveLength(1);
+      latest().serverOpens();
+      latest().serverSends(welcome());
+      becomes('visible');
+      expect(sockets).toHaveLength(1);
+    });
+
+    it('does nothing once ended, or after end()', () => {
+      connected();
+      latest().serverSends({ type: 'replaced' });
+      latest().serverCloses();
+      becomes('visible');
+      expect(sockets).toHaveLength(1);
+      service.connect(ROOM.id);
+      service.end();
+      becomes('visible');
+      expect(sockets).toHaveLength(2);
+    });
+
+    it('stops listening when it is destroyed', () => {
+      waitingFourSeconds();
+      const before = sockets.length;
+      TestBed.resetTestingModule();
+      becomes('visible');
+      expect(sockets.length).toBe(before);
+    });
+  });
 });

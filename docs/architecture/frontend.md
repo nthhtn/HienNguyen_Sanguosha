@@ -195,9 +195,10 @@ board component. It renders from `visibleState` and nothing else. The pieces:
 |---|---|---|
 | `large` | 1280 px wide and up, 600 px tall and up | The board's history tiles stay, seats at full size |
 | `medium` | 900 to 1279 px wide, 600 px tall and up | The history folds into a slide-over panel (`panelAsOverlay`), seats scale with the seat count (`seatScale`) |
+| `compact` | The installed app, landscape, under 900 x 600 but at least 760 x 340 px | The phone board (Part 2b of the phone app). Keeps the menu drawer and the slide-over panel. Only while the `phoneBoard` feature flag is on |
 | `phone` | Anything smaller | Means "too small to play" (`canPlay` is false) |
 
-- A game (local or online, General selection included) can be played only at 900 x 600 px or more. Below that, `small-screen-prompt` covers the board; a window that would fit if turned (`fitsIfTurned`, a tablet held upright) gets `rotate-prompt` instead. The game keeps running underneath: Local games wait for the player, online games are server-paced.
+- A game (local or online, General selection included) can be played at 900 x 600 px or more, or on the phone board (`compact`). Otherwise `small-screen-prompt` covers the board; a window that would be playable if turned (`fitsIfTurned`: A tablet held upright, or the installed app on an upright phone) gets `rotate-prompt` instead. The game keeps running underneath: Local games wait for the player, online games are server-paced.
 - `small-screen-notice` sits beside Start Game, Create Room, Play With Bots, Join, Rejoin and the room Start, which are disabled when `canPlay` is false. Other pages (wiki, sign-in, Rooms list, My Games) stay usable on a phone.
 - The viewport size and which overlay is open (navigation drawer or History panel, never both) are UI state only; the engine knows nothing of them.
 
@@ -210,7 +211,10 @@ The live site can be installed from Chrome on Android as a full-screen, landscap
 - **Manifest:** [manifest.webmanifest](../../projects/app/public/manifest.webmanifest), linked from `index.html` with the theme colour. Its icons are masters in `projects/content/assets-src/ui/brand/` (`icon-192.png`, `icon-512.png`, `icon-maskable-512.png`), shipped at `/images/ui/brand/`. The server sends it as `application/manifest+json`.
 - **Display mode:** `Layout.displayMode` is `fullscreen`, `standalone` (installed, status bar kept) or `browser`, read from `(display-mode: …)` media queries and followed while the page is open. `Layout.installed` is true for the first two.
 - **Device Info:** [device-info.ts](../../projects/app/src/app/device-info.ts) at `/device-info` shows the window size, display mode, orientation, layout and pixel ratio. It needs no sign-in and is the last link in the navigation drawer (not in the wide toolbar), since the installed app has no address bar.
-- **Not yet used:** `canPlay` ignores the display mode, so an installed phone still gets the small-screen prompt. The phone board comes later.
+- **Phone board flag:** `FeatureFlags.phoneBoard` is on under `ng serve` and off in a production build until the phone board is built. While it is off, `Layout` ignores the display mode for `kind` (`phoneBoardAllowed` is false) and no install hint shows.
+- **Forcing a mode in dev:** `?display=fullscreen`, `?display=standalone` or `?display=browser` on any URL makes the tab act as that mode, kept in `sessionStorage` (`sgs.display`) until `?display=auto`. [display-mode-override.ts](../../projects/app/src/app/display-mode-override.ts) reads it through the `DISPLAY_MODE_OVERRIDE` token; a production build ignores it.
+- **Install hint:** `app-install-hint` follows the "too small" sentence in `small-screen-notice` and `small-screen-prompt` when `Layout.installWouldHelp` is true (a browser tab the installed app could play on, held as it is or turned). [InstallPrompt](../../projects/app/src/app/install-prompt.service.ts) keeps Chrome's `beforeinstallprompt` event, which `App` starts listening for at once; while it has one, an Install App button opens Chrome's dialog, once.
+- **Staying connected:** `SocketService` retries at once, from the first backoff delay, when the page becomes visible while it waits to reconnect. [ScreenWakeLock](../../projects/app/src/app/screen-wake-lock.service.ts) keeps the screen on while a game board is open and the game is not over, and asks again when the page comes back; `GameBoard` holds and releases it.
 
 Design: [phone app](../superpowers/specs/2026-11-13-phone-app-design.md).
 
