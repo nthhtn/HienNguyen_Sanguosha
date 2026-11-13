@@ -352,6 +352,8 @@ export const vi: Messages = {
   'board.rotate.hint': 'Bảng Quốc chiến cần màn hình rộng hơn. Hãy xoay thiết bị sang ngang để tiếp tục chơi.',
   'board.small.title': 'Cần màn hình lớn hơn',
   'board.small.hint': 'Quốc chiến cần màn hình máy tính bảng hoặc máy tính. Hãy dùng thiết bị lớn hơn để chơi.',
+  'play.installHint': 'Cài ứng dụng để chơi trên điện thoại này.',
+  'play.installApp': 'Cài ứng dụng',
   'play.needsLargerScreen': 'Cần màn hình máy tính bảng hoặc máy tính để chơi.',
   'board.yourHand': 'Bài trên tay của bạn',
   'board.noGame': 'Chưa có ván nào đang chơi.',

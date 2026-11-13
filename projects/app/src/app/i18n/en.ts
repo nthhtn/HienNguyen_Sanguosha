@@ -353,6 +353,8 @@ export const en = {
   'board.rotate.hint': 'The Guozhan board needs a wider screen. Turn your device sideways to keep playing.',
   'board.small.title': 'Larger Screen Needed',
   'board.small.hint': 'Guozhan needs a tablet or computer screen. Use a larger device to play.',
+  'play.installHint': 'Install the app to play on this phone.',
+  'play.installApp': 'Install App',
   'play.needsLargerScreen': 'Playing needs a tablet or computer screen.',
   'board.yourHand': 'Your Hand',
   'board.noGame': 'No game in progress.',
