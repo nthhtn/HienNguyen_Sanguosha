@@ -3,6 +3,7 @@ import type { Action, CardZone, GameState, Seat } from 'engine';
 import { buildContentRegistry } from 'content';
 import type { AvatarSkill } from '../avatar-skills';
 import { PhoneBoard } from './phone-board';
+import { phoneSeats, phoneSizes } from './phone-seat-layout';
 import { testSeats } from './phone.testing';
 
 function state(seats: Seat[]): GameState {
@@ -67,5 +68,35 @@ describe('PhoneBoard', () => {
     const { el } = render(4, null);
     expect(tilesIn(el, 'top')).toBe(4);
     expect(el.querySelector('.bottom [data-seat-id]')).toBeNull();
+  });
+
+  describe('sized by the room the board gets, inside the safe areas', () => {
+    let reported: { width: number; height: number } = { width: 0, height: 0 };
+    beforeEach(() => {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 915 });
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: 412 });
+      (globalThis as { ResizeObserver?: unknown }).ResizeObserver = class {
+        constructor(private readonly callback: ResizeObserverCallback) {}
+        observe(target: Element) {
+          this.callback([{ target, contentRect: reported } as unknown as ResizeObserverEntry], this as unknown as ResizeObserver);
+        }
+        disconnect() {}
+      };
+    });
+    afterEach(() => {
+      delete (globalThis as { ResizeObserver?: unknown }).ResizeObserver;
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: 768 });
+    });
+
+    it('uses the board box, not the window, when a cut-out takes 35 px', () => {
+      // The board's content box: 880 x 412 minus its 8 px padding on each side.
+      reported = { width: 864, height: 396 };
+      const { el } = render(12);
+      const expected = phoneSizes(880, 412, phoneSeats(testSeats(12), 'seat-0'));
+      const board = el.querySelector('.phone-board') as HTMLElement;
+      expect(board.style.getPropertyValue('--top-width')).toBe(`${expected.topTileWidth}px`);
+      expect(expected.topTileWidth).not.toBe(phoneSizes(915, 412, phoneSeats(testSeats(12), 'seat-0')).topTileWidth);
+    });
   });
 });

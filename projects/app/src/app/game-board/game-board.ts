@@ -72,6 +72,8 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
   providers: [PlaybackDirector],
   imports: [TPipe, TMsgPipe, DecisionBanner, RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, SelectionRoster, GameStartCountdown, DiscardPile, ActionHistoryPanel, BoardPanel, SmallScreenPrompt, PhoneBoard, CdkTrapFocus, NgTemplateOutlet, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
   template: `
+    <!-- On the phone board (fixed over the page) these must sit above it; elsewhere the wrapper adds nothing. -->
+    <div class="banners">
     @if (lastError(); as error) {
       <div class="error-banner" role="alert">
         <mat-icon>error</mat-icon>
@@ -85,6 +87,7 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
     }
 
     <app-decision-banner />
+    </div>
     @if (gameService.gameStartsAt(); as startsAt) {
       <app-game-start-countdown [startsAt]="startsAt" />
     }
@@ -241,6 +244,11 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
     }
   `,
   styles: `
+    .banners { display: contents; }
+    :host-context([data-layout='compact']) .banners {
+      display: block; position: fixed; z-index: 3;
+      top: env(safe-area-inset-top, 0px); left: env(safe-area-inset-left, 0px); right: env(safe-area-inset-right, 0px);
+    }
     .error-banner {
       display: flex; align-items: center; gap: 12px; margin: 8px 0; padding: 8px 12px; border-radius: 12px;
       background: var(--mat-sys-error-container); color: var(--mat-sys-on-error-container);

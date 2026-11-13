@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, DestroyRef, computed, inject, input, output } from '@angular/core';
+import { Component, DestroyRef, ElementRef, afterNextRender, computed, inject, input, output, signal, viewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { Action, CardInstance, ContentRegistry, GameState, Seat, isSeatDying } from 'engine';
 import { I18n } from '../../i18n/i18n.service';
@@ -14,6 +14,9 @@ import type { SeatCue } from '../playback/seat-cues';
 import { PhoneCentreBand } from './phone-centre-band';
 import { phoneSeats, phoneSizes } from './phone-seat-layout';
 import { PhoneSeatTile } from './phone-seat-tile';
+
+// The board's padding (styles below), which phoneSizes counts in.
+const BOARD_PADDING = 8;
 
 // The board on the phone layout (spec, "The phone board"): opponents along the top and down the sides, the centre band
 // between them, and a bottom row with the viewer's seat, the hand and the action column. Drawn at real sizes; it reads
@@ -41,6 +44,7 @@ import { PhoneSeatTile } from './phone-seat-tile';
       />
     </ng-template>
     <div
+      #board
       class="phone-board"
       [class.sides]="hasSides()"
       [style.--side-width.px]="sizes().sideWidth"
@@ -143,7 +147,10 @@ export class PhoneBoard {
 
   protected readonly seats = computed(() => phoneSeats(this.state().seats, this.viewerSeatId()));
   protected readonly hasSides = computed(() => this.seats().left.length > 0);
-  protected readonly sizes = computed(() => phoneSizes(this.layout.size().width, this.layout.size().height, this.seats()));
+  // The board's own box (inside the safe areas), padding included; the window until it has been measured.
+  private readonly measured = signal<{ width: number; height: number } | null>(null);
+  private readonly room = computed(() => this.measured() ?? this.layout.size());
+  protected readonly sizes = computed(() => phoneSizes(this.room().width, this.room().height, this.seats()));
   protected readonly viewerSeat = computed(() => this.state().seats.find((s) => s.id === this.viewerSeatId()) ?? null);
   // Only the skills the engine offers now; the others would be disabled buttons taking room.
   protected readonly usableSkills = computed(() => this.skills().filter((s) => s.action !== null));
@@ -151,13 +158,25 @@ export class PhoneBoard {
   protected readonly centre = computed(() => {
     const { tileHeight, bottomHeight } = this.sizes();
     const top = 8 + tileHeight + 5;
-    const height = Math.max(0, this.layout.size().height - top - 5 - bottomHeight - 8);
+    const height = Math.max(0, this.room().height - top - 5 - bottomHeight - 8);
     return { y: top + height / 2, height };
   });
 
+  private readonly board = viewChild.required<ElementRef<HTMLElement>>('board');
+
   constructor() {
     this.layout.setBoardOpen(true);
-    inject(DestroyRef).onDestroy(() => this.layout.setBoardOpen(false));
+    const destroyRef = inject(DestroyRef);
+    destroyRef.onDestroy(() => this.layout.setBoardOpen(false));
+    // A camera cut-out or rounded corner (env(safe-area-inset-*)) leaves the board less room than the window.
+    if (typeof ResizeObserver !== 'function') return;
+    afterNextRender(() => {
+      const observer = new ResizeObserver(([entry]) =>
+        this.measured.set({ width: entry.contentRect.width + BOARD_PADDING * 2, height: entry.contentRect.height + BOARD_PADDING * 2 })
+      );
+      observer.observe(this.board().nativeElement);
+      destroyRef.onDestroy(() => observer.disconnect());
+    });
   }
 
   protected nameOf(seatId: string): string {

@@ -1,3 +1,5 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { GameService } from '../game.service';
@@ -156,6 +158,17 @@ describe('GameBoard on the phone board (installed, 915 x 412)', () => {
     expect(el.querySelector('app-phone-board')).not.toBeNull();
     expect(el.querySelector('app-round-table')).toBeNull();
     expect(el.querySelector('app-small-screen-prompt')).toBeNull();
+  });
+
+  it('keeps the decision and error banners above the phone board', () => {
+    const { el } = runningBoard();
+    const banners = el.querySelector('.banners') as HTMLElement;
+    expect(banners.querySelector('app-decision-banner')).not.toBeNull();
+    // jsdom does not apply this component's styles, so read the rule that lifts the banners on the compact layout.
+    const source = readFileSync(join(__dirname, 'game-board.ts'), 'utf8');
+    const rule = /:host-context\(\[data-layout='compact'\]\) \.banners \{([^}]*)\}/.exec(source)?.[1] ?? '';
+    expect(rule).toMatch(/position: fixed/);
+    expect(Number(/z-index: (\d+)/.exec(rule)?.[1])).toBeGreaterThan(1);
   });
 
   it('opens the History panel from the centre band', () => {
