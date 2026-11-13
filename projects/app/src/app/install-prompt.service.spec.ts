@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { FEATURE_FLAGS } from './feature-flags';
 import { InstallPrompt } from './install-prompt.service';
 import { fireInstallPrompt } from './install-prompt.testing';
 
@@ -32,6 +33,14 @@ describe('InstallPrompt', () => {
     const prompt = TestBed.inject(InstallPrompt);
     TestBed.resetTestingModule();
     fireInstallPrompt(jest.fn(async () => undefined));
+    expect(prompt.available()).toBe(false);
+  });
+
+  it("leaves Chrome's own install banner alone while the phone board is off", () => {
+    TestBed.configureTestingModule({ providers: [{ provide: FEATURE_FLAGS, useValue: { playOffline: false, playbackSettings: false, phoneBoard: false } }] });
+    const prompt = TestBed.inject(InstallPrompt);
+    const event = fireInstallPrompt(jest.fn(async () => undefined));
+    expect(event.defaultPrevented).toBe(false);
     expect(prompt.available()).toBe(false);
   });
 });

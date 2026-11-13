@@ -1,4 +1,5 @@
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
+import { FEATURE_FLAGS } from './feature-flags';
 
 // Chrome's `beforeinstallprompt` event; not in TypeScript's DOM types.
 interface BeforeInstallPromptEvent extends Event {
@@ -15,6 +16,8 @@ export class InstallPrompt {
   readonly available = computed(() => this.offer() !== null);
 
   constructor() {
+    // Keeping the offer stops Chrome's own install banner, so it is kept only while the hint can show it.
+    if (!inject(FEATURE_FLAGS).phoneBoard) return;
     const offered = (event: Event) => {
       event.preventDefault();
       this.offer.set(event as BeforeInstallPromptEvent);
