@@ -66,6 +66,7 @@ export class Layout {
     return this.kind() === 'large' ? 1 : 0.5 + 0.5 * this.seatScale(seatCount);
   }
   readonly portrait = computed(() => this.height() > this.width());
+  readonly size = computed(() => ({ width: this.width(), height: this.height() }));
   readonly displayMode = this._displayMode.asReadonly();
   // Running as the installed app. Nothing uses it to decide who can play yet.
   readonly installed = computed(() => this.displayMode() !== 'browser');

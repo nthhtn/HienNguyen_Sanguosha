@@ -223,6 +223,12 @@ describe('Layout display mode', () => {
     expect(display.listeners.size).toBe(0);
   });
 
+  it('reports the window size', () => {
+    const layout = TestBed.inject(Layout);
+    resizeTo(915, 412);
+    expect(layout.size()).toEqual({ width: 915, height: 412 });
+  });
+
   it('does not change which windows can play', () => {
     stubDisplayMode('fullscreen');
     resizeTo(915, 412);
