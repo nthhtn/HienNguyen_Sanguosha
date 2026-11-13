@@ -52,11 +52,11 @@ visible counts.
 the same steps for every decision. Before the steps it does two things to the
 legal actions:
 
-- **Fills target templates** (`fillPick`, `helpers.ts`): a card that can take
+- **Fills target templates** (`fillPick`, `helpers.ts`): A card that can take
   several targets gets the attackable seats, best first by the ranker
   (section 5), up to the card's maximum. With no attackable seat the play is
   dropped.
-- **Drops wasted plays** (`withoutWaste`, `waste.ts`, section 6): a Sha into a
+- **Drops wasted plays** (`withoutWaste`, `waste.ts`, section 6): A Sha into a
   visible stop is removed before any rule sees it.
 
 Then the first step that applies decides:
@@ -65,12 +65,12 @@ Then the first step that applies decides:
 |---|---|---|
 | 1 | General selection | Picks the pair with the highest value-table score (section 8). |
 | 1a0 | Arranging cards (Astrology) | Peach, Shan and any Sha on top; everything else at the bottom. |
-| 1a | A selection (cards or seats to pick) | A registry rule, then the per-skill code, then the default: seats only if attackable (else cancel); cards for Axe, Green Dragon Blade, Serpent Spear and conversion skills are the least useful; any other selection is cancelled when allowed. |
-| 1a' | An ability's ask or pick | • Synergistic Partners reward: recover if offered, else draw.<br>• A "use this?" ask: see below.<br>• A pick of a seat, suit or label: registry rule, then per-skill code, else the first option.<br>• Gender Swords aimed at it: with 2 or fewer hand cards let the user draw, otherwise discard its least useful card. |
-| 1b | A Tool's pick (Steal, Break, Harvest) | From a seat: A weapon, then armour, then a mount, then a card from the hand. From Harvest's face-up cards: the one it most wants to keep. |
+| 1a | A selection (cards or seats to pick) | A registry rule, then the per-skill code, then the default: Seats only if attackable (else cancel); cards for Axe, Green Dragon Blade, Serpent Spear and conversion skills are the least useful; any other selection is cancelled when allowed. |
+| 1a' | An ability's ask or pick | • Synergistic Partners reward: Recover if offered, else draw.<br>• A "use this?" ask: See below.<br>• A pick of a seat, suit or label: Registry rule, then per-skill code, else the first option.<br>• Gender Swords aimed at it: With 2 or fewer hand cards let the user draw, otherwise discard its least useful card. |
+| 1b | A Tool's pick (Steal, Break, Harvest) | From a seat: A weapon, then armour, then a mount, then a card from the hand. From Harvest's face-up cards: The one it most wants to keep. |
 | 2 | A response window aimed at it | Section 7. |
 | 3 | Discard Phase | Throws away the least useful card first (keep order below). |
-| 4 | Safety cap | 30 actions this turn: end the phase. |
+| 4 | Safety cap | 30 actions this turn: End the phase. |
 | 5 | Play Phase | The play ladder below. |
 | 6 | Anything else | End the phase, else pass, else the first legal action. |
 
@@ -86,7 +86,7 @@ Then the first step that applies decides:
   that wears equipment.
 
 **Start-of-turn reveals.** The Start window is a template the bot does not
-know, so the fallback takes it as offered: reveal nothing. Bots reveal only
+know, so the fallback takes it as offered: Reveal nothing. Bots reveal only
 by using a skill, a conversion or a compulsory ask ("a bot has no reason to
 hide" once it acts).
 
@@ -136,19 +136,19 @@ than 4 cards.
 `table.ts` and `danger.ts` build a picture from the redacted view (on in
 `rule-based` through `tableReading`).
 
-**Allies** (`isAlly`, `helpers.ts`): a seat that has revealed the bot's own
+**Allies** (`isAlly`, `helpers.ts`): A seat that has revealed the bot's own
 Kingdom. A hidden seat could be anyone, so it is not an ally. An Ambitionist is
 nobody's ally. A bot whose Kingdom already holds half the table (rounded down)
 will become an Ambitionist when it reveals, so it treats nobody as an ally.
 
-**Forces** (`forcesOf`): a Kingdom's living, revealed seats playing for it;
+**Forces** (`forcesOf`): A Kingdom's living, revealed seats playing for it;
 each living Ambitionist is a force of one. A hidden seat belongs to no force.
 Each force has a seat count and summed HP.
 
-**The leading force** (`leadingForceOf`): a force with at least 2 seats and
+**The leading force** (`leadingForceOf`): A force with at least 2 seats and
 strictly more seats than every other force, while its HP is greater than the
 highest HP among the forces with the next most seats. It counts as
-**weakened**, and stops leading, as soon as either fails: another force
+**weakened**, and stops leading, as soon as either fails: Another force
 catches up in seats, or the runner-up force has as much HP. There is then no
 leader, and no truce.
 
@@ -164,7 +164,7 @@ leader, and no truce.
 **Danger** (`danger.ts`):
 
 - **Ratings:** Each skill has a hand rating in content data
-  (`projects/content/src/data/decks/kingdom-wars/skill-danger.json`): high 2,
+  (`projects/content/src/data/decks/kingdom-wars/skill-danger.json`): High 2,
   medium 1, low 0; Lord skills are not rated.
 - **A General's danger** is its highest skill rating plus 10 times its value in
   `GENERAL_VALUES` (the Identity-fitted table, by base id).
@@ -173,7 +173,7 @@ leader, and no truce.
 - **Example:** A General with one high-rated skill is dangerous on its own; a
   medium skill plus a value of +0.10 also reaches 2.
 
-**Hostile acts** (`hostileActs`, `targeting.ts`): from the log, how many times
+**Hostile acts** (`hostileActs`, `targeting.ts`): From the log, how many times
 a seat has damaged the bot or a revealed ally, or played Sha, Duel, Steal,
 Break, Capture, Starvation, Barbarians, Hail of Arrows or Lightning at them
 (not as a response). This is the bot's memory of grudges.
@@ -206,12 +206,12 @@ What changes with a truce partner:
   - A truce partner at 2 HP or less is 1 friend, a healthy one that is not
     dangerous 0.5 friend, a dangerous one 1 enemy.
   - A foe is 1 enemy.
-  - With no leader, the old count stands: play when non-allies are at least as
+  - With no leader, the old count stands: Play when non-allies are at least as
     many as allies.
 - **Ally Far Attack Near** gives its card to the offered seat the ranker likes
   least, which is a held-fire truce partner when one is offered.
 
-What does not change: a truce partner is still not an ally. It does not count
+What does not change: A truce partner is still not an ally. It does not count
 for Amass or Harvest, its Tools are not cancelled for it with Wuxie, and the
 bot answers its attacks as any other (rule C, which would let the bot take a
 truce partner's hit, is off).
@@ -235,9 +235,9 @@ better; allies and the bot itself are filtered out before ranking.
 A truce partner is `HOLD_FIRE` unless it has 3 HP or more and is dangerous;
 then its score is capped just below the lowest leading-force seat.
 
-So, in practice: the leader first, always; among the rest, a seat one hit from
+So, in practice: The leader first, always; among the rest, a seat one hit from
 death, then dangerous revealed Generals, then whoever has been hitting the bot
-or its allies, then the lowest HP. Example: with no leader, a revealed General
+or its allies, then the lowest HP. Example: With no leader, a revealed General
 with a high-rated skill (danger 2) at 4 HP scores about +40 − 40 = 0, and
 outranks a hidden seat at 3 HP (danger 0), which scores −30.
 
@@ -291,7 +291,7 @@ switches (`ResponseRules` in `responses.ts`) are all off in `rule-based`.
 from content (`wouldStop`, `extraCostOf` in
 `projects/content/src/lib/shared/stops.ts`); the bot only reads them.
 
-- **Stopped plays (A1).** A play whose target has a visible stop is dropped: a
+- **Stopped plays (A1).** A play whose target has a visible stop is dropped: A
   black Sha into Black Shield, a plain Sha into Wood Armor (unless the user's
   weapon ignores armour), a Sha on Liu Shan (Pleasure) when the bot holds no
   other Basic card to pay. For a multi-target play only the stopped seats are
@@ -332,7 +332,7 @@ window is worth answering, then which card to give.
 - **Upheaval and Instigate.** Forced to play a Sha or suffer, it plays the Sha
   only when the seat it would hit is a non-ally (for Instigate, also one the
   ranker does not hold fire on); otherwise it takes the loss.
-- **Anything else** (a Wuxie Kongjie counter, unknown windows): pass.
+- **Anything else** (a Wuxie Kongjie counter, unknown windows): Pass.
 
 ## 8. Picking Generals
 
@@ -343,7 +343,7 @@ tie (`bestPair`, `general-values.ts`).
 Which values it uses depends on the game:
 
 - **In a Kingdom Wars game** the values are the Kingdom Wars table
-  (`general-values.kingdom-wars.data.ts`): fitted by full id against each force's
+  (`general-values.kingdom-wars.data.ts`): Fitted by full id against each force's
   own strength, so a General is not rated for belonging to a strong force, plus
   bonuses for candidate pairs that win more together.
 - **Impetus for Conflicts** (hiding a General) uses the same table.
@@ -375,10 +375,10 @@ in `projects/sim`. Only `rule-based` plays people.
 | `rule-based-v4` | End of Part 1 (registry, no table reading) |
 | `rule-based-v5` | End of Part 2 (table reading, no waste rules) |
 | `rule-based-v6` | End of Part 3, with Identity-table picks for every deck; frozen as Part 4's baseline |
-| `rule-based-cards` | Stage 1 experiment: every card-play rule on |
+| `rule-based-cards` | Stage 1 experiment: Every card-play rule on |
 | `rule-based-responses` | Stage 2 experiment: Shan hold and extended Wuxie on |
 | `rule-based-picks` | Stage 4 value table on the original bot |
-| `rule-based-waste` | Part 3 with rule C on (failed: fewer seats won) |
+| `rule-based-waste` | Part 3 with rule C on (failed: Fewer seats won) |
 | `rule-based-waste-no-c` | Part 3 without rule C; what shipped |
 | `rule-based-picks-kw` | Part 4 Kingdom Wars value table; `rule-based` now decides the same |
 

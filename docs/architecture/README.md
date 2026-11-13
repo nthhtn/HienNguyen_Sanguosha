@@ -7,7 +7,7 @@ it.
 | Doc | Read it when you want to know… |
 |---|---|
 | [System overview](system-overview.md) | What the projects are, who may depend on whom, and how a click becomes a state change |
-| [Rules engine](rules-engine.md) | How the rule-based engine is modeled: state, actions, effects, events, triggers, decisions, visibility |
+| [Rules engine](rules-engine.md) | How the rule-based engine is modeled: State, actions, effects, events, triggers, decisions, visibility |
 | [The event chain](event-chain.md) | Exactly how one move resolves, with real traces (the deep dive on the pipeline) |
 | [Content and extensibility](content-and-extensibility.md) | How cards, generals, skills and modes are defined, and how to add one |
 | [Frontend](frontend.md) | How the Angular app renders the engine's state, plays locally or online, sends actions back, and speaks English and Vietnamese |

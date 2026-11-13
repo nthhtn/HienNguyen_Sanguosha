@@ -70,14 +70,14 @@ to code for non-trivial mechanics. Trivial additions that just reuse an
 already-specified pattern don't need a fresh round of spec-writing.
 
 `npm run verify` runs the static pre-merge checks (lint, typecheck, build) and CI runs it, with the tests, on every pull request;
-merging is human-only: the agent never merges or pushes to `main`. See
+merging is human-only: The agent never merges or pushes to `main`. See
 `docs/ci-and-guardrails.md`.
 
 ## Presentation layer (Angular)
 
 Game rules MUST be implemented independently from presentation.
 
-Angular components SHOULD primarily be responsible for: rendering game
+Angular components SHOULD primarily be responsible for: Rendering game
 state, receiving user interaction, dispatching player actions, presenting
 available actions, and managing UI-specific state. Components MUST NOT
 contain substantial game-rule logic; game behavior SHOULD be implemented
@@ -111,7 +111,7 @@ Every piece of visible text MUST follow these casing rules:
   - Game mode names ("Guozhan");
   - The term General(s), including Main General and Deputy General;
   - HP.
-- Ids are never shown as they are: show "Seat 0", not `seat-0`.
+- Ids are never shown as they are: Show "Seat 0", not `seat-0`.
 
 #### Other languages
 
@@ -146,6 +146,6 @@ layer between them is expected, not a shortcut to avoid.
 
 The architecture SHOULD allow the game engine to eventually run
 authoritatively on a server. This should be a natural extension rather
-than a redesign: the engine is a pure, framework-free TypeScript package,
+than a redesign: The engine is a pure, framework-free TypeScript package,
 executable under plain Node (proven by the headless simulation harness in
 the engine sub-project), and its state is plain serializable data.

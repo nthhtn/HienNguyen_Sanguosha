@@ -1,6 +1,6 @@
 # System overview
 
-This doc maps the whole system: the projects, the rules about who may import
+This doc maps the whole system: The projects, the rules about who may import
 whom, and the path one player move takes from a click to a new screen.
 
 ## Layers and projects
@@ -18,7 +18,7 @@ Three more projects are not layers but support them:
 
 | Project | Purpose |
 |---|---|
-| `projects/protocol` | The wire contract between app and server: schemas, message types, limits, error codes, `PROTOCOL_VERSION`. Framework-free. |
+| `projects/protocol` | The wire contract between app and server: Schemas, message types, limits, error codes, `PROTOCOL_VERSION`. Framework-free. |
 | `projects/bots` | Computer opponents. Framework-free; they only see a redacted state and the engine's legal actions. |
 | `projects/sim` | A headless simulator and invariant checker that plays whole games under Node, plus a leak checker and a bot tournament runner. |
 
@@ -127,7 +127,7 @@ design leans on them:
    pending decisions and the resolution queue are part of the state, so a game
    can be saved and resumed at any decision.
 
-The simulator checks the third property on every game: it round-trips the final
+The simulator checks the third property on every game: It round-trips the final
 state through JSON and compares it.
 
 ## Tooling

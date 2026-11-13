@@ -2,7 +2,7 @@
 
 How one player move becomes a series of state changes in the rules engine.
 This doc is for anyone who changes the engine or adds content (cards, skills,
-modes): every new mechanic plugs into this chain, so it is worth knowing
+modes): Every new mechanic plugs into this chain, so it is worth knowing
 exactly how it runs.
 
 The code lives in [`resolve.ts`](../../projects/engine/src/lib/pipeline/resolve.ts)
@@ -27,7 +27,7 @@ Actions produce effects, effects produce events, and events wake triggers.
   in the state, so the game can stop for a player's answer at any point and
   pick up exactly where it left off.
 - The engine itself knows no card or skill
-  by name: it asks content what a card does (`CardDefinition.play`) and who
+  by name: It asks content what a card does (`CardDefinition.play`) and who
   reacts (triggers).
 
 ## The pipeline
@@ -54,7 +54,7 @@ resolve(state, action)                      ← the only entry point
 any action once the game has a result, lets `resolveAction` queue what the
 action leads to, then settles the game with `advanceToDecision`.
 
-**`resolveAction`** validates first: the right seat, the card in hand, the
+**`resolveAction`** validates first: The right seat, the card in hand, the
 targets among the engine's own legal target lists
 ([`legality.ts`](../../projects/engine/src/lib/rules/legality.ts)).
 
@@ -72,7 +72,7 @@ targets among the engine's own legal target lists
   - Then the effects `CardDefinition.play()`
     returned.
 
-**The resolution queue** is plain data in `GameState.resolutionQueue`: effects
+**The resolution queue** is plain data in `GameState.resolutionQueue`: Effects
 and actions, front first. It is absent, never `[]`, when empty. Its rules:
 
 - **Trigger follow-ups go to the front**, ahead of the effect's siblings, so
@@ -88,7 +88,7 @@ damage-reduction skill works this way. Anything it returns after the
 replacement runs once the replacement has applied (a skill that takes a
 judgment's card, then lets the Done step go on).
 
-**`applyEffect`** is the only place state changes. It is a pure function: old
+**`applyEffect`** is the only place state changes. It is a pure function: Old
 state in, new state and events out. Each event is appended to `state.log`.
 The Tool lifecycle's effects (below) only reshape the queue or open a window,
 so they are applied beside it, in
@@ -119,7 +119,7 @@ after-triggers are queued and drained in turn.
 - **Win check.** The mode's `checkWinCondition` runs before draining and
   after every queue item.
 
-## Prime example: a lethal Sha
+## Prime example: A lethal Sha
 
 Three seats. Seat A plays Sha on Seat B, who is at 1 HP with both generals
 hidden, and no one holds a Shan or a Peach. This is the real event log the
@@ -146,7 +146,7 @@ The call returns. The UI shows "Waiting on Seat B", and B is offered
 ### Call 2: `resolve(PassAction by B)`
 
 1. `resolveAction` clears the pending response and queues the effect it was
-   holding back: the `sha-hit` step, which leads to `sha-damage`, which
+   holding back: The `sha-hit` step, which leads to `sha-damage`, which
    queues the `DamageEffect` and then `sha-damaged { logFrom }` (where the log
    stood before the damage). `sha-damaged` queues `sha-after-damage` only if
    the log since `logFrom` shows the target took damage.
@@ -170,7 +170,7 @@ The call returns. The UI shows "Waiting on Seat B", and B is offered
 
 1. The rescue window's held-back effect is the rest of the round. No one is
    left to ask, so B is eliminated: **`SeatEliminatedEvent`** (B).
-2. `advanceToDecision`: the win check runs. Two kingdoms are still standing,
+2. `advanceToDecision`: The win check runs. Two kingdoms are still standing,
    so there is no result. It is still A's Play phase, so it stops and waits
    for A.
 
@@ -195,7 +195,7 @@ Discard History are views built from it, never separate records.
 ## Pausing for a response
 
 A card can't stop in the middle of a function to wait for a player. Instead
-it emits `OpenResponseEffect`, which stores a `PendingResponse`: who must
+it emits `OpenResponseEffect`, which stores a `PendingResponse`: Who must
 answer, with which cards, and the effect to apply if they don't
 (`context.effect`). The queue stops draining, `resolve` returns, and the game
 resumes with the next action, with everything still queued behind the window:
@@ -203,14 +203,14 @@ resumes with the next action, with everything still queued behind the window:
 - **`PassAction`** queues the held-back effect (the Sha's damage, above).
   It also logs a `ResponsePassedEvent` (seat, window id, `allowedCardIds`),
   but only under the `logPasses` rule and only for a window that sets
-  `announcePass` (Sha, Duel, Barbarians, Hail of Arrows, Coerce: asked whatever
+  `announcePass` (Sha, Duel, Barbarians, Hail of Arrows, Coerce: Asked whatever
   the seat holds). Wuxie, dying and skill windows never announce, so a logged
   pass never leaks that the seat held a counter or rescue card.
 - **`RespondAction`** plays the answering card. By default the held-back
-  effect is then dropped: a Shan cancels a Sha.
+  effect is then dropped: A Shan cancels a Sha.
 - If the window records the card that opened it (`PendingResponse.sourceCard`),
   that card's `onResponse` decides what the answer leads to instead.
-- A window the engine opens itself can carry `onAnswer`: effects queued
+- A window the engine opens itself can carry `onAnswer`: Effects queued
   after the answering card's own. The dying round uses it to heal the dying seat
   and ask again.
 
@@ -243,7 +243,7 @@ it without naming a card:
    next holder; nobody left means no cancel.
 4. A seat that plays a Wuxie queues, after it, a counter-check (from the seat
    after it; it is never asked about its own card) and a **`SkipNextEffect`**.
-   If nobody counters, the skip removes what the Wuxie guards: the
+   If nobody counters, the skip removes what the Wuxie guards: The
    `ToolRuleEffect`. A Wuxie on that Wuxie queues its own check and skip, and
    its skip removes the first Wuxie's skip, so the Tool goes ahead. Any length
    of Wuxie-on-Wuxie chain falls out of queue order this way.
@@ -273,7 +273,7 @@ Some Tools ask a seat to pick one of several things: Steal and Break pick one
 of a seat's cards, and Harvest picks one of the turned-up cards. A pick is a
 **pending choice**, and the queue waits for it the way it waits for a response:
 
-- `OpenChoiceEffect` stores a `PendingChoice` in `state.pendingChoice`: who
+- `OpenChoiceEffect` stores a `PendingChoice` in `state.pendingChoice`: Who
   picks, why (its `reason`), whether the card is taken or discarded (`verb`),
   and the options. Each option says what it shows and which effects it queues.
 - While a choice is pending, the chooser is the active seat and its only legal
@@ -324,7 +324,7 @@ A judgment is a short chain of its own:
   - The judged seat and the reader.
   - The current card, and each replacement so far.
   - `settled: false`.
-  - `rounds`: how many times a skill that may change the card has been asked.
+  - `rounds`: How many times a skill that may change the card has been asked.
 - **A changer's ask** (`AskUseEffect.judgmentChange`, set by `judgmentChangeAsk` for Devil and Dark Magic) opens one round while the view is unsettled. The ask and the card pick after it are marked on the pending choice and selection.
 - **The pipeline stops.** When `JudgmentShownEffect` finds a view, it sets `settled: true` and **stops** instead of queueing the resolve step.
   - The game now rests at a decision, whose actor is the first living human seat (see [The rules engine](rules-engine.md)).
@@ -404,7 +404,7 @@ belong to content: Sha's are `sha-use`, `sha-targeted`, `sha-armor`,
 
 Each marks the step (`actedOn`) so it has its say once. `previewEffect`
 re-checks each later trigger against the step as rewritten, and stops when
-the step becomes another kind of effect: the rest get their say when it comes
+the step becomes another kind of effect: The rest get their say when it comes
 back.
 
 **Asks.** `AskUseEffect { owner, abilityId, effects, otherwise }` opens a
@@ -415,7 +415,7 @@ usually the marked step).
 seats. It pauses the queue like a choice, and may sit over an open response
 window. Its continuation is plain data:
 - `discard` (then more effects);
-- `use-card` (the picked cards as one card: to play at targets, or to answer
+- `use-card` (the picked cards as one card: To play at targets, or to answer
   a window);
 - `card-step` (a step with the picks as `data.picked`).
 
@@ -430,8 +430,8 @@ checks a filled one.
 Each opens a selection of the cards to use. The result is one `UsedCard`
 (`via` names the conversion), which counts toward limits like the real card.
 
-A card in use is always a `UsedCard`: what it counts as, its colour (two cards
-of different colours: none), and its physical cards.
+A card in use is always a `UsedCard`: What it counts as, its colour (two cards
+of different colours: None), and its physical cards.
 
 ## General skills
 
@@ -459,7 +459,7 @@ A General's ability owner is `{ kind: 'general', seatId, slot, skillId }`.
   runs nothing (no outputs, no ask). So every reveal by a condition event, in any
   phase of any turn, is the owner's decision.
 - A hidden General's before-trigger that
-  returns direct effects throws: it cannot wait for the answer ahead of the effect it
+  returns direct effects throws: It cannot wait for the answer ahead of the effect it
   rewrites, so content must ask instead.
 - A hidden compulsory skill's *before*-trigger
   does not run its content: `rewriteEffect` turns the effect into an `AskUseEffect`:
@@ -479,7 +479,7 @@ A General's ability owner is `{ kind: 'general', seatId, slot, skillId }`.
   `EnterStartPhaseEffect`, which logs the Start `PhaseChangedEvent` so its triggers
   gather as usual.
 - There is no Play Phase reveal: Roar-style content reveals on use
-  (`shaPlayRevealOwner`: a Sha only a hidden compulsory `shaLimit` allows reveals that
+  (`shaPlayRevealOwner`: A Sha only a hidden compulsory `shaLimit` allows reveals that
   General when played).
 
 **Active skills.** `SkillDefinition.active` gives a `UseSkillAction` in its
@@ -491,21 +491,21 @@ cancellable selection, through that selection's `onSelect`.
 **Counters.** `Turn.abilityUses` and `Turn.ownerUses` (every card the turn
 owner used, answers included) end with the turn; `Seat.marks` last the game.
 
-**Losing HP** (`LoseHpEffect` → `HpLostEvent`) is not damage: damage triggers
+**Losing HP** (`LoseHpEffect` → `HpLostEvent`) is not damage: Damage triggers
 don't fire. Guozhan runs its reveal and dying rules after both.
 
 **The Draw Phase** is one `DrawPhaseEffect { count }`. Before-triggers change
 the count or replace the draw.
 
 **Judgments** run in steps, each a queue item:
-1. `JudgeEffect`: the top card is turned up into `processing` (nothing left:
+1. `JudgeEffect`: The top card is turned up into `processing` (nothing left:
    `otherwise` goes ahead).
-2. `JudgmentShownEffect`: skills that change judgments hook in here.
+2. `JudgmentShownEffect`: Skills that change judgments hook in here.
    `ReplaceJudgmentEffect` discards the card, puts a hand card in its place
    and shows the judgment again.
-3. `JudgmentResolveEffect`: the reader (a card's `onJudged`, or a skill's)
+3. `JudgmentResolveEffect`: The reader (a card's `onJudged`, or a skill's)
    reads the final card.
-4. `JudgmentDoneEffect`: the card goes to the discard pile unless something
+4. `JudgmentDoneEffect`: The card goes to the discard pile unless something
    took it first. A reader may place this step itself (Eight Trigrams does,
    ahead of the Shan window it opens).
 
@@ -519,12 +519,12 @@ the count or replace the draw.
 
 **Judgment changers' order.** Content lists the skills that may replace a
 judgment's card (`JUDGMENT_CHANGERS` in `shared/judgments.ts`), each with the
-cards its seat may change one with (Devil: a hand card; Dark Magic: a black
+cards its seat may change one with (Devil: A hand card; Dark Magic: A black
 hand or worn card).
 
 - Each one's
   `before:JudgmentShownEffect` trigger acts only when `nextToChange` says its
-  seat is next: in seat order from the judged seat; after a replacement, from
+  seat is next: In seat order from the judged seat; after a replacement, from
   the seat after the one that replaced it (that seat last).
 - `acted` on the shown
   step records who has had their say.
@@ -542,7 +542,7 @@ when it may take more than one target now (Sha: Sky Scorcher's +2 with the
 last hand card, Heaven's Justice's +1).
 
 - `getLegalActions` then offers that
-  card, or that conversion, once: a template with `targets: []` and
+  card, or that conversion, once: A template with `targets: []` and
   `pickTargets { eligibleIds, min, max }`.
 - The player (or bot) fills the targets
   and submits without `pickTargets`; `resolve` accepts them when `fitsPick` holds
@@ -572,7 +572,7 @@ mixed pick.
 
 **Fire hooks.**
 
-- Blaze is a Tool made only by Fire Strategy (`outOfDeck`): its
+- Blaze is a Tool made only by Fire Strategy (`outOfDeck`): Its
   rule opens the target's pick of a card to show (card step `blaze-shown`), then
   the user's optional matching discard (`blaze-hit`) for 1 plain damage.
 - Nirvana is a `before:DyingEffect` trigger like Refusing Death; it ends with
@@ -597,7 +597,7 @@ mixed pick.
   ask on the dead seat's hand zone; `acted` stops a declined ask repeating.
 - **Max HP.** `ReduceMaxHpEffect` lowers max HP and clamps HP, logs
   `MaxHpReducedEvent`, and eliminates the seat at 0.
-- **Complete Kill** is read when the dying round is built: the mode lists only
+- **Complete Kill** is read when the dying round is built: The mode lists only
   the turn owner and the dying seat in `DyingEffect.order`.
 - **Curtain** is the `untargetableByBlackTools` modifier (seat lists of Steal,
   Break, Duel, Coerce, Capture, Starvation, through `untargetableBy`'s
@@ -624,7 +624,7 @@ mixed pick.
 - **Spare Generals (Forms).** `GameState.spareGenerals` is the pool of Generals
   nobody was dealt. When Generals are chosen, a Guozhan trigger on
   `after:GeneralsChosenEvent` deals `SkillDefinition.spareGenerals` of them
-  (`DealSpareGeneralsEffect`, which logs nothing: the log is public).
+  (`DealSpareGeneralsEffect`, which logs nothing: The log is public).
   `ChooseFormSkillEffect` sets `Seat.forms.chosen`; `skillsInPlay` then includes
   that skill under the holding slot, and content's `seatGender` follows the Form.
   Incarnation follows the choice with `FireSkillTriggersEffect`, so the new skill's
@@ -706,17 +706,17 @@ fits instead.
 Three Guozhan triggers react to `after:GeneralRevealedEvent`; the first two with a
 `DrawCardsEffect`:
 
-- **First reveal** (`state.rules.firstRevealDraw`, which the app and server turn on from 5 seats; the engine only reads it): the
+- **First reveal** (`state.rules.firstRevealDraw`, which the app and server turn on from 5 seats; the engine only reads it): The
   first `GeneralRevealedEvent` in the log gives its seat 2 cards.
-- **Rounding** (always): when both of a seat's Generals are revealed and their
+- **Rounding** (always): When both of a seat's Generals are revealed and their
   printed HP sum is odd, the seat draws 1 card, once, on the second reveal.
-- **Synergistic Partners** (`state.rules.partnerReward`, which the app and server turn on for every new game): the
+- **Synergistic Partners** (`state.rules.partnerReward`, which the app and server turn on for every new game): The
   reveal that leaves both of a seat's Kingdom Wars Generals revealed, for the first time only (`firstTimeBothRevealed`,
   so a hide and re-reveal pays nothing), and not a death reveal, opens a `PendingChoice` for that seat when the two
   Generals are a listed pair (`areSynergisticPartners`, from the id table
   `projects/content/data/decks/kingdom-wars/synergistic-pairs.json`; Kingdom Wars Generals are seated as
   `kingdomWars:<id>`, Identity's are never matched). The choice has reason `partner-reward` and the options
-  `recover` (heal 1) and `draw` (draw 2). `recover` carries `disabled: true` at full HP: it is shown, left out of
+  `recover` (heal 1) and `draw` (draw 2). `recover` carries `disabled: true` at full HP: It is shown, left out of
   `getLegalActions`, and `ChooseOptionAction` throws on it. It runs after the Rounding trigger, so both can happen on
   one reveal. Bots recover when damaged, else draw.
 

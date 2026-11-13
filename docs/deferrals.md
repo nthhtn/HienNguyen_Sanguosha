@@ -51,7 +51,7 @@ When an item is done, delete its entry and say where it went in the commit.
   - Then restrict the conversion to hand cards, update `shu.spec.ts` and `kingdom-wars-shu.spec.ts`, and check the other conversions that use `hand-and-equipment`.
   - The films need no change then.
 
-### Horsemanship (Ma Chao): the deck says "distance and range", the engine changes distance only
+### Horsemanship (Ma Chao): The deck says "distance and range", the engine changes distance only
 
 - **What is missing.**
   - The deck text is "Your distance and range when calculated to other players is always -1".
@@ -62,7 +62,7 @@ When an item is done, delete its entry and say where it went in the commit.
   - Whether the deck wording or the engine is the intended rule is not settled.
 - **Revisit when.**
   - Horsemanship is next touched.
-  - Then decide which is right: change the engine and its specs, or correct the deck text (and its Vietnamese).
+  - Then decide which is right: Change the engine and its specs, or correct the deck text (and its Vietnamese).
   - The films need no change if the engine stays as it is.
 
 ### Insanity Streak (Wei Yan) heals by attack range and per point, not only at distance 1
@@ -72,7 +72,7 @@ When an item is done, delete its entry and say where it went in the commit.
   - The engine (`violentSpirit` in `projects/content/src/lib/generals/wind.ts`) heals after damage to any seat within Wei Yan's attack range, measured after the damage, and heals once per point dealt.
   - Noted on 2026-11-10.
 - **Why it waits.**
-  - The correct rule is: heal only when the damaged seat is at distance 1.
+  - The correct rule is: Heal only when the damaged seat is at distance 1.
   - The Insanity Streak preview films follow it.
   - No game depends on it yet.
 - **Revisit when.**
@@ -100,7 +100,7 @@ When an item is done, delete its entry and say where it went in the commit.
 - **What is missing.**
   - At 8 seats on seed 2600000 the all-bot force gap was 44.2 against 32.3 before Part 4 (limit +5), because 14 Ambitionist seats won nothing.
   - Without Ambitionists the gap was 32.7 against 31.1.
-  - In all-bot games Qun wins 44 to 49% (before: about 10%), while the leading force wins 7 to 14 pp less.
+  - In all-bot games Qun wins 44 to 49% (before: About 10%), while the leading force wins 7 to 14 pp less.
   - Recorded on 2026-11-12.
 - **Why it waits.**
   - The developer chose to ship for the head-to-head gain (+6.6 to +7.2 pp).
@@ -219,7 +219,7 @@ From the Resolution Notice, picker and Judgment work (PR #62, 2026-11-09). The d
 - **What is missing.**
   - Blaze, Coerce, Harvest and Meng Huo's Resurgence have a notice (`RESOLUTION_NOTICES` in `projects/content/src/lib/resolutionNotice.ts`).
   - Every other card, skill and equipment ability gets none.
-  - The registry makes each a data-only change: an entry in `RESOLUTION_NOTICES`, its `notice.*` keys and a spec.
+  - The registry makes each a data-only change: An entry in `RESOLUTION_NOTICES`, its `notice.*` keys and a spec.
 - **Why it waits.**
   - Decided to add them case by case.
   - Which outcomes deserve a popup, and their wording, is the product owner's call.
@@ -231,7 +231,7 @@ From the Resolution Notice, picker and Judgment work (PR #62, 2026-11-09). The d
 
 - **What is missing.**
   - Locally the Resolution Notice blocks (the director holds playback).
-  - Online nothing waits for it, as for the Compete popup: the server paces bots and clocks with the shared durations in `playbackTiming.ts`, which cover beats only.
+  - Online nothing waits for it, as for the Compete popup: The server paces bots and clocks with the shared durations in `playbackTiming.ts`, which cover beats only.
   - A bot may move while a notice shows, and the notice is dropped when the viewer owes a decision.
 - **Why it waits.**
   - The server knows nothing of the popup.

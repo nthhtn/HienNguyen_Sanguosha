@@ -1,17 +1,17 @@
 # Content and extensibility
 
 How cards, Generals, skills and modes are defined in `projects/content`, and
-what adding one involves. The rule that drives all of this (CLAUDE.md): adding
+what adding one involves. The rule that drives all of this (CLAUDE.md): Adding
 a card or General means adding its definition, not editing a central switch.
 
-## Two halves: data and logic
+## Two halves: Data and logic
 
 Every card and General has two parts that live in different places.
 
 | Half | Where | What it holds | Written by |
 |---|---|---|---|
 | **Data** | `projects/content/data/` (one JSON file per card or General, plus `decks/` and `locales/`) | Name, Kingdom, HP, gender, printed rule text, suit and rank of every printing; each deck's distribution; Vietnamese names and prose | A crawl of a public English Sanguosha reference, then reviewed |
-| **Logic** | `projects/content/src/lib/` (TypeScript) | What the card or skill actually does: targets, effects, triggers, steps | By hand, after the rule text is written |
+| **Logic** | `projects/content/src/lib/` (TypeScript) | What the card or skill actually does: Targets, effects, triggers, steps | By hand, after the rule text is written |
 
 `buildContentRegistry()` ([registry.ts](../../projects/content/src/lib/registry.ts))
 merges them into a `ContentRegistry`:
@@ -28,30 +28,30 @@ interface ContentRegistry {
   skill logic is a playable vanilla General (`skills: []`). Skill logic with no
   data file throws when the registry is built.
 - A **card** exists because it is listed in the registry's card array. A card
-  with no printings in the deck being dealt can never silently go undealt: it
+  with no printings in the deck being dealt can never silently go undealt: It
   throws when the deck is built.
 - **Kingdom Wars Generals** are registered beside the Identity ones under ids
   prefixed `kingdomWars:`; see "Decks and the Kingdom Wars content" below.
 
 The data files are why wiki pages, card art and rules text can be shown
-without the UI knowing any card: the app reads them through content's display
+without the UI knowing any card: The app reads them through content's display
 helpers (`generalDisplayData`, `cardDisplayData`, `abilityName`, `abilityHint`,
 `competeOutcomeText`, `judgmentOutcomeText`…), never by importing JSON.
 
 ## Decks and the Kingdom Wars content
 
 A **deck** ([decks.ts](../../projects/content/src/lib/decks.ts)) is only a
-distribution: which cards it holds and the suit and rank of each copy.
+distribution: Which cards it holds and the suit and rank of each copy.
 
 - Behaviour, text and range stay on the card, so a card exists once and decks say
   how it is dealt.
 - There are two, chosen per game by `GameRules.deck`
   (`DECK_IDS = ['identity', 'kingdomWars']`; the protocol repeats the list and a
   server test checks the two agree).
-- A game with no deck is dealt from `DEFAULT_DECK_ID`, Kingdom Wars: it is the deck
+- A game with no deck is dealt from `DEFAULT_DECK_ID`, Kingdom Wars: It is the deck
   that is played, and Identity waits for its own rules (`docs/deferrals.md`).
 
-- **Identity** is built from the card data: each card's own printings.
+- **Identity** is built from the card data: Each card's own printings.
 - **Kingdom Wars** is read from `data/decks/kingdom-wars/deck.json`, produced by a
   crawl of the Kingdom Wars deck and its Generals. Cards that exist only in this
   deck (`kingdomWarsCards.ts`) are registered with their own definitions;
@@ -68,7 +68,7 @@ A Kingdom Wars General's skill is resolved in this order
    name. This is for a skill whose rules differ from Identity's.
 2. Otherwise the **Identity skill**, when the Kingdom Wars wording was audited and
    cleared as the same rule (`CLEARED_WORDING`, or a "nil" difference note).
-3. Otherwise the skill is *not ready*: it shows in the wiki and the General is
+3. Otherwise the skill is *not ready*: It shows in the wiki and the General is
    playable without it.
 
 `kingdomWarsBase.ts` is a leaf module mapping each variant to the Identity skill
@@ -95,7 +95,7 @@ hint text), `glossary.json` and `review.json`.
 
 Bots are named after Three Kingdoms figures who are not Generals in any deck.
 
-- **Pool:** A flat list in `data/botNames.json` (id to English name, no force: a
+- **Pool:** A flat list in `data/botNames.json` (id to English name, no force: A
   name never decides a bot's force), with Vietnamese names in
   `data/locales/vi/bot-names.json`.
 - **Drawing:** `botNames.ts` draws distinct ids from an injected random function,
@@ -153,7 +153,7 @@ export const drawTwoCard: CardDefinition = {
 | `onResponse` | A window this card opened was answered (a Duel turning back) |
 | `onTarget` | A Tool's rule on one target, after its Wuxie check |
 | `onJudged`, `onCleanup` | A delayed Tool read its judgment, or finished its turn in the judgment area |
-| `abilities` | Active while the card is worn: triggers, modifiers, conversions |
+| `abilities` | Active while the card is worn: Triggers, modifiers, conversions |
 | `onUnequip` | The card left an equip slot |
 | `onStep` | One named step of its resolution (a Sha's `sha-shan`) |
 
@@ -193,9 +193,9 @@ speak the same vocabulary:
   describe.
 
 A skill must always act for the `owner` the engine passes in and never look up
-"its" seat by General id: the same General can sit at two seats in a test.
+"its" seat by General id: The same General can sit at two seats in a test.
 
-### Multi-move mechanics: steps
+### Multi-move mechanics: Steps
 
 A mechanic that needs more than one decision is a chain of steps whose data
 lives in the queue. Compete
@@ -222,7 +222,7 @@ A mode is a `GameModeDefinition`: `setup`, `checkWinCondition`, `triggers`,
   code.
 - A second mode would be a second object of the same shape.
 
-## Adding content: the checklist
+## Adding content: The checklist
 
 The process rule in CLAUDE.md: **write the precise rule text before the code**
 for any non-trivial mechanic. In this repo that is a spec in
@@ -252,7 +252,7 @@ skip the spec.
 2. Write its skills in the matching `src/lib/generals/<set>.ts` and add the
    `{ id, skills }` entry to that set's list. Registration is by that list, so
    no other file changes.
-3. Add display text in `display.ts` only where the UI needs it: the
+3. Add display text in `display.ts` only where the UI needs it: The
    `ABILITY_HINTS` line for an ask, selection prompts (`stepSelectionText` looks up
    `<skillId>/<step>` before a step name shared by several skills), and a
    `COMPETE_OUTCOMES` entry for a skill that competes.
@@ -262,7 +262,7 @@ skip the spec.
 6. Extend that pack's simulator spec so a seeded game fires the skill (see
    [Bots and simulation](bots-and-simulation.md)).
 
-**A Kingdom Wars General** whose skill matches Identity's needs no code: audit the
+**A Kingdom Wars General** whose skill matches Identity's needs no code: Audit the
 wording, add the Chinese skill name to `CLEARED_WORDING`, and the Identity skill
 runs. When the rules differ, write a variant in the matching
 `generals/kingdom-wars-<force>.ts`, add it to that file's variants map, and add its
@@ -277,7 +277,7 @@ runs. When the rules differ, write a variant in the matching
 - The `notice.*` message keys in `en.ts` and `vi.ts`.
 - A spec that feeds it real events.
 
-Text params are named by what they hold: a param named `…Seat` holds a seat id, `card` or
+Text params are named by what they hold: A param named `…Seat` holds a seat id, `card` or
 `…Card` a card id and `skill` a skill id; the popup shows each by name, so content never builds a
 translated string. Return `null` when there is nothing to show (a Wuxie cancelled it). Nothing in the
 engine or the popup changes.

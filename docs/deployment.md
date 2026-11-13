@@ -1,6 +1,6 @@
 # Deployment
 
-How the game runs live: one Docker image on Render's free web service, with
+How the game runs live: One Docker image on Render's free web service, with
 Supabase as the Postgres. The design and its reasoning are in
 `docs/superpowers/specs/2026-10-26-live-deployment-design.md`.
 
@@ -23,7 +23,7 @@ server does.
 
 ## Supabase
 
-1. The project is in the Singapore region. Only its Postgres is used: no Auth,
+1. The project is in the Singapore region. Only its Postgres is used: No Auth,
    Storage or edge functions.
 2. **Turn off the Data API** (Project Settings, API). The server talks to
    Postgres directly; with the Data API on, the `public` tables (`users`,
@@ -31,7 +31,7 @@ server does.
 3. Copy the **session pooler** connection string (Connect, then Session pooler,
    port 5432, `postgres.<ref>` as the user). The direct connection is IPv6 only
    on the free tier, which Render cannot reach. Use the default `postgres` user
-   and keep its password to yourself: it only goes into Render's environment.
+   and keep its password to yourself: It only goes into Render's environment.
 4. Do not add `sslmode` or any other `ssl*` parameter to the string; the server
    refuses to start if it finds one. It turns TLS on with `DATABASE_SSL=require`,
    which encrypts the connection without verifying the certificate chain (see
@@ -81,20 +81,20 @@ On the live URL:
 - [ ] Sign up, sign out, sign in; sign in as a guest.
 - [ ] Create a Play vs Bots game and play a few turns.
 - [ ] Create an open room, join it from a second browser, start a game.
-- [ ] Reload mid-game: the game resumes.
-- [ ] Leave a game open for a minute: the socket stays connected (the server
+- [ ] Reload mid-game: The game resumes.
+- [ ] Leave a game open for a minute: The socket stays connected (the server
       pings every 15 s).
 - [ ] In Supabase, the tables exist and the Data API is off.
 
 ## What to expect
 
 - **Cold start.** A free service sleeps after about 15 minutes without traffic.
-  The first visit then waits up to a minute. Running games survive: the server
+  The first visit then waits up to a minute. Running games survive: The server
   rebuilds them by replaying their action log.
 - **Keeping it awake.** An external pinger keeps the service from sleeping.
-  Use a free monitor such as UptimeRobot: an HTTP(s) monitor on
+  Use a free monitor such as UptimeRobot: An HTTP(s) monitor on
   `https://<name>.onrender.com/health` every 5 minutes. `/health` answers
-  without touching the database, so it never wakes Supabase: a paused
+  without touching the database, so it never wakes Supabase: A paused
   project still needs a visit to the dashboard (see Supabase, step 6).
   Render's free tier has 750 instance-hours a month and one always-awake service
   uses about 744, so keep this the only free service in the workspace. A restart
@@ -109,7 +109,7 @@ On the live URL:
 
 ## Capacity on the free instance
 
-Measured on 2026-11-04 with [scripts/load-test.ts](../scripts/load-test.ts): the
+Measured on 2026-11-04 with [scripts/load-test.ts](../scripts/load-test.ts): The
 real image limited to 0.1 CPU and 512 MB (Render's free size), a local
 Postgres, and each player moving after about 5 s (2.5 to 7.5 s). The simulated
 players answer every update, so the load is heavier than real play.
@@ -122,7 +122,7 @@ players answer every update, so the load is heavier than real play.
 
 Memory is never the limit; CPU is. Up to about 10 busy rooms is comfortable.
 Around 15 rooms of 9 the CPU is saturated and moves take seconds. For more, use
-a paid instance with at least 0.5 CPU. Not measured: the latency of a remote
+a paid instance with at least 0.5 CPU. Not measured: The latency of a remote
 Supabase, 30 or more rooms, and every game restoring at once after a restart.
 
 To repeat it, build the image, run it with `--cpus=0.1 --memory=512m`,

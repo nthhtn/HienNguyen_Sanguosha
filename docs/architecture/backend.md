@@ -10,7 +10,7 @@ The game runs two ways today:
   game's full state, the browser only ever sees a redacted view, and a game
   survives a reload, a disconnect and a server restart.
 
-This doc describes the second one: what each part is, how a move travels, and
+This doc describes the second one: What each part is, how a move travels, and
 what is deliberately not done yet. How it is hosted is in [Deployment](../deployment.md). The original design and its reasoning are in
 `docs/superpowers/specs/2026-10-13-backend-multiplayer-design.md`; the server's
 own how-to-run notes are in [projects/server/README.md](../../projects/server/README.md).
@@ -28,7 +28,7 @@ own how-to-run notes are in [projects/server/README.md](../../projects/server/RE
 | Project | Role | Framework |
 |---|---|---|
 | `projects/protocol` | • Every HTTP body and socket message as a TypeBox schema plus a TypeScript type, `PROTOCOL_VERSION`, and the shared limits and error codes.<br>• May import engine *types* (`Action`, `GameState`, `EngineEvent`, `GameRules`, `GameResult`); never server or database types.<br>• Its `public-api` is browser-safe, with the schemas behind `protocol/schemas`. | None |
-| `projects/server` | The application layer, authoritative side: accounts, rooms, the game runner, persistence, the socket. Imports `engine`, `content`, `bots` and `protocol`; nothing imports it. | Fastify, `ws`, Kysely on Postgres |
+| `projects/server` | The application layer, authoritative side: Accounts, rooms, the game runner, persistence, the socket. Imports `engine`, `content`, `bots` and `protocol`; nothing imports it. | Fastify, `ws`, Kysely on Postgres |
 
 Database rows never cross the wire. `server/persistence` maps rows to domain
 records, and `server/views` maps records and engine state to wire shapes.
@@ -131,7 +131,7 @@ Every client message carries a `reqId` that the server echoes in its `ack` or
 
 A `GameUpdate` carries the seat's `SeatView`, its legal actions (empty unless
 it must act now), the new events, the running clock and a `paused` flag. The
-client keeps its own log: if `logFrom` does not line up with what it holds it
+client keeps its own log: If `logFrom` does not line up with what it holds it
 sends `game.resync`, and the server answers with the whole log.
 
 ### Visibility
@@ -179,7 +179,7 @@ the only code that changes a running game's state. It owns:
   its own, which a bot's instant pick does not pause. A bot-played seat chooses
   at once, with no move delay. At zero each seat still choosing is defaulted
   (source `timeout`, not counted towards takeover). After the last choice the
-  first decision is held `GAME_START_LEAD_IN_MS` (3 s): no actions are offered
+  first decision is held `GAME_START_LEAD_IN_MS` (3 s): No actions are offered
   or accepted, no bot moves, the first clock's `startsAt` is the end of the
   hold, and a wake-up republishes when it ends. `startHoldMs` (runner options,
   `RoomService` deps) overrides the length; tests pass 0. The hold is not
@@ -196,7 +196,7 @@ the only code that changes a running game's state. It owns:
   away rule. Both this clock and a judgment-change decision's 15 s clock start
   after a lead-in (below), and a bot that may change a judgment waits for the
   same lead-in while a person is at the table; with none, every lead-in is 0.
-- **Clock lead-in.** `GameClockView` carries `startsAt` beside `endsAt`: the
+- **Clock lead-in.** `GameClockView` carries `startsAt` beside `endsAt`: The
   moment the countdown starts, after the judgment animation the decision follows
   (the card turning up, a replacement's swap, the verdict). Until then the clock
   shows its full length. The lead-ins are fixed constants the app and the server

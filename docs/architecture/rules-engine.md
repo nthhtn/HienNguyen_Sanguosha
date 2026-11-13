@@ -12,7 +12,7 @@ A function and a set of types:
 resolve(state: GameState, action: Action, ctx: EngineContext): { state: GameState; events: GameEvent[] }
 ```
 
-`ctx` is `{ registry, mode }`: the content the game is played with and the
+`ctx` is `{ registry, mode }`: The content the game is played with and the
 game mode's rules. Given the same inputs, `resolve` always returns the same
 output. It never mutates `state`, reads the clock, calls `Math.random`, or
 touches Angular or the browser.
@@ -24,7 +24,7 @@ offers:
 |---|---|
 | `getLegalActions(state, seatId, registry)` | What may this seat do right now? (the UI and bots only ever submit one of these) |
 | `getActiveSeatId(state)` | Whose decision is pending? |
-| `getActingSeatIds(state)` | Every seat that may act now: during General Selection all seats that still have candidates (they choose at the same time, in any order), otherwise the active seat alone |
+| `getActingSeatIds(state)` | Every seat that may act now: During General Selection all seats that still have candidates (they choose at the same time, in any order), otherwise the active seat alone |
 | `previewEffect(state, effect, ctx)` | What would this pending effect really do once before-triggers rewrite it? |
 | `redactStateForSeat(state, seatId)` | The state as that seat is allowed to see it |
 | `createGame(mode, registry, seatIds, seed, rules?)` | A new game, in the General Selection phase |
@@ -62,14 +62,14 @@ These are the concepts CLAUDE.md asks for, with where they live in
 
 ### Combined HP
 
-A seat has one HP pool: half the printed HP of its two Generals, rounded
+A seat has one HP pool: Half the printed HP of its two Generals, rounded
 down (`combinedMaxHp`). Damage and healing apply to that pool; the rounding
 bonus and the Main and Deputy reveal thresholds are rules in the Guozhan
 mode, not in the engine core.
 
 ### Hidden information
 
-Guozhan is a hidden-information game: hands, the draw pile and unrevealed
+Guozhan is a hidden-information game: Hands, the draw pile and unrevealed
 Generals are secret. The state stored by the application is the **full** state;
 `redactStateForSeat(state, viewer)` produces what one seat may see:
 
@@ -80,7 +80,7 @@ Generals are secret. The state stored by the application is the **full** state;
 - A pending selection or choice has hidden cards masked, and a *secret* choice
   hides its options from everyone but its chooser;
 - Skill ids of another seat's hidden Generals read `'hidden'` wherever they
-  appear: in pending decisions, in queued work and in the log. One set of such
+  appear: In pending decisions, in queued work and in the log. One set of such
   skills per state and viewer (from the log, the pending decisions and the
   queue) masks them all. Besides skill, ability and conversion ids, the skill
   is masked as a token inside decision id strings (`ask-hidden-seat-b-3`),
@@ -90,13 +90,13 @@ Generals are secret. The state stored by the application is the **full** state;
   skill is masked;
 - `judgmentView` is public (the judged card is already face up), so redaction
   keeps it as it is;
-- The log is otherwise public: events are written that way (a face-down card
+- The log is otherwise public: Events are written that way (a face-down card
   move carries no face, a revealed card is shown on purpose), and the only
   per-viewer change is the hidden-skill masking above.
   `redactEventsForSeat(state, events, viewer)` masks a slice of the log with
   the same set as `redactStateForSeat`.
 
-Card ids are opaque: the deck names each card `card-<position>` after the
+Card ids are opaque: The deck names each card `card-<position>` after the
 shuffle, and a reshuffle gives every card a fresh id, so an id never gives
 away what a masked card is. `state.rng` holds the seed and is **not** removed
 by `redactStateForSeat`; the server strips it from every view it sends.
@@ -122,7 +122,7 @@ in `state.resolutionQueue`, and a decision is a field on the state:
 | `pendingArrangement` | One seat orders cards from the draw pile |
 | `judgmentView` with `settled: true` | With the `judgmentNotice` rule, the game waits for the judgment popup to be closed (`AcknowledgeJudgmentAction`) |
 | None, in `Start` with `Turn.startWindow` | A human turn owner who still holds a hidden General may reveal it before the turn begins, then confirms (`ConfirmRevealsAction`) |
-| None, in `Play` or `Discard` | The turn owner acts: play a card, use a skill, end the phase, discard |
+| None, in `Play` or `Discard` | The turn owner acts: Play a card, use a skill, end the phase, discard |
 
 `advanceToDecision` drains the queue until one of these appears (or the game
 ends), then returns. The next `resolve` call carries the player's answer and
@@ -155,7 +155,7 @@ How long a person has is a rule, so the engine owns it, in
 | `judgmentChange` | 15 | A skill's decision (ask, then card pick) to change an unsettled judgment, one clock per ask |
 | `notice` | 5 | A settled judgment popup, after its animation |
 
-`GAME_START_LEAD_IN_MS` (3000) is the wait after the last seat has chosen its Generals, before the first decision of the game: the server holds its clocks, bot moves and legal actions for that long and the app shows "Game starts in 3".
+`GAME_START_LEAD_IN_MS` (3000) is the wait after the last seat has chosen its Generals, before the first decision of the game: The server holds its clocks, bot moves and legal actions for that long and the app shows "Game starts in 3".
 
 A clock can have a **lead-in**: `DecisionSpec.leadInMs` is the animation the
 decision follows, and a *new* clock starts counting at `startsAt = now + leadInMs`
@@ -164,9 +164,9 @@ decision follows, and a *new* clock starts counting at `startsAt = now + leadInM
 - While it plays, `clockRemainingMs` reports the full budget and `clockStartsInMs`
   says how long is left.
 - The lead-ins are `JUDGMENT_LEAD_IN_MS`:
-  - `head` 2100: source, rule, card turning up.
-  - `replace` 1300: a replacement's swap.
-  - `tail` 2000: verdict and consequence.
+  - `head` 2100: Source, rule, card turning up.
+  - `replace` 1300: A replacement's swap.
+  - `tail` 2000: Verdict and consequence.
 - A judgment-change decision waits `head` for its first ask
   (`judgmentView.rounds === 1`) and `replace` for later ones; a settled judgment's
   notice waits `tail`, plus `head` when no changer was ever asked.
@@ -182,7 +182,7 @@ Three functions drive a seat's decision and its clock:
   a judgment change, No Response, the first option, End Phase, the acknowledgement,
   or confirming a Start window with nothing revealed).
 
-The engine never reads the clock: the caller (the Angular timer, or the server's
+The engine never reads the clock: The caller (the Angular timer, or the server's
 `GameRunner`) passes the time in and runs the timers.
 
 ## The pipeline in one page
@@ -220,7 +220,7 @@ judgment lifecycles are in [The event chain](event-chain.md).
   A UI or bot bug therefore surfaces as a thrown error and an unchanged state,
   not a corrupted game.
 
-## Triggers: how content reacts
+## Triggers: How content reacts
 
 A `SkillTrigger` is `{ point, condition, effect }`, where `point` is
 `before:<EffectKind>` or `after:<EventKind>`.
@@ -258,7 +258,7 @@ Instead it carries **plain data describing what happens next**:
   `onStep` is looked up in the registry when the step comes up.
 
 This is the mechanism behind multi-move mechanics such as Compete, Bewilder's
-doubt round and Sha's dodge sequence: they are chains of steps whose state
+doubt round and Sha's dodge sequence: They are chains of steps whose state
 lives in the queue.
 
 ## Game modes
@@ -280,7 +280,7 @@ interface GameModeDefinition {
 is the one implementation.
 
 - It deals Generals to each seat from the pool of the chosen deck (the Identity
-  Generals, or the Kingdom Wars ones, never mixed): seven to each seat at a table of
+  Generals, or the Kingdom Wars ones, never mixed): Seven to each seat at a table of
   2 to 8 and five at 9 to 12 for Kingdom Wars, always five for Identity
   (`generalsPerSeat`).
 - It builds and shuffles that deck's cards, and deals four cards.
@@ -300,9 +300,9 @@ Optional rules chosen at game creation are stored in `state.rules`
 
 | Rule | Meaning |
 |---|---|
-| `firstRevealDraw` | With five or more seats, the first seat to reveal a General draws 2 cards. Not a player's choice: the app and the server set it for any game with at least `FIRST_REVEAL_MIN_SEATS` (5) seats. |
+| `firstRevealDraw` | With five or more seats, the first seat to reveal a General draws 2 cards. Not a player's choice: The app and the server set it for any game with at least `FIRST_REVEAL_MIN_SEATS` (5) seats. |
 | `judgmentNotice` | Every judgment waits for the popup to be closed (or 3 s) before it is read. It changes the action sequence, so a stored game keeps the value it started with; the app and server turn it on for new games, and the simulator and most tests leave it off. |
-| `partnerReward` | • Guozhan's Synergistic Partners reward: the reveal that completes a listed pair of Kingdom Wars Generals lets the seat draw 2 cards or recover 1 HP (see "Reveal bonuses" in [the event chain](event-chain.md)).<br>• It adds a prompt, so a stored game keeps the value it started with; the app and server turn it on for new games, and absent means no reward. |
+| `partnerReward` | • Guozhan's Synergistic Partners reward: The reveal that completes a listed pair of Kingdom Wars Generals lets the seat draw 2 cards or recover 1 HP (see "Reveal bonuses" in [the event chain](event-chain.md)).<br>• It adds a prompt, so a stored game keeps the value it started with; the app and server turn it on for new games, and absent means no reward. |
 | `deck` | The card distribution the draw pile is dealt from (a deck id). Absent means the default deck, Kingdom Wars (`DEFAULT_DECK_ID`). |
 
 Because the options sit in the state, adding a rule never changes how an old

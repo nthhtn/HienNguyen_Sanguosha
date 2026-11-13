@@ -39,7 +39,7 @@ There are two policies:
 | Policy | File | Behavior |
 |---|---|---|
 | Random | `random.ts` (`pickRandomAction`) | Uniformly picks a legal action, with sane fills for templates. Used by the simulator to explore many unusual lines of play. |
-| Rule-based | `rule-based.ts` (`ruleBasedPolicy`) | • The opponent a person plays against.<br>• Its heuristics include: treat same-Kingdom seats as allies, rank non-allies by the table (below), keep Peach, Shan and Sha on top when arranging, cancel harmful Tools aimed at itself, and discard its least useful cards. |
+| Rule-based | `rule-based.ts` (`ruleBasedPolicy`) | • The opponent a person plays against.<br>• Its heuristics include: Treat same-Kingdom seats as allies, rank non-allies by the table (below), keep Peach, Shan and Sha on top when arranging, cancel harmful Tools aimed at itself, and discard its least useful cards. |
 
 The rule-based bot's per-pack knowledge sits beside it (`wind.ts`, `fire.ts`,
 `forest.ts`, `mountain.ts`, `skills.ts`), each answering questions such as
@@ -50,7 +50,7 @@ The rule-based bot's per-pack knowledge sits beside it (`wind.ts`, `fire.ts`,
 ### The rule registry (`projects/bots/src/lib/rules`)
 
 Newer play judgment lives in a data-driven registry, `KINGDOM_WARS_RULES`
-([kingdom-wars.ts](../../projects/bots/src/lib/rules/kingdom-wars.ts)): one
+([kingdom-wars.ts](../../projects/bots/src/lib/rules/kingdom-wars.ts)): One
 `BotRule` per card or skill id, with no switch over ids.
 
 - **Hooks:** A rule fills in only the hooks it has an opinion on (`play` early or
@@ -278,7 +278,7 @@ The specs also check that every game **terminates**, and that the final state
 survives a JSON round trip unchanged, which is the serializability property the
 whole design relies on.
 
-### Leaks: proving a seat learns nothing secret
+### Leaks: Proving a seat learns nothing secret
 
 [leaks.ts](../../projects/sim/src/leaks.ts) and `leakProperty.spec.ts` replay
 simulated games and, at every step and for every seat, check that the redacted
@@ -297,7 +297,7 @@ Around that test:
 - **When to run it:** A change to redaction, to card ids or to a skill that
   shows or hides cards should run these first.
 
-### Forced pairings: proving every skill fires
+### Forced pairings: Proving every skill fires
 
 Random games rarely exercise one specific General, so forced pairings test them:
 
@@ -309,7 +309,7 @@ Random games rarely exercise one specific General, so forced pairings test them:
   left a trace in the log (`firedSkills`) or a seed budget is spent.
 - **A skill that never fires** is reported as missing.
 - **If a rules change makes a rare skill stop firing within the budget,** the
-  budget is a test parameter: raise the seed range rather than assuming a bug,
+  budget is a test parameter: Raise the seed range rather than assuming a bug,
   but check the skill still fires at all.
 
 ## Test layout
