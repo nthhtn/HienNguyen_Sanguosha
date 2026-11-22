@@ -208,6 +208,22 @@ interface CandidateViewModel {
       --art-width: 130px; max-width: none; height: 270px;
     }
     :host-context([data-layout='medium']) .bar { position: sticky; bottom: 0; z-index: 2; background: var(--mat-sys-surface-container); border-radius: 12px; }
+    /* Phone board (the installed app on a phone): one screen, no page scroll (spec, "Windows on the phone"). Each card is
+       as tall as the card area and its art follows (about 85 px wide on an 800 x 366 window, 96 px at most); more cards
+       scroll inside the area, and the header and the bar with Confirm stay on screen. */
+    :host-context([data-layout='compact']) .intro h2 { margin-top: 0; font: var(--mat-sys-title-large); }
+    :host-context([data-layout='compact']) .hint { margin: 2px 0 4px; }
+    :host-context([data-layout='compact']) .candidates {
+      --caption-height: 52px;
+      container-type: size;
+      justify-content: flex-start; overflow-y: auto; overscroll-behavior: contain; margin: 4px 0; padding: 4px;
+      display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); align-content: start;
+    }
+    :host-context([data-layout='compact']) .row { display: contents; }
+    :host-context([data-layout='compact']) .candidate {
+      --art-width: min(96px, calc((100cqh - var(--caption-height) - 6px) * 200 / 290)); max-width: none; height: 100cqh;
+    }
+    :host-context([data-layout='compact']) .bar { padding: 4px 8px; }
     @media (max-width: 600px) {
       .bar { gap: 8px; }
       .summary { flex-basis: 100%; order: 3; }
