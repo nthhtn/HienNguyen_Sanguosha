@@ -23,6 +23,11 @@ describe('windows on the phone board', () => {
     expect(overlay).toMatch(/app-playing-card \.name\s*\{[^}]*font-size:\s*14px/);
   });
 
+  it('draw small cards in windows (the resolution notice) with no text under 12 px', () => {
+    const rule = /app-playing-card \.small \.name,\s*app-playing-card \.small \.face,\s*app-playing-card \.small \.stat\s*\{([^}]*)\}/.exec(overlay)?.[1] ?? '';
+    expect(px(rule, 'font-size')).toBeGreaterThanOrEqual(12);
+  });
+
   it('draw the skill trait chips at 12 px or more on the phone board', () => {
     const traits = read('skill-traits.ts');
     const rule = /:host-context\(\[data-layout='compact'\]\) \.trait \{([^}]*)\}/.exec(traits)?.[1] ?? '';

@@ -176,6 +176,13 @@ html[data-layout='compact'] .cdk-overlay-container {
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
   }
+  // A small card (44 px wide, the resolution notice) cannot hold 14 px names: 12 px, the floor. These selectors outrank
+  // the card's own `.small .name` sizes.
+  app-playing-card .small .name,
+  app-playing-card .small .face,
+  app-playing-card .small .stat {
+    font-size: 12px;
+  }
 }
 
 // The phone board hides the app toolbar during a game (layout.service.ts): no height to leave room for.
