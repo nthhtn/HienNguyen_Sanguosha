@@ -2,6 +2,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import type { CardInstance, Seat } from 'engine';
+import { generalFaceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL } from 'content';
 import { PhoneSeatTile } from './phone-seat-tile';
 import { testSeat } from './phone.testing';
 
@@ -118,4 +119,32 @@ describe('PhoneSeatTile', () => {
       expect(el.querySelector('.status')).toBeNull();
     });
   });
+
+  describe('face avatars', () => {
+    const generalsOf = (main: string, deputy = 'hidden') => ({
+      main: { generalDefinitionId: main, revealed: main !== 'hidden' },
+      deputy: { generalDefinitionId: deputy, revealed: deputy !== 'hidden' },
+    });
+    const src = (el: HTMLElement, slot: 'main' | 'deputy') => (el.querySelector(`.general[data-slot="${slot}"] img`) as HTMLImageElement).getAttribute('src');
+
+    it("shows a revealed General's face crop and the hidden art for a hidden one", () => {
+      const el = render(testSeat('seat-3', 3, { generals: generalsOf('cao-cao') }));
+      expect(src(el, 'main')).toBe(generalFaceUrl('cao-cao'));
+      expect(src(el, 'deputy')).toBe(HIDDEN_GENERAL_ART_URL);
+    });
+
+    it('shows the portrait for a General with no face crop', () => {
+      const el = render(testSeat('seat-3', 3, { generals: generalsOf('kingdomWars:nobody') }));
+      expect(generalFaceUrl('kingdomWars:nobody')).toBeNull();
+      expect(src(el, 'main')).toBe(generalSkinUrl('kingdomWars:nobody'));
+    });
+
+    it('falls back to the portrait when the face crop does not load', () => {
+      const el = render(testSeat('seat-3', 3, { generals: generalsOf('cao-cao') }));
+      el.querySelector('.general[data-slot="main"] img')!.dispatchEvent(new Event('error'));
+      fixture.detectChanges();
+      expect(src(el, 'main')).toBe(generalSkinUrl('cao-cao'));
+    });
+  });
 });
+

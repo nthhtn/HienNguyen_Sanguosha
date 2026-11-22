@@ -1,8 +1,8 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, computed, inject, input, output } from '@angular/core';
+import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CardInstance, EQUIP_SLOTS, EquipSlot, GeneralInstance, Seat } from 'engine';
-import { AMBITIONIST_ICON_URL, equipSlotOf, generalSkinUrl, HIDDEN_GENERAL_ART_URL } from 'content';
+import { AMBITIONIST_ICON_URL, equipSlotOf, generalFaceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL } from 'content';
 import { cardIdDisplayName, seatForce } from '../../labels';
 import { I18n } from '../../i18n/i18n.service';
 import { TPipe } from '../../i18n/t.pipe';
@@ -52,7 +52,7 @@ const JUDGMENT_BOXES = 3;
       <div class="generals">
         @for (g of generals(); track g.slot) {
           <span class="general" [attr.data-slot]="g.slot" [class.own-hidden]="g.ownHidden">
-            <img [src]="g.url" alt="" />
+            <img [src]="g.url" alt="" (error)="faceFailed(g.face)" />
             @for (badge of g.badges; track badge) {
               <span class="badge">{{ badge | t }}</span>
             }
@@ -135,7 +135,7 @@ const JUDGMENT_BOXES = 3;
     .judgment-box.filled { border-style: solid; background: #e9d49a; }
     .generals { position: relative; flex: 1 1 auto; min-height: 0; display: flex; gap: 2px; padding: 0 5px; }
     .general { position: relative; flex: 1 1 0; min-width: 0; border-radius: 4px; overflow: hidden; background: var(--force, #6b6058); }
-    .general img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+    .general img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
     .general.own-hidden img { opacity: 0.6; }
     .damage-fx { position: absolute; inset: 0; pointer-events: none; }
     .stats { display: flex; align-items: center; gap: 6px; padding: 0 5px; white-space: nowrap; font-weight: 500; }
@@ -249,7 +249,20 @@ export class PhoneSeatTile {
     const badges: MessageKey[] = [];
     if (!seat.silenced && seat.silencedSlots?.includes(slot)) badges.push('seat.noSkills');
     if (seat.forms?.chosen && seat.forms.slot === slot) badges.push('phone.badge.form');
-    return { slot, url: hidden ? HIDDEN_GENERAL_ART_URL : generalSkinUrl(general.generalDefinitionId), ownHidden: !hidden && !general.revealed, badges };
+    return { slot, ...this.art(general.generalDefinitionId), ownHidden: !hidden && !general.revealed, badges };
+  }
+
+  // The face crop when there is one and it loads (spec 3b), else the portrait; the hidden art for a hidden General.
+  private readonly failedFaces = signal<ReadonlySet<string>>(new Set());
+
+  private art(id: string): { url: string | null; face: string | null } {
+    if (id === 'hidden') return { url: HIDDEN_GENERAL_ART_URL, face: null };
+    const face = generalFaceUrl(id);
+    return face && !this.failedFaces().has(face) ? { url: face, face } : { url: generalSkinUrl(id), face: null };
+  }
+
+  protected faceFailed(face: string | null): void {
+    if (face) this.failedFaces.update((failed) => new Set(failed).add(face));
   }
 
   protected cardName(card: CardInstance): string {
