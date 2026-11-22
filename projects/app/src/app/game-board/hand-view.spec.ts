@@ -2,7 +2,7 @@ import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MatTooltip } from '@angular/material/tooltip';
 import { Action, CardInstance, ContentRegistry, GameState } from 'engine';
-import { HandView } from './hand-view';
+import { HandView, handStep } from './hand-view';
 
 const hand: CardInstance[] = [
   { instanceId: 'c-sha', definitionId: 'sha', suit: 'spade', rank: 7 },
@@ -66,6 +66,12 @@ describe('HandView', () => {
       if (playButton(c.instanceId)) expect(playButton(c.instanceId).textContent).toContain('Play');
       expect(infoButton(c.instanceId).textContent).toContain('Info');
     }
+  });
+
+  it('keeps the row as it was unless asked to overlap: no card offsets', () => {
+    const row = el.querySelector('.hand-row')!;
+    expect(row.classList).not.toContain('overlap');
+    for (const card of row.querySelectorAll<HTMLElement>('.hand-card')) expect(card.style.marginLeft).toBe('');
   });
 
   it('shows each hand card’s name and suit and number on the card itself', () => {
@@ -220,3 +226,24 @@ describe('HandView', () => {
   });
 });
 
+
+describe('handStep', () => {
+  it('leaves the gap between cards when they fit', () => {
+    expect(handStep(800, 8, 70, 8)).toEqual({ step: 78, scrolls: false });
+  });
+
+  it('overlaps the cards when they do not fit', () => {
+    const { step, scrolls } = handStep(600, 8, 70, 8);
+    expect(step).toBeCloseTo(75.71, 1);
+    expect(scrolls).toBe(false);
+    expect(handStep(400, 8, 70, 8).step).toBeCloseTo(47.14, 1);
+  });
+
+  it('scrolls instead of showing less than 44 px of a card', () => {
+    expect(handStep(300, 8, 70, 8)).toEqual({ step: 44, scrolls: true });
+  });
+
+  it('gives one card its own width and the gap', () => {
+    expect(handStep(300, 1, 70, 8)).toEqual({ step: 78, scrolls: false });
+  });
+});

@@ -1,3 +1,4 @@
+import { clearDisplayMode, setWindowSize, stubDisplayMode } from '../layout.testing';
 import { computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { I18n } from '../i18n/i18n.service';
@@ -7,6 +8,7 @@ import { MatButtonToggle } from '@angular/material/button-toggle';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { RouterTestingHarness } from '@angular/router/testing';
 import type { ChatMessage, LastGame, RoomSnapshot } from 'protocol';
+import { BoardChatState } from './board-chat-state.service';
 import { ChatService } from './chat.service';
 import { LobbyPage } from './lobby-page';
 import { LobbyService } from './lobby.service';
@@ -70,7 +72,7 @@ describe('LobbyPage', () => {
   async function render() {
     TestBed.configureTestingModule({ providers: [provideRouter([{ path: 'rooms/:id', component: LobbyPage }, { path: 'rooms', children: [] }])] });
     TestBed.overrideComponent(OnlineGame, { set: { imports: [], providers: [], template: '' } });
-    TestBed.overrideComponent(LobbyPage, { set: { providers: [{ provide: LobbyService, useValue: lobby }, { provide: RemoteGameService, useValue: game }, { provide: ChatService, useValue: fakeChat() }] } });
+    TestBed.overrideComponent(LobbyPage, { set: { providers: [{ provide: LobbyService, useValue: lobby }, { provide: RemoteGameService, useValue: game }, { provide: ChatService, useValue: fakeChat() }, BoardChatState] } });
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl(`/rooms/${ROOM.id}`, LobbyPage);
     const el = harness.routeNativeElement as HTMLElement;
@@ -265,6 +267,19 @@ describe('LobbyPage', () => {
     expect(el.querySelector('.start-hint')).toBeNull();
     start().click();
     expect(lobby.start).toHaveBeenCalled();
+  });
+
+  it('enables Start Game in the installed app on a phone once every seat is filled', async () => {
+    stubDisplayMode('fullscreen');
+    setWindowSize(915, 412);
+    try {
+      lobby.room.set({ ...MIXED, seatCount: 4 });
+      const { el } = await render();
+      expect((el.querySelector('button.start') as HTMLButtonElement).disabled).toBe(false);
+    } finally {
+      clearDisplayMode();
+      setWindowSize(1024, 768);
+    }
   });
 
   it("shows Start Game to a solo room's player, and to no other member", async () => {

@@ -1,3 +1,5 @@
+import { PhoneBoard } from './phone/phone-board';
+import { ScreenWakeLock } from '../screen-wake-lock.service';
 import { CdkTrapFocus } from '@angular/cdk/a11y';
 import { NgTemplateOutlet } from '@angular/common';
 import { Component, DestroyRef, HostListener, Injector, afterNextRender, computed, effect, inject, signal, untracked } from '@angular/core';
@@ -68,8 +70,10 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
   selector: 'app-game-board',
   // The board's own playback: it lives as long as the board does, and reads the board's GameService (online, the remote one).
   providers: [PlaybackDirector],
-  imports: [TPipe, TMsgPipe, DecisionBanner, RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, SelectionRoster, GameStartCountdown, DiscardPile, ActionHistoryPanel, BoardPanel, SmallScreenPrompt, CdkTrapFocus, NgTemplateOutlet, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
+  imports: [TPipe, TMsgPipe, DecisionBanner, RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, SelectionRoster, GameStartCountdown, DiscardPile, ActionHistoryPanel, BoardPanel, SmallScreenPrompt, PhoneBoard, CdkTrapFocus, NgTemplateOutlet, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
   template: `
+    <!-- On the phone board (fixed over the page) these must sit above it; elsewhere the wrapper adds nothing. -->
+    <div class="banners">
     @if (lastError(); as error) {
       <div class="error-banner" role="alert">
         <mat-icon>error</mat-icon>
@@ -83,6 +87,7 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
     }
 
     <app-decision-banner />
+    </div>
     @if (gameService.gameStartsAt(); as startsAt) {
       <app-game-start-countdown [startsAt]="startsAt" />
     }
@@ -154,6 +159,31 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
                   </div>
                 }
             </ng-template>
+            @if (layout.kind() === 'compact') {
+              <!-- The installed app on a phone: its own board (phone/phone-board.ts). -->
+              <app-phone-board
+                [state]="visible"
+                [viewerSeatId]="viewerSeatId()"
+                [thinkingSeatId]="director.idle() ? gameService.botThinkingSeatId() : null"
+                [botSeatIds]="gameService.botSeatIds()"
+                [cues]="seatCueMap()"
+                [damageEffects]="damageEffects()"
+                [resolving]="resolving()"
+                [hand]="ownHand()"
+                [handActions]="legalActions()"
+                [boardActions]="boardActions()"
+                [skills]="viewerSkills()"
+                [registry]="gameService.registry"
+                (played)="submit($event)"
+                (actionChosen)="submit($event)"
+              />
+              @if (layout.panelOpen()) {
+                <div class="panel-scrim" role="presentation" (click)="layout.closePanel()"></div>
+                <aside class="panel" cdkTrapFocus [cdkTrapFocusAutoCapture]="true">
+                  <app-board-panel [actionHistory]="actionHistory()" [discardHistory]="discardHistory()" />
+                </aside>
+              }
+            } @else {
             <div class="board">
               <app-phase-indicator [state]="visible" [viewerSeatId]="viewerSeatId()" />
               <div class="board-grid">
@@ -204,6 +234,7 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
                 </aside>
               }
             </div>
+            }
           }
         }
       }
@@ -213,6 +244,11 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
     }
   `,
   styles: `
+    .banners { display: contents; }
+    :host-context([data-layout='compact']) .banners {
+      display: block; position: fixed; z-index: 3;
+      top: env(safe-area-inset-top, 0px); left: env(safe-area-inset-left, 0px); right: env(safe-area-inset-right, 0px);
+    }
     .error-banner {
       display: flex; align-items: center; gap: 12px; margin: 8px 0; padding: 8px 12px; border-radius: 12px;
       background: var(--mat-sys-error-container); color: var(--mat-sys-on-error-container);
@@ -562,6 +598,15 @@ export class GameBoard {
   protected readonly shownSeatId = computed(() => this.activeSeatId() ?? (this.gameService.state()?.result ? this.gameService.revealedSeatId() : null));
   // The result, once playback has shown the moves that led to it.
   protected readonly gameOver = computed(() => (this.director.idle() ? (this.gameService.state()?.result ?? null) : null));
+  // The screen stays on while the game runs (a phone would otherwise lock while the player waits), and is let go at
+  // Game Over and when the board closes.
+  private readonly wakeLock = inject(ScreenWakeLock);
+  private readonly holdScreen = effect(() => {
+    const running = this.gameService.state() !== null && !this.gameService.state()!.result && !this.gameOver();
+    if (running) this.wakeLock.hold();
+    else this.wakeLock.release();
+  });
+  private readonly releaseScreenOnLeave = inject(DestroyRef).onDestroy(() => this.wakeLock.release());
   protected readonly lastError = this.gameService.lastError;
 
   // Whose chair the table is seen from: the human in vs-bots, else the revealed active seat.

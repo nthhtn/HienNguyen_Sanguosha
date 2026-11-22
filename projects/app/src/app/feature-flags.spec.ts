@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
-import { FEATURE_FLAGS, FeatureFlags, offlineOnly } from './feature-flags';
+import { FEATURE_FLAGS, FeatureFlags, featureFlagsFor, offlineOnly } from './feature-flags';
 
 function setup(flags: FeatureFlags) {
   TestBed.configureTestingModule({
@@ -16,18 +16,22 @@ function setup(flags: FeatureFlags) {
 }
 
 describe('feature flags', () => {
+  it('turn the phone board on in a production build, and keep the test-only features off', () => {
+    expect(featureFlagsFor(false)).toEqual({ playOffline: false, playbackSettings: false, phoneBoard: true });
+  });
+
   it('are on by default in dev mode', () => {
-    expect(TestBed.inject(FEATURE_FLAGS)).toEqual({ playOffline: true, playbackSettings: true });
+    expect(TestBed.inject(FEATURE_FLAGS)).toEqual({ playOffline: true, playbackSettings: true, phoneBoard: true });
   });
 
   it('lets offline routes through when offline play is on', async () => {
-    const router = setup({ playOffline: true, playbackSettings: true });
+    const router = setup({ playOffline: true, playbackSettings: true, phoneBoard: true });
     await router.navigateByUrl('/setup');
     expect(router.url).toBe('/setup');
   });
 
   it('redirects offline routes to the online page when offline play is off', async () => {
-    const router = setup({ playOffline: false, playbackSettings: false });
+    const router = setup({ playOffline: false, playbackSettings: false, phoneBoard: false });
     await router.navigateByUrl('/setup');
     expect(router.url).toBe('/rooms');
   });

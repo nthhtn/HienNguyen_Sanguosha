@@ -11,6 +11,7 @@ const MODE_LABELS: Record<DisplayMode, MessageKey> = {
 // 'phone' is the kind that cannot play, so it is shown as that.
 const LAYOUT_LABELS: Record<LayoutKind, MessageKey> = {
   phone: 'device.layout.phone',
+  compact: 'device.layout.compact',
   medium: 'device.layout.medium',
   large: 'device.layout.large',
 };

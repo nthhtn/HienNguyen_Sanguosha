@@ -28,8 +28,14 @@ describe('DeviceInfo', () => {
     expect(text).toContain('915 × 412');
     expect(text).toContain('Full Screen');
     expect(text).toContain('Landscape');
-    expect(text).toContain('Too small to play');
+    expect(text).toContain('Phone Board');
     expect(text).toContain('Pixel Ratio');
+  });
+
+  it('says too small to play in a phone browser tab', () => {
+    stubDisplayMode('browser');
+    resizeTo(915, 412);
+    expect(render()).toContain('Too small to play');
   });
 
   it('says Browser and Portrait in an upright browser tab', () => {

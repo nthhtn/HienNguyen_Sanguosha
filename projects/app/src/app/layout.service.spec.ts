@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { Layout, layoutFor } from './layout.service';
-import { clearDisplayMode, resizeTo, stubDisplayMode } from './layout.testing';
+import { DISPLAY_MODE_OVERRIDE } from './display-mode-override';
+import { FEATURE_FLAGS } from './feature-flags';
+import { Layout, LayoutKind, layoutFor } from './layout.service';
+import { clearDisplayMode, resizeTo, stubDisplayMode, stubScreen } from './layout.testing';
 
 describe('layoutFor', () => {
   it.each([
@@ -38,6 +40,26 @@ describe('layoutFor', () => {
 
   it('is phone when a 1280 px wide window is under 600 px tall', () => {
     expect(layoutFor(1280, 599)).toBe('phone');
+  });
+});
+
+describe('layoutFor with the phone board', () => {
+  it.each([
+    [915, 412, 'compact'],
+    [780, 360, 'compact'],
+    [882, 344, 'compact'],
+    [760, 340, 'compact'],
+    [759, 400, 'phone'],
+    [800, 339, 'phone'],
+    [412, 915, 'phone'],
+    [1133, 744, 'medium'],
+    [1440, 900, 'large'],
+  ] as [number, number, LayoutKind][])('%i x %i is %s', (width, height, kind) => {
+    expect(layoutFor(width, height, true)).toBe(kind);
+  });
+
+  it('keeps 915 x 412 as phone without the phone board', () => {
+    expect(layoutFor(915, 412)).toBe('phone');
   });
 });
 
@@ -229,9 +251,184 @@ describe('Layout display mode', () => {
     expect(layout.size()).toEqual({ width: 915, height: 412 });
   });
 
-  it('does not change which windows can play', () => {
-    stubDisplayMode('fullscreen');
+  it('does not let a browser tab play on a phone', () => {
+    stubDisplayMode('browser');
     resizeTo(915, 412);
     expect(TestBed.inject(Layout).canPlay()).toBe(false);
   });
 });
+
+describe('Layout with the phone board', () => {
+  function flags(phoneBoard: boolean) {
+    TestBed.configureTestingModule({ providers: [{ provide: FEATURE_FLAGS, useValue: { playOffline: true, playbackSettings: true, phoneBoard } }] });
+  }
+  function at(mode: 'fullscreen' | 'browser', width: number, height: number, phoneBoard = true): Layout {
+    flags(phoneBoard);
+    stubDisplayMode(mode);
+    resizeTo(width, height);
+    return TestBed.inject(Layout);
+  }
+  afterEach(() => {
+    clearDisplayMode();
+    resizeTo(1024, 768);
+  });
+
+  it('gives an installed landscape phone the phone board, which can play', () => {
+    const layout = at('fullscreen', 915, 412);
+    expect(layout.kind()).toBe('compact');
+    expect(layout.canPlay()).toBe(true);
+    expect(layout.wide()).toBe(false);
+    expect(layout.panelAsOverlay()).toBe(true);
+    expect(layout.fitsIfTurned()).toBe(false);
+    expect(layout.installWouldHelp()).toBe(false);
+    TestBed.tick();
+    expect(document.documentElement.dataset['layout']).toBe('compact');
+  });
+
+  it('blocks a phone browser tab and says installing would help', () => {
+    const layout = at('browser', 915, 412);
+    expect(layout.kind()).toBe('phone');
+    expect(layout.canPlay()).toBe(false);
+    expect(layout.installWouldHelp()).toBe(true);
+  });
+
+  it('blocks an upright phone browser tab, with no rotate prompt, and says installing would help', () => {
+    const layout = at('browser', 412, 915);
+    expect(layout.canPlay()).toBe(false);
+    expect(layout.fitsIfTurned()).toBe(false);
+    expect(layout.installWouldHelp()).toBe(true);
+  });
+
+  it('asks an upright installed phone to turn', () => {
+    const layout = at('fullscreen', 412, 915);
+    expect(layout.canPlay()).toBe(false);
+    expect(layout.fitsIfTurned()).toBe(true);
+  });
+
+  it.each(['fullscreen', 'browser'] as const)('asks an upright tablet to turn, %s', (mode) => {
+    expect(at(mode, 744, 1133).fitsIfTurned()).toBe(true);
+  });
+
+  it('blocks a window under the phone board minimum, installed or not, with no hint', () => {
+    const installed = at('fullscreen', 700, 330);
+    expect(installed.kind()).toBe('phone');
+    expect(installed.fitsIfTurned()).toBe(false);
+    clearDisplayMode();
+    TestBed.resetTestingModule();
+    expect(at('browser', 700, 330).installWouldHelp()).toBe(false);
+  });
+
+  it.each(['fullscreen', 'browser'] as const)('leaves a large window as it is, %s', (mode) => {
+    const layout = at(mode, 1366, 768);
+    expect(layout.kind()).toBe('large');
+    expect(layout.installWouldHelp()).toBe(false);
+  });
+
+  it('ignores the display mode while the phone board flag is off', () => {
+    const layout = at('fullscreen', 915, 412, false);
+    expect(layout.kind()).toBe('phone');
+    expect(layout.canPlay()).toBe(false);
+    expect(layout.installWouldHelp()).toBe(false);
+  });
+});
+
+describe('Layout with a forced display mode', () => {
+  afterEach(() => clearDisplayMode());
+
+  it('uses the forced mode over what the browser says', () => {
+    TestBed.configureTestingModule({ providers: [{ provide: DISPLAY_MODE_OVERRIDE, useValue: 'standalone' }] });
+    stubDisplayMode('browser');
+    const layout = TestBed.inject(Layout);
+    expect(layout.displayMode()).toBe('standalone');
+    expect(layout.installed()).toBe(true);
+  });
+});
+
+describe('Layout toolbar on the phone board', () => {
+  afterEach(() => resizeTo(1024, 768));
+
+  function compact(): Layout {
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: FEATURE_FLAGS, useValue: { playOffline: true, playbackSettings: true, phoneBoard: true } },
+        { provide: DISPLAY_MODE_OVERRIDE, useValue: 'fullscreen' },
+      ],
+    });
+    resizeTo(915, 412);
+    return TestBed.inject(Layout);
+  }
+
+  it('hides the toolbar only while a phone board is open on the compact layout', () => {
+    const layout = compact();
+    expect(layout.toolbarHidden()).toBe(false);
+    layout.setBoardOpen(true);
+    TestBed.tick();
+    expect(layout.toolbarHidden()).toBe(true);
+    expect(document.documentElement.dataset['board']).toBe('open');
+    layout.setBoardOpen(false);
+    TestBed.tick();
+    expect(layout.toolbarHidden()).toBe(false);
+    expect(document.documentElement.dataset['board']).toBeUndefined();
+  });
+
+  it('shows the toolbar again when the layout is no longer compact', () => {
+    const layout = compact();
+    layout.setBoardOpen(true);
+    resizeTo(1366, 768);
+    expect(layout.toolbarHidden()).toBe(false);
+    expect(document.documentElement.dataset['board']).toBeUndefined();
+  });
+});
+
+describe('Layout install hint on touch screens only', () => {
+  afterEach(() => {
+    clearDisplayMode();
+    resizeTo(1024, 768);
+  });
+
+  it.each([
+    [true, true],
+    [false, false],
+  ])('a phone-sized browser tab with a coarse pointer %s says installing would help: %s', (coarse, helps) => {
+    TestBed.configureTestingModule({ providers: [{ provide: FEATURE_FLAGS, useValue: { playOffline: true, playbackSettings: true, phoneBoard: true } }] });
+    stubDisplayMode('browser', { coarse });
+    resizeTo(915, 412);
+    const layout = TestBed.inject(Layout);
+    expect(layout.coarsePointer()).toBe(coarse);
+    expect(layout.installWouldHelp()).toBe(helps);
+  });
+});
+
+describe('Layout install hint judged by the screen', () => {
+  const realScreen = window.screen;
+  afterEach(() => {
+    clearDisplayMode();
+    Object.defineProperty(window, 'screen', { configurable: true, value: realScreen });
+    resizeTo(1024, 768);
+  });
+
+  function tab(screen: { width: number; height: number } | null, width: number, height: number): Layout {
+    TestBed.configureTestingModule({ providers: [{ provide: FEATURE_FLAGS, useValue: { playOffline: true, playbackSettings: true, phoneBoard: true } }] });
+    stubDisplayMode('browser');
+    stubScreen(screen);
+    resizeTo(width, height);
+    return TestBed.inject(Layout);
+  }
+
+  it("says installing would help when Chrome's bars shrink the tab below the phone board (Honor 400 Pro)", () => {
+    expect(tab({ width: 800, height: 366 }, 759, 269).installWouldHelp()).toBe(true);
+  });
+
+  it('says nothing for a tablet in split view: installing would not make the window bigger', () => {
+    expect(tab({ width: 1180, height: 820 }, 500, 700).installWouldHelp()).toBe(false);
+  });
+
+  it('says nothing for a screen under the phone board minimum', () => {
+    expect(tab({ width: 700, height: 330 }, 700, 250).installWouldHelp()).toBe(false);
+  });
+
+  it('says nothing, and does not throw, with no screen', () => {
+    expect(tab(null, 759, 269).installWouldHelp()).toBe(false);
+  });
+});
+

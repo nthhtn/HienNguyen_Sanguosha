@@ -1,4 +1,6 @@
 import { DestroyRef, Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
+import { DISPLAY_MODE_OVERRIDE } from './display-mode-override';
+import { FEATURE_FLAGS } from './feature-flags';
 
 // The wide layouts need room in both directions: a short window (a phone on its side) gets the phone layout however wide it is.
 // Medium (900 to 1279 px wide) has the full navigation bar but folds the board's two history tiles into a panel, so the hand
@@ -6,8 +8,12 @@ import { DestroyRef, Injectable, computed, effect, inject, signal, untracked } f
 export const WIDE_MIN_WIDTH = 900;
 export const WIDE_MIN_HEIGHT = 600;
 export const LARGE_MIN_WIDTH = 1280;
+// The installed app on a phone held sideways gets its own board down to this size.
+export const PHONE_BOARD_MIN_WIDTH = 760;
+export const PHONE_BOARD_MIN_HEIGHT = 340;
 
-export type LayoutKind = 'phone' | 'medium' | 'large';
+// 'phone' means too small to play. 'compact' is the phone board: the installed app, landscape, under medium.
+export type LayoutKind = 'phone' | 'compact' | 'medium' | 'large';
 
 // How the page is shown: in the installed app, full screen or standalone (it keeps the status bar), or in a browser tab.
 export type DisplayMode = 'fullscreen' | 'standalone' | 'browser';
@@ -19,9 +25,11 @@ function readDisplayMode(): DisplayMode {
   return INSTALLED_MODES.find((mode) => window.matchMedia(`(display-mode: ${mode})`).matches) ?? 'browser';
 }
 
-export function layoutFor(width: number, height: number): LayoutKind {
-  if (width < WIDE_MIN_WIDTH || height < WIDE_MIN_HEIGHT) return 'phone';
-  return width >= LARGE_MIN_WIDTH ? 'large' : 'medium';
+// `phoneBoard`: the page is the installed app and the phone board is turned on.
+export function layoutFor(width: number, height: number, phoneBoard = false): LayoutKind {
+  if (width >= WIDE_MIN_WIDTH && height >= WIDE_MIN_HEIGHT) return width >= LARGE_MIN_WIDTH ? 'large' : 'medium';
+  if (phoneBoard && width >= height && width >= PHONE_BOARD_MIN_WIDTH && height >= PHONE_BOARD_MIN_HEIGHT) return 'compact';
+  return 'phone';
 }
 
 // The one place that decides phone, medium or large. Styles follow the `data-layout`
@@ -34,19 +42,42 @@ export class Layout {
   private readonly height = signal(window.innerHeight);
   private readonly _navOpen = signal(false);
   private readonly _panelOpen = signal(false);
-  private readonly _displayMode = signal<DisplayMode>(readDisplayMode());
 
-  readonly kind = computed(() => layoutFor(this.width(), this.height()));
-  // Medium and large: room for the full navigation bar.
-  readonly wide = computed(() => this.kind() !== 'phone');
-  // A game can be played only in a medium or large window; 'phone' means too small to play (no device check: a window
-  // size decides, so "desktop site" mode on a phone and a small desktop window are blocked as well).
+  private readonly flags = inject(FEATURE_FLAGS);
+  private readonly forcedMode = inject(DISPLAY_MODE_OVERRIDE);
+  private readonly _displayMode = signal<DisplayMode>(readDisplayMode());
+  // The browser's answer, unless dev forced one (`?display=`).
+  readonly displayMode = computed(() => this.forcedMode ?? this._displayMode());
+  // Running as the installed app.
+  readonly installed = computed(() => this.displayMode() !== 'browser');
+  // The pointer is a finger (a phone or tablet), so the install hint is worth showing. Read once.
+  readonly coarsePointer = signal(typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches).asReadonly();
+  // The phone board may be used: the installed app, with the board turned on.
+  readonly phoneBoardAllowed = computed(() => this.flags.phoneBoard && this.installed());
+
+  readonly kind = computed(() => layoutFor(this.width(), this.height(), this.phoneBoardAllowed()));
+  // Medium and large: room for the full navigation bar. The phone board keeps the menu drawer.
+  readonly wide = computed(() => this.kind() === 'medium' || this.kind() === 'large');
+  // A game can be played in a medium or large window, or on the phone board; 'phone' means too small to play (a
+  // window size decides, so "desktop site" mode on a phone and a small desktop window are blocked as well).
   readonly canPlay = computed(() => this.kind() !== 'phone');
-  // Too small as it is, but big enough turned sideways: a tablet held upright.
-  readonly fitsIfTurned = computed(() => {
-    const long = Math.max(this.width(), this.height());
-    const short = Math.min(this.width(), this.height());
-    return !this.canPlay() && long >= WIDE_MIN_WIDTH && short >= WIDE_MIN_HEIGHT;
+  // Too small as it is, but playable turned sideways: a tablet held upright, or the installed app on an upright phone.
+  readonly fitsIfTurned = computed(() => !this.canPlay() && layoutFor(this.height(), this.width(), this.phoneBoardAllowed()) !== 'phone');
+  // A browser tab too small to play that the installed app could play on, held as it is or turned: the install hint.
+  // A phone's screen size, which a browser tab's bars do not shrink (the installed app gets about this much). Only a
+  // phone-sized screen (shorter side under the wide layouts' height) counts: on a tablet a small window is split view,
+  // and installing would not make it bigger. Null where the browser does not say (a test's jsdom reports 0).
+  private readonly screenSize = (() => {
+    const screen = typeof window.screen === 'object' && window.screen ? window.screen : null;
+    if (!screen || screen.width <= 0 || screen.height <= 0) return null;
+    return Math.min(screen.width, screen.height) < WIDE_MIN_HEIGHT ? { width: screen.width, height: screen.height } : null;
+  })();
+  // A browser tab too small to play on a touch screen the installed app could play on, held either way: the install
+  // hint. Judged by the screen, not the tab (spec 3b), when the browser gives its size.
+  readonly installWouldHelp = computed(() => {
+    if (!this.flags.phoneBoard || !this.coarsePointer() || this.installed() || this.canPlay()) return false;
+    const { width, height } = this.screenSize ?? { width: this.width(), height: this.height() };
+    return layoutFor(width, height, true) !== 'phone' || layoutFor(height, width, true) !== 'phone';
   });
   // The History panel slides over the board (phone and medium); on large the board keeps its two tiles.
   readonly panelAsOverlay = computed(() => this.kind() !== 'large');
@@ -67,9 +98,11 @@ export class Layout {
   }
   readonly portrait = computed(() => this.height() > this.width());
   readonly size = computed(() => ({ width: this.width(), height: this.height() }));
-  readonly displayMode = this._displayMode.asReadonly();
-  // Running as the installed app. Nothing uses it to decide who can play yet.
-  readonly installed = computed(() => this.displayMode() !== 'browser');
+  private readonly _boardOpen = signal(false);
+  // A phone board is on screen (PhoneBoard says so while it exists).
+  readonly boardOpen = this._boardOpen.asReadonly();
+  // The app toolbar gives the phone board its height back during a game; the drawer opens from the centre band.
+  readonly toolbarHidden = computed(() => this.kind() === 'compact' && this._boardOpen());
   readonly navOpen = this._navOpen.asReadonly();
   readonly panelOpen = this._panelOpen.asReadonly();
 
@@ -89,6 +122,11 @@ export class Layout {
       window.removeEventListener('orientationchange', update);
       modeQueries.forEach((query) => query.removeEventListener('change', updateMode));
     });
+    // Styles read it: the toolbar's height is 0 while it is hidden, so what sits below it moves up.
+    effect(() => {
+      if (this.toolbarHidden()) document.documentElement.dataset['board'] = 'open';
+      else delete document.documentElement.dataset['board'];
+    });
     effect(() => {
       document.documentElement.dataset['layout'] = this.kind();
     });
@@ -100,6 +138,10 @@ export class Layout {
         this._panelOpen.set(false);
       });
     });
+  }
+
+  setBoardOpen(open: boolean): void {
+    this._boardOpen.set(open);
   }
 
   openNav(): void {
