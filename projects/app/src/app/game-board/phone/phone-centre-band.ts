@@ -4,6 +4,7 @@ import { GameState } from 'engine';
 import { I18n } from '../../i18n/i18n.service';
 import { TPipe } from '../../i18n/t.pipe';
 import { Layout } from '../../layout.service';
+import { BoardChatState } from '../../online/board-chat-state.service';
 import { actionHistory } from '../action-history';
 import { PhaseIndicator } from '../phase-indicator';
 import { PlayingCard } from '../playing-card';
@@ -30,6 +31,20 @@ import { PlayingCard } from '../playing-card';
     <div class="buttons">
       <button type="button" class="menu" [attr.aria-label]="'nav.menu' | t" (click)="layout.openNav()"><mat-icon>menu</mat-icon></button>
       <button type="button" class="history" [attr.aria-label]="'board.panel.open' | t" (click)="layout.togglePanel()"><mat-icon>history</mat-icon></button>
+      @if (chat?.available()) {
+        <button
+          type="button"
+          class="chat"
+          [attr.aria-label]="chat!.unread() > 0 ? ('chat.unread' | t: { n: chat!.unread() }) : ('lobby.chat' | t)"
+          [attr.aria-expanded]="chat!.open()"
+          (click)="chat!.toggle()"
+        >
+          <mat-icon>chat</mat-icon>
+          @if (chat!.unread() > 0) {
+            <span class="unread">{{ chat!.unread() }}</span>
+          }
+        </button>
+      }
     </div>
   `,
   styles: `
@@ -47,8 +62,12 @@ import { PlayingCard } from '../playing-card';
     .turned-up { flex: none; display: flex; gap: 4px; }
     .buttons { flex: none; display: flex; gap: 6px; }
     .buttons button {
-      width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: 0;
+      position: relative; width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: 0;
       border: 1px solid rgb(251 247 236 / 0.4); border-radius: 8px; background: transparent; color: inherit; cursor: pointer;
+    }
+    .unread {
+      position: absolute; top: -4px; right: -4px; min-width: 18px; padding: 0 4px; border-radius: 9px; box-sizing: border-box;
+      background: var(--mat-sys-error); color: var(--mat-sys-on-error); font-size: 12px; line-height: 18px; text-align: center;
     }
   `,
 })
@@ -57,6 +76,8 @@ export class PhoneCentreBand {
   readonly viewerSeatId = input<string | null>(null);
 
   protected readonly layout = inject(Layout);
+  // The online board's chat, when there is one (the lobby page provides it).
+  protected readonly chat = inject(BoardChatState, { optional: true });
   private readonly i18n = inject(I18n);
 
   // The newest action, in the Action History's wording.

@@ -2,6 +2,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import type { CardInstance, Seat } from 'engine';
+import { generalFaceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL } from 'content';
 import { PhoneSeatTile } from './phone-seat-tile';
 import { testSeat } from './phone.testing';
 
@@ -26,7 +27,7 @@ describe('PhoneSeatTile', () => {
       equipment: [card('e1', 'serpent-spear')],
     });
     expect(el.querySelector('.name')!.textContent).toContain('Seat 3');
-    expect(el.querySelector('.hp')!.textContent).toContain('3/4');
+    expect(el.querySelector('.hp')!.getAttribute('aria-label')).toBe('HP 3/4');
     expect(el.querySelector('.hand')!.textContent).toContain('5');
     expect(el.querySelectorAll('.general')).toHaveLength(2);
     const judgment = el.querySelectorAll('.judgment-box');
@@ -69,14 +70,16 @@ describe('PhoneSeatTile', () => {
     expect(el.querySelector('.hp')!.getAttribute('aria-label')).toBe('HP 3/4');
   });
 
-  it("opens on a tap on an opponent's tile, but not on the viewer's", () => {
+  it("opens on a tap on any tile, the viewer's included", () => {
     let opened = 0;
     render(testSeat('seat-3', 3));
     fixture.componentInstance.opened.subscribe(() => opened++);
     (fixture.nativeElement.querySelector('button.tile') as HTMLButtonElement).click();
     expect(opened).toBe(1);
-    const viewer = render(testSeat('seat-0', 0), { isViewer: true });
-    expect(viewer.querySelector('button.tile')).toBeNull();
+    render(testSeat('seat-0', 0), { isViewer: true });
+    fixture.componentInstance.opened.subscribe(() => opened++);
+    (fixture.nativeElement.querySelector('button.tile') as HTMLButtonElement).click();
+    expect(opened).toBe(2);
   });
 
   it('sets no text under 12 px', () => {
@@ -86,4 +89,89 @@ describe('PhoneSeatTile', () => {
     expect(Math.min(...sizes)).toBeGreaterThanOrEqual(12);
     expect(source).not.toMatch(/font-size:\s*[\d.]+em/);
   });
+
+  describe('text badges', () => {
+    const badgesOn = (el: HTMLElement, slot: 'main' | 'deputy') =>
+      [...el.querySelectorAll(`.general[data-slot="${slot}"] .badge`)].map((b) => b.textContent!.trim());
+    const across = (el: HTMLElement) => [...el.querySelectorAll('.badges-across .badge')].map((b) => b.textContent!.trim());
+
+    it('puts No Skills for one General on that General', () => {
+      const el = render(testSeat('seat-3', 3, { silencedSlots: ['deputy'] }));
+      expect(badgesOn(el, 'deputy')).toEqual(['No Skills']);
+      expect(badgesOn(el, 'main')).toEqual([]);
+    });
+
+    it('puts Form on the General that changed', () => {
+      const el = render(testSeat('seat-3', 3, { forms: { slot: 'main', held: ['g1'], chosen: { generalId: 'g1', skillId: 's1' } } }));
+      expect(badgesOn(el, 'main')).toEqual(['Form']);
+    });
+
+    it('stacks Face Down and whole-seat No Skills across both Generals', () => {
+      const el = render(testSeat('seat-3', 3, { faceDown: true, silenced: true }));
+      expect(across(el)).toEqual(['Face Down', 'No Skills']);
+      expect(badgesOn(el, 'main')).toEqual([]);
+    });
+
+    it('shows Dying as a red badge across both Generals, not a strip', () => {
+      const el = render(testSeat('seat-3', 3, { combinedHp: 0 }));
+      const dying = el.querySelector('.badges-across .badge.red')!;
+      expect(dying.textContent).toContain('Dying');
+      expect(el.querySelector('.status')).toBeNull();
+    });
+  });
+
+  describe('face avatars', () => {
+    const generalsOf = (main: string, deputy = 'hidden') => ({
+      main: { generalDefinitionId: main, revealed: main !== 'hidden' },
+      deputy: { generalDefinitionId: deputy, revealed: deputy !== 'hidden' },
+    });
+    const src = (el: HTMLElement, slot: 'main' | 'deputy') => (el.querySelector(`.general[data-slot="${slot}"] img`) as HTMLImageElement).getAttribute('src');
+
+    it("shows a revealed General's face crop and the hidden art for a hidden one", () => {
+      const el = render(testSeat('seat-3', 3, { generals: generalsOf('cao-cao') }));
+      expect(src(el, 'main')).toBe(generalFaceUrl('cao-cao'));
+      expect(src(el, 'deputy')).toBe(HIDDEN_GENERAL_ART_URL);
+    });
+
+    it('shows the portrait for a General with no face crop', () => {
+      const el = render(testSeat('seat-3', 3, { generals: generalsOf('kingdomWars:nobody') }));
+      expect(generalFaceUrl('kingdomWars:nobody')).toBeNull();
+      expect(src(el, 'main')).toBe(generalSkinUrl('kingdomWars:nobody'));
+    });
+
+    it('falls back to the portrait when the face crop does not load', () => {
+      const el = render(testSeat('seat-3', 3, { generals: generalsOf('cao-cao') }));
+      el.querySelector('.general[data-slot="main"] img')!.dispatchEvent(new Event('error'));
+      fixture.detectChanges();
+      expect(src(el, 'main')).toBe(generalSkinUrl('cao-cao'));
+    });
+  });
+
+  describe('HP', () => {
+    it('shows one HP icon per max HP on a full tile, lost ones dark, with the numbers as its label', () => {
+      const el = render(testSeat('seat-3', 3, { combinedHp: 3, maxCombinedHp: 4 }));
+      const icons = [...el.querySelectorAll('.hp .hp-icon')];
+      expect(icons).toHaveLength(4);
+      expect(icons.map((i) => i.classList.contains('lost'))).toEqual([false, false, false, true]);
+      expect(el.querySelector('.hp')!.getAttribute('aria-label')).toBe('HP 3/4');
+      expect(el.querySelector('.hp')!.textContent).not.toContain('HP');
+    });
+
+    it('caps at 8 icons and then shows the numbers too', () => {
+      const el = render(testSeat('seat-3', 3, { combinedHp: 9, maxCombinedHp: 10 }));
+      expect(el.querySelectorAll('.hp .hp-icon')).toHaveLength(8);
+      expect(el.querySelector('.hp')!.textContent).toContain('9/10');
+    });
+
+    it("shows the icons on the viewer's tile too", () => {
+      expect(render(testSeat('seat-0', 0), { isViewer: true }).querySelectorAll('.hp .hp-icon')).toHaveLength(4);
+    });
+
+    it('shows a heart and 4/4 on a slim tile, no icons', () => {
+      const el = render(testSeat('seat-3', 3), { slim: true });
+      expect(el.querySelectorAll('.hp .hp-icon')).toHaveLength(0);
+      expect(el.querySelector('.hp')!.textContent!.trim()).toBe('favorite4/4');
+    });
+  });
 });
+

@@ -170,3 +170,45 @@ class RepoCropData(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class CropsWithTheirOwnBoxFile(unittest.TestCase):
+    RECIPES = {
+        'generals/skins': {'op': 'copy'},
+        'generals/faces': {'op': 'crop', 'from': 'generals/skins', 'boxes': 'faces.json', 'ext': 'webp', 'quality': 85},
+    }
+
+    def make(self, faces):
+        # asset-crops.json holds card boxes that have nothing to do with this recipe.
+        layout = make_layout({}, self.RECIPES, {'tool/duel': [2, 3, 4, 5]})
+        skins = layout.src / 'generals/skins/wei'
+        skins.mkdir(parents=True)
+        marked_image(skins / 'caocao.png')
+        (layout.src / 'generals/skins/skins.json').write_text('{}')
+        (layout.content / 'faces.json').write_text(json.dumps(faces))
+        return layout
+
+    def test_reads_its_own_box_file_and_skips_files_that_are_not_images(self):
+        layout = self.make({'wei/caocao': [2, 3, 4, 4]})
+        build(layout)
+        with Image.open(layout.out / 'generals/faces/wei/caocao.webp') as cut:
+            self.assertEqual(cut.size, (4, 4))
+        self.assertFalse((layout.out / 'generals/faces/skins.webp').exists())
+        self.assertEqual(check(layout), [])
+
+    def test_a_portrait_without_a_box_names_the_box_file(self):
+        from assetlib.plan import PlanError, plan_outputs
+        layout = self.make({})
+        with self.assertRaises(PlanError) as ctx:
+            plan_outputs(layout)
+        self.assertIn('wei/caocao', str(ctx.exception))
+        self.assertIn('faces.json', str(ctx.exception))
+
+    def test_a_box_with_no_portrait_names_the_box_file(self):
+        from assetlib.plan import PlanError, plan_outputs
+        layout = self.make({'wei/caocao': [2, 3, 4, 4], 'wei/nobody': [0, 0, 2, 2]})
+        with self.assertRaises(PlanError) as ctx:
+            plan_outputs(layout)
+        self.assertIn('wei/nobody', str(ctx.exception))
+        self.assertIn('faces.json', str(ctx.exception))
+

@@ -214,13 +214,16 @@ From [Backend](architecture/backend.md#not-done), which holds the detail:
 
 From the Resolution Notice, picker and Judgment work (PR #62, 2026-11-09). The design is in `docs/superpowers/specs/2026-11-09-resolution-notice-and-pickers-design.md`.
 
-### The phone board is off in production
+### Phone board leftovers
 
-- **What is missing.**
-  - `FeatureFlags.phoneBoard` (`projects/app/src/app/feature-flags.ts`) is off in a production build.
-  - So the installed app on a phone is still blocked from playing, and a phone browser gets no install hint.
-- **Why it waits.** The board itself is Part 2b of the phone app (`docs/superpowers/specs/2026-11-13-phone-app-design.md`, section 3). Until it exists, an installed phone that could play would get a board built for tablets.
-- **Revisit when.** Part 2b is built: Turn the flag on (or remove it) in that pull request.
+- **What is missing.** Small things on the phone board (`projects/app/src/app/game-board/phone/`), found in the Part 2b-1 review:
+  - **Thinking line:** No "<Seat> is thinking…" while a bot thinks; the web table shows one.
+  - **Hand padding:** `HandView`'s overlap counts the row's 8 px of side padding, so a hand that just fits can scroll a few pixels.
+  - **Toolbar timing:** `PhoneBoard` hides the toolbar during change detection (`setBoardOpen` in its constructor); `afterNextRender` would be cleaner.
+  - **Spectator at 12 seats:** With no viewer seat all 12 seats are opponents, so the top row holds 8 and the tiles are narrower than the 12-seat estimate.
+  - **Short screens:** At the 340 px floor a played card fills the centre band edge to edge.
+- **Why it waits.** The developer chose to leave them for later (2026-11-22). None stops a game.
+- **Revisit when.** The real-phone check, or a later pass on the phone board.
 
 ### Notices for skills and equipment abilities
 

@@ -1,8 +1,8 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, computed, inject, input, output } from '@angular/core';
+import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CardInstance, EQUIP_SLOTS, EquipSlot, GeneralInstance, Seat } from 'engine';
-import { AMBITIONIST_ICON_URL, equipSlotOf, generalSkinUrl, HIDDEN_GENERAL_ART_URL } from 'content';
+import { AMBITIONIST_ICON_URL, equipSlotOf, generalFaceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls } from 'content';
 import { cardIdDisplayName, seatForce } from '../../labels';
 import { I18n } from '../../i18n/i18n.service';
 import { TPipe } from '../../i18n/t.pipe';
@@ -19,10 +19,12 @@ const SLOT_ICONS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
   offensiveMount: { label: 'slot.offensiveMount', icon: 'remove' },
 };
 const JUDGMENT_BOXES = 3;
+// The HP ramp has this many icons (hpIconUrls in content).
+const MAX_HP_ICONS = 8;
 
 // One seat on the phone board, laid out to be read at arm's length (spec, "The phone board"): the name with up to three
 // Judgment boxes, both Generals, HP and hand count with the chained mark, and four Equipment boxes. Nothing in it is
-// scaled down; a slim tile is narrower, not smaller. An opponent's tile is one tap target (2b-2 opens Seat Details).
+// scaled down; a slim tile is narrower, not smaller. Every tile is one tap target that opens Seat Details.
 @Component({
   selector: 'app-phone-seat-tile',
   imports: [NgTemplateOutlet, MatIconModule, SpriteEffect, TPipe, TMsgPipe],
@@ -52,7 +54,17 @@ const JUDGMENT_BOXES = 3;
       <div class="generals">
         @for (g of generals(); track g.slot) {
           <span class="general" [attr.data-slot]="g.slot" [class.own-hidden]="g.ownHidden">
-            <img [src]="g.url" alt="" />
+            <img [src]="g.url" alt="" (error)="faceFailed(g.face)" />
+            @for (badge of g.badges; track badge) {
+              <span class="badge">{{ badge | t }}</span>
+            }
+          </span>
+        }
+        @if (acrossBadges().length) {
+          <span class="badges-across">
+            @for (badge of acrossBadges(); track badge.key) {
+              <span class="badge" [class.red]="badge.red">{{ badge.key | t }}</span>
+            }
           </span>
         }
         @for (fx of shownDamage(); track fx.id) {
@@ -63,7 +75,14 @@ const JUDGMENT_BOXES = 3;
         @if (slim()) {
           <span class="hp" [attr.aria-label]="'seat.hp' | t: { hp: seat().combinedHp, max: seat().maxCombinedHp }"><mat-icon aria-hidden="true">favorite</mat-icon>{{ seat().combinedHp }}/{{ seat().maxCombinedHp }}</span>
         } @else {
-          <span class="hp">{{ 'seat.hp' | t: { hp: seat().combinedHp, max: seat().maxCombinedHp } }}</span>
+          <span class="hp" role="img" [attr.aria-label]="'seat.hp' | t: { hp: seat().combinedHp, max: seat().maxCombinedHp }">
+            @for (icon of hpIcons(); track $index) {
+              <img class="hp-icon" [class.lost]="icon.lost" [src]="icon.url" alt="" />
+            }
+            @if (seat().maxCombinedHp > maxHpIcons) {
+              <span class="hp-numbers">{{ seat().combinedHp }}/{{ seat().maxCombinedHp }}</span>
+            }
+          </span>
         }
         <span class="hand" [attr.aria-label]="'seat.handAria' | t: { n: handCount() }"><mat-icon aria-hidden="true">style</mat-icon>{{ handCount() }}</span>
         @if (seat().chained) {
@@ -84,8 +103,6 @@ const JUDGMENT_BOXES = 3;
       </div>
       @if (seat().eliminated) {
         <span class="stamp">{{ 'seat.eliminated' | t }}</span>
-      } @else if (showDying()) {
-        <span class="status">{{ 'seat.dying' | t }}</span>
       }
       @if (cue(); as c) {
         @if (c.floatText) {
@@ -96,15 +113,9 @@ const JUDGMENT_BOXES = 3;
         }
       }
     </ng-template>
-    @if (isViewer()) {
-      <div class="tile" [class]="tileClasses()" [attr.data-force]="force()">
-        <ng-container [ngTemplateOutlet]="body" />
-      </div>
-    } @else {
-      <button type="button" class="tile" [class]="tileClasses()" [attr.data-force]="force()" [attr.aria-label]="name()" (click)="opened.emit()">
-        <ng-container [ngTemplateOutlet]="body" />
-      </button>
-    }
+    <button type="button" class="tile" [class]="tileClasses()" [attr.data-force]="force()" [attr.aria-label]="name()" (click)="opened.emit()">
+      <ng-container [ngTemplateOutlet]="body" />
+    </button>
   `,
   styles: `
     :host { display: block; height: 100%; min-width: 0; }
@@ -114,7 +125,6 @@ const JUDGMENT_BOXES = 3;
       font: inherit; font-size: 14px; line-height: 1.2; color: #2b2520;
       background: #fbf7ec; border: 1px solid #b9a37a; border-radius: 7px;
     }
-    div.tile { cursor: default; }
     .tile.turn-owner { border: 2px solid #e0a92e; box-shadow: 0 0 0 2px rgb(224 169 46 / 0.35); }
     .tile.responding { outline: 2px dashed var(--force, #e0a92e); outline-offset: -4px; }
     .tile.dimmed { opacity: 0.55; }
@@ -133,13 +143,16 @@ const JUDGMENT_BOXES = 3;
     .judgment-box { width: 12px; height: 16px; border: 1px dashed rgb(255 255 255 / 0.8); border-radius: 3px; box-sizing: border-box; }
     .judgment-box.filled { border-style: solid; background: #e9d49a; }
     .generals { position: relative; flex: 1 1 auto; min-height: 0; display: flex; gap: 2px; padding: 0 5px; }
-    .general { flex: 1 1 0; min-width: 0; border-radius: 4px; overflow: hidden; background: var(--force, #6b6058); }
-    .general img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+    .general { position: relative; flex: 1 1 0; min-width: 0; border-radius: 4px; overflow: hidden; background: var(--force, #6b6058); }
+    .general img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
     .general.own-hidden img { opacity: 0.6; }
     .damage-fx { position: absolute; inset: 0; pointer-events: none; }
     .stats { display: flex; align-items: center; gap: 6px; padding: 0 5px; white-space: nowrap; font-weight: 500; }
     .hp { display: inline-flex; align-items: center; color: #b23a2e; }
     .hp mat-icon { width: 14px; height: 14px; font-size: 14px; }
+    .hp-icon { width: 9px; height: 12px; margin-right: 1px; }
+    .hp-icon.lost { filter: brightness(0.35) saturate(0); }
+    .hp-numbers { margin-left: 3px; }
     .slim .stats { gap: 4px; padding: 0 3px; }
     .slim .name-row { padding: 1px 3px; }
     .hand { display: inline-flex; align-items: center; }
@@ -157,9 +170,15 @@ const JUDGMENT_BOXES = 3;
       padding: 0 6px; border: 2px solid #b23a2e; border-radius: 6px; background: rgb(251 247 236 / 0.9);
       color: #b23a2e; font-size: 13px; font-weight: 700; white-space: nowrap;
     }
-    .status {
-      position: absolute; left: 6px; right: 6px; top: 45%; text-align: center; border-radius: 4px;
-      background: #b23a2e; color: #fff; font-size: 12px; font-weight: 500;
+    .badge {
+      display: block; padding: 1px 3px; border-radius: 4px; text-align: center; overflow-wrap: anywhere;
+      background: rgb(43 37 32 / 0.9); color: #fbf7ec; font-size: 12px; font-weight: 500; line-height: 1.1;
+    }
+    .general .badge { position: absolute; left: 2px; right: 2px; top: 2px; }
+    .badge.red { background: #b23a2e; }
+    .badges-across {
+      position: absolute; left: 6px; right: 6px; top: 50%; transform: translateY(-50%); z-index: 1;
+      display: flex; flex-direction: column; align-items: center; gap: 2px; pointer-events: none;
     }
     .float { position: absolute; left: 0; right: 0; top: 30%; text-align: center; font-size: 18px; font-weight: 700; color: #b23a2e; pointer-events: none; }
     .float.up { color: #2e7d4f; }
@@ -185,7 +204,7 @@ export class PhoneSeatTile {
   readonly damageEffect = input<ShownDamage | null>(null);
   readonly dimmed = input(false);
   readonly slim = input(false);
-  // A tap on an opponent's tile.
+  // A tap on the tile (any seat, the viewer's included): Seat Details.
   readonly opened = output<void>();
 
   private readonly i18n = inject(I18n);
@@ -210,6 +229,12 @@ export class PhoneSeatTile {
       heal: cue?.impact === 'heal',
     };
   });
+  protected readonly maxHpIcons = MAX_HP_ICONS;
+  // One ramp icon per point of maximum HP (up to the ramp's 8): held points as they are, lost ones dark (spec 3b).
+  protected readonly hpIcons = computed(() => {
+    const { combinedHp, maxCombinedHp } = this.seat();
+    return hpIconUrls(maxCombinedHp).map((url, i) => ({ url, lost: i >= combinedHp }));
+  });
   protected readonly judgmentBoxes = computed(() => Array.from({ length: JUDGMENT_BOXES }, (_, i) => this.judgment()[i] ?? null));
   protected readonly slots = computed(() =>
     EQUIP_SLOTS.map((slot) => ({
@@ -225,9 +250,37 @@ export class PhoneSeatTile {
     return [this.general('main', generals.main), this.general('deputy', generals.deputy)];
   });
 
+  // A badge about the whole seat lies across both Generals (spec): Face Down, No Skills for the seat, Dying.
+  protected readonly acrossBadges = computed(() => {
+    const seat = this.seat();
+    const badges: { key: MessageKey; red: boolean }[] = [];
+    if (seat.faceDown) badges.push({ key: 'seat.faceDown', red: false });
+    if (seat.silenced) badges.push({ key: 'seat.noSkills', red: false });
+    if (this.showDying()) badges.push({ key: 'seat.dying', red: true });
+    return badges;
+  });
+
   private general(slot: 'main' | 'deputy', general: GeneralInstance) {
+    const seat = this.seat();
     const hidden = general.generalDefinitionId === 'hidden';
-    return { slot, url: hidden ? HIDDEN_GENERAL_ART_URL : generalSkinUrl(general.generalDefinitionId), ownHidden: !hidden && !general.revealed };
+    // A badge about one General lies on that General: No Skills for it alone, and Form on the one that changed.
+    const badges: MessageKey[] = [];
+    if (!seat.silenced && seat.silencedSlots?.includes(slot)) badges.push('seat.noSkills');
+    if (seat.forms?.chosen && seat.forms.slot === slot) badges.push('phone.badge.form');
+    return { slot, ...this.art(general.generalDefinitionId), ownHidden: !hidden && !general.revealed, badges };
+  }
+
+  // The face crop when there is one and it loads (spec 3b), else the portrait; the hidden art for a hidden General.
+  private readonly failedFaces = signal<ReadonlySet<string>>(new Set());
+
+  private art(id: string): { url: string | null; face: string | null } {
+    if (id === 'hidden') return { url: HIDDEN_GENERAL_ART_URL, face: null };
+    const face = generalFaceUrl(id);
+    return face && !this.failedFaces().has(face) ? { url: face, face } : { url: generalSkinUrl(id), face: null };
+  }
+
+  protected faceFailed(face: string | null): void {
+    if (face) this.failedFaces.update((failed) => new Set(failed).add(face));
   }
 
   protected cardName(card: CardInstance): string {

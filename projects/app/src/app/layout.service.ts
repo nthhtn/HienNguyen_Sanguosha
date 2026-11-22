@@ -50,6 +50,8 @@ export class Layout {
   readonly displayMode = computed(() => this.forcedMode ?? this._displayMode());
   // Running as the installed app.
   readonly installed = computed(() => this.displayMode() !== 'browser');
+  // The pointer is a finger (a phone or tablet), so the install hint is worth showing. Read once.
+  readonly coarsePointer = signal(typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches).asReadonly();
   // The phone board may be used: the installed app, with the board turned on.
   readonly phoneBoardAllowed = computed(() => this.flags.phoneBoard && this.installed());
 
@@ -62,13 +64,21 @@ export class Layout {
   // Too small as it is, but playable turned sideways: a tablet held upright, or the installed app on an upright phone.
   readonly fitsIfTurned = computed(() => !this.canPlay() && layoutFor(this.height(), this.width(), this.phoneBoardAllowed()) !== 'phone');
   // A browser tab too small to play that the installed app could play on, held as it is or turned: the install hint.
-  readonly installWouldHelp = computed(
-    () =>
-      this.flags.phoneBoard &&
-      !this.installed() &&
-      !this.canPlay() &&
-      (layoutFor(this.width(), this.height(), true) !== 'phone' || layoutFor(this.height(), this.width(), true) !== 'phone')
-  );
+  // A phone's screen size, which a browser tab's bars do not shrink (the installed app gets about this much). Only a
+  // phone-sized screen (shorter side under the wide layouts' height) counts: on a tablet a small window is split view,
+  // and installing would not make it bigger. Null where the browser does not say (a test's jsdom reports 0).
+  private readonly screenSize = (() => {
+    const screen = typeof window.screen === 'object' && window.screen ? window.screen : null;
+    if (!screen || screen.width <= 0 || screen.height <= 0) return null;
+    return Math.min(screen.width, screen.height) < WIDE_MIN_HEIGHT ? { width: screen.width, height: screen.height } : null;
+  })();
+  // A browser tab too small to play on a touch screen the installed app could play on, held either way: the install
+  // hint. Judged by the screen, not the tab (spec 3b), when the browser gives its size.
+  readonly installWouldHelp = computed(() => {
+    if (!this.flags.phoneBoard || !this.coarsePointer() || this.installed() || this.canPlay()) return false;
+    const { width, height } = this.screenSize ?? { width: this.width(), height: this.height() };
+    return layoutFor(width, height, true) !== 'phone' || layoutFor(height, width, true) !== 'phone';
+  });
   // The History panel slides over the board (phone and medium); on large the board keeps its two tiles.
   readonly panelAsOverlay = computed(() => this.kind() !== 'large');
   // How big seat tiles are drawn, relative to full size: the viewer's own seat and the others share it, so a small

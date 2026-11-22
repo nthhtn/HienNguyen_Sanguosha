@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import type { CardZone, EngineEvent, GameState } from 'engine';
 import { Layout } from '../../layout.service';
+import { signal } from '@angular/core';
+import { BoardChatState } from '../../online/board-chat-state.service';
 import { PhoneCentreBand } from './phone-centre-band';
 import { testSeat } from './phone.testing';
 
@@ -56,5 +58,30 @@ describe('PhoneCentreBand', () => {
   it('shows the turned-up cards', () => {
     const { el } = render(state([{ instanceId: 'p1', definitionId: 'sha', suit: 'spade', rank: 7 }]));
     expect(el.querySelectorAll('.turned-up app-playing-card')).toHaveLength(1);
+  });
+
+  describe('Chat', () => {
+    function chatState(available: boolean, unread = 0) {
+      return { available: signal(available), unread: signal(unread), open: signal(false), toggle: jest.fn() };
+    }
+
+    it('has no Chat button without a board chat', () => {
+      expect(render(state()).el.querySelector('button.chat')).toBeNull();
+    });
+
+    it('has no Chat button while the board chat is not there (a solo game)', () => {
+      TestBed.configureTestingModule({ providers: [{ provide: BoardChatState, useValue: chatState(false) }] });
+      expect(render(state()).el.querySelector('button.chat')).toBeNull();
+    });
+
+    it('shows Chat with the unread count, and toggles the chat', () => {
+      const chat = chatState(true, 2);
+      TestBed.configureTestingModule({ providers: [{ provide: BoardChatState, useValue: chat }] });
+      const button = render(state()).el.querySelector('button.chat') as HTMLButtonElement;
+      expect(button.getAttribute('aria-label')).toBe('Chat, 2 unread');
+      expect(button.querySelector('.unread')!.textContent!.trim()).toBe('2');
+      button.click();
+      expect(chat.toggle).toHaveBeenCalled();
+    });
   });
 });

@@ -6,15 +6,19 @@ export interface FeatureFlags {
   playOffline: boolean;
   // The playback settings menu.
   playbackSettings: boolean;
-  // The phone board for the installed app (and the hint that sends a phone browser to install it). Off in production
-  // until the board itself is built.
+  // The phone board for the installed app (and the hint that sends a phone browser to install it). On everywhere; kept
+  // as a switch so it can be turned off in one line.
   phoneBoard: boolean;
 }
 
-// Test-only features: on under `ng serve`, off in a production build.
+// Test-only features are on under `ng serve` and off in a production build; the phone board is on in both.
+export function featureFlagsFor(dev: boolean): FeatureFlags {
+  return { playOffline: dev, playbackSettings: dev, phoneBoard: true };
+}
+
 export const FEATURE_FLAGS = new InjectionToken<FeatureFlags>('FEATURE_FLAGS', {
   providedIn: 'root',
-  factory: () => ({ playOffline: isDevMode(), playbackSettings: isDevMode(), phoneBoard: isDevMode() }),
+  factory: () => featureFlagsFor(isDevMode()),
 });
 
 // Sends offline-only routes to the online page when offline play is off.

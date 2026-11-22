@@ -1,3 +1,5 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MatTooltip } from '@angular/material/tooltip';
@@ -189,4 +191,15 @@ describe('GeneralSelection layout and info', () => {
     expect(el.querySelector('[data-general-id="kingdomWars:zhang-fei"] .role-chip')).not.toBeNull();
   });
 
+
+  it('gives the phone board its own card size, so the General art shows and the cards scroll inside the window', () => {
+    // jsdom applies no component styles, so read the rules for the compact layout from the source.
+    const source = readFileSync(join(__dirname, 'general-selection.ts'), 'utf8');
+    const rule = (selector: string) => new RegExp(`:host-context\\(\\[data-layout='compact'\\]\\) ${selector.replace('.', '\\.')} \\{([^}]*)\\}`).exec(source)?.[1] ?? '';
+    // The art follows the card area's height (a size container), up to 96 px wide.
+    expect(rule('.candidate')).toMatch(/--art-width: min\(96px, calc\(\(100cqh/);
+    expect(rule('.candidates')).toMatch(/container-type: size/);
+    expect(rule('.candidates')).toMatch(/overflow-y: auto/);
+  });
 });
+

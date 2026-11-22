@@ -1,6 +1,7 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { Component, DestroyRef, ElementRef, afterNextRender, computed, inject, input, output, signal, viewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { Action, CardInstance, ContentRegistry, GameState, Seat, isSeatDying } from 'engine';
 import { I18n } from '../../i18n/i18n.service';
 import { Layout } from '../../layout.service';
@@ -14,6 +15,7 @@ import type { SeatCue } from '../playback/seat-cues';
 import { PhoneCentreBand } from './phone-centre-band';
 import { phoneSeats, phoneSizes } from './phone-seat-layout';
 import { PhoneSeatTile } from './phone-seat-tile';
+import { SeatDetailsDialog, SeatDetailsData } from './seat-details-dialog';
 
 // The board's padding (styles below), which phoneSizes counts in.
 const BOARD_PADDING = 8;
@@ -41,6 +43,7 @@ const BOARD_PADDING = 8;
         [damageEffect]="damageEffects()[seat.id] ?? null"
         [dimmed]="resolving() && !cues()[seat.id]?.involved"
         [slim]="slim"
+        (opened)="openDetails(seat.id)"
       />
     </ng-template>
     <div
@@ -144,6 +147,11 @@ export class PhoneBoard {
 
   private readonly layout = inject(Layout);
   private readonly i18n = inject(I18n);
+  private readonly dialog = inject(MatDialog);
+
+  protected openDetails(seatId: string): void {
+    this.dialog.open<SeatDetailsDialog, SeatDetailsData>(SeatDetailsDialog, { data: { state: this.state, seatId }, width: 'min(92vw, 560px)' });
+  }
 
   protected readonly seats = computed(() => phoneSeats(this.state().seats, this.viewerSeatId()));
   protected readonly hasSides = computed(() => this.seats().left.length > 0);

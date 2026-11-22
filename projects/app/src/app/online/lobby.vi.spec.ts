@@ -6,6 +6,7 @@ import type { ChatMessage, LastGame, RoomSnapshot } from 'protocol';
 import { I18n } from '../i18n/i18n.service';
 import { msg, type Msg } from '../i18n/msg';
 import { BoardChat } from './board-chat';
+import { BoardChatState } from './board-chat-state.service';
 import { ChatService } from './chat.service';
 import { LobbyPage } from './lobby-page';
 import { LobbyService } from './lobby.service';
@@ -63,7 +64,7 @@ describe('LobbyPage in Vietnamese', () => {
     const chat = { messages: signal<ChatMessage[]>([]), error: signal<Msg | null>(null), send: jest.fn(async () => true) };
     TestBed.configureTestingModule({ providers: [provideRouter([{ path: 'rooms/:id', component: LobbyPage }, { path: 'rooms', children: [] }])] });
     TestBed.overrideComponent(OnlineGame, { set: { imports: [], providers: [], template: '' } });
-    TestBed.overrideComponent(LobbyPage, { set: { providers: [{ provide: LobbyService, useValue: lobby }, { provide: RemoteGameService, useValue: game }, { provide: ChatService, useValue: chat }] } });
+    TestBed.overrideComponent(LobbyPage, { set: { providers: [{ provide: LobbyService, useValue: lobby }, { provide: RemoteGameService, useValue: game }, { provide: ChatService, useValue: chat }, BoardChatState] } });
     await TestBed.inject(I18n).setLocale('vi');
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl(`/rooms/${ROOM.id}`, LobbyPage);
@@ -148,7 +149,7 @@ describe('BoardChat in Vietnamese', () => {
   it('the Chat button, its unread label and the drawer', async () => {
     localStorage.clear();
     const messages = signal<ChatMessage[]>([]);
-    TestBed.configureTestingModule({ imports: [BoardChat], providers: [{ provide: ChatService, useValue: { messages, error: signal<Msg | null>(null), send: jest.fn() } }] });
+    TestBed.configureTestingModule({ imports: [BoardChat], providers: [BoardChatState, { provide: ChatService, useValue: { messages, error: signal<Msg | null>(null), send: jest.fn() } }] });
     await TestBed.inject(I18n).setLocale('vi');
     const fixture = TestBed.createComponent(BoardChat);
     fixture.componentRef.setInput('you', 'p-ann');

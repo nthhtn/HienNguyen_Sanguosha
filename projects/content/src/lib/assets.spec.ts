@@ -1,3 +1,4 @@
+import skins from '../../assets/generals/skins/skins.json';
 import { existsSync, readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 import previewIndex from '../../assets/preview/index.json';
@@ -5,7 +6,7 @@ import { wikiKingdomWarsGenerals } from './wikiKingdomWarsGenerals';
 import { generalsData } from '../../data/generals';
 import { kingdomWarsGeneralIds } from './kingdomWarsGenerals';
 import { kingdomWarsGeneralId } from './generalIds';
-import { AMBITIONIST_ICON_URL, assetFile, SPRITE_IDS, CARD_BACK_ART_URL, kingdomBannerUrl, spriteSheet, cardArtUrl, GENERAL_PLACEHOLDER_ART_URL, generalDeathVoiceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls, skillFileId, skillPreviewUrl } from './assets';
+import { AMBITIONIST_ICON_URL, assetFile, SPRITE_IDS, CARD_BACK_ART_URL, kingdomBannerUrl, spriteSheet, cardArtUrl, GENERAL_PLACEHOLDER_ART_URL, generalDeathVoiceUrl, generalFaceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls, skillFileId, skillPreviewUrl } from './assets';
 
 describe('cardArtUrl', () => {
   it('returns the /images/ URL for a crawled id', () => {
@@ -310,3 +311,25 @@ describe('shipped files', () => {
     expect(Object.values(read('generals/skins/skins.json')).filter((p) => /\.[a-z]+$/.test(p as string))).toEqual([]);
   });
 });
+
+describe('generalFaceUrl', () => {
+  it("gives the General's face crop, filed like its portrait", () => {
+    expect(generalFaceUrl('cao-cao')).toBe('/images/generals/faces/wei/caocao.webp');
+  });
+
+  it('maps a Kingdom Wars General through its base General', () => {
+    expect(generalFaceUrl('kingdomWars:zhang-fei')).toBe(generalFaceUrl('zhang-fei'));
+  });
+
+  it('gives null for a General with no portrait, so the tile can fall back', () => {
+    expect(generalFaceUrl('kingdomWars:nobody')).toBeNull();
+    expect(generalFaceUrl('nobody')).toBeNull();
+  });
+
+  it('has a built face crop for every portrait', () => {
+    for (const skin of Object.values(skins as Record<string, string>)) {
+      expect(existsSync(join(__dirname, '../../assets/generals/faces', `${skin}.webp`))).toBe(true);
+    }
+  });
+});
+
