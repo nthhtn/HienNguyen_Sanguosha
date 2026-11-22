@@ -2,7 +2,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CardInstance, EQUIP_SLOTS, EquipSlot, GeneralInstance, Seat } from 'engine';
-import { AMBITIONIST_ICON_URL, equipSlotOf, generalFaceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL } from 'content';
+import { AMBITIONIST_ICON_URL, equipSlotOf, generalFaceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls } from 'content';
 import { cardIdDisplayName, seatForce } from '../../labels';
 import { I18n } from '../../i18n/i18n.service';
 import { TPipe } from '../../i18n/t.pipe';
@@ -19,6 +19,8 @@ const SLOT_ICONS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
   offensiveMount: { label: 'slot.offensiveMount', icon: 'remove' },
 };
 const JUDGMENT_BOXES = 3;
+// The HP ramp has this many icons (hpIconUrls in content).
+const MAX_HP_ICONS = 8;
 
 // One seat on the phone board, laid out to be read at arm's length (spec, "The phone board"): the name with up to three
 // Judgment boxes, both Generals, HP and hand count with the chained mark, and four Equipment boxes. Nothing in it is
@@ -73,7 +75,14 @@ const JUDGMENT_BOXES = 3;
         @if (slim()) {
           <span class="hp" [attr.aria-label]="'seat.hp' | t: { hp: seat().combinedHp, max: seat().maxCombinedHp }"><mat-icon aria-hidden="true">favorite</mat-icon>{{ seat().combinedHp }}/{{ seat().maxCombinedHp }}</span>
         } @else {
-          <span class="hp">{{ 'seat.hp' | t: { hp: seat().combinedHp, max: seat().maxCombinedHp } }}</span>
+          <span class="hp" role="img" [attr.aria-label]="'seat.hp' | t: { hp: seat().combinedHp, max: seat().maxCombinedHp }">
+            @for (icon of hpIcons(); track $index) {
+              <img class="hp-icon" [class.lost]="icon.lost" [src]="icon.url" alt="" />
+            }
+            @if (seat().maxCombinedHp > maxHpIcons) {
+              <span class="hp-numbers">{{ seat().combinedHp }}/{{ seat().maxCombinedHp }}</span>
+            }
+          </span>
         }
         <span class="hand" [attr.aria-label]="'seat.handAria' | t: { n: handCount() }"><mat-icon aria-hidden="true">style</mat-icon>{{ handCount() }}</span>
         @if (seat().chained) {
@@ -141,6 +150,9 @@ const JUDGMENT_BOXES = 3;
     .stats { display: flex; align-items: center; gap: 6px; padding: 0 5px; white-space: nowrap; font-weight: 500; }
     .hp { display: inline-flex; align-items: center; color: #b23a2e; }
     .hp mat-icon { width: 14px; height: 14px; font-size: 14px; }
+    .hp-icon { width: 9px; height: 12px; margin-right: 1px; }
+    .hp-icon.lost { filter: brightness(0.35) saturate(0); }
+    .hp-numbers { margin-left: 3px; }
     .slim .stats { gap: 4px; padding: 0 3px; }
     .slim .name-row { padding: 1px 3px; }
     .hand { display: inline-flex; align-items: center; }
@@ -216,6 +228,12 @@ export class PhoneSeatTile {
       hit: cue?.impact === 'hit',
       heal: cue?.impact === 'heal',
     };
+  });
+  protected readonly maxHpIcons = MAX_HP_ICONS;
+  // One ramp icon per point of maximum HP (up to the ramp's 8): held points as they are, lost ones dark (spec 3b).
+  protected readonly hpIcons = computed(() => {
+    const { combinedHp, maxCombinedHp } = this.seat();
+    return hpIconUrls(maxCombinedHp).map((url, i) => ({ url, lost: i >= combinedHp }));
   });
   protected readonly judgmentBoxes = computed(() => Array.from({ length: JUDGMENT_BOXES }, (_, i) => this.judgment()[i] ?? null));
   protected readonly slots = computed(() =>

@@ -27,7 +27,7 @@ describe('PhoneSeatTile', () => {
       equipment: [card('e1', 'serpent-spear')],
     });
     expect(el.querySelector('.name')!.textContent).toContain('Seat 3');
-    expect(el.querySelector('.hp')!.textContent).toContain('3/4');
+    expect(el.querySelector('.hp')!.getAttribute('aria-label')).toBe('HP 3/4');
     expect(el.querySelector('.hand')!.textContent).toContain('5');
     expect(el.querySelectorAll('.general')).toHaveLength(2);
     const judgment = el.querySelectorAll('.judgment-box');
@@ -144,6 +144,33 @@ describe('PhoneSeatTile', () => {
       el.querySelector('.general[data-slot="main"] img')!.dispatchEvent(new Event('error'));
       fixture.detectChanges();
       expect(src(el, 'main')).toBe(generalSkinUrl('cao-cao'));
+    });
+  });
+
+  describe('HP', () => {
+    it('shows one HP icon per max HP on a full tile, lost ones dark, with the numbers as its label', () => {
+      const el = render(testSeat('seat-3', 3, { combinedHp: 3, maxCombinedHp: 4 }));
+      const icons = [...el.querySelectorAll('.hp .hp-icon')];
+      expect(icons).toHaveLength(4);
+      expect(icons.map((i) => i.classList.contains('lost'))).toEqual([false, false, false, true]);
+      expect(el.querySelector('.hp')!.getAttribute('aria-label')).toBe('HP 3/4');
+      expect(el.querySelector('.hp')!.textContent).not.toContain('HP');
+    });
+
+    it('caps at 8 icons and then shows the numbers too', () => {
+      const el = render(testSeat('seat-3', 3, { combinedHp: 9, maxCombinedHp: 10 }));
+      expect(el.querySelectorAll('.hp .hp-icon')).toHaveLength(8);
+      expect(el.querySelector('.hp')!.textContent).toContain('9/10');
+    });
+
+    it("shows the icons on the viewer's tile too", () => {
+      expect(render(testSeat('seat-0', 0), { isViewer: true }).querySelectorAll('.hp .hp-icon')).toHaveLength(4);
+    });
+
+    it('shows a heart and 4/4 on a slim tile, no icons', () => {
+      const el = render(testSeat('seat-3', 3), { slim: true });
+      expect(el.querySelectorAll('.hp .hp-icon')).toHaveLength(0);
+      expect(el.querySelector('.hp')!.textContent!.trim()).toBe('favorite4/4');
     });
   });
 });
