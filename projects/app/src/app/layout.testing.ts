@@ -46,3 +46,9 @@ export function stubDisplayMode(initial: StubbedDisplayMode, { coarse = true }: 
 export function clearDisplayMode(): void {
   delete (window as { matchMedia?: unknown }).matchMedia;
 }
+
+// Gives the window a screen of this size (the device's, which a browser tab's bars do not shrink); null removes it.
+export function stubScreen(size: { width: number; height: number } | null): void {
+  Object.defineProperty(window, 'screen', { configurable: true, value: size ?? undefined });
+}
+

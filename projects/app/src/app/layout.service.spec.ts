@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { DISPLAY_MODE_OVERRIDE } from './display-mode-override';
 import { FEATURE_FLAGS } from './feature-flags';
 import { Layout, LayoutKind, layoutFor } from './layout.service';
-import { clearDisplayMode, resizeTo, stubDisplayMode } from './layout.testing';
+import { clearDisplayMode, resizeTo, stubDisplayMode, stubScreen } from './layout.testing';
 
 describe('layoutFor', () => {
   it.each([
@@ -398,3 +398,33 @@ describe('Layout install hint on touch screens only', () => {
     expect(layout.installWouldHelp()).toBe(helps);
   });
 });
+
+describe('Layout install hint judged by the screen', () => {
+  const realScreen = window.screen;
+  afterEach(() => {
+    clearDisplayMode();
+    Object.defineProperty(window, 'screen', { configurable: true, value: realScreen });
+    resizeTo(1024, 768);
+  });
+
+  function tab(screen: { width: number; height: number } | null, width: number, height: number): Layout {
+    TestBed.configureTestingModule({ providers: [{ provide: FEATURE_FLAGS, useValue: { playOffline: true, playbackSettings: true, phoneBoard: true } }] });
+    stubDisplayMode('browser');
+    stubScreen(screen);
+    resizeTo(width, height);
+    return TestBed.inject(Layout);
+  }
+
+  it("says installing would help when Chrome's bars shrink the tab below the phone board (Honor 400 Pro)", () => {
+    expect(tab({ width: 800, height: 366 }, 759, 269).installWouldHelp()).toBe(true);
+  });
+
+  it('says nothing for a screen under the phone board minimum', () => {
+    expect(tab({ width: 700, height: 330 }, 700, 250).installWouldHelp()).toBe(false);
+  });
+
+  it('says nothing, and does not throw, with no screen', () => {
+    expect(tab(null, 759, 269).installWouldHelp()).toBe(false);
+  });
+});
+
