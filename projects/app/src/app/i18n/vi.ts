@@ -718,6 +718,7 @@ export const vi: Messages = {
   'nav.musicOff': 'Tắt nhạc',
   'nav.musicOn': 'Bật nhạc',
   'nav.effectsOff': 'Tắt hiệu ứng âm thanh',
+  'phone.badge.form': 'Hóa thân',
   'device.title': 'Thông tin thiết bị',
   'device.windowSize': 'Kích thước cửa sổ',
   'device.displayMode': 'Chế độ hiển thị',

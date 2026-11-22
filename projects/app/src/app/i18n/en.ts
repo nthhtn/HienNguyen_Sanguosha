@@ -719,6 +719,7 @@ export const en = {
   'nav.musicOff': 'Turn Music Off',
   'nav.musicOn': 'Turn Music On',
   'nav.effectsOff': 'Turn Sound Effects Off',
+  'phone.badge.form': 'Form',
   'device.title': 'Device Info',
   'device.windowSize': 'Window Size',
   'device.displayMode': 'Display Mode',

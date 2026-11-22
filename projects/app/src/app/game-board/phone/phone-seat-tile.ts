@@ -53,6 +53,16 @@ const JUDGMENT_BOXES = 3;
         @for (g of generals(); track g.slot) {
           <span class="general" [attr.data-slot]="g.slot" [class.own-hidden]="g.ownHidden">
             <img [src]="g.url" alt="" />
+            @for (badge of g.badges; track badge) {
+              <span class="badge">{{ badge | t }}</span>
+            }
+          </span>
+        }
+        @if (acrossBadges().length) {
+          <span class="badges-across">
+            @for (badge of acrossBadges(); track badge.key) {
+              <span class="badge" [class.red]="badge.red">{{ badge.key | t }}</span>
+            }
           </span>
         }
         @for (fx of shownDamage(); track fx.id) {
@@ -84,8 +94,6 @@ const JUDGMENT_BOXES = 3;
       </div>
       @if (seat().eliminated) {
         <span class="stamp">{{ 'seat.eliminated' | t }}</span>
-      } @else if (showDying()) {
-        <span class="status">{{ 'seat.dying' | t }}</span>
       }
       @if (cue(); as c) {
         @if (c.floatText) {
@@ -133,7 +141,7 @@ const JUDGMENT_BOXES = 3;
     .judgment-box { width: 12px; height: 16px; border: 1px dashed rgb(255 255 255 / 0.8); border-radius: 3px; box-sizing: border-box; }
     .judgment-box.filled { border-style: solid; background: #e9d49a; }
     .generals { position: relative; flex: 1 1 auto; min-height: 0; display: flex; gap: 2px; padding: 0 5px; }
-    .general { flex: 1 1 0; min-width: 0; border-radius: 4px; overflow: hidden; background: var(--force, #6b6058); }
+    .general { position: relative; flex: 1 1 0; min-width: 0; border-radius: 4px; overflow: hidden; background: var(--force, #6b6058); }
     .general img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
     .general.own-hidden img { opacity: 0.6; }
     .damage-fx { position: absolute; inset: 0; pointer-events: none; }
@@ -157,9 +165,15 @@ const JUDGMENT_BOXES = 3;
       padding: 0 6px; border: 2px solid #b23a2e; border-radius: 6px; background: rgb(251 247 236 / 0.9);
       color: #b23a2e; font-size: 13px; font-weight: 700; white-space: nowrap;
     }
-    .status {
-      position: absolute; left: 6px; right: 6px; top: 45%; text-align: center; border-radius: 4px;
-      background: #b23a2e; color: #fff; font-size: 12px; font-weight: 500;
+    .badge {
+      display: block; padding: 1px 3px; border-radius: 4px; text-align: center; overflow-wrap: anywhere;
+      background: rgb(43 37 32 / 0.9); color: #fbf7ec; font-size: 12px; font-weight: 500; line-height: 1.1;
+    }
+    .general .badge { position: absolute; left: 2px; right: 2px; top: 2px; }
+    .badge.red { background: #b23a2e; }
+    .badges-across {
+      position: absolute; left: 6px; right: 6px; top: 50%; transform: translateY(-50%); z-index: 1;
+      display: flex; flex-direction: column; align-items: center; gap: 2px; pointer-events: none;
     }
     .float { position: absolute; left: 0; right: 0; top: 30%; text-align: center; font-size: 18px; font-weight: 700; color: #b23a2e; pointer-events: none; }
     .float.up { color: #2e7d4f; }
@@ -225,9 +239,24 @@ export class PhoneSeatTile {
     return [this.general('main', generals.main), this.general('deputy', generals.deputy)];
   });
 
+  // A badge about the whole seat lies across both Generals (spec): Face Down, No Skills for the seat, Dying.
+  protected readonly acrossBadges = computed(() => {
+    const seat = this.seat();
+    const badges: { key: MessageKey; red: boolean }[] = [];
+    if (seat.faceDown) badges.push({ key: 'seat.faceDown', red: false });
+    if (seat.silenced) badges.push({ key: 'seat.noSkills', red: false });
+    if (this.showDying()) badges.push({ key: 'seat.dying', red: true });
+    return badges;
+  });
+
   private general(slot: 'main' | 'deputy', general: GeneralInstance) {
+    const seat = this.seat();
     const hidden = general.generalDefinitionId === 'hidden';
-    return { slot, url: hidden ? HIDDEN_GENERAL_ART_URL : generalSkinUrl(general.generalDefinitionId), ownHidden: !hidden && !general.revealed };
+    // A badge about one General lies on that General: No Skills for it alone, and Form on the one that changed.
+    const badges: MessageKey[] = [];
+    if (!seat.silenced && seat.silencedSlots?.includes(slot)) badges.push('seat.noSkills');
+    if (seat.forms?.chosen && seat.forms.slot === slot) badges.push('phone.badge.form');
+    return { slot, url: hidden ? HIDDEN_GENERAL_ART_URL : generalSkinUrl(general.generalDefinitionId), ownHidden: !hidden && !general.revealed, badges };
   }
 
   protected cardName(card: CardInstance): string {

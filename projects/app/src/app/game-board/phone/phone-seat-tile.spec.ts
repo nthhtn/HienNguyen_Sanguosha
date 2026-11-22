@@ -86,4 +86,34 @@ describe('PhoneSeatTile', () => {
     expect(Math.min(...sizes)).toBeGreaterThanOrEqual(12);
     expect(source).not.toMatch(/font-size:\s*[\d.]+em/);
   });
+
+  describe('text badges', () => {
+    const badgesOn = (el: HTMLElement, slot: 'main' | 'deputy') =>
+      [...el.querySelectorAll(`.general[data-slot="${slot}"] .badge`)].map((b) => b.textContent!.trim());
+    const across = (el: HTMLElement) => [...el.querySelectorAll('.badges-across .badge')].map((b) => b.textContent!.trim());
+
+    it('puts No Skills for one General on that General', () => {
+      const el = render(testSeat('seat-3', 3, { silencedSlots: ['deputy'] }));
+      expect(badgesOn(el, 'deputy')).toEqual(['No Skills']);
+      expect(badgesOn(el, 'main')).toEqual([]);
+    });
+
+    it('puts Form on the General that changed', () => {
+      const el = render(testSeat('seat-3', 3, { forms: { slot: 'main', held: ['g1'], chosen: { generalId: 'g1', skillId: 's1' } } }));
+      expect(badgesOn(el, 'main')).toEqual(['Form']);
+    });
+
+    it('stacks Face Down and whole-seat No Skills across both Generals', () => {
+      const el = render(testSeat('seat-3', 3, { faceDown: true, silenced: true }));
+      expect(across(el)).toEqual(['Face Down', 'No Skills']);
+      expect(badgesOn(el, 'main')).toEqual([]);
+    });
+
+    it('shows Dying as a red badge across both Generals, not a strip', () => {
+      const el = render(testSeat('seat-3', 3, { combinedHp: 0 }));
+      const dying = el.querySelector('.badges-across .badge.red')!;
+      expect(dying.textContent).toContain('Dying');
+      expect(el.querySelector('.status')).toBeNull();
+    });
+  });
 });
