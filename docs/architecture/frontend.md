@@ -233,6 +233,9 @@ On the `compact` layout (the installed app on a landscape phone), `GameBoard` re
 - **Toolbar:** `PhoneBoard` calls `Layout.setBoardOpen`; while `Layout.toolbarHidden`, `App` drops the toolbar and `<html data-board="open">` sets the toolbar height to 0.
 - **Sizes:** No text under 12 px, 14 px for names, numbers, card names and buttons, 44 px tap targets, nothing scaled (`seatScale` and `centreScale` are not used).
 - **General picker:** On `compact`, `general-selection` sizes each card to the card area's height (a size container), so the art shows (about 85 px wide at 800 x 366); further cards scroll inside the area and Confirm stays on screen.
+- **Windows:** Every game window is a Material dialog, and the short-screen dialog rule keeps each one on screen with its content scrolling. On `compact`, one block in `styles.scss` (`html[data-layout='compact'] .cdk-overlay-container`) makes every button at least 44 px (Material's button tokens and `min-height`), card names on cards in a window 14 px (12 px on small cards), and the selection panel keeps its buttons at the foot while its cards scroll. Trait chips are 12 px.
+- **Game Over:** On `compact`, Game Over and the online result are one screen tall: a 28 px headline, the standings scrolling, New Game (or Play Again, Back to Lobby) fixed below them.
+- **No thinking line:** The phone board does not show which bot is thinking.
 - **Preview:** The `phone-4`, `phone-8` and `phone-12` scenarios at `/preview`, opened at a phone size with `?display=fullscreen`.
 
 ### Decisions become dialogs
