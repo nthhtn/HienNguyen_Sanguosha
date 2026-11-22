@@ -14,13 +14,20 @@ import { VictoryBoard } from './victory-board';
   template: `
     <div class="game-over">
       <app-victory-board [result]="result()" [seats]="seats()" [youSeatId]="youSeatId()" [nameOf]="nameOf" />
-      <button mat-flat-button type="button" (click)="newGame.emit()">
+      <button mat-flat-button type="button" class="new-game" (click)="newGame.emit()">
         <mat-icon>replay</mat-icon> {{ 'ui.newGame' | t }}
       </button>
     </div>
   `,
   styles: `
     .game-over { display: grid; justify-items: center; gap: 16px; padding: 24px 0; }
+    /* The phone board (spec, "Windows on the phone"): one screen, the standings scroll, New Game stays on screen. */
+    :host-context([data-layout='compact']) .game-over {
+      display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 4px 0; box-sizing: border-box;
+      height: calc(100dvh - var(--mat-toolbar-standard-height, 44px) - 16px);
+    }
+    :host-context([data-layout='compact']) app-victory-board { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+    :host-context([data-layout='compact']) .new-game { flex: none; min-height: 44px; }
   `,
 })
 export class GameOver {

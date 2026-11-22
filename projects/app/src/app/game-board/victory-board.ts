@@ -97,6 +97,9 @@ const LIGHT_AFTER_LAST = 500;
     .headline { margin: 6px 0 4px; font-size: 44px; line-height: 1.15; font-weight: 700; color: var(--mat-sys-on-surface); }
     .headline[data-force] { color: var(--force-text); }
     .sub { margin: 0 0 24px; font-size: 18px; color: var(--mat-sys-on-surface-variant); }
+    /* The phone board: a compact title, so the standings get the height. */
+    :host-context([data-layout='compact']) .headline { margin: 2px 0; font-size: 28px; }
+    :host-context([data-layout='compact']) .sub { margin: 0 0 8px; font-size: 14px; }
 
     /* Two rows of equal-width cards (spec "Layout"): k cards on the top row, the shorter bottom row centred. */
     .cols { --k: 1; --gap: 20px; --cap: 354px; display: flex; flex-wrap: wrap; justify-content: center; gap: var(--gap); padding-top: 12px; }

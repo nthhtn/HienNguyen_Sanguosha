@@ -25,6 +25,14 @@ import { TPipe } from '../i18n/t.pipe';
        narrow breakpoint and fits three cards on its top row. */
     .online-card.result.finished { width: min(100%, 1112px); }
     .result.finished mat-card-content { padding-top: 16px; }
+    /* The phone board (spec, "Windows on the phone"): one screen, the board scrolls, the buttons stay on screen. */
+    :host-context([data-layout='compact']) .online-card.result {
+      display: flex; flex-direction: column; box-sizing: border-box;
+      max-height: calc(100dvh - var(--mat-toolbar-standard-height, 44px) - 16px);
+    }
+    :host-context([data-layout='compact']) .result mat-card-content { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+    :host-context([data-layout='compact']) .result mat-card-actions { flex: none; }
+    :host-context([data-layout='compact']) .result mat-card-actions button { min-height: 44px; }
   `,
   template: `
     <div class="online-page">

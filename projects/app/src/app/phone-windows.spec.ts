@@ -35,5 +35,30 @@ describe('windows on the phone board', () => {
     expect(rule).toMatch(/position:\s*sticky/);
     expect(rule).toMatch(/bottom:\s*0/);
   });
+
+  describe('Game Over and the online result', () => {
+    const compactRule = (source: string, selector: string) =>
+      new RegExp(`:host-context\\(\\[data-layout='compact'\\]\\) ${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\{([^}]*)\\}`).exec(source)?.[1] ?? '';
+
+    it('Game Over is one screen tall, its standings scroll and New Game stays outside them', () => {
+      const source = read('game-board/game-over.ts');
+      expect(compactRule(source, '.game-over')).toMatch(/height:\s*calc\(100dvh/);
+      expect(compactRule(source, 'app-victory-board')).toMatch(/overflow-y:\s*auto/);
+      expect(px(compactRule(source, '.new-game'), 'min-height')).toBeGreaterThanOrEqual(44);
+    });
+
+    it('the victory board has a compact headline on the phone', () => {
+      const source = read('game-board/victory-board.ts');
+      expect(px(compactRule(source, '.headline'), 'font-size')).toBeLessThanOrEqual(28);
+      expect(px(compactRule(source, '.sub'), 'font-size')).toBe(14);
+    });
+
+    it('the online result is one screen tall, its board scrolls and its buttons stay outside it', () => {
+      const source = read('online/online-result.ts');
+      expect(compactRule(source, '.online-card.result')).toMatch(/max-height:\s*calc\(100dvh/);
+      expect(compactRule(source, '.result mat-card-content')).toMatch(/overflow-y:\s*auto/);
+      expect(px(compactRule(source, '.result mat-card-actions button'), 'min-height')).toBeGreaterThanOrEqual(44);
+    });
+  });
 });
 
