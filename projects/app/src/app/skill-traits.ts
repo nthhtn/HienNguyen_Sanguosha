@@ -18,6 +18,8 @@ const TRAIT_KEYS: Record<SkillTrait, MessageKey> = {
   styles: `
     :host { display: contents; }
     .trait { display: inline-block; margin: 0 4px 0 6px; padding: 0 8px; border-radius: 8px; color: var(--mat-sys-on-tertiary-container); background: var(--mat-sys-tertiary-container); font: var(--mat-sys-label-small); vertical-align: 1px; white-space: nowrap; }
+    /* The phone board: no text under 12 px. */
+    :host-context([data-layout='compact']) .trait { font-size: 12px; }
   `,
 })
 export class SkillTraits {
