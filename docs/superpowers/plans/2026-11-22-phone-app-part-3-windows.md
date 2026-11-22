@@ -28,7 +28,7 @@ Measured on the dev server with every `/preview` scenario in an 800 × 366 frame
   - **Phone rules live in one place** (`html[data-layout='compact'] .cdk-overlay-container` in `styles.scss`) rather than in each dialog, since every window is a Material dialog. Component rules only where a component sets its own size.
   - **Card names in windows are 14 px**, wrapping to two lines, as in the phone hand.
   - **Trait chips are 12 px** (they are labels, not names).
-  - **Tests:** jsdom applies no styles, so the CSS rules are pinned by reading the source (as earlier phone tasks did) and the acceptance check is the browser audit at both sizes. Behaviour changes (thinking line, Seat Details closing, hand padding) get ordinary Jest tests.
+  - **Tests:** jsdom applies no styles, so the CSS rules are pinned by reading the source (as earlier phone tasks did) and the acceptance check is the browser audit at both sizes. Behaviour changes (Seat Details closing, hand padding) get ordinary Jest tests.
 
 ## Global Constraints
 
