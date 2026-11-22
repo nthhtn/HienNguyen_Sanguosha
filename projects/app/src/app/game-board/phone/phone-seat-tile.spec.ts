@@ -69,14 +69,16 @@ describe('PhoneSeatTile', () => {
     expect(el.querySelector('.hp')!.getAttribute('aria-label')).toBe('HP 3/4');
   });
 
-  it("opens on a tap on an opponent's tile, but not on the viewer's", () => {
+  it("opens on a tap on any tile, the viewer's included", () => {
     let opened = 0;
     render(testSeat('seat-3', 3));
     fixture.componentInstance.opened.subscribe(() => opened++);
     (fixture.nativeElement.querySelector('button.tile') as HTMLButtonElement).click();
     expect(opened).toBe(1);
-    const viewer = render(testSeat('seat-0', 0), { isViewer: true });
-    expect(viewer.querySelector('button.tile')).toBeNull();
+    render(testSeat('seat-0', 0), { isViewer: true });
+    fixture.componentInstance.opened.subscribe(() => opened++);
+    (fixture.nativeElement.querySelector('button.tile') as HTMLButtonElement).click();
+    expect(opened).toBe(2);
   });
 
   it('sets no text under 12 px', () => {

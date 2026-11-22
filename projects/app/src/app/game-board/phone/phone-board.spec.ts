@@ -2,7 +2,9 @@ import { TestBed } from '@angular/core/testing';
 import type { Action, CardZone, GameState, Seat } from 'engine';
 import { buildContentRegistry } from 'content';
 import type { AvatarSkill } from '../avatar-skills';
+import { MatDialog } from '@angular/material/dialog';
 import { PhoneBoard } from './phone-board';
+import { SeatDetailsDialog } from './seat-details-dialog';
 import { phoneSeats, phoneSizes } from './phone-seat-layout';
 import { testSeats } from './phone.testing';
 
@@ -62,6 +64,17 @@ describe('PhoneBoard', () => {
     expect(buttons.map((b) => b.textContent!.trim())).toEqual(['Kindness']);
     buttons[0].click();
     expect(chosen).toEqual([useSkill]);
+  });
+
+  it("opens Seat Details for a tapped opponent and for the viewer's own tile", () => {
+    const open = jest.spyOn(TestBed.inject(MatDialog), 'open').mockReturnValue({} as never);
+    const { el } = render(4);
+    (el.querySelector('.top [data-seat-id="seat-2"] button.tile') as HTMLButtonElement).click();
+    (el.querySelector('.bottom [data-seat-id="seat-0"] button.tile') as HTMLButtonElement).click();
+    expect(open.mock.calls.map(([component, config]) => [component, (config as { data: { seatId: string } }).data.seatId])).toEqual([
+      [SeatDetailsDialog, 'seat-2'],
+      [SeatDetailsDialog, 'seat-0'],
+    ]);
   });
 
   it('shows every seat at the top, and no own seat, with no viewer', () => {

@@ -22,7 +22,7 @@ const JUDGMENT_BOXES = 3;
 
 // One seat on the phone board, laid out to be read at arm's length (spec, "The phone board"): the name with up to three
 // Judgment boxes, both Generals, HP and hand count with the chained mark, and four Equipment boxes. Nothing in it is
-// scaled down; a slim tile is narrower, not smaller. An opponent's tile is one tap target (2b-2 opens Seat Details).
+// scaled down; a slim tile is narrower, not smaller. Every tile is one tap target that opens Seat Details.
 @Component({
   selector: 'app-phone-seat-tile',
   imports: [NgTemplateOutlet, MatIconModule, SpriteEffect, TPipe, TMsgPipe],
@@ -104,15 +104,9 @@ const JUDGMENT_BOXES = 3;
         }
       }
     </ng-template>
-    @if (isViewer()) {
-      <div class="tile" [class]="tileClasses()" [attr.data-force]="force()">
-        <ng-container [ngTemplateOutlet]="body" />
-      </div>
-    } @else {
-      <button type="button" class="tile" [class]="tileClasses()" [attr.data-force]="force()" [attr.aria-label]="name()" (click)="opened.emit()">
-        <ng-container [ngTemplateOutlet]="body" />
-      </button>
-    }
+    <button type="button" class="tile" [class]="tileClasses()" [attr.data-force]="force()" [attr.aria-label]="name()" (click)="opened.emit()">
+      <ng-container [ngTemplateOutlet]="body" />
+    </button>
   `,
   styles: `
     :host { display: block; height: 100%; min-width: 0; }
@@ -122,7 +116,6 @@ const JUDGMENT_BOXES = 3;
       font: inherit; font-size: 14px; line-height: 1.2; color: #2b2520;
       background: #fbf7ec; border: 1px solid #b9a37a; border-radius: 7px;
     }
-    div.tile { cursor: default; }
     .tile.turn-owner { border: 2px solid #e0a92e; box-shadow: 0 0 0 2px rgb(224 169 46 / 0.35); }
     .tile.responding { outline: 2px dashed var(--force, #e0a92e); outline-offset: -4px; }
     .tile.dimmed { opacity: 0.55; }
@@ -199,7 +192,7 @@ export class PhoneSeatTile {
   readonly damageEffect = input<ShownDamage | null>(null);
   readonly dimmed = input(false);
   readonly slim = input(false);
-  // A tap on an opponent's tile.
+  // A tap on the tile (any seat, the viewer's included): Seat Details.
   readonly opened = output<void>();
 
   private readonly i18n = inject(I18n);
