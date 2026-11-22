@@ -379,3 +379,22 @@ describe('Layout toolbar on the phone board', () => {
     expect(document.documentElement.dataset['board']).toBeUndefined();
   });
 });
+
+describe('Layout install hint on touch screens only', () => {
+  afterEach(() => {
+    clearDisplayMode();
+    resizeTo(1024, 768);
+  });
+
+  it.each([
+    [true, true],
+    [false, false],
+  ])('a phone-sized browser tab with a coarse pointer %s says installing would help: %s', (coarse, helps) => {
+    TestBed.configureTestingModule({ providers: [{ provide: FEATURE_FLAGS, useValue: { playOffline: true, playbackSettings: true, phoneBoard: true } }] });
+    stubDisplayMode('browser', { coarse });
+    resizeTo(915, 412);
+    const layout = TestBed.inject(Layout);
+    expect(layout.coarsePointer()).toBe(coarse);
+    expect(layout.installWouldHelp()).toBe(helps);
+  });
+});

@@ -18,13 +18,15 @@ export type StubbedDisplayMode = 'fullscreen' | 'standalone' | 'browser';
 
 // Gives the window a `matchMedia` that answers `(display-mode: …)` queries, before `Layout` is created. `set` changes
 // the mode later and tells the listeners; `listeners` shows who still listens. `clearDisplayMode` takes it away again.
-export function stubDisplayMode(initial: StubbedDisplayMode) {
+// `coarse`: the pointer is a finger (a phone or tablet), which the install hint needs; on by default.
+export function stubDisplayMode(initial: StubbedDisplayMode, { coarse = true }: { coarse?: boolean } = {}) {
   let mode = initial;
   const listeners = new Set<() => void>();
   Object.defineProperty(window, 'matchMedia', {
     configurable: true,
     value: (query: string) => ({
       get matches() {
+        if (query === '(pointer: coarse)') return coarse;
         return query === `(display-mode: ${mode})`;
       },
       addEventListener: (_: string, fn: () => void) => listeners.add(fn),

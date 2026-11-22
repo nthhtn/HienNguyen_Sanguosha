@@ -50,6 +50,8 @@ export class Layout {
   readonly displayMode = computed(() => this.forcedMode ?? this._displayMode());
   // Running as the installed app.
   readonly installed = computed(() => this.displayMode() !== 'browser');
+  // The pointer is a finger (a phone or tablet), so the install hint is worth showing. Read once.
+  readonly coarsePointer = signal(typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches).asReadonly();
   // The phone board may be used: the installed app, with the board turned on.
   readonly phoneBoardAllowed = computed(() => this.flags.phoneBoard && this.installed());
 
@@ -65,6 +67,7 @@ export class Layout {
   readonly installWouldHelp = computed(
     () =>
       this.flags.phoneBoard &&
+      this.coarsePointer() &&
       !this.installed() &&
       !this.canPlay() &&
       (layoutFor(this.width(), this.height(), true) !== 'phone' || layoutFor(this.height(), this.width(), true) !== 'phone')

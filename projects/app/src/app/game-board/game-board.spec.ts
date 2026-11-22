@@ -70,6 +70,13 @@ describe('GameBoard', () => {
     expect(start).toHaveBeenCalledTimes(1);
   });
 
+  it('does not keep the screen on when no game is in progress', () => {
+    const hold = jest.spyOn(TestBed.inject(ScreenWakeLock), 'hold');
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+    expect(hold).not.toHaveBeenCalled();
+  });
+
   it('shows a fallback message and a link back to /setup when no game is in progress', () => {
     const fixture = TestBed.createComponent(GameBoard);
     fixture.detectChanges();

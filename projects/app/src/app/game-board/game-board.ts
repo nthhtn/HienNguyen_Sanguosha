@@ -601,7 +601,11 @@ export class GameBoard {
   // The screen stays on while the game runs (a phone would otherwise lock while the player waits), and is let go at
   // Game Over and when the board closes.
   private readonly wakeLock = inject(ScreenWakeLock);
-  private readonly holdScreen = effect(() => (this.gameOver() ? this.wakeLock.release() : this.wakeLock.hold()));
+  private readonly holdScreen = effect(() => {
+    const running = this.gameService.state() !== null && !this.gameService.state()!.result && !this.gameOver();
+    if (running) this.wakeLock.hold();
+    else this.wakeLock.release();
+  });
   private readonly releaseScreenOnLeave = inject(DestroyRef).onDestroy(() => this.wakeLock.release());
   protected readonly lastError = this.gameService.lastError;
 

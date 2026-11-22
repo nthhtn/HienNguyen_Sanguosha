@@ -43,4 +43,11 @@ describe('InstallPrompt', () => {
     expect(event.defaultPrevented).toBe(false);
     expect(prompt.available()).toBe(false);
   });
+
+  it('stays quiet when Chrome refuses to show its dialog', async () => {
+    const prompt = TestBed.inject(InstallPrompt);
+    fireInstallPrompt(jest.fn(async () => Promise.reject(new DOMException('gone', 'InvalidStateError'))));
+    await expect(prompt.install()).resolves.toBeUndefined();
+    expect(prompt.available()).toBe(false);
+  });
 });

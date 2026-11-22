@@ -35,7 +35,11 @@ export class InstallPrompt {
     const offer = this.offer();
     if (!offer) return;
     this.offer.set(null);
-    await offer.prompt();
-    await offer.userChoice;
+    try {
+      await offer.prompt();
+      await offer.userChoice;
+    } catch {
+      // Chrome would not show its dialog (a stale or used offer): there is nothing to tell the player.
+    }
   }
 }
