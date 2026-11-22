@@ -67,7 +67,7 @@ describe('PhoneBoard', () => {
   });
 
   it("opens Seat Details for a tapped opponent and for the viewer's own tile", () => {
-    const open = jest.spyOn(TestBed.inject(MatDialog), 'open').mockReturnValue({} as never);
+    const open = jest.spyOn(TestBed.inject(MatDialog), 'open').mockReturnValue({ close: jest.fn() } as never);
     const { el } = render(4);
     (el.querySelector('.top [data-seat-id="seat-2"] button.tile') as HTMLButtonElement).click();
     (el.querySelector('.bottom [data-seat-id="seat-0"] button.tile') as HTMLButtonElement).click();
@@ -75,6 +75,15 @@ describe('PhoneBoard', () => {
       [SeatDetailsDialog, 'seat-2'],
       [SeatDetailsDialog, 'seat-0'],
     ]);
+  });
+
+  it('closes the Seat Details it opened when the board goes away', () => {
+    const close = jest.fn();
+    jest.spyOn(TestBed.inject(MatDialog), 'open').mockReturnValue({ close } as never);
+    const { fixture, el } = render(4);
+    (el.querySelector('.top [data-seat-id="seat-2"] button.tile') as HTMLButtonElement).click();
+    fixture.destroy();
+    expect(close).toHaveBeenCalled();
   });
 
   it('shows every seat at the top, and no own seat, with no viewer', () => {

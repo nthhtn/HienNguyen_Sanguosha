@@ -70,6 +70,14 @@ function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegist
 const CARD_WIDTH = 70;
 const CARD_GAP = 8;
 
+// The overlapping row's side padding (styles below: 4 px each side), which the cards cannot use.
+const OVERLAP_ROW_PADDING = 8;
+
+// The width the cards of an overlapping hand can use, from the hand's measured width.
+export function overlapWidth(hostWidth: number): number {
+  return Math.max(0, hostWidth - OVERLAP_ROW_PADDING);
+}
+
 // How far apart the left edges of neighbouring hand cards are: a card's width and the gap when they all fit, closer
 // (overlapping) when they do not, but never closer than minStrip, and then the row scrolls.
 export function handStep(width: number, count: number, cardWidth: number, gap: number, minStrip = 44): { step: number; scrolls: boolean } {
@@ -212,7 +220,7 @@ export class HandView {
   readonly fit = input<'row' | 'overlap'>('row');
   private readonly width = signal(0);
   protected readonly overlapMargin = computed(() =>
-    this.fit() === 'overlap' ? handStep(this.width(), this.cards().length, CARD_WIDTH, CARD_GAP).step - CARD_WIDTH : null
+    this.fit() === 'overlap' ? handStep(overlapWidth(this.width()), this.cards().length, CARD_WIDTH, CARD_GAP).step - CARD_WIDTH : null
   );
 
   constructor() {

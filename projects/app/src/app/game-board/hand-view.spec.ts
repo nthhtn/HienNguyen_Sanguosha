@@ -2,7 +2,7 @@ import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MatTooltip } from '@angular/material/tooltip';
 import { Action, CardInstance, ContentRegistry, GameState } from 'engine';
-import { HandView, handStep } from './hand-view';
+import { HandView, handStep, overlapWidth } from './hand-view';
 
 const hand: CardInstance[] = [
   { instanceId: 'c-sha', definitionId: 'sha', suit: 'spade', rank: 7 },
@@ -245,5 +245,14 @@ describe('handStep', () => {
 
   it('gives one card its own width and the gap', () => {
     expect(handStep(300, 1, 70, 8)).toEqual({ step: 78, scrolls: false });
+  });
+});
+
+describe('HandView overlap width', () => {
+  it("leaves out the row's side padding, so an overlapping hand fits without scrolling a few pixels", () => {
+    // A 500 px host has a 492 px row inside its 4 px side padding.
+    expect(overlapWidth(500)).toBe(492);
+    const { step } = handStep(overlapWidth(500), 8, 70, 8);
+    expect(70 + 7 * step).toBeLessThanOrEqual(492);
   });
 });

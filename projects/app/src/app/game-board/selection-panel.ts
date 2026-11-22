@@ -63,6 +63,11 @@ import { SeatPortrait } from './seat-portrait';
     .item[data-force='Ambitionist'] { --force: var(--force-ambitionist); }
     .seat { padding: 8px; font: var(--mat-sys-title-small); }
     .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+    /* The phone board: the cards scroll inside the window, the buttons stay on screen at its foot. */
+    :host-context([data-layout='compact']) .actions {
+      position: sticky; bottom: 0; z-index: 1; padding: 8px 0; margin-top: 4px;
+      background: var(--mat-dialog-container-color, var(--mat-sys-surface-container-high));
+    }
   `,
 })
 export class SelectionPanel {
