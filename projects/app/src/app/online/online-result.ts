@@ -28,7 +28,9 @@ import { TPipe } from '../i18n/t.pipe';
     /* The phone board (spec, "Windows on the phone"): one screen, the board scrolls, the buttons stay on screen. */
     :host-context([data-layout='compact']) .online-card.result {
       display: flex; flex-direction: column; box-sizing: border-box;
-      max-height: calc(100dvh - var(--mat-toolbar-standard-height, 44px) - 16px);
+      /* Below the toolbar, inside the online page's box (24 px padding top and bottom, a -16 px bottom margin) and the
+         content's 16 px bottom padding: 48 px in all. */
+      max-height: calc(100dvh - var(--mat-toolbar-standard-height, 44px) - 48px);
     }
     :host-context([data-layout='compact']) .result mat-card-content { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
     :host-context([data-layout='compact']) .result mat-card-actions { flex: none; }

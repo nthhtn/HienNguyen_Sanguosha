@@ -60,7 +60,8 @@ describe('windows on the phone board', () => {
 
     it('the online result is one screen tall, its board scrolls and its buttons stay outside it', () => {
       const source = read('online/online-result.ts');
-      expect(compactRule(source, '.online-card.result')).toMatch(/max-height:\s*calc\(100dvh/);
+      // The toolbar, then the online page's own box (24 px padding top and bottom, -16 px margin) and the content's 16 px.
+      expect(compactRule(source, '.online-card.result')).toMatch(/max-height:\s*calc\(100dvh - var\(--mat-toolbar-standard-height, 44px\) - 48px\)/);
       expect(compactRule(source, '.result mat-card-content')).toMatch(/overflow-y:\s*auto/);
       expect(px(compactRule(source, '.result mat-card-actions button'), 'min-height')).toBeGreaterThanOrEqual(44);
     });
