@@ -164,7 +164,6 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
               <app-phone-board
                 [state]="visible"
                 [viewerSeatId]="viewerSeatId()"
-                [thinkingSeatId]="director.idle() ? gameService.botThinkingSeatId() : null"
                 [botSeatIds]="gameService.botSeatIds()"
                 [cues]="seatCueMap()"
                 [damageEffects]="damageEffects()"

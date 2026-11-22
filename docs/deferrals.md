@@ -217,8 +217,6 @@ From the Resolution Notice, picker and Judgment work (PR #62, 2026-11-09). The d
 ### Phone board leftovers
 
 - **What is missing.** Small things on the phone board (`projects/app/src/app/game-board/phone/`), found in the Part 2b-1 review:
-  - **Thinking line:** No "<Seat> is thinking…" while a bot thinks; the web table shows one.
-  - **Hand padding:** `HandView`'s overlap counts the row's 8 px of side padding, so a hand that just fits can scroll a few pixels.
   - **Toolbar timing:** `PhoneBoard` hides the toolbar during change detection (`setBoardOpen` in its constructor); `afterNextRender` would be cleaner.
   - **Spectator at 12 seats:** With no viewer seat all 12 seats are opponents, so the top row holds 8 and the tiles are narrower than the 12-seat estimate.
   - **Short screens:** At the 340 px floor a played card fills the centre band edge to edge.

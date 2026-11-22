@@ -1,7 +1,7 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { Component, DestroyRef, ElementRef, afterNextRender, computed, inject, input, output, signal, viewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Action, CardInstance, ContentRegistry, GameState, Seat, isSeatDying } from 'engine';
 import { I18n } from '../../i18n/i18n.service';
 import { Layout } from '../../layout.service';
@@ -132,7 +132,6 @@ const BOARD_PADDING = 8;
 export class PhoneBoard {
   readonly state = input.required<GameState>();
   readonly viewerSeatId = input<string | null>(null);
-  readonly thinkingSeatId = input<string | null>(null);
   readonly botSeatIds = input<string[]>([]);
   readonly cues = input<Partial<Record<string, SeatCue>>>({});
   readonly damageEffects = input<Partial<Record<string, ShownDamage>>>({});
@@ -149,8 +148,11 @@ export class PhoneBoard {
   private readonly i18n = inject(I18n);
   private readonly dialog = inject(MatDialog);
 
+  // The Seat Details window this board opened, closed with the board (turning the phone, the game ending).
+  private details: MatDialogRef<SeatDetailsDialog> | null = null;
+
   protected openDetails(seatId: string): void {
-    this.dialog.open<SeatDetailsDialog, SeatDetailsData>(SeatDetailsDialog, { data: { state: this.state, seatId }, width: 'min(92vw, 560px)' });
+    this.details = this.dialog.open<SeatDetailsDialog, SeatDetailsData>(SeatDetailsDialog, { data: { state: this.state, seatId }, width: 'min(92vw, 560px)' });
   }
 
   protected readonly seats = computed(() => phoneSeats(this.state().seats, this.viewerSeatId()));
@@ -175,7 +177,10 @@ export class PhoneBoard {
   constructor() {
     this.layout.setBoardOpen(true);
     const destroyRef = inject(DestroyRef);
-    destroyRef.onDestroy(() => this.layout.setBoardOpen(false));
+    destroyRef.onDestroy(() => {
+      this.layout.setBoardOpen(false);
+      this.details?.close();
+    });
     // A camera cut-out or rounded corner (env(safe-area-inset-*)) leaves the board less room than the window.
     if (typeof ResizeObserver !== 'function') return;
     afterNextRender(() => {
