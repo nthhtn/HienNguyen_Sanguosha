@@ -18,6 +18,7 @@ import { TMsgPipe } from '../i18n/msg';
 import { TPipe } from '../i18n/t.pipe';
 import { BoardChat } from './board-chat';
 import { ChatPanel } from './chat-panel';
+import { BoardChatState } from './board-chat-state.service';
 import { ChatService } from './chat.service';
 import { LobbyService } from './lobby.service';
 import { OnlineGame } from './online-game';
@@ -29,7 +30,7 @@ import { SocketService } from './socket.service';
 @Component({
   selector: 'app-lobby-page',
   imports: [DeckPicker, RouterLink, MatButtonModule, MatButtonToggleModule, MatCardModule, MatCheckboxModule, MatIconModule, OnlineGame, OnlineResult, ChatPanel, BoardChat, SmallScreenNotice, TPipe, TMsgPipe],
-  providers: [SocketService, LobbyService, ChatService, RemoteGameService, RemoteDecisionClock],
+  providers: [SocketService, LobbyService, ChatService, BoardChatState, RemoteGameService, RemoteDecisionClock],
   styleUrl: './online-page.css',
   template: `
     @if (game.ending(); as ending) {

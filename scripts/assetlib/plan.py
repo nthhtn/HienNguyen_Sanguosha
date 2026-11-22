@@ -83,18 +83,28 @@ def _is_box(box) -> bool:
     return x >= 0 and y >= 0 and w > 0 and h > 0
 
 
+# Files a crop can be cut from; anything else in the folder (a skins.json beside the portraits) is not art.
+CROP_SOURCES = {'.png', '.jpg', '.jpeg', '.webp'}
+
+
 def _crop_outputs(layout: Layout, key: str, recipe: dict) -> List[Output]:
     from_dir = recipe['from']
-    boxes = json.loads(layout.crops_file.read_text()) if layout.crops_file.exists() else {}
-    full = {Path(rel).with_suffix('').as_posix(): '{}/{}'.format(from_dir, rel) for rel in files_under(layout.src / from_dir)}
+    # A recipe may keep its boxes in its own file (the Generals' faces); the cards use asset-crops.json.
+    boxes_file = layout.content / recipe['boxes'] if 'boxes' in recipe else layout.crops_file
+    boxes = json.loads(boxes_file.read_text()) if boxes_file.exists() else {}
+    full = {
+        Path(rel).with_suffix('').as_posix(): '{}/{}'.format(from_dir, rel)
+        for rel in files_under(layout.src / from_dir)
+        if Path(rel).suffix.lower() in CROP_SOURCES
+    }
     for card, box in boxes.items():
         if card not in full:
-            raise PlanError('crop box for {} has no full art in {}'.format(card, from_dir))
+            raise PlanError('crop box for {} in {} has no art in {}'.format(card, boxes_file.name, from_dir))
         if not _is_box(box):
-            raise PlanError('crop box for {} must be [x, y, width, height] as whole numbers with x, y >= 0 and width, height > 0, not {!r}'.format(card, box))
+            raise PlanError('crop box for {} in {} must be [x, y, width, height] as whole numbers with x, y >= 0 and width, height > 0, not {!r}'.format(card, boxes_file.name, box))
     for card in full:
         if card not in boxes:
-            raise PlanError('full art {} has no crop box in asset-crops.json'.format(card))
+            raise PlanError('art {} has no crop box in {}'.format(card, boxes_file.name))
     return [Output('{}/{}.{}'.format(key, card, recipe['ext']), 'crop', (full[card],), key, {'box': boxes[card]}) for card in sorted(full)]
 
 

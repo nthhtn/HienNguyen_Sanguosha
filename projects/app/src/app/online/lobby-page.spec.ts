@@ -8,6 +8,7 @@ import { MatButtonToggle } from '@angular/material/button-toggle';
 import { MatCheckbox } from '@angular/material/checkbox';
 import { RouterTestingHarness } from '@angular/router/testing';
 import type { ChatMessage, LastGame, RoomSnapshot } from 'protocol';
+import { BoardChatState } from './board-chat-state.service';
 import { ChatService } from './chat.service';
 import { LobbyPage } from './lobby-page';
 import { LobbyService } from './lobby.service';
@@ -71,7 +72,7 @@ describe('LobbyPage', () => {
   async function render() {
     TestBed.configureTestingModule({ providers: [provideRouter([{ path: 'rooms/:id', component: LobbyPage }, { path: 'rooms', children: [] }])] });
     TestBed.overrideComponent(OnlineGame, { set: { imports: [], providers: [], template: '' } });
-    TestBed.overrideComponent(LobbyPage, { set: { providers: [{ provide: LobbyService, useValue: lobby }, { provide: RemoteGameService, useValue: game }, { provide: ChatService, useValue: fakeChat() }] } });
+    TestBed.overrideComponent(LobbyPage, { set: { providers: [{ provide: LobbyService, useValue: lobby }, { provide: RemoteGameService, useValue: game }, { provide: ChatService, useValue: fakeChat() }, BoardChatState] } });
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl(`/rooms/${ROOM.id}`, LobbyPage);
     const el = harness.routeNativeElement as HTMLElement;

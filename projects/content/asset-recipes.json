@@ -20,6 +20,7 @@
   },
   "effects/stills": { "op": "copy" },
   "generals/cards": { "op": "image", "ext": "webp", "quality": 85, "maxWidth": 320 },
+  "generals/faces": { "op": "crop", "from": "generals/skins", "boxes": "asset-crops-faces.json", "ext": "webp", "quality": 85, "maxWidth": 160 },
   "generals/skins": { "op": "image", "ext": "webp", "quality": 85 },
   "generals/skins/skins.json": { "op": "copy" },
   "generals/special": { "op": "copy" },

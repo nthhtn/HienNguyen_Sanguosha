@@ -1,3 +1,4 @@
+@if (!layout.toolbarHidden()) {
 <mat-toolbar color="primary" class="app-bar">
   @if (layout.wide()) {
     <ng-container *ngTemplateOutlet="brand" />
@@ -83,6 +84,7 @@
     <ng-container *ngTemplateOutlet="toggles" />
   }
 </mat-toolbar>
+}
 <ng-template #brand>
   <img class="logo" src="images/ui/brand/logo.png" alt="" />
   <h1><a class="brand" routerLink="/play">{{ title() }}</a></h1>

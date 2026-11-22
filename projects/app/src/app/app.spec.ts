@@ -6,6 +6,8 @@ import type { Me } from 'protocol';
 import { App } from './app';
 import { AuthService } from './auth/auth.service';
 import { FEATURE_FLAGS } from './feature-flags';
+import { DISPLAY_MODE_OVERRIDE } from './display-mode-override';
+import { Layout } from './layout.service';
 import { MUSIC_PLAYER_FACTORY } from './music.service';
 
 const me = signal<Me | null>(null);
@@ -341,6 +343,26 @@ describe('App', () => {
     const overlay = document.querySelector('.cdk-overlay-container') as HTMLElement;
     expect(overlay.textContent).toContain('Playing as a guest');
     expect(overlay.querySelector('a.create-account')?.textContent).toContain('Create Account');
+  });
+
+  it('has no toolbar while the phone board is open, and the drawer still opens', async () => {
+    TestBed.overrideProvider(FEATURE_FLAGS, { useValue: { playOffline: true, playbackSettings: true, phoneBoard: true } });
+    TestBed.overrideProvider(DISPLAY_MODE_OVERRIDE, { useValue: 'fullscreen' });
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 915 });
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 412 });
+    try {
+      const { fixture, el } = await render();
+      const layout = TestBed.inject(Layout);
+      layout.setBoardOpen(true);
+      fixture.detectChanges();
+      expect(el.querySelector('mat-toolbar')).toBeNull();
+      layout.openNav();
+      fixture.detectChanges();
+      expect(el.querySelector('.nav-drawer')).not.toBeNull();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: 768 });
+    }
   });
 
   describe('on a phone', () => {

@@ -33,9 +33,9 @@ describe('dev scenarios', () => {
     expect({ id, botDue }).toEqual({ id, botDue: scenario.botDue === true });
   });
 
-  it('Play Board has its four scenarios', () => {
+  it('Play Board has its seven scenarios, three for the phone board', () => {
     const ids = SCENARIOS.filter((s) => s.group === 'Play Board').map((s) => s.id);
-    expect(ids).toEqual(['play-own-turn', 'play-other-turn', 'play-equipment', 'play-six-seats']);
+    expect(ids).toEqual(['play-own-turn', 'play-other-turn', 'play-equipment', 'play-six-seats', 'phone-4', 'phone-8', 'phone-12']);
   });
 
   it('Response Windows has its seven scenarios', () => {

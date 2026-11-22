@@ -59,4 +59,49 @@ export const PLAY_BOARD_SCENARIOS: BoardScenario[] = [
     build: (registry) => give(setTurn(playableGame(registry, SEED, 6), 'seat-0', 'Play'), 'seat-0', ['sha', 'shan', 'peach']),
     reaches: (s) => s.seats.length === 6 && playPhaseOf(s, 'seat-0'),
   },
+  {
+    kind: 'board',
+    id: 'phone-4',
+    group: 'Play Board',
+    title: 'preview.phone-4.title',
+    description: 'preview.phone-4.description',
+    seatCount: 4,
+    build: (registry) => {
+      let state = setTurn(playableGame(registry, SEED, 4), 'seat-0', 'Play');
+      for (const id of ['crossbow', 'red-hare']) state = equip(state, 'seat-0', id);
+      state = placeJudgment(state, 'seat-1', 'lightning');
+      return give(state, 'seat-0', FULL_HAND);
+    },
+    reaches: (s) => s.seats.length === 4 && playPhaseOf(s, 'seat-0') && FULL_HAND.every((id) => handOf(s, 'seat-0').includes(id)),
+  },
+  {
+    kind: 'board',
+    id: 'phone-8',
+    group: 'Play Board',
+    title: 'preview.phone-8.title',
+    description: 'preview.phone-8.description',
+    seatCount: 8,
+    build: (registry) => {
+      let state = setTurn(playableGame(registry, SEED, 8), 'seat-0', 'Play');
+      for (const id of ['crossbow', 'red-hare']) state = equip(state, 'seat-0', id);
+      state = placeJudgment(state, 'seat-1', 'lightning');
+      return give(state, 'seat-0', FULL_HAND);
+    },
+    reaches: (s) => s.seats.length === 8 && playPhaseOf(s, 'seat-0') && FULL_HAND.every((id) => handOf(s, 'seat-0').includes(id)),
+  },
+  {
+    kind: 'board',
+    id: 'phone-12',
+    group: 'Play Board',
+    title: 'preview.phone-12.title',
+    description: 'preview.phone-12.description',
+    seatCount: 12,
+    build: (registry) => {
+      let state = setTurn(playableGame(registry, SEED, 12), 'seat-0', 'Play');
+      for (const id of ['crossbow', 'red-hare']) state = equip(state, 'seat-0', id);
+      state = placeJudgment(state, 'seat-1', 'lightning');
+      return give(state, 'seat-0', FULL_HAND);
+    },
+    reaches: (s) => s.seats.length === 12 && playPhaseOf(s, 'seat-0') && FULL_HAND.every((id) => handOf(s, 'seat-0').includes(id)),
+  },
 ];
