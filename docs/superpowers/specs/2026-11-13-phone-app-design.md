@@ -1,6 +1,6 @@
 # Phone App (Installable Web App) — Design
 
-Status: Approved by the developer on 2026-11-13. Nothing is built.
+Status: Approved by the developer on 2026-11-13. Built in Parts 1 to 3 (2026-11-13 to 2026-11-22); the real-phone game check remains.
 
 Preview: A mock-up of the phone board on nine phone and tablet screens, with the seat tile and every seat badge as the developer approved them, is at https://claude.ai/artifact/QDq44Kwn1NmHR57EeU8Kwu (private artifact; it is the reference for Part 2, and the text of this document wins where they differ).
 
@@ -240,8 +240,8 @@ These hold on the phone board and in every window opened from it.
 - Icon art, manifest colours, the manifest file name.
 - How "installed" is forced on in dev.
 
-## Open, not decided here
+## Decided later (developer, 2026-11-22)
 
-- Whether the block on phone browsers should ever be lifted. Not now.
-- An APK or store listing. Possible later by wrapping this app.
-- Bots' pace, sound and music on phones: Unchanged; revisit only if the real-phone game shows a problem.
+- **Phone browsers stay blocked, for good:** A phone plays only in the installed app. The block on phone browser tabs is never lifted; the install hint sends players to the app.
+- **APK or store listing:** Deferred (`docs/deferrals.md`). Possible later by wrapping this app.
+- **Bots' pace, sound and music on phones:** Kept as they are.

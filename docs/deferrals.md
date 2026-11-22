@@ -142,6 +142,12 @@ When an item is done, delete its entry and say where it went in the commit.
 
 ## Deployment
 
+### The phone app as an APK or a store listing
+
+- **What is missing.** The phone app ships only as an installable web app (Chrome on Android, Install). There is no APK and no Play Store listing.
+- **Why it waits.** The developer deferred it (2026-11-22). The installed web app reaches friends with no store, updates with each deploy and needs no second sign-in path (`docs/superpowers/specs/2026-11-13-phone-app-design.md`, Approaches).
+- **Revisit when.** A store listing is wanted, or a phone cannot install the web app. The app can be wrapped (Capacitor over the live site, or a bundled build) without redoing the phone board.
+
 ### A real Mailer
 
 - **What is missing.**
