@@ -64,11 +64,13 @@ export class Layout {
   // Too small as it is, but playable turned sideways: a tablet held upright, or the installed app on an upright phone.
   readonly fitsIfTurned = computed(() => !this.canPlay() && layoutFor(this.height(), this.width(), this.phoneBoardAllowed()) !== 'phone');
   // A browser tab too small to play that the installed app could play on, held as it is or turned: the install hint.
-  // The screen's own size, which a browser tab's bars do not shrink (the installed app gets about this much); null
-  // where the browser does not say (a test's jsdom reports 0).
+  // A phone's screen size, which a browser tab's bars do not shrink (the installed app gets about this much). Only a
+  // phone-sized screen (shorter side under the wide layouts' height) counts: on a tablet a small window is split view,
+  // and installing would not make it bigger. Null where the browser does not say (a test's jsdom reports 0).
   private readonly screenSize = (() => {
     const screen = typeof window.screen === 'object' && window.screen ? window.screen : null;
-    return screen && screen.width > 0 && screen.height > 0 ? { width: screen.width, height: screen.height } : null;
+    if (!screen || screen.width <= 0 || screen.height <= 0) return null;
+    return Math.min(screen.width, screen.height) < WIDE_MIN_HEIGHT ? { width: screen.width, height: screen.height } : null;
   })();
   // A browser tab too small to play on a touch screen the installed app could play on, held either way: the install
   // hint. Judged by the screen, not the tab (spec 3b), when the browser gives its size.

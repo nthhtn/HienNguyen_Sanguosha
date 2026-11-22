@@ -419,6 +419,10 @@ describe('Layout install hint judged by the screen', () => {
     expect(tab({ width: 800, height: 366 }, 759, 269).installWouldHelp()).toBe(true);
   });
 
+  it('says nothing for a tablet in split view: installing would not make the window bigger', () => {
+    expect(tab({ width: 1180, height: 820 }, 500, 700).installWouldHelp()).toBe(false);
+  });
+
   it('says nothing for a screen under the phone board minimum', () => {
     expect(tab({ width: 700, height: 330 }, 700, 250).installWouldHelp()).toBe(false);
   });
