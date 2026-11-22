@@ -25,6 +25,12 @@ export class BoardChatState {
     this._open.update((open) => !open);
   }
 
+  // Closed, and everything said so far seen: a new game's board chat starts here.
+  reset(): void {
+    this._open.set(false);
+    this.seenId.set(this.latestId());
+  }
+
   setYou(playerId: string | null): void {
     this.you.set(playerId);
   }

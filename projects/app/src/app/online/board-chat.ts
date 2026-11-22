@@ -21,8 +21,8 @@ import { BoardChatState } from './board-chat-state.service';
         </header>
         <app-chat-panel [you]="you()" [canSend]="canSend()" />
       </aside>
-    } @else if (layout.kind() !== 'compact') {
-      <!-- The phone board has its Chat button in the centre band. -->
+    } @else if (!layout.toolbarHidden()) {
+      <!-- While the phone board is open its Chat button is in the centre band. -->
       <button
         mat-flat-button
         type="button"
@@ -92,6 +92,8 @@ export class BoardChat {
   protected readonly layout = inject(Layout);
 
   constructor() {
+    // Each game's chat starts closed, with what was said before it counted as seen.
+    this.state.reset();
     effect(() => this.state.setYou(this.you()));
     this.state.setAvailable(true);
     inject(DestroyRef).onDestroy(() => this.state.setAvailable(false));
