@@ -1,7 +1,10 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import type { ChatMessage } from 'protocol';
+import { DISPLAY_MODE_OVERRIDE } from '../display-mode-override';
+import { FEATURE_FLAGS } from '../feature-flags';
 import { BoardChat } from './board-chat';
+import { BoardChatState } from './board-chat-state.service';
 import { ChatService } from './chat.service';
 import { chatMessage } from './testing';
 
@@ -11,7 +14,7 @@ function fakeChat(initial: ChatMessage[] = []) {
 
 describe('BoardChat', () => {
   async function render(chat: ReturnType<typeof fakeChat>) {
-    await TestBed.configureTestingModule({ imports: [BoardChat], providers: [{ provide: ChatService, useValue: chat }] }).compileComponents();
+    await TestBed.configureTestingModule({ imports: [BoardChat], providers: [BoardChatState, { provide: ChatService, useValue: chat }] }).compileComponents();
     const fixture = TestBed.createComponent(BoardChat);
     fixture.componentRef.setInput('you', 'p-ann');
     fixture.componentRef.setInput('canSend', true);
@@ -77,5 +80,32 @@ describe('BoardChat', () => {
     expect(unread()).toBeNull();
     arrive(chatMessage(2, 'Bo', 'after closing'));
     expect(unread()).toBe('1');
+  });
+
+  describe('on the phone board', () => {
+    beforeEach(() => {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 915 });
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: 412 });
+      TestBed.configureTestingModule({
+        providers: [
+          { provide: FEATURE_FLAGS, useValue: { playOffline: true, playbackSettings: true, phoneBoard: true } },
+          { provide: DISPLAY_MODE_OVERRIDE, useValue: 'fullscreen' },
+        ],
+      });
+    });
+    afterEach(() => {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: 768 });
+    });
+
+    it('has no floating Chat button, and opens from the shared state', async () => {
+      const { fixture, el, toggle } = await render(fakeChat());
+      expect(toggle()).toBeNull();
+      const state = TestBed.inject(BoardChatState);
+      expect(state.available()).toBe(true);
+      state.toggle();
+      fixture.detectChanges();
+      expect(el.querySelector('.drawer app-chat-panel')).not.toBeNull();
+    });
   });
 });
