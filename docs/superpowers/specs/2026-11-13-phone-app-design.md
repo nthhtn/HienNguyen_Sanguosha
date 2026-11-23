@@ -194,6 +194,11 @@ The developer played on the Honor 400 Pro and mis-touched Play and Info: on the 
 - **Picking a card** (developer's choice): On the phone board a tap on a hand card only picks it: it lifts and is outlined, and nothing is played. Its actions (Play, with its menu or targets window, and Info) appear full width at the top of the action column, above the other actions, at the column's 36 px height. A tap on the picked card puts it back; a tap on another card picks that one instead. Nothing appears on the card itself. Playing the card, or the card leaving the hand, clears the pick.
 - **Action buttons** (developer's choice, an exception to the 44 px tap rule): The buttons in the phone board's action column are 36 px tall with 13 px text on one line; a label too long ends in "…" and shows in full on a long press (tooltip).
 - Tablets and computers keep the Play and Info buttons on the card, as today.
+- **Menu drawer** (developer's choice): 220 px wide on the phone board layout (its longest item needs about 142 px; it was 320 px).
+- **General picker** (developer's choices):
+  - **No scrolling inside a card:** A card's skill text no longer scrolls on the phone; it is cut with a fade at the bottom. A small Info button on each card opens the General's full window (the same one Seat Details opens), without picking the General. Swipes anywhere scroll the list of cards.
+  - **The next row peeks:** Cards are about 85% of the card area's height with 16 px gaps, so the next row shows at the bottom.
+  - **Name, force and HP over the art** (builder's call): The caption sits over the bottom of the portrait on a dark fade instead of below it, so the art keeps its size and the HP row is never cut.
 
 ### 4. Windows on the phone
 
