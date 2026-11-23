@@ -62,10 +62,30 @@ describe('windows on the phone board', () => {
         expect(rule).toMatch(/align-items:\s*center/);
       }
     });
+  });
 
-    it('Discard packs the cards into narrow columns, at least 64 px each', () => {
-      const rule = compact(read('game-board/discard-dialog.ts'), '.hand');
-      expect(rule).toMatch(/minmax\(64px, 1fr\)/);
+  describe('feedback from the third phone test (spec 3g)', () => {
+    it('Discard: the hand is a full-size row that scrolls sideways, with no minimum width that pushes the buttons out', () => {
+      const source = read('game-board/discard-dialog.ts');
+      const rule = /:host-context\(\[data-layout='compact'\]\) \.hand \{([^}]*)\}/.exec(source)?.[1] ?? '';
+      expect(rule).toMatch(/display:\s*flex/);
+      expect(rule).toMatch(/flex-wrap:\s*nowrap/);
+      expect(rule).toMatch(/overflow-x:\s*auto/);
+      expect(source).not.toMatch(/min-width:\s*600px/);
+    });
+
+    it('the Judgment outcome box has no minimum height on the phone board', () => {
+      const rule = /:host-context\(\[data-layout='compact'\]\) \.cons \{([^}]*)\}/.exec(read('game-board/judgment-stage.ts'))?.[1] ?? '';
+      expect(rule).toMatch(/min-height:\s*0/);
+    });
+
+    it('the centre band gives the countdown room for its icon, seconds and bar', () => {
+      const band = read('game-board/phone/phone-centre-band.ts');
+      expect(Number(/\.timer \{ width: (\d+)px; \}/.exec(band)?.[1])).toBeGreaterThanOrEqual(140);
+    });
+
+    it('Seat Details writes the HP and hand summary in bold', () => {
+      expect(read('game-board/phone/seat-details-dialog.ts')).toMatch(/\.summary \{ font-weight: 700; \}/);
     });
   });
 

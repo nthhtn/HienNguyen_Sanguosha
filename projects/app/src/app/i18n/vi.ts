@@ -511,7 +511,7 @@ export const vi: Messages = {
   'startReveal.deputy': 'Phó tướng',
   'discardDialog.title.one': 'Bỏ {n} lá bài',
   'discardDialog.title.other': 'Bỏ {n} lá bài',
-  'discardDialog.hint': 'Bài trên tay của bạn vượt giới hạn. Chọn {count} lá để bỏ · đã chọn {chosen}/{count}',
+  'discardDialog.hint': 'Bài trên tay của bạn vượt giới hạn. Chọn {count} lá để bỏ · Đã chọn {chosen}/{count}',
   'compete.title': 'Đấu điểm',
   'compete.players': 'Các người chơi đấu điểm',
   'compete.winner': 'Thắng',
