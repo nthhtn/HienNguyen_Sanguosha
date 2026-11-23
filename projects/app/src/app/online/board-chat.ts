@@ -1,9 +1,10 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, DestroyRef, effect, inject, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { TPipe } from '../i18n/t.pipe';
 import { ChatPanel } from './chat-panel';
-import { ChatService } from './chat.service';
+import { Layout } from '../layout.service';
+import { BoardChatState } from './board-chat-state.service';
 
 // The board's chat: a Chat button (with the count of messages you haven't seen)
 // that opens a side panel over the board's edge. Closed by default, so it never
@@ -12,11 +13,13 @@ import { ChatService } from './chat.service';
   selector: 'app-board-chat',
   imports: [MatButtonModule, MatIconModule, ChatPanel, TPipe],
   template: `
-    @if (open()) {
+    <!-- On the phone board the right-hand panel holds the chat (its Chat tab), so nothing is drawn here. -->
+    @if (layout.toolbarHidden()) {
+    } @else if (state.open()) {
       <aside class="drawer" [attr.aria-label]="'lobby.chat' | t">
         <header>
           <h2>{{ 'lobby.chat' | t }}</h2>
-          <button mat-icon-button type="button" class="close-chat" [attr.aria-label]="'chat.close' | t" (click)="toggle()"><mat-icon>close</mat-icon></button>
+          <button mat-icon-button type="button" class="close-chat" [attr.aria-label]="'chat.close' | t" (click)="state.toggle()"><mat-icon>close</mat-icon></button>
         </header>
         <app-chat-panel [you]="you()" [canSend]="canSend()" />
       </aside>
@@ -26,12 +29,12 @@ import { ChatService } from './chat.service';
         type="button"
         class="chat-toggle"
         aria-expanded="false"
-        [attr.aria-label]="unread() > 0 ? ('chat.unread' | t: { n: unread() }) : ('lobby.chat' | t)"
-        (click)="toggle()"
+        [attr.aria-label]="state.unread() > 0 ? ('chat.unread' | t: { n: state.unread() }) : ('lobby.chat' | t)"
+        (click)="state.toggle()"
       >
         <mat-icon>chat</mat-icon> {{ 'lobby.chat' | t }}
-        @if (unread() > 0) {
-          <span class="unread">{{ unread() }}</span>
+        @if (state.unread() > 0) {
+          <span class="unread">{{ state.unread() }}</span>
         }
       </button>
     }
@@ -56,7 +59,7 @@ import { ChatService } from './chat.service';
     }
     .drawer {
       position: fixed;
-      top: 64px;
+      top: var(--mat-toolbar-standard-height, 64px);
       right: 0;
       bottom: 0;
       z-index: 20;
@@ -84,23 +87,17 @@ import { ChatService } from './chat.service';
   `,
 })
 export class BoardChat {
-  private readonly chat = inject(ChatService);
   readonly you = input<string | null>(null);
   readonly canSend = input(true);
-  protected readonly open = signal(false);
-  // The newest message the player has seen: those at start, and everything up to the moment they opened or closed the panel.
-  private readonly seenId = signal(this.latestId());
+  protected readonly state = inject(BoardChatState);
+  protected readonly layout = inject(Layout);
 
-  protected readonly unread = computed(() =>
-    this.open() ? 0 : this.chat.messages().filter((m) => m.id > this.seenId() && m.from.playerId !== this.you()).length
-  );
-
-  protected toggle(): void {
-    this.seenId.set(this.latestId());
-    this.open.update((open) => !open);
-  }
-
-  private latestId(): number {
-    return this.chat.messages().at(-1)?.id ?? 0;
+  constructor() {
+    // Each game's chat starts closed, with what was said before it counted as seen.
+    this.state.reset();
+    effect(() => this.state.setYou(this.you()));
+    effect(() => this.state.setCanSend(this.canSend()));
+    this.state.setAvailable(true);
+    inject(DestroyRef).onDestroy(() => this.state.setAvailable(false));
   }
 }

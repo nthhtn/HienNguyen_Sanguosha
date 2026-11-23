@@ -1,10 +1,11 @@
 .auth-page {
   /* Full-bleed like Setup: cancel the app shell's content padding. */
-  margin: 0 -16px -16px;
-  min-height: calc(100vh - 64px);
+  margin: 0 calc(-1 * var(--content-inline-end, 16px)) -16px calc(-1 * var(--content-inline-start, 16px));
+  /* Under the toolbar (44 px on phones, 64 px elsewhere), to the bottom of the screen. */
+  min-height: calc(100dvh - var(--mat-toolbar-standard-height, 64px));
   display: grid;
   place-items: center;
-  padding: 24px 16px;
+  padding: 24px var(--content-inline-end, 16px) 24px var(--content-inline-start, 16px);
   box-sizing: border-box;
   background: var(--mat-sys-surface-container-low) url('/images/ui/brand/landing.jpg') center / cover no-repeat;
 }

@@ -195,13 +195,50 @@ board component. It renders from `visibleState` and nothing else. The pieces:
 |---|---|---|
 | `large` | 1280 px wide and up, 600 px tall and up | The board's history tiles stay, seats at full size |
 | `medium` | 900 to 1279 px wide, 600 px tall and up | The history folds into a slide-over panel (`panelAsOverlay`), seats scale with the seat count (`seatScale`) |
+| `compact` | The installed app, landscape, under 900 x 600 but at least 760 x 340 px | The phone board (Part 2b of the phone app). Keeps the menu drawer and the slide-over panel. Only while the `phoneBoard` feature flag is on |
 | `phone` | Anything smaller | Means "too small to play" (`canPlay` is false) |
 
-- A game (local or online, General selection included) can be played only at 900 x 600 px or more. Below that, `small-screen-prompt` covers the board; a window that would fit if turned (`fitsIfTurned`, a tablet held upright) gets `rotate-prompt` instead. The game keeps running underneath: Local games wait for the player, online games are server-paced.
+- A game (local or online, General selection included) can be played at 900 x 600 px or more, or on the phone board (`compact`). Otherwise `small-screen-prompt` covers the board; a window that would be playable if turned (`fitsIfTurned`: A tablet held upright, or the installed app on an upright phone) gets `rotate-prompt` instead. The game keeps running underneath: Local games wait for the player, online games are server-paced.
 - `small-screen-notice` sits beside Start Game, Create Room, Play With Bots, Join, Rejoin and the room Start, which are disabled when `canPlay` is false. Other pages (wiki, sign-in, Rooms list, My Games) stay usable on a phone.
 - The viewport size and which overlay is open (navigation drawer or History panel, never both) are UI state only; the engine knows nothing of them.
 
 Designs: [mobile landscape](../superpowers/specs/2026-11-03-mobile-landscape-design.md) (medium and large layouts stand) and [block play on phones](../superpowers/specs/2026-11-04-block-play-on-phones-design.md) (supersedes its phone parts).
+
+### Installed app
+
+The live site can be installed from Chrome on Android as a full-screen, landscape app (a web app manifest; no service worker, no APK).
+
+- **Manifest:** [manifest.webmanifest](../../projects/app/public/manifest.webmanifest), linked from `index.html` with the theme colour. Its icons are masters in `projects/content/assets-src/ui/brand/` (`icon-192.png`, `icon-512.png`, `icon-maskable-512.png`), shipped at `/images/ui/brand/`. The server sends it as `application/manifest+json`.
+- **Display mode:** `Layout.displayMode` is `fullscreen`, `standalone` (installed, status bar kept) or `browser`, read from `(display-mode: …)` media queries and followed while the page is open. `Layout.installed` is true for the first two.
+- **Device Info:** [device-info.ts](../../projects/app/src/app/device-info.ts) at `/device-info` shows the window size, display mode, orientation, layout and pixel ratio. It needs no sign-in and is the last link in the navigation drawer (not in the wide toolbar), since the installed app has no address bar.
+- **Phone board flag:** `FeatureFlags.phoneBoard` is on in every build (`featureFlagsFor`); it stays as a switch. While it is off, `Layout` ignores the display mode for `kind` (`phoneBoardAllowed` is false) and no install hint shows.
+- **Forcing a mode in dev:** `?display=fullscreen`, `?display=standalone` or `?display=browser` on any URL makes the tab act as that mode, kept in `sessionStorage` (`sgs.display`) until `?display=auto`. [display-mode-override.ts](../../projects/app/src/app/display-mode-override.ts) reads it through the `DISPLAY_MODE_OVERRIDE` token; a production build ignores it.
+- **Install hint:** `app-install-hint` follows the "too small" sentence in `small-screen-notice` and `small-screen-prompt` when `Layout.installWouldHelp` is true (a browser tab on a touch screen, `Layout.coarsePointer`, whose screen the installed app could play on, held either way). It judges the screen's size, not the tab's, since a tab loses height to the address bar. [InstallPrompt](../../projects/app/src/app/install-prompt.service.ts) keeps Chrome's `beforeinstallprompt` event, which `App` starts listening for at once; while it has one, an Install App button opens Chrome's dialog, once.
+- **Staying connected:** `SocketService` retries at once, from the first backoff delay, when the page becomes visible while it waits to reconnect. [ScreenWakeLock](../../projects/app/src/app/screen-wake-lock.service.ts) keeps the screen on while a game board is open and the game is not over, and asks again when the page comes back; `GameBoard` holds and releases it.
+
+Design: [phone app](../superpowers/specs/2026-11-13-phone-app-design.md).
+
+### Phone board
+
+On the `compact` layout (the installed app on a landscape phone), `GameBoard` renders [PhoneBoard](../../projects/app/src/app/game-board/phone/phone-board.ts) instead of the round table. New components beside the web board, so the medium and large layouts cannot change:
+
+- **Placement:** [phone-seat-layout.ts](../../projects/app/src/app/game-board/phone/phone-seat-layout.ts) puts opponents along the top, then down the sides from 9 seats (1, 2 or 2 per side), turn order running up the right, along the top and down the left. `phoneSizes` gives the bottom row (30% of the height, 104 to 124 px), tile heights and widths; a tile under 110 px is slim, never under 76 px.
+- **Seat tile:** `PhoneSeatTile`: Name with up to 3 Judgment boxes, both Generals, HP and hand count with the chained mark, 4 Equipment boxes. A slim tile drops the bot icon, shows only filled Judgment boxes and HP as numbers.
+  - **Faces:** Each General is its face crop (`generalFaceUrl` in `content`), cut square by the asset pipeline from the portrait with the boxes in `projects/content/asset-crops-faces.json` (recipe `generals/faces`, which names its own box file). A General with no crop, or a crop that fails to load, shows its portrait.
+  - **HP:** One HP ramp icon per point of maximum HP (up to 8), lost points dark; a slim tile shows "♥ 3/4".
+  - **Badges:** No Skills for one General and Form lie on that General; Face Down, No Skills for the seat and Dying (red) lie across both.
+  - **Seat Details:** Every tile is one button; [SeatDetailsDialog](../../projects/app/src/app/game-board/phone/seat-details-dialog.ts) shows the seat from the visible state (a signal, so it follows the game): Generals with their skills, states, Equipment, Judgment and the cards under a General, each opening its existing info window. A hidden General shows only "Hidden".
+- **Centre band:** `PhoneCentreBand` reuses `app-phase-indicator` and shows the newest Action History line, the turned-up cards, and Menu, History and (in an online game with chat) Chat buttons. The chat's open state and unread count live in `BoardChatState`, which `LobbyPage` provides; on the phone board `BoardChat` drops its floating button and its panel runs full height.
+- **Bottom row:** The viewer's tile, `HandView` with `fit="overlap"` (`handStep`: cards overlap, never less than 44 px showing, then the row scrolls), and the action column with the viewer's usable skills above the board actions.
+  - **Picking a card:** On the phone board a tap on a hand card only picks it (`HandView.picked` / `pickedId`); the card lifts with a gold outline and nothing is played. Its Play and Info ([HandCardActions](../../projects/app/src/app/game-board/hand-card-actions.ts), the same buttons tablets show on the card) appear at the top of the action column. Playing, choosing another action, or the card leaving the hand clears the pick.
+  - **Action buttons:** 36 px tall, 13 px, one line; a cut label shows in full on a long press (`ActionList`'s `compact` input turns on its tooltips). The developer chose this over the 44 px tap rule (spec 3c).
+- **Toolbar:** `PhoneBoard` calls `Layout.setBoardOpen`; while `Layout.toolbarHidden`, `App` drops the toolbar and `<html data-board="open">` sets the toolbar height to 0.
+- **Sizes:** No text under 12 px, 14 px for names, numbers, card names and buttons, 44 px tap targets, nothing scaled (`seatScale` and `centreScale` are not used).
+- **General picker:** On `compact`, `general-selection` sizes each card to the card area's height (a size container), so the art shows (about 85 px wide at 800 x 366); further cards scroll inside the area and Confirm stays on screen.
+- **Windows:** Every game window is a Material dialog, and the short-screen dialog rule keeps each one on screen with its content scrolling. On `compact`, one block in `styles.scss` (`html[data-layout='compact'] .cdk-overlay-container`) makes every button at least 44 px (Material's button tokens and `min-height`), card names on cards in a window 14 px (12 px on small cards), and the selection panel keeps its buttons at the foot while its cards scroll. Trait chips are 12 px.
+- **Game Over:** On `compact`, Game Over and the online result are one screen tall: a 28 px headline, the standings scrolling, New Game (or Play Again, Back to Lobby) fixed below them.
+- **No thinking line:** The phone board does not show which bot is thinking.
+- **Preview:** The `phone-4`, `phone-8` and `phone-12` scenarios at `/preview`, opened at a phone size with `?display=fullscreen`.
 
 ### Decisions become dialogs
 

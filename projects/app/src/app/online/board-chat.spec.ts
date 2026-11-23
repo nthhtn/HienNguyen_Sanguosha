@@ -1,7 +1,11 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import type { ChatMessage } from 'protocol';
+import { DISPLAY_MODE_OVERRIDE } from '../display-mode-override';
+import { FEATURE_FLAGS } from '../feature-flags';
+import { Layout } from '../layout.service';
 import { BoardChat } from './board-chat';
+import { BoardChatState } from './board-chat-state.service';
 import { ChatService } from './chat.service';
 import { chatMessage } from './testing';
 
@@ -11,7 +15,7 @@ function fakeChat(initial: ChatMessage[] = []) {
 
 describe('BoardChat', () => {
   async function render(chat: ReturnType<typeof fakeChat>) {
-    await TestBed.configureTestingModule({ imports: [BoardChat], providers: [{ provide: ChatService, useValue: chat }] }).compileComponents();
+    await TestBed.configureTestingModule({ imports: [BoardChat], providers: [BoardChatState, { provide: ChatService, useValue: chat }] }).compileComponents();
     const fixture = TestBed.createComponent(BoardChat);
     fixture.componentRef.setInput('you', 'p-ann');
     fixture.componentRef.setInput('canSend', true);
@@ -77,5 +81,56 @@ describe('BoardChat', () => {
     expect(unread()).toBeNull();
     arrive(chatMessage(2, 'Bo', 'after closing'));
     expect(unread()).toBe('1');
+  });
+
+  describe('on the phone board', () => {
+    beforeEach(() => {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 915 });
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: 412 });
+      TestBed.configureTestingModule({
+        providers: [
+          { provide: FEATURE_FLAGS, useValue: { playOffline: true, playbackSettings: true, phoneBoard: true } },
+          { provide: DISPLAY_MODE_OVERRIDE, useValue: 'fullscreen' },
+        ],
+      });
+    });
+    afterEach(() => {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: 768 });
+    });
+
+    it('keeps its floating Chat button while no phone board is open (General Selection, Game Over)', async () => {
+      const { toggle } = await render(fakeChat());
+      expect(toggle()).not.toBeNull();
+    });
+
+    it('draws nothing while the phone board is open: the right-hand panel holds the chat there', async () => {
+      const { fixture, el, toggle } = await render(fakeChat());
+      TestBed.inject(Layout).setBoardOpen(true);
+      fixture.detectChanges();
+      expect(toggle()).toBeNull();
+      const state = TestBed.inject(BoardChatState);
+      expect(state.available()).toBe(true);
+      state.setViewing(true);
+      fixture.detectChanges();
+      expect(el.querySelector('.drawer')).toBeNull();
+      expect(el.querySelector('app-chat-panel')).toBeNull();
+    });
+  });
+
+  it('starts each game closed, with what was already said counted as seen', async () => {
+    const chat = fakeChat([chatMessage(1, 'Bo', 'in the lobby')]);
+    await TestBed.configureTestingModule({ imports: [BoardChat], providers: [BoardChatState, { provide: ChatService, useValue: chat }] }).compileComponents();
+    const state = TestBed.inject(BoardChatState);
+    const first = TestBed.createComponent(BoardChat);
+    first.detectChanges();
+    state.toggle();
+    first.destroy();
+    chat.messages.update((all) => [...all, chatMessage(2, 'Cy', 'between games')]);
+    const second = TestBed.createComponent(BoardChat);
+    second.componentRef.setInput('you', 'p-ann');
+    second.detectChanges();
+    expect(state.open()).toBe(false);
+    expect(state.unread()).toBe(0);
   });
 });

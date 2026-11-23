@@ -63,6 +63,11 @@ import { SeatPortrait } from './seat-portrait';
     .item[data-force='Ambitionist'] { --force: var(--force-ambitionist); }
     .seat { padding: 8px; font: var(--mat-sys-title-small); }
     .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+    /* The phone board (spec 3h): the cards scroll vertically inside their own area and the buttons sit below it, never
+       over a card. */
+    :host-context([data-layout='compact']) { display: flex; flex-direction: column; min-height: 0; max-height: 100%; }
+    :host-context([data-layout='compact']) .items { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 4px; }
+    :host-context([data-layout='compact']) .actions { flex: none; padding: 8px 0 0; margin-top: 0; }
   `,
 })
 export class SelectionPanel {

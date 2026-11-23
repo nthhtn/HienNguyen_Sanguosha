@@ -6,6 +6,8 @@ import type { Me } from 'protocol';
 import { App } from './app';
 import { AuthService } from './auth/auth.service';
 import { FEATURE_FLAGS } from './feature-flags';
+import { DISPLAY_MODE_OVERRIDE } from './display-mode-override';
+import { Layout } from './layout.service';
 import { MUSIC_PLAYER_FACTORY } from './music.service';
 
 const me = signal<Me | null>(null);
@@ -38,6 +40,7 @@ describe('App', () => {
           { path: 'preview', children: [] },
           { path: 'sign-in', children: [] },
           { path: 'sign-up', children: [] },
+          { path: 'device-info', children: [] },
           { path: 'wiki/identity/:page', children: [] },
           { path: 'wiki/kingdom-wars/:page', children: [] },
           { path: 'wiki/rules', children: [] },
@@ -107,7 +110,7 @@ describe('App', () => {
   });
 
   describe('with test-only features off', () => {
-    beforeEach(() => TestBed.overrideProvider(FEATURE_FLAGS, { useValue: { playOffline: false, playbackSettings: false } }));
+    beforeEach(() => TestBed.overrideProvider(FEATURE_FLAGS, { useValue: { playOffline: false, playbackSettings: false, phoneBoard: false } }));
 
     it('hides the playback speed setting', async () => {
       const { el } = await render('/rooms');
@@ -342,6 +345,26 @@ describe('App', () => {
     expect(overlay.querySelector('a.create-account')?.textContent).toContain('Create Account');
   });
 
+  it('has no toolbar while the phone board is open, and the drawer still opens', async () => {
+    TestBed.overrideProvider(FEATURE_FLAGS, { useValue: { playOffline: true, playbackSettings: true, phoneBoard: true } });
+    TestBed.overrideProvider(DISPLAY_MODE_OVERRIDE, { useValue: 'fullscreen' });
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 915 });
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 412 });
+    try {
+      const { fixture, el } = await render();
+      const layout = TestBed.inject(Layout);
+      layout.setBoardOpen(true);
+      fixture.detectChanges();
+      expect(el.querySelector('mat-toolbar')).toBeNull();
+      layout.openNav();
+      fixture.detectChanges();
+      expect(el.querySelector('.nav-drawer')).not.toBeNull();
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 });
+      Object.defineProperty(window, 'innerHeight', { configurable: true, value: 768 });
+    }
+  });
+
   describe('on a phone', () => {
     function resizeTo(width: number, height: number): void {
       Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
@@ -372,6 +395,7 @@ describe('App', () => {
       resizeTo(1366, 768);
       const { el } = await render();
       expect(el.querySelector('button.nav-menu')).toBeNull();
+      expect(el.querySelector('a[href="/device-info"]')).toBeNull();
     });
 
     it('opens a drawer with the same links the bar has on a wide screen', async () => {
@@ -381,8 +405,16 @@ describe('App', () => {
         expect.arrayContaining(['/play', '/rooms', '/wiki/kingdom-wars/generals', '/wiki/identity/tools', '/wiki/rules', '/sign-in'])
       );
       expect(drawer.textContent).toContain('Play Online');
-      expect(drawer.querySelector('app-language-switcher')).not.toBeNull();
       expect(drawer.querySelectorAll('.drawer-playback-speed button').length).toBeGreaterThan(0);
+    });
+
+    it('keeps the language menu out of the drawer and puts it in the bar, before the Music button (spec 3f)', async () => {
+      const { el, drawer } = await openDrawer();
+      expect(drawer.querySelector('app-language-switcher')).toBeNull();
+      const switcher = el.querySelector('mat-toolbar app-language-switcher')!;
+      const music = el.querySelector('mat-toolbar button.music-toggle')!;
+      expect(switcher).not.toBeNull();
+      expect(switcher.compareDocumentPosition(music) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
 
     it('marks the current page in the drawer', async () => {
@@ -405,6 +437,23 @@ describe('App', () => {
       expect(drawer.textContent).toContain('Ann');
       expect(drawer.querySelector('button.sign-out')).not.toBeNull();
       expect([...drawer.querySelectorAll('.drawer-battlefield button')].map((b) => b.textContent!.trim())).toEqual(['Default', 'Background 1', 'Background 2', 'Background 3']);
+    });
+
+    it('ends with a Device Info link, after every other link', async () => {
+      const { drawer } = await openDrawer();
+      const links = [...drawer.querySelectorAll('a, button')];
+      const last = links[links.length - 1];
+      expect(last.getAttribute('href')).toBe('/device-info');
+      expect(last.textContent).toContain('Device Info');
+    });
+
+    it('closes when Device Info is chosen', async () => {
+      const { fixture, el, drawer } = await openDrawer();
+      (drawer.querySelector('a[href="/device-info"]') as HTMLAnchorElement).click();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(TestBed.inject(Router).url).toBe('/device-info');
+      expect(el.querySelector('.nav-drawer')).toBeNull();
     });
 
     it('closes when a link is chosen', async () => {

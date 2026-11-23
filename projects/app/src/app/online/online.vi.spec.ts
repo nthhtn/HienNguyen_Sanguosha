@@ -143,7 +143,7 @@ describe('Rooms, My Games and the dialogs in Vietnamese', () => {
       expect(gameHeadline(GAME, tr)).toBe('Ngụy thắng');
       expect(gameHeadline({ ...GAME, result: { ...GAME.result!, winningKingdom: undefined } }, tr)).toBe('Ann thắng');
       expect(gameHeadline({ ...GAME, result: { ...GAME.result!, winningKingdom: undefined, winningSeatIds: [] } }, tr)).toBe('Không ai sống sót');
-      expect(playerLabel(GAME, 'seat-1', tr)).toBe('Ann (bạn)');
+      expect(playerLabel(GAME, 'seat-1', tr)).toBe('Ann (Bạn)');
       expect(playerLabel(GAME, 'seat-0', tr)).toBe('Bot 1 (máy)');
       expect(gameWhen(GAME, tr)).toMatch(/2026/);
       expect(gameWhen(GAME, tr)).toContain('thg');
@@ -179,7 +179,7 @@ describe('Rooms, My Games and the dialogs in Vietnamese', () => {
       fixture.detectChanges();
       expect(text(el.querySelector('.outcome'))).toBe('Thắng');
       expect(text(el.querySelector('.headline'))).toBe('Ngụy thắng');
-      expect(text(el.querySelector('.players'))).toBe('Bot 1 (máy), Ann (bạn)');
+      expect(text(el.querySelector('.players'))).toBe('Bot 1 (máy), Ann (Bạn)');
       expect(text(el.querySelector('a.back'))).toBe('Quay lại danh sách phòng');
       error.set(msg('error.registered_only'));
       fixture.detectChanges();

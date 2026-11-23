@@ -31,15 +31,15 @@ function render(s: GameState, viewerSeatId: string | null): string {
 }
 
 describe('PhaseIndicator', () => {
-  it('shows the turn owner, (you) for the viewer, and the phase', () => {
-    expect(render(state('Play'), 'seat-0')).toBe('Seat 0 (you) – Play Phase');
+  it('shows the turn owner, (You) for the viewer, and the phase', () => {
+    expect(render(state('Play'), 'seat-0')).toBe('Seat 0 (You) – Play Phase');
   });
 
   it('names the Start phase in a Start window and never offers End Phase', () => {
     const s = state('Start');
     s.turn = { ...s.turn, startWindow: true };
     const text = render(s, 'seat-0');
-    expect(text).toBe('Seat 0 (you) – Start Phase');
+    expect(text).toBe('Seat 0 (You) – Start Phase');
     expect(text).not.toContain('End Phase');
   });
 
@@ -53,18 +53,30 @@ describe('PhaseIndicator', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('app-decision-countdown')).not.toBeNull();
   });
 
-  it('leaves out (you) when it is someone else\'s turn', () => {
+  it('shows the Draw Pile count, and leaves it out when asked (the phone board puts it in its panel)', () => {
+    const show = (hide: boolean) => {
+      const fixture = TestBed.createComponent(PhaseIndicator);
+      fixture.componentRef.setInput('state', state('Play'));
+      if (hide) fixture.componentRef.setInput('showDrawPile', false);
+      fixture.detectChanges();
+      return (fixture.nativeElement as HTMLElement).querySelector('.draw-pile');
+    };
+    expect(show(false)).not.toBeNull();
+    expect(show(true)).toBeNull();
+  });
+
+  it('leaves out (You) when it is someone else\'s turn', () => {
     expect(render(state('Play'), 'seat-1')).toBe('Seat 0 – Play Phase');
   });
 
   it('adds how many cards are left to discard while over the hand limit', () => {
-    expect(render(state('Discard', 6, 4), 'seat-0')).toBe('Seat 0 (you) – Discard Phase – discard 2 more');
+    expect(render(state('Discard', 6, 4), 'seat-0')).toBe('Seat 0 (You) – Discard Phase – discard 2 more');
   });
 
   it('counts what the engine still owes, not the whole excess (final review #7)', () => {
     // 6 cards at 4 HP, but only 1 discard is still owed this phase (a card was drawn mid-phase).
     const owing = state('Discard', 6, 4);
-    expect(render({ ...owing, turn: { ...owing.turn, discardsLeft: 1 } }, 'seat-0')).toBe('Seat 0 (you) – Discard Phase – discard 1 more');
+    expect(render({ ...owing, turn: { ...owing.turn, discardsLeft: 1 } }, 'seat-0')).toBe('Seat 0 (You) – Discard Phase – discard 1 more');
   });
 
   it('names every phase the same way', () => {

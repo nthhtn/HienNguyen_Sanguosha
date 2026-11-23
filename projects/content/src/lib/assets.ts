@@ -51,6 +51,13 @@ export function generalSkinUrl(id: string): string | null {
   return skin ? `/images/${assetFile(`generals/skins/${skin}`)}` : cardArtUrl(id);
 }
 
+// A General's face, cut square from its portrait for the phone board's small tiles (asset-crops-faces.json), filed like
+// the portrait. Null for a General with no portrait, so the tile falls back to whatever art it has.
+export function generalFaceUrl(id: string): string | null {
+  const skin = GENERAL_SKINS[isKingdomWarsGeneralId(id) ? baseGeneralId(id) : id];
+  return skin ? `/images/${assetFile(`generals/faces/${skin}`)}` : null;
+}
+
 // Generals whose skin has no death voice file yet.
 const NO_DEATH_VOICE = new Set(['zuo-ci']);
 

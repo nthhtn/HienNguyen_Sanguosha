@@ -1,3 +1,4 @@
+@if (!layout.toolbarHidden()) {
 <mat-toolbar color="primary" class="app-bar">
   @if (layout.wide()) {
     <ng-container *ngTemplateOutlet="brand" />
@@ -80,9 +81,11 @@
     </button>
     <ng-container *ngTemplateOutlet="brand" />
     <span class="spacer"></span>
+    <app-language-switcher />
     <ng-container *ngTemplateOutlet="toggles" />
   }
 </mat-toolbar>
+}
 <ng-template #brand>
   <img class="logo" src="images/ui/brand/logo.png" alt="" />
   <h1><a class="brand" routerLink="/play">{{ title() }}</a></h1>
@@ -150,7 +153,6 @@
           <a class="drawer-link sign-in" routerLink="/sign-in"><mat-icon>login</mat-icon>{{ 'nav.signIn' | t }}</a>
         }
       }
-      <app-language-switcher />
     </div>
     @if (flags.playbackSettings) {
       <div class="drawer-group drawer-playback-speed">
@@ -160,6 +162,7 @@
         }
       </div>
     }
+    <a class="drawer-link device-info" routerLink="/device-info" routerLinkActive="active" ariaCurrentWhenActive="page"><mat-icon>info</mat-icon>{{ 'device.title' | t }}</a>
   </nav>
 }
 <main class="content">

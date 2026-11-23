@@ -5,7 +5,7 @@ import { DecisionCountdown } from './decision-countdown';
 import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
 
-// Whose turn it is and which phase, e.g. "Seat 0 (you) – Play Phase", between
+// Whose turn it is and which phase, e.g. "Seat 0 (You) – Play Phase", between
 // the turn number and the draw pile count.
 // The turn owner's name and timer are in their force colour.
 // Presentational: every value comes from the (redacted) state or the engine.
@@ -27,7 +27,9 @@ import { TPipe } from '../i18n/t.pipe';
         <!-- At zero: End Phase, or Continue in the Start window. -->
         <app-decision-countdown class="timer" />
       }
-      {{ ' ' }}<span class="count draw-pile">{{ 'phase.drawPile' | t: { n: drawPileCount() } }}</span>
+      @if (showDrawPile()) {
+        {{ ' ' }}<span class="count draw-pile">{{ 'phase.drawPile' | t: { n: drawPileCount() } }}</span>
+      }
     </div>
   `,
   styles: `
@@ -49,6 +51,8 @@ import { TPipe } from '../i18n/t.pipe';
 export class PhaseIndicator {
   readonly state = input.required<GameState>();
   readonly viewerSeatId = input<string | null>(null);
+  // The phone board's centre band leaves the Draw Pile count to its panel (spec 3e).
+  readonly showDrawPile = input(true);
 
   private readonly i18n = inject(I18n);
 

@@ -1,4 +1,5 @@
 import { pickRandomAction, ruleBasedPolicy } from 'bots';
+import { preloadedCardArtCount } from './card-art-preload';
 import { Router } from '@angular/router';
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -12,6 +13,7 @@ import { JudgmentDialog } from './judgment-dialog';
 import { askToChange, settleJudgment } from '../settled-judgment.testing';
 import { cardIdDisplayName } from '../labels';
 import { spriteDurationMs } from './sprite-plan';
+import { ScreenWakeLock } from '../screen-wake-lock.service';
 import { GameBoard } from './game-board';
 import { BattlefieldBackgrounds } from '../battlefield-background.service';
 import { GameService } from '../game.service';
@@ -67,6 +69,13 @@ describe('GameBoard', () => {
     const start = jest.spyOn(TestBed.inject(SpritePreload), 'start').mockImplementation(() => undefined);
     TestBed.createComponent(GameBoard);
     expect(start).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not keep the screen on when no game is in progress', () => {
+    const hold = jest.spyOn(TestBed.inject(ScreenWakeLock), 'hold');
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+    expect(hold).not.toHaveBeenCalled();
   });
 
   it('shows a fallback message and a link back to /setup when no game is in progress', () => {
@@ -232,7 +241,7 @@ describe('GameBoard', () => {
     expect(el.querySelector('app-round-table')).not.toBeNull();
     expect(el.querySelectorAll('app-round-table app-seat-tile')).toHaveLength(2);
     expect(el.querySelector(`app-round-table [data-seat-id="${viewer}"]`)).toBeNull();
-    expect(el.querySelector('.your-seat app-seat-tile')!.textContent).toContain('(you)');
+    expect(el.querySelector('.your-seat app-seat-tile')!.textContent).toContain('(You)');
     const state = gameService.visibleState()!;
     const ownHand = state.zones.find((z) => z.id === state.seats.find((s) => s.id === viewer)!.hand.zoneId)!;
     expect(el.querySelectorAll('.your-hand app-hand-view .hand-card')).toHaveLength(ownHand.cards.length);
@@ -611,6 +620,13 @@ describe('GameBoard in vs-bots mode', () => {
     for (let guard = 0; gameService.botThinkingSeatId() && guard < 50000; guard++) jest.runOnlyPendingTimers();
   }
 
+  it('starts loading every card picture once the board is up, so none shows an empty frame when first played', () => {
+    gameService.startGame(3, 1, 'vs-bots');
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+    expect(preloadedCardArtCount()).toBeGreaterThan(30);
+  });
+
   it('shows the human’s general selection straight away, with no reveal gate', () => {
     gameService.startGame(3, 1, 'vs-bots');
     const fixture = TestBed.createComponent(GameBoard);
@@ -696,7 +712,7 @@ describe('GameBoard in vs-bots mode', () => {
     fixture.detectChanges();
     const el = fixture.nativeElement as HTMLElement;
     expect(el.querySelector('app-reveal-gate-overlay')).toBeNull();
-    expect(el.querySelector('.your-seat app-seat-tile')!.textContent).toContain('(you)');
+    expect(el.querySelector('.your-seat app-seat-tile')!.textContent).toContain('(You)');
     expect(el.querySelector('app-round-table .thinking')!.textContent).toContain('is thinking');
     // Nothing is playable while a bot acts (Review Focus 4).
     const playButtons = [...el.querySelectorAll('app-hand-view button.play')] as HTMLButtonElement[];
@@ -714,7 +730,7 @@ describe('GameBoard in vs-bots mode', () => {
     const indicator = (fixture.nativeElement as HTMLElement).querySelector('app-phase-indicator')!;
     const timer = indicator.querySelector('app-decision-countdown')!;
     const label = indicator.textContent!.replace(timer.textContent!, '').replace(/\s+/g, ' ').trim();
-    expect(label).toMatch(/^Turn 1 Seat 0 \(you\) – Play Phase Draw Pile \d+$/);
+    expect(label).toMatch(/^Turn 1 Seat 0 \(You\) – Play Phase Draw Pile \d+$/);
     // Your own Play phase is timed: 300 seconds for the whole phase.
     expect(timer.textContent).toContain('180s');
   });
@@ -1377,6 +1393,28 @@ describe('GameBoard battle playback', () => {
     expect(tile().seat().combinedHp).toBe(before - 1);
     tick(900);
     expect(tile().seat().combinedHp).toBe(before - 2);
+  });
+
+  it('keeps the screen on while the game runs, and lets it go at Game Over and when the board closes', () => {
+    const other = playPhase();
+    const lock = TestBed.inject(ScreenWakeLock);
+    const hold = jest.spyOn(lock, 'hold');
+    const release = jest.spyOn(lock, 'release');
+    create();
+    expect(hold).toHaveBeenCalled();
+    expect(release).not.toHaveBeenCalled();
+    const winner = gameService.activeSeatId()!;
+    update((s) => ({
+      ...s,
+      seats: s.seats.map((seat) => (seat.id === other ? { ...seat, eliminated: true } : seat)),
+      log: [...s.log, { kind: 'SeatEliminatedEvent', seatId: other } as never],
+      result: { endedAt: 1, winningSeatIds: [winner], losingSeatIds: [other] },
+    }));
+    tick(1400 + 350);
+    expect(release).toHaveBeenCalled();
+    release.mockClear();
+    fixture.destroy();
+    expect(release).toHaveBeenCalled();
   });
 
   it('waits for playback before Game Over (Review Focus 4)', () => {

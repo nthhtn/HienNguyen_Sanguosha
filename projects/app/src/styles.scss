@@ -149,15 +149,65 @@ body {
 // Phones, and any window too short for the wide layout (see layout.service.ts): a slimmer app bar, and the
 // page kept clear of camera cut-outs and rounded corners (index.html asks for viewport-fit=cover).
 // The phase indicator and the board's height read the toolbar variables.
-html[data-layout='phone'] {
+html[data-layout='phone'],
+html[data-layout='compact'] {
   --mat-toolbar-standard-height: 44px;
   --mat-toolbar-mobile-height: 44px;
+}
+
+// Windows on the phone board (spec, "Windows on the phone"): every button a full tap target, and card names on the
+// cards inside a window readable (14 px, up to two lines), as in the phone hand. Medium and large keep Material's sizes.
+html[data-layout='compact'] .cdk-overlay-container {
+  --mat-button-filled-container-height: 44px;
+  --mat-button-outlined-container-height: 44px;
+  --mat-button-text-container-height: 44px;
+  --mat-button-protected-container-height: 44px;
+  --mat-button-tonal-container-height: 44px;
+  --mat-icon-button-state-layer-size: 44px;
+  // Dense window chrome (spec 4b): Material's 24 px title and padding take about 100 px of a 366 px screen.
+  --mat-dialog-subhead-size: 18px;
+  --mat-dialog-subhead-line-height: 24px;
+  --mat-dialog-headline-padding: 8px 12px 4px;
+  --mat-dialog-content-padding: 12px;
+  // A window with an actions row takes this padding instead, and it overrides the one above.
+  --mat-dialog-with-actions-content-padding: 12px 12px 0;
+  --mat-dialog-actions-padding: 8px 12px;
+  // The board stays readable behind a window.
+  .cdk-overlay-dark-backdrop {
+    background: rgb(0 0 0 / 0.15);
+  }
+  button {
+    min-height: 44px;
+  }
+  app-playing-card .name {
+    font-size: 14px;
+    line-height: 1.1;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  // A small card (44 px wide, the resolution notice) cannot hold 14 px names: 12 px, the floor. These selectors outrank
+  // the card's own `.small .name` sizes.
+  app-playing-card .small .name,
+  app-playing-card .small .face,
+  app-playing-card .small .stat {
+    font-size: 12px;
+  }
+}
+
+// The phone board hides the app toolbar during a game (layout.service.ts): no height to leave room for.
+html[data-board='open'] {
+  --mat-toolbar-standard-height: 0px;
+  --mat-toolbar-mobile-height: 0px;
 }
 
 // Dialogs on a short screen (a phone on its side): the whole dialog stays inside the screen, and only its content
 // scrolls, so the title and the buttons stay where they can be reached. Material caps the content at 65vh, which
 // on a 344 px screen leaves no room for the title and buttons as well.
-html[data-layout='phone'] {
+html[data-layout='phone'],
+html[data-layout='compact'] {
   .mat-mdc-dialog-container .mdc-dialog__surface {
     max-height: calc(100dvh - 16px);
     overflow: hidden;

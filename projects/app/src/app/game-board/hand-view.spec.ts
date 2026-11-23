@@ -2,7 +2,7 @@ import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MatTooltip } from '@angular/material/tooltip';
 import { Action, CardInstance, ContentRegistry, GameState } from 'engine';
-import { HandView } from './hand-view';
+import { HandView, handStep, overlapWidth } from './hand-view';
 
 const hand: CardInstance[] = [
   { instanceId: 'c-sha', definitionId: 'sha', suit: 'spade', rank: 7 },
@@ -59,6 +59,54 @@ describe('HandView', () => {
   afterEach(() => overlay()?.replaceChildren());
 
 
+  describe('on the phone board (overlap)', () => {
+    let picks: (string | null)[];
+    beforeEach(() => {
+      fixture.componentRef.setInput('fit', 'overlap');
+      picks = [];
+      fixture.componentInstance.picked.subscribe((id) => picks.push(id));
+      fixture.detectChanges();
+    });
+
+    it('shows no buttons on the cards', () => {
+      expect(el.querySelector('.overlay')).toBeNull();
+      expect(el.querySelector('button.play')).toBeNull();
+    });
+
+    it('picks a card on a tap, and puts the picked card back on another tap', () => {
+      card(hand[0].instanceId).click();
+      expect(picks).toEqual([hand[0].instanceId]);
+      fixture.componentRef.setInput('pickedId', hand[0].instanceId);
+      fixture.detectChanges();
+      expect(card(hand[0].instanceId).classList).toContain('picked');
+      card(hand[0].instanceId).click();
+      expect(picks).toEqual([hand[0].instanceId, null]);
+      expect(played).toEqual([]);
+    });
+
+    it('picks another card instead of the picked one', () => {
+      fixture.componentRef.setInput('pickedId', hand[0].instanceId);
+      fixture.detectChanges();
+      card(hand[1].instanceId).click();
+      expect(picks).toEqual([hand[1].instanceId]);
+    });
+  });
+
+  it("leaves Space to the Play and Info buttons on tablets and computers", () => {
+    card(hand[0].instanceId).focus();
+    const event = new KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true, cancelable: true });
+    playButton(hand[0].instanceId).dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it('emits no pick on a tap on tablets and computers', () => {
+    const picks: (string | null)[] = [];
+    fixture.componentInstance.picked.subscribe((id) => picks.push(id));
+    card(hand[0].instanceId).click();
+    expect(picks).toEqual([]);
+    expect(el.querySelector('.overlay')).not.toBeNull();
+  });
+
   it('renders every hand card in one row, each with Play and Info buttons', () => {
     const row = el.querySelector('.hand-row')!;
     expect(row.querySelectorAll('.hand-card')).toHaveLength(3);
@@ -66,6 +114,12 @@ describe('HandView', () => {
       if (playButton(c.instanceId)) expect(playButton(c.instanceId).textContent).toContain('Play');
       expect(infoButton(c.instanceId).textContent).toContain('Info');
     }
+  });
+
+  it('keeps the row as it was unless asked to overlap: no card offsets', () => {
+    const row = el.querySelector('.hand-row')!;
+    expect(row.classList).not.toContain('overlap');
+    for (const card of row.querySelectorAll<HTMLElement>('.hand-card')) expect(card.style.marginLeft).toBe('');
   });
 
   it('shows each hand card’s name and suit and number on the card itself', () => {
@@ -220,3 +274,33 @@ describe('HandView', () => {
   });
 });
 
+
+describe('handStep', () => {
+  it('leaves the gap between cards when they fit', () => {
+    expect(handStep(800, 8, 70, 8)).toEqual({ step: 78, scrolls: false });
+  });
+
+  it('overlaps the cards when they do not fit', () => {
+    const { step, scrolls } = handStep(600, 8, 70, 8);
+    expect(step).toBeCloseTo(75.71, 1);
+    expect(scrolls).toBe(false);
+    expect(handStep(400, 8, 70, 8).step).toBeCloseTo(47.14, 1);
+  });
+
+  it('scrolls instead of showing less than 44 px of a card', () => {
+    expect(handStep(300, 8, 70, 8)).toEqual({ step: 44, scrolls: true });
+  });
+
+  it('gives one card its own width and the gap', () => {
+    expect(handStep(300, 1, 70, 8)).toEqual({ step: 78, scrolls: false });
+  });
+});
+
+describe('HandView overlap width', () => {
+  it("leaves out the row's side padding, so an overlapping hand fits without scrolling a few pixels", () => {
+    // A 500 px host has a 492 px row inside its 4 px side padding.
+    expect(overlapWidth(500)).toBe(492);
+    const { step } = handStep(overlapWidth(500), 8, 70, 8);
+    expect(70 + 7 * step).toBeLessThanOrEqual(492);
+  });
+});

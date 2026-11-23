@@ -5,7 +5,7 @@ import { brotliCompress, constants, gzip } from 'node:zlib';
 export type Encoding = 'br' | 'gzip';
 
 // Text compresses well; images, audio and fonts are already compressed.
-const COMPRESSIBLE = new Set(['.html', '.js', '.css', '.json', '.svg', '.txt']);
+const COMPRESSIBLE = new Set(['.html', '.js', '.css', '.json', '.webmanifest', '.svg', '.txt']);
 
 // Below this a compressed body saves too little to be worth the CPU.
 export const MIN_COMPRESS_BYTES = 1024;

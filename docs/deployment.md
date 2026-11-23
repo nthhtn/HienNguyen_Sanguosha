@@ -104,6 +104,8 @@ On the live URL:
   engine or content behaviour makes a running game stop as `outdated`; other
   merges leave games running. Prefer to merge engine changes when nobody is
   mid-game.
+- **Installable.** Chrome on Android offers to install the site as an app. The
+  manifest is `projects/app/public/manifest.webmanifest`; it needs the HTTPS site.
 - **Password reset.** Reset emails only go to the server log, so a forgotten
   password cannot be reset yet (see [Deferrals](deferrals.md)).
 

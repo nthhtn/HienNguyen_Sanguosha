@@ -142,6 +142,12 @@ When an item is done, delete its entry and say where it went in the commit.
 
 ## Deployment
 
+### The phone app as an APK or a store listing
+
+- **What is missing.** The phone app ships only as an installable web app (Chrome on Android, Install). There is no APK and no Play Store listing.
+- **Why it waits.** The developer deferred it (2026-11-22). The installed web app reaches friends with no store, updates with each deploy and needs no second sign-in path (`docs/superpowers/specs/2026-11-13-phone-app-design.md`, Approaches).
+- **Revisit when.** A store listing is wanted, or a phone cannot install the web app. The app can be wrapped (Capacitor over the live site, or a bundled build) without redoing the phone board.
+
 ### A real Mailer
 
 - **What is missing.**
@@ -157,16 +163,15 @@ When an item is done, delete its entry and say where it went in the commit.
 
 ### Keeping the free host awake
 
-- **What is missing.**
-  - A free Render web service sleeps after about 15 minutes without traffic.
-  - The first visit then waits for a cold start.
-- **Why it waits.**
-  - Decided on 2026-10-26 to accept the sleep for now.
-  - On 2026-11-04 the pinger was documented (the monitor itself is set up outside the repo).
-  - Games survive it: The server rebuilds each running game by replaying its action log.
+- **Status.** Mostly done: The developer set up an external pinger on `/health` (2026-11-23), as described in [deployment.md](deployment.md), "Keeping it awake". The service no longer sleeps between visits, so the installed phone app opens without a cold start.
+- **What is still missing.**
+  - **Restarts:** A deploy or a crash still gives one slow start and drops the sockets. Games survive it: The server rebuilds each running game by replaying its action log.
+  - **Hours:** Render's free tier has 750 instance-hours a month, and one always-awake service uses about 744, so no second free service can stay awake in the workspace.
+  - **Supabase:** `/health` does not touch the database, so a free Supabase project can still pause after a week without use; a paused project needs a visit to the dashboard.
+- **Why it waits.** The pinger covers the friends-only game. A different host would remove the limits.
 - **Revisit when.**
-  - The cold start gets in the way of playing.
-  - A pinger on `/health` (set up in [deployment.md](deployment.md), "Keeping it awake"), or an always-on host such as an Oracle Always Free VM, would fix it.
+  - The Render hours or the Supabase pause get in the way.
+  - An always-on host such as an Oracle Always Free VM would remove both.
 
 ### A verified database certificate
 
@@ -213,6 +218,37 @@ From [Backend](architecture/backend.md#not-done), which holds the detail:
 ## Presentation
 
 From the Resolution Notice, picker and Judgment work (PR #62, 2026-11-09). The design is in `docs/superpowers/specs/2026-11-09-resolution-notice-and-pickers-design.md`.
+
+### Phone board leftovers
+
+- **What is missing.** Small things on the phone app (`projects/app/src/app/game-board/phone/` and the windows), found in the Part 2b to Part 3 reviews and the real-phone tests:
+  - **Toolbar timing:** `PhoneBoard` hides the toolbar during change detection (`setBoardOpen` in its constructor); `afterNextRender` would be cleaner.
+  - **Spectator at 12 seats:** With no viewer seat all 12 seats are opponents, so the top row holds 8 and the tiles are narrower than the 12-seat estimate.
+  - **Short screens:** At the 340 px floor a played card fills the centre band edge to edge.
+  - **Seat Details stays open:** After the board goes away (rotation, game end) the window stays open, frozen.
+  - **Masked cards under a General:** They are tappable in Seat Details but show nothing.
+  - **Own hidden Generals:** Seat Details does not say they are still hidden from others.
+  - **Action column:** The 24 px icons on Play and Info take width from their labels, and those two have no tooltip; they are 36 px like the rest, where the spec said "full size" (reworded to "full width").
+  - **Decision windows on rotation:** They stay open when the phone rotates.
+  - **Small cards in windows:** A long Vietnamese card name can wrap to 3 lines and cover most of a 44 px card, and the elemental badge stays 9 px (Guozhan has no elements).
+  - **Setup toggles:** The 44 px button rule also makes the Create Room and Play With Bots toggle groups 44 px tall on a phone.
+  - **Response window when dying:** With a Peach it still scrolls by about 4 px at 800 × 366 (the buttons stay fixed).
+  - **Windows not re-measured:** The Judgment popup (outcome box tightened later) and the Start popup scrolled in the PR 88 audit and were not audited again; side-by-side layouts were built only for Response and Discard.
+- **Install and manifest:**
+  - **Tab colour:** `theme-color` tints the address bar of a plain Chrome tab.
+  - **Manifest check:** The manifest spec checks the source assets, not `dist`.
+  - **Pixel ratio:** The device info page refreshes it only on a resize.
+  - **Display-mode stub:** The test helper ignores the event name.
+- **Why it waits.** The developer chose to leave them for later (2026-11-22 and 2026-11-23). None stops a game.
+- **Revisit when.** The real-phone check, or a later pass on the phone board.
+
+### Sharp General pictures on phone tiles
+
+- **What is missing.** A phone seat tile draws each General's face crop (101 to 126 px square) enlarged to about 85 CSS px, which is about 300 device pixels at a pixel ratio of 3.5: about 2.5 times past the picture's real resolution, so it looks soft.
+- **The idea.** Draw each face at its natural resolution (picture pixels divided by the phone's pixel ratio, about 30 to 36 px on the Honor 400 Pro), keep the tile its size, and fill the room with the General's name and its skill names (names only on slim tiles).
+- **Other ways.** A wider crop (about 70% of the portrait, 66 crops to re-cut), or the full 250 × 292 portrait in the slot (nearly natural, smaller faces, no new assets).
+- **Why it waits.** The developer deferred it (2026-11-23). The tile is readable as it is.
+- **Revisit when.** The phone board gets a polish pass, or higher-resolution General art exists.
 
 ### Notices for skills and equipment abilities
 

@@ -31,6 +31,13 @@ function render(cards: ResponseDialogData['cards'], skills: ResponseDialogData['
 }
 
 describe('ResponseDialog', () => {
+  it('marks the Skills block as empty when there are no skills (the phone board hides it)', () => {
+    expect(render([]).el.querySelector('.skills')!.classList).toContain('none');
+    TestBed.resetTestingModule();
+    const skill = { id: 'skill-1', action: respond, label: 'Dodge with a skill' };
+    expect(render([], [skill]).el.querySelector('.skills')!.classList).not.toContain('none');
+  });
+
   it('has a View Board button that minimizes it with the source as context', () => {
     const { el } = render([]);
     const minimize = jest.spyOn(TestBed.inject(DecisionDock), 'minimize').mockImplementation();

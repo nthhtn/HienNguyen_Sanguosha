@@ -52,12 +52,14 @@ export interface DiscardDialogData {
       </ul>
     </mat-dialog-content>
     <!-- At zero: the ticked cards, topped up from the start of the hand. -->
-    <app-decision-countdown class="timer" />
-    <mat-dialog-actions align="end">
-      <button mat-flat-button type="button" class="discard" [disabled]="!full()" (click)="discard()">
-        <mat-icon>delete</mat-icon> {{ 'ui.discard' | t }}
-      </button>
-    </mat-dialog-actions>
+    <div class="foot">
+      <app-decision-countdown class="timer" />
+      <mat-dialog-actions align="end">
+        <button mat-flat-button type="button" class="discard" [disabled]="!full()" (click)="discard()">
+          <mat-icon>delete</mat-icon> {{ 'ui.discard' | t }}
+        </button>
+      </mat-dialog-actions>
+    </div>
   `,
   styles: `
     .hint { margin: 0 0 12px; font: var(--mat-sys-body-medium); color: var(--mat-sys-on-surface-variant); }
@@ -71,6 +73,13 @@ export interface DiscardDialogData {
     .card:disabled { opacity: 0.5; cursor: default; }
     .tick { position: absolute; top: 2px; right: 2px; z-index: 1; color: var(--force); background: #fff; border-radius: 50%; }
     .timer { display: block; padding: 8px 24px 0; }
+    .foot { display: contents; }
+    /* The phone board (spec 3h): full-size cards wrap into rows with room between them; a hand taller than the window
+       scrolls vertically, and the countdown and the button share one row below it. */
+    :host-context([data-layout='compact']) .hand { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 10px; padding: 4px; }
+    :host-context([data-layout='compact']) .hint { margin-bottom: 6px; }
+    :host-context([data-layout='compact']) .foot { display: flex; align-items: center; gap: 8px; }
+    :host-context([data-layout='compact']) .foot .timer { flex: 1 1 auto; min-width: 0; padding: 0 0 0 12px; }
   `,
 })
 export class DiscardDialog {

@@ -19,7 +19,11 @@
   width: auto;
 }
 .content {
-  padding: 0 max(16px, env(safe-area-inset-right, 0px)) 16px max(16px, env(safe-area-inset-left, 0px));
+  /* The side padding, wider than 16 px beside a camera cut-out (the installed app runs full screen). Full-bleed pages
+     cancel exactly this, so their background reaches the screen's edges. */
+  --content-inline-start: max(16px, env(safe-area-inset-left, 0px));
+  --content-inline-end: max(16px, env(safe-area-inset-right, 0px));
+  padding: 0 var(--content-inline-end) 16px var(--content-inline-start);
 }
 .app-bar {
   padding-left: max(16px, env(safe-area-inset-left, 0px));
@@ -83,6 +87,10 @@
   flex-direction: column;
   gap: 2px;
 }
+/* The phone board layout: the drawer as wide as its items need (spec 3c), most of the screen left visible. */
+:host-context([data-layout='compact']) .nav-drawer {
+  width: 220px;
+}
 .drawer-link {
   display: flex;
   align-items: center;
@@ -138,13 +146,16 @@
 
 /* Phone layout: the bar is a menu button, the title and two toggles; the title gives way (an ellipsis) rather
    than push the page sideways on a narrow screen. */
-:host-context([data-layout='phone']) .app-bar {
+:host-context([data-layout='phone']) .app-bar,
+:host-context([data-layout='compact']) .app-bar {
   gap: 4px;
 }
-:host-context([data-layout='phone']) .app-bar .logo {
+:host-context([data-layout='phone']) .app-bar .logo,
+:host-context([data-layout='compact']) .app-bar .logo {
   flex: none;
 }
-:host-context([data-layout='phone']) .app-bar h1 {
+:host-context([data-layout='phone']) .app-bar h1,
+:host-context([data-layout='compact']) .app-bar h1 {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
