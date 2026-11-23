@@ -1,4 +1,5 @@
 import { pickRandomAction, ruleBasedPolicy } from 'bots';
+import { preloadedCardArtCount } from './card-art-preload';
 import { Router } from '@angular/router';
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -618,6 +619,13 @@ describe('GameBoard in vs-bots mode', () => {
   function flushBots(): void {
     for (let guard = 0; gameService.botThinkingSeatId() && guard < 50000; guard++) jest.runOnlyPendingTimers();
   }
+
+  it('starts loading every card picture once the board is up, so none shows an empty frame when first played', () => {
+    gameService.startGame(3, 1, 'vs-bots');
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+    expect(preloadedCardArtCount()).toBeGreaterThan(30);
+  });
 
   it('shows the human’s general selection straight away, with no reveal gate', () => {
     gameService.startGame(3, 1, 'vs-bots');

@@ -1,3 +1,5 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { TestBed } from '@angular/core/testing';
 import { CardArt } from './card-art';
 
@@ -12,6 +14,18 @@ describe('CardArt', () => {
     expect(img).not.toBeNull();
     expect(img!.getAttribute('src')).toBe('/images/generals/cards/wei/cao-cao.webp');
     expect(img!.getAttribute('alt')).toBe('Cao Cao');
+  });
+
+  it('keeps the alt text out of sight while the picture loads: it is transparent, not removed', () => {
+    const fixture = TestBed.createComponent(CardArt);
+    fixture.componentRef.setInput('id', 'cao-cao');
+    fixture.componentRef.setInput('label', 'Cao Cao');
+    fixture.detectChanges();
+    const img = (fixture.nativeElement as HTMLElement).querySelector('img')!;
+    expect(img.getAttribute('alt')).toBe('Cao Cao');
+    // jsdom applies no component styles, so the rule is pinned by reading it.
+    const source = readFileSync(join(__dirname, 'card-art.ts'), 'utf8');
+    expect(/\.card-art \{([^}]*)\}/.exec(source)?.[1]).toMatch(/color:\s*transparent/);
   });
 
   it('renders a placeholder with the label when no art exists for the id', () => {

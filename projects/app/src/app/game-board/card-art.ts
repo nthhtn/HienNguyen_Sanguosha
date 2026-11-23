@@ -17,6 +17,9 @@ import { cardArtUrl, croppedCardArtUrl, generalSkinUrl } from 'content';
       object-fit: cover;
       border-radius: 4px;
       border: 1px solid #888;
+      /* The browser draws the alt text in the image's box until the picture has loaded; keep it for screen readers
+         but out of sight, so a card never flashes its name as plain text first. */
+      color: transparent;
     }
 
     .card-art.large {
