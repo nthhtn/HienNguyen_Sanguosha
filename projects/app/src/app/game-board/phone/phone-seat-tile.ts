@@ -1,6 +1,7 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { BOT_NAME_PREFIX } from 'protocol';
 import { CardInstance, EQUIP_SLOTS, EquipSlot, GeneralInstance, Seat } from 'engine';
 import { AMBITIONIST_ICON_URL, equipSlotOf, generalFaceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls } from 'content';
 import { cardIdDisplayName, seatForce } from '../../labels';
@@ -18,7 +19,6 @@ const SLOT_ICONS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
   defensiveMount: { label: 'slot.defensiveMount', icon: 'add' },
   offensiveMount: { label: 'slot.offensiveMount', icon: 'remove' },
 };
-const JUDGMENT_BOXES = 3;
 // The HP ramp has this many icons (hpIconUrls in content).
 const MAX_HP_ICONS = 8;
 
@@ -34,20 +34,16 @@ const MAX_HP_ICONS = 8;
         @if (seat().allegiance === 'ambitionist') {
           <img class="ambitionist-mark" [src]="ambitionistIcon" [alt]="'label.kingdom.Ambitionist' | t" />
         }
-        <span class="name" [attr.title]="name()">{{ name() }}</span>
-        @if (isBot() && !slim()) {
+        <span class="name" [attr.title]="name()">{{ shownName() }}</span>
+        @if (isBot()) {
           <mat-icon class="bot" [attr.aria-label]="'seat.computerAria' | t">smart_toy</mat-icon>
         }
         @if (isViewer()) {
           <span class="you">{{ 'seat.you' | t }}</span>
         }
         <span class="judgment" [attr.aria-label]="'seat.judgment' | t">
-          @for (box of slim() ? judgment() : judgmentBoxes(); track $index) {
-            <span
-              class="judgment-box"
-              [class.filled]="box"
-              [attr.title]="box ? ('seat.judgmentTitle' | t: { card: cardName(box) }) : ('seat.judgmentEmpty' | t)"
-            ></span>
+          @for (box of judgment(); track box.instanceId) {
+            <span class="judgment-box filled" [attr.title]="'seat.judgmentTitle' | t: { card: cardName(box) }"></span>
           }
         </span>
       </div>
@@ -92,10 +88,10 @@ const MAX_HP_ICONS = 8;
       <div class="equipment" [attr.aria-label]="'seat.equipment' | t">
         @for (s of slots(); track s.slot) {
           <span
-            class="equip-box"
+            class="equip-box filled"
             [attr.data-slot]="s.slot"
-            [class.filled]="s.card"
-            [attr.title]="s.card ? ('seat.slotTitle' | t: { slot: s.label, card: cardName(s.card) }) : ('seat.slotEmpty' | t: { slot: s.label })"
+            [style.grid-column]="s.column"
+            [attr.title]="'seat.slotTitle' | t: { slot: s.label, card: cardName(s.card) }"
           >
             <mat-icon aria-hidden="true">{{ s.icon }}</mat-icon>
           </span>
@@ -140,8 +136,7 @@ const MAX_HP_ICONS = 8;
     .ambitionist-mark { flex: none; width: 14px; height: 14px; }
     .bot { flex: none; width: 16px; height: 16px; font-size: 16px; }
     .judgment { flex: none; display: inline-flex; gap: 2px; }
-    .judgment-box { width: 12px; height: 16px; border: 1px dashed rgb(255 255 255 / 0.8); border-radius: 3px; box-sizing: border-box; }
-    .judgment-box.filled { border-style: solid; background: #e9d49a; }
+    .judgment-box { width: 12px; height: 16px; border: 1px solid rgb(255 255 255 / 0.8); border-radius: 3px; box-sizing: border-box; background: #e9d49a; }
     .generals { position: relative; flex: 1 1 auto; min-height: 0; display: flex; gap: 2px; padding: 0 5px; }
     .general { position: relative; flex: 1 1 0; min-width: 0; border-radius: 4px; overflow: hidden; background: var(--force, #6b6058); }
     .general img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
@@ -158,12 +153,12 @@ const MAX_HP_ICONS = 8;
     .hand { display: inline-flex; align-items: center; }
     .hand mat-icon { width: 14px; height: 14px; font-size: 14px; }
     .chain-mark { margin-left: auto; width: 16px; height: 16px; font-size: 16px; color: #4a443d; }
-    .equipment { display: flex; gap: 3px; padding: 0 5px 4px; }
+    /* Four columns, one per slot; the row keeps its height when no slot holds a card. */
+    .equipment { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; min-height: 18px; padding: 0 5px 4px; box-sizing: content-box; }
     .equip-box {
-      flex: 1 1 0; min-width: 0; height: 18px; display: flex; align-items: center; justify-content: center;
-      border: 1px dashed #b9a37a; border-radius: 3px; box-sizing: border-box; color: #b9a37a;
+      min-width: 0; height: 18px; display: flex; align-items: center; justify-content: center;
+      border: 1px solid #b9a37a; border-radius: 3px; box-sizing: border-box; background: #efe7d4; color: #2b2520;
     }
-    .equip-box.filled { border-style: solid; background: #efe7d4; color: #2b2520; }
     .equip-box mat-icon { width: 14px; height: 14px; font-size: 14px; }
     .stamp {
       position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(-12deg);
@@ -209,6 +204,11 @@ export class PhoneSeatTile {
 
   private readonly i18n = inject(I18n);
   protected readonly ambitionistIcon = AMBITIONIST_ICON_URL;
+  // A bot is marked by the robot icon, so the "[Bot] " text is dropped from its name; any other name stays as it is.
+  protected readonly shownName = computed(() => {
+    const name = this.name();
+    return this.isBot() && name.startsWith(BOT_NAME_PREFIX) ? name.slice(BOT_NAME_PREFIX.length) : name;
+  });
   protected readonly force = computed(() => seatForce(this.seat()));
   protected readonly showDying = computed(() => !this.seat().eliminated && (this.dying() ?? this.seat().combinedHp <= 0));
   protected readonly shownDamage = computed(() => {
@@ -235,14 +235,12 @@ export class PhoneSeatTile {
     const { combinedHp, maxCombinedHp } = this.seat();
     return hpIconUrls(maxCombinedHp).map((url, i) => ({ url, lost: i >= combinedHp }));
   });
-  protected readonly judgmentBoxes = computed(() => Array.from({ length: JUDGMENT_BOXES }, (_, i) => this.judgment()[i] ?? null));
+  // Only the slots that hold a card, each in its own fixed column so a lone mount does not slide to the left.
   protected readonly slots = computed(() =>
-    EQUIP_SLOTS.map((slot) => ({
-      slot,
-      label: this.i18n.t(SLOT_ICONS[slot].label),
-      icon: SLOT_ICONS[slot].icon,
-      card: this.equipment().find((c) => equipSlotOf(c.definitionId) === slot) ?? null,
-    }))
+    EQUIP_SLOTS.flatMap((slot, i) => {
+      const card = this.equipment().find((c) => equipSlotOf(c.definitionId) === slot);
+      return card ? [{ slot, column: i + 1, label: this.i18n.t(SLOT_ICONS[slot].label), icon: SLOT_ICONS[slot].icon, card }] : [];
+    })
   );
   protected readonly generals = computed(() => {
     const generals = this.seat().generals;

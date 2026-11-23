@@ -200,6 +200,15 @@ The developer played on the Honor 400 Pro and mis-touched Play and Info: on the 
   - **Two rows, no scrolling** (revised by the developer, 2026-11-23): As on a computer, 7 candidates sit 4 on top and 3 below, 5 sit 3 on top and 2 below, each row centred and half the card area's height, so every card is visible at once.
   - Tablets and computers keep today's cards with their skills.
 
+### 3d. Less on the seat tile (2026-11-23)
+
+The developer asked to drop what a tile shows without information, so names and Generals have more room.
+
+- **Judgment** (developer's choice): The name row shows one box per Judgment card on the seat and nothing for an empty slot, so a seat with no Judgment cards shows none. This reverses the three always-drawn boxes in section 3.
+- **Equipment** (developer's choice, option 2): Only filled slots draw a box. The row keeps its height whether or not any slot is filled, so the Generals' pictures never resize when a card is equipped. A filled box stays in its fixed slot position (weapon, armor, defensive mount, offensive mount) and an empty slot is blank (Claude's call). This reverses "an empty box is drawn as an outline" in section 3.
+- **Bot marker** (developer's choice): Every phone tile of a bot, slim ones too, shows the robot icon beside the name, and the "[Bot] " text is not part of the shown name. A bot whose stored name has no such prefix (an old "Bot 1") shows its name as it is. The icon keeps its accessible label. The web board, Action History and Seat Details are unchanged (Claude's call: those are not tiles).
+- **Accessible names:** An empty slot is no longer an element, so the tile's tooltips for empty slots go; filled boxes keep theirs.
+
 ### 3e. A lighter centre band and one right-hand panel (2026-11-23)
 
 The developer asked for a lighter centre band, with the in-game extras grouped into the slide-out panel.
