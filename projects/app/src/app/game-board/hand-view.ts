@@ -45,8 +45,8 @@ export function handStep(width: number, count: number, cardWidth: number, gap: n
           [class.picked]="vm.card.instanceId === pickedId()"
           [style.margin-left.px]="first ? null : overlapMargin()"
           (click)="tap(vm.card.instanceId)"
-          (keydown.enter)="tap(vm.card.instanceId)"
-          (keydown.space)="tap(vm.card.instanceId); $event.preventDefault()"
+          (keydown.enter)="keyTap($event, vm.card.instanceId)"
+          (keydown.space)="keyTap($event, vm.card.instanceId)"
         >
           <app-playing-card [card]="vm.card" />
           @if (fit() === 'row') {
@@ -143,6 +143,14 @@ export class HandView {
   protected tap(cardId: string): void {
     if (this.fit() !== 'overlap') return;
     this.picked.emit(cardId === this.pickedId() ? null : cardId);
+  }
+
+  // Enter or Space on the card itself picks it on the phone board. Keys from a button inside the card (Play and Info on
+  // tablets and computers) are left to that button.
+  protected keyTap(event: Event, cardId: string): void {
+    if (this.fit() !== 'overlap' || event.target !== event.currentTarget) return;
+    event.preventDefault();
+    this.tap(cardId);
   }
 
   private readonly i18n = inject(I18n);

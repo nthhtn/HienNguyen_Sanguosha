@@ -191,7 +191,7 @@ The developer ran the phone board on the Honor 400 Pro through a test tunnel and
 
 The developer played on the Honor 400 Pro and mis-touched Play and Info: on the phone board they appear on the card as it is touched, so the same tap that opens a card can press one of them.
 
-- **Picking a card** (developer's choice): On the phone board a tap on a hand card only picks it: it lifts and is outlined, and nothing is played. Its actions (Play, with its menu or targets window, and Info) appear full size at the top of the action column, above the other actions. A tap on the picked card puts it back; a tap on another card picks that one instead. Nothing appears on the card itself. Playing the card, or the card leaving the hand, clears the pick.
+- **Picking a card** (developer's choice): On the phone board a tap on a hand card only picks it: it lifts and is outlined, and nothing is played. Its actions (Play, with its menu or targets window, and Info) appear full width at the top of the action column, above the other actions, at the column's 36 px height. A tap on the picked card puts it back; a tap on another card picks that one instead. Nothing appears on the card itself. Playing the card, or the card leaving the hand, clears the pick.
 - **Action buttons** (developer's choice, an exception to the 44 px tap rule): The buttons in the phone board's action column are 36 px tall with 13 px text on one line; a label too long ends in "…" and shows in full on a long press (tooltip).
 - Tablets and computers keep the Play and Info buttons on the card, as today.
 

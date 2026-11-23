@@ -92,6 +92,13 @@ describe('HandView', () => {
     });
   });
 
+  it("leaves Space to the Play and Info buttons on tablets and computers", () => {
+    card(hand[0].instanceId).focus();
+    const event = new KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true, cancelable: true });
+    playButton(hand[0].instanceId).dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
+  });
+
   it('emits no pick on a tap on tablets and computers', () => {
     const picks: (string | null)[] = [];
     fixture.componentInstance.picked.subscribe((id) => picks.push(id));
