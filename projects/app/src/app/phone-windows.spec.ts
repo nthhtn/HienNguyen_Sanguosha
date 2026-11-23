@@ -75,5 +75,32 @@ describe('windows on the phone board', () => {
     expect(rule).toMatch(/white-space:\s*nowrap/);
     expect(rule).toMatch(/text-overflow:\s*ellipsis/);
   });
+
+  it('keep the menu drawer 220 px wide on the phone board layout', () => {
+    const app = read('app.css');
+    const rule = /:host-context\(\[data-layout='compact'\]\) \.nav-drawer \{([^}]*)\}/.exec(app)?.[1] ?? '';
+    expect(px(rule, 'width')).toBe(220);
+  });
+
+  describe('the General picker on the phone', () => {
+    const picker = read('game-board/general-selection.ts');
+    const rule = (selector: string) =>
+      new RegExp(`:host-context\\(\\[data-layout='compact'\\]\\) ${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\{([^}]*)\\}`).exec(picker)?.[1] ?? '';
+
+    it('does not scroll inside a card: skill text is cut, and the Info button shows', () => {
+      expect(rule('.effects')).toMatch(/overflow:\s*hidden/);
+      expect(rule('.general-info')).toMatch(/display:\s*inline-flex/);
+      expect(picker).toMatch(/\.general-info \{[^}]*display:\s*none/);
+    });
+
+    it('lets the next row peek, 16 px apart', () => {
+      expect(rule('.candidate')).toMatch(/height:\s*85cqh/);
+      expect(px(rule('.candidates'), 'gap')).toBe(16);
+    });
+
+    it('lays the name, force and HP over the bottom of the art', () => {
+      expect(rule('.caption')).toMatch(/position:\s*absolute/);
+    });
+  });
 });
 
