@@ -1,4 +1,4 @@
-import { decisionPending as isDecisionPending, getActiveSeatId, getLegalActions, ownSkillChoice, phaseWaitsForPlayer } from 'engine';
+import { awaitsAcknowledgement, decisionPending as isDecisionPending, getActiveSeatId, getLegalActions, ownSkillChoice, phaseWaitsForPlayer } from 'engine';
 import type { ContentRegistry, GameState } from 'engine';
 
 // Whether a skill kept `seatId` alive below 1 HP since its HP last dropped
@@ -49,7 +49,7 @@ export function checkInvariants(state: GameState, registry?: ContentRegistry): s
   if (state.judgmentView) {
     if (state.result) {
       violations.push('A finished game still has a judgment view');
-    } else if (state.judgmentView.settled) {
+    } else if (awaitsAcknowledgement(state.judgmentView)) {
       const acting = getActiveSeatId(state);
       if (!acting || !getLegalActions(state, acting, registry).some((a) => a.kind === 'AcknowledgeJudgmentAction')) {
         violations.push('A settled judgment has no seat able to acknowledge it');

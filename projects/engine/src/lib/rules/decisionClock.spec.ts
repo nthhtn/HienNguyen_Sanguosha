@@ -262,7 +262,10 @@ describe('describeDecision around a judgment chain', () => {
   it('times the ask under a continuing view as an ask that waits for the verdict animation', () => {
     const view = { settled: true, continuing: true, rounds: 0, aside: [{ instanceId: 's1' }] };
     const pending = { judgmentView: view, pendingChoice: { verb: 'use' } };
-    expect(describeDecision(state(pending), 'seat-0', [endPhase], 'k', withLeadIn)).toEqual({ kind: 'ask', seatId: 'seat-0', key: 'step:k', leadInMs: JUDGMENT_LEAD_IN_MS.tail });
+    // No changer was asked: the popup plays its head as well, so the ask waits for both.
+    expect(describeDecision(state(pending), 'seat-0', [endPhase], 'k', withLeadIn)).toEqual({ kind: 'ask', seatId: 'seat-0', key: 'step:k', leadInMs: JUDGMENT_LEAD_IN_MS.head + JUDGMENT_LEAD_IN_MS.tail });
+    const asked = { judgmentView: { ...view, rounds: 2 }, pendingChoice: { verb: 'use' } };
+    expect(describeDecision(state(asked), 'seat-0', [endPhase], 'k', withLeadIn)?.leadInMs).toBe(JUDGMENT_LEAD_IN_MS.tail);
     expect(describeDecision(state(pending), 'seat-0', [endPhase], 'k')).toEqual({ kind: 'ask', seatId: 'seat-0', key: 'step:k', leadInMs: 0 });
   });
 });

@@ -73,7 +73,7 @@ export function describeDecision(state: GameState, seatId: string, legal: readon
     const kind = view!.aside ? 'chainEnd' : 'notice';
     return { ...step(kind), leadInMs: view!.ended ? 0 : leadIn(JUDGMENT_LEAD_IN_MS.tail + (rounds === 0 ? JUDGMENT_LEAD_IN_MS.head : 0)) };
   }
-  // A chain's ask, once the verdict of the card just set aside has played.
+  // A chain's ask, once the verdict of the card just set aside has played (and the head, when no changer was asked).
   const chainAsk = !!view?.continuing && !!state.pendingChoice && !state.pendingChoice.judgmentChange && !state.pendingChoice.look;
   // A skill that may change the card asks: one clock for the ask, started once the animation before it (the card
   // turning up, or the last replacement) has played. The key names this judgment, seat and ask, so time paused in an
@@ -85,7 +85,7 @@ export function describeDecision(state: GameState, seatId: string, legal: readon
   }
   if (state.pendingArrangement) return step('arrange');
   if (state.pendingChoice?.look) return step('look');
-  if (chainAsk) return { ...step('ask'), leadInMs: leadIn(JUDGMENT_LEAD_IN_MS.tail) };
+  if (chainAsk) return { ...step('ask'), leadInMs: leadIn(JUDGMENT_LEAD_IN_MS.tail + (rounds === 0 ? JUDGMENT_LEAD_IN_MS.head : 0)) };
   if (state.pendingChoice) return step(state.pendingChoice.verb === 'use' ? 'ask' : 'pick');
   if (state.pendingSelection) return step('pick');
   if (state.pendingResponse) {
