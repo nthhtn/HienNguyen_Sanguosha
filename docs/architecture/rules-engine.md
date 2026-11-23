@@ -153,7 +153,8 @@ How long a person has is a rule, so the engine owns it, in
 | `selection` (General Selection) | 300 | One per seat for the whole pick |
 | `play` | 180 | One for the whole Play Phase, paused while a response is under way |
 | `judgmentChange` | 15 | A skill's decision (ask, then card pick) to change an unsettled judgment, one clock per ask |
-| `notice` | 5 | A settled judgment popup, after its animation |
+| `notice` | 3 | A settled judgment popup, after its animation |
+| `chainEnd` | 5 | The end of a judgment chain (Goddess Luo): Her cards stay in view a moment longer |
 
 `GAME_START_LEAD_IN_MS` (3000) is the wait after the last seat has chosen its Generals, before the first decision of the game: The server holds its clocks, bot moves and legal actions for that long and the app shows "Game starts in 3".
 
@@ -170,6 +171,11 @@ decision follows, and a *new* clock starts counting at `startsAt = now + leadInM
 - A judgment-change decision waits `head` for its first ask
   (`judgmentView.rounds === 1`) and `replace` for later ones; a settled judgment's
   notice waits `tail`, plus `head` when no changer was ever asked.
+- **A judgment chain** (`SkillDefinition.chainsJudgment`, Goddess Luo) keeps one `judgmentView` across its judgments:
+  - `aside` holds the cards set aside so far, `continuing` marks a final card that needs no close, `ended` a chain that is over.
+  - A continuing card's verdict plays (`tail`), then the owner's "Judge again?" ask runs as an `ask` clock with that lead-in.
+  - A red card, a stop, no card left or her death ends it: The view awaits one close on a `chainEnd` clock, and closing it never reads the judgment again.
+  - `awaitsAcknowledgement(view)` says whether the game waits for a close.
 - Only a caller with a person at the table passes `{ leadIn: true }`; the default is
   no lead-in, so headless games and bots never wait for an animation.
 
