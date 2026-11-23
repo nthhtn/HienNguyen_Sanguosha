@@ -354,7 +354,6 @@ export const vi: Messages = {
   'board.small.title': 'Cần màn hình lớn hơn',
   'board.small.hint': 'Quốc chiến cần màn hình máy tính bảng hoặc máy tính. Hãy dùng thiết bị lớn hơn để chơi.',
   'play.installHint': 'Cài ứng dụng để chơi trên điện thoại này.',
-  'home.tagline': 'Quốc chiến cùng bạn bè: chọn Tướng rồi chơi trực tuyến.',
   'home.install.title': 'Cài ứng dụng trên điện thoại',
   'home.install.body': 'Cài để chơi toàn màn hình, với bàn chơi làm riêng cho điện thoại.',
   'home.install.manual': 'Trong Chrome, mở menu rồi chọn Cài đặt ứng dụng.',

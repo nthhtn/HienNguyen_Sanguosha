@@ -8,7 +8,7 @@ import { TPipe } from './i18n/t.pipe';
 import { InstallPrompt } from './install-prompt.service';
 import { Layout } from './layout.service';
 
-// The front door at `/` for friends opening the link in a browser: what the game is, the ways in, and where a phone
+// The front door at `/` for friends opening the link in a browser: the game's name, the ways in, and where a phone
 // can install the app. The installed app and signed-in players never see it (homeRedirect).
 @Component({
   selector: 'app-home',
@@ -19,7 +19,6 @@ import { Layout } from './layout.service';
       <mat-card class="auth-card" appearance="raised">
         <mat-card-header>
           <mat-card-title>{{ 'app.title' | t }}</mat-card-title>
-          <mat-card-subtitle>{{ 'home.tagline' | t }}</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
           <div class="actions">

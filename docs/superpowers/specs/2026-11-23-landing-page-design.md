@@ -9,7 +9,7 @@ A small front door for the hosted site. Approved by the developer on 2026-11-23:
 
 ## Goals
 
-- **One screen** at `/` with the game's name, one line about it, and the ways in.
+- **One screen** at `/` with the game's name and the ways in (no tagline: the developer asked for it to go on 2026-11-23).
 - **Ways in:**
   - **Play Online:** Goes to Rooms; a signed-out visitor is sent to Sign In and returned to Rooms afterwards.
   - **Play as Guest:** Goes to the guest page and returns to Rooms.
@@ -30,7 +30,7 @@ A small front door for the hosted site. Approved by the developer on 2026-11-23:
 
 ## Text
 
-- **New messages:** `home.tagline`, `home.install.title`, `home.install.body`, `home.install.manual`, in English and Vietnamese (Vietnamese starts as a draft). Buttons reuse `nav.online`, `auth.playAsGuest`, `nav.play`, `nav.signIn`, `nav.rules` and `play.installApp`.
+- **New messages:** `home.install.title`, `home.install.body`, `home.install.manual`, in English and Vietnamese (Vietnamese starts as a draft). Buttons reuse `nav.online`, `auth.playAsGuest`, `nav.play`, `nav.signIn`, `nav.rules` and `play.installApp`.
 
 ## Checks
 

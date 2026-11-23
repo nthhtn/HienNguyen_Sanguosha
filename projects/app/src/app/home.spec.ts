@@ -29,10 +29,10 @@ describe('Home', () => {
   }
   const href = (el: HTMLElement, selector: string) => el.querySelector(selector)!.getAttribute('href');
 
-  it('names the game and says what it is', () => {
+  it('names the game, with no tagline under it', () => {
     const el = render();
     expect(el.querySelector('mat-card-title')!.textContent).toContain('Sanguosha');
-    expect(el.querySelector('mat-card-subtitle')!.textContent).toContain('Guozhan with friends');
+    expect(el.querySelector('mat-card-subtitle')).toBeNull();
   });
 
   it('offers Play Online, which goes to Rooms, and Play as Guest, which returns there', () => {
