@@ -6,6 +6,7 @@ import { TPipe } from '../../i18n/t.pipe';
 import { Layout } from '../../layout.service';
 import { BoardChatState } from '../../online/board-chat-state.service';
 import { actionHistory } from '../action-history';
+import { seatForce, seatName } from '../../labels';
 import { PhaseIndicator } from '../phase-indicator';
 import { PlayingCard } from '../playing-card';
 
@@ -17,8 +18,16 @@ import { PlayingCard } from '../playing-card';
   template: `
     <div class="info">
       <app-phase-indicator [state]="state()" [viewerSeatId]="viewerSeatId()" [showDrawPile]="false" />
-      @if (latest(); as line) {
-        <div class="latest">{{ line }}</div>
+      @if (latestParts().length) {
+        <div class="latest">
+          @for (part of latestParts(); track $index) {
+            @if (part.force) {
+              <span class="who" [attr.data-force]="part.force">{{ part.text }}</span>
+            } @else {
+              {{ part.text }}
+            }
+          }
+        </div>
       }
     </div>
     @if (turnedUp().length) {
@@ -56,6 +65,8 @@ import { PlayingCard } from '../playing-card';
     app-phase-indicator ::ng-deep .timer .bar { min-width: 24px; }
     .turned-up ::ng-deep app-playing-card .name { font-size: 14px; }
     .latest { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    /* A player's name in their force's colour (spec 3h). */
+    .latest .who { color: var(--force, inherit); font-weight: 700; }
     .turned-up { flex: none; display: flex; gap: 4px; }
     .buttons { flex: none; display: flex; gap: 6px; }
     .buttons button {
@@ -84,6 +95,18 @@ export class PhoneCentreBand {
     return newest?.kind === 'action' ? newest.text : null;
   });
   // Only the newest card turned up, not all of them (spec 3e).
+  // The newest line cut at each player's name, so a name can take its force's colour (spec 3h).
+  protected readonly latestParts = computed(() => {
+    const line = this.latest();
+    if (!line) return [];
+    const state = this.state();
+    const tr = this.i18n.translator;
+    const forces = new Map(state.seats.map((seat) => [seatName(state.players, seat.id, tr), seatForce(seat)] as const));
+    const names = [...forces.keys()].filter((name) => name.length > 0).sort((a, b) => b.length - a.length);
+    if (!names.length) return [{ text: line, force: null as string | null }];
+    const pattern = new RegExp(`(${names.map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`);
+    return line.split(pattern).filter((text) => text !== '').map((text) => ({ text, force: forces.get(text) ?? null }));
+  });
   protected readonly turnedUp = computed(() => (this.state().zones.find((z) => z.kind === 'processing')?.cards ?? []).slice(-1));
   // Chat messages not yet seen, shown on History because the chat lives in the panel; none in a solo game.
   protected readonly unread = computed(() => (this.chat?.available() ? this.chat.unread() : 0));

@@ -257,7 +257,7 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
     .selecting { display: flex; gap: 16px; align-items: flex-start; }
     .selecting-main { flex: 1; min-width: 0; }
     .selecting-roster { flex: 0 0 240px; }
-    @media (max-width: 899px) { .selecting { flex-direction: column; } .selecting-roster { flex: none; width: 100%; } }
+    @media (max-width: 899px) { .selecting { flex-direction: column; align-items: stretch; } .selecting-roster { flex: none; width: 100%; } }
     .waiting-others { display: flex; align-items: center; gap: 16px; padding: 24px; margin: 24px auto; max-width: 420px; }
     .bots-choosing { display: flex; align-items: center; gap: 16px; padding: 24px; margin: 24px auto; max-width: 420px; }
     /* The game board fits the window below the app bar: no page scroll. The

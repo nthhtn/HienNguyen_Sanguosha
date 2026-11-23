@@ -230,6 +230,16 @@ interface CandidateViewModel {
        two rows (4 + 3 or 3 + 2) each take half the card area's height and are centred. A card is as tall as its row:
        the portrait on the left with a small Info button in its corner, and the name, force and HP to its right (the
        skills are in the Info window). Nothing scrolls; the header and the bar with Confirm stay on screen. */
+    /* The same width whatever is picked: the view must not follow the bar's contents, which change as the picks do
+       (spec 3h). */
+    :host-context([data-layout='compact']) { width: 100%; }
+    :host-context([data-layout='compact']) .bar { width: 100%; box-sizing: border-box; }
+    /* The role badge sits in the bottom right corner of the General card, as narrow as its longest word, so its text
+       wraps inside it and stays readable (spec 3h). */
+    :host-context([data-layout='compact']) .role-chip {
+      top: auto; left: auto; right: 6px; bottom: 6px; width: min-content; padding: 2px 8px; border-radius: 10px;
+      font-size: 12px; line-height: 1.15; text-align: center; white-space: normal;
+    }
     :host-context([data-layout='compact']) .intro h2 { margin-top: 0; font: var(--mat-sys-title-large); }
     :host-context([data-layout='compact']) .hint { margin: 2px 0 4px; }
     :host-context([data-layout='compact']) .candidates {
@@ -238,10 +248,11 @@ interface CandidateViewModel {
     }
     :host-context([data-layout='compact']) .row { display: flex; flex: 1 1 0; min-height: 0; justify-content: center; gap: 8px; }
     :host-context([data-layout='compact']) .candidate {
-      flex: 0 1 186px; min-width: 0; max-width: 186px; height: 100%;
+      flex: 0 1 186px; min-width: 0; max-width: 186px; height: 100%; position: relative;
     }
     :host-context([data-layout='compact']) .left { flex-direction: row; width: 100%; max-width: none; }
-    :host-context([data-layout='compact']) .art { flex: none; height: 100%; aspect-ratio: 200 / 290; }
+    /* Static, so the role badge is placed against the whole card. */
+    :host-context([data-layout='compact']) .art { flex: none; height: 100%; aspect-ratio: 200 / 290; position: static; }
     :host-context([data-layout='compact']) .right { display: none; }
     :host-context([data-layout='compact']) .caption {
       flex: 1; min-width: 0; height: auto; padding: 4px 6px; text-align: left;
