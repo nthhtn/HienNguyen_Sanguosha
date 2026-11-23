@@ -16,6 +16,7 @@ import { finalSeatViews } from 'protocol';
 import { GameService } from '../game.service';
 import { Layout } from '../layout.service';
 import { BoardPanel } from './board-panel';
+import { preloadCardArt } from './card-art-preload';
 import { SmallScreenPrompt } from './small-screen-prompt';
 import { RevealGateOverlay } from './reveal-gate-overlay';
 import { ActionList } from './action-list';
@@ -425,6 +426,9 @@ export class GameBoard {
   constructor() {
     // Seat effects play from sprite sheets that nothing else fetches: have them cached before the first hit.
     inject(SpritePreload).start();
+    // Every card's picture too, so a card played for the first time (an opponent's Equipment) never shows an empty frame or
+    // its alt text while the picture arrives.
+    afterNextRender(() => preloadCardArt(this.gameService.registry.cards.keys()));
     // Decisions are timed only while the board is on screen.
     this.timer.attach(inject(DestroyRef));
     // The win track while the game is won; back to the background track on leaving.
