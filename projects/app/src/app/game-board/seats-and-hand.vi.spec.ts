@@ -56,7 +56,7 @@ describe('SeatTile in Vietnamese', () => {
   it('sections, tags, stats and the four empty equipment slots', () => {
     const { el } = render(makeSeat(), { isViewer: true, isBot: true });
     expect(el.querySelector('section.general')!.getAttribute('aria-label')).toBe('Tướng');
-    expect(text(el.querySelector('.you'))).toBe('(bạn)');
+    expect(text(el.querySelector('.you'))).toBe('(Bạn)');
     expect(el.querySelector('.bot-icon')!.getAttribute('aria-label')).toBe('Người chơi máy');
     expect(text(el.querySelector('.kingdom'))).toBe('Ngụy');
     expect(text(el.querySelector('.stats'))).toContain('Sinh lực 3/4');

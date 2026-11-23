@@ -219,6 +219,31 @@ The developer asked for a lighter centre band, with the in-game extras grouped i
 - **Last played card** (developer's choice): The band shows only the newest card the engine has in the processing zone, not all of them.
 - **Cancel** (developer's request): No Cancel button; a tap on the picked card again puts it back (already the rule in 3c). Which Cancel the developer meant is still to be confirmed.
 
+### 3f. Feedback from the second real-phone test (2026-11-23)
+
+- **Tight centre band** (developer's choice): The centre band is as tall as its contents (Claude's number: 64 px minimum), and the height it gives up goes to the opponent tiles. With no stacked side columns a tile may be up to 150 px tall (was 110); with two seats stacked in a side column (9 to 12 seats) the tile height rule stays as it was, because the column needs the band's height.
+- **Seat Details** (developer's choices):
+  - **Alignment:** The title, the HP and hand summary, the states and the General cards start at the same left edge.
+  - **Hidden General:** Shows the hidden-General picture used on the tile, not an empty box.
+  - **Equipment:** One row of four columns, one per slot (weapon, armor, defensive mount, offensive mount), always shown. A filled slot shows the card's picture with its name, the same card face as the hand, and a tap opens the card info. An empty slot is a dimmed dashed box with the slot icon and "Empty" (Claude's call).
+- **Hand card names** (developer's choice): On the phone board's hand, a card name is one line with an ellipsis, 12 px (was two lines at 14 px, which spilled out of the card).
+- **Language** (developer's choice): The language switcher is in the top bar, directly left of the Music button, on every layout, and no longer in the Menu drawer.
+
+### 3g. Feedback from the third real-phone test (2026-11-23)
+
+- **Seat Details** (developer's choices):
+  - **Summary:** The HP and hand line is bold. The player's name takes the seat's force colour.
+  - **Judgment:** Shown like Equipment: the card face with its name, up to 3 columns, and nothing at all when the seat has no Judgment card.
+  - **Layout with Judgment cards:** Equipment on the left in 2 columns of 2 rows, Judgment on the right in up to 3 columns. With no Judgment card Equipment keeps its row of four.
+- **Discard window** (developer's choices):
+  - **Hand:** The cards are full size in one row that scrolls sideways, not packed tight.
+  - **Buttons:** Both buttons (View Board and Discard) are fully on screen. Cause of the cut: A minimum width added in section 4b pushed the content wider than the window; it is removed.
+  - **Hint:** The part after the dot starts with a capital in Vietnamese ("Đã chọn 2/2").
+- **Judgment window** (developer's choice): The outcome box is only as tall as its contents and the spacing around it is tighter.
+- **"(You)"** (developer's choice): It starts with a capital in every language and on every board, "(You)" and "(Bạn)".
+- **Centre band countdown:** The timer is wide enough for its clock icon, seconds and bar, which were clipped.
+- **General pictures** (answer to a question, no change): The face crops are 101 to 126 px square and the portraits 250 × 292 px. A tile picture about 85 px wide is drawn at about 300 device pixels on a phone with a pixel ratio of 3.5, so it is enlarged about 2.5 times beyond its natural resolution, and even the full portrait would be. A sharper picture needs higher-resolution source art.
+
 ### 4. Windows on the phone
 
 Every window that can open during a game must fit a 760 × 340 px window without the page scrolling, with its buttons always on screen. If the content is long, the content scrolls inside the window and the buttons stay fixed.

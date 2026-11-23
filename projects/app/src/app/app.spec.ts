@@ -405,8 +405,16 @@ describe('App', () => {
         expect.arrayContaining(['/play', '/rooms', '/wiki/kingdom-wars/generals', '/wiki/identity/tools', '/wiki/rules', '/sign-in'])
       );
       expect(drawer.textContent).toContain('Play Online');
-      expect(drawer.querySelector('app-language-switcher')).not.toBeNull();
       expect(drawer.querySelectorAll('.drawer-playback-speed button').length).toBeGreaterThan(0);
+    });
+
+    it('keeps the language menu out of the drawer and puts it in the bar, before the Music button (spec 3f)', async () => {
+      const { el, drawer } = await openDrawer();
+      expect(drawer.querySelector('app-language-switcher')).toBeNull();
+      const switcher = el.querySelector('mat-toolbar app-language-switcher')!;
+      const music = el.querySelector('mat-toolbar button.music-toggle')!;
+      expect(switcher).not.toBeNull();
+      expect(switcher.compareDocumentPosition(music) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
 
     it('marks the current page in the drawer', async () => {

@@ -8,7 +8,11 @@ export const SLIM_MIN = 76;
 
 const PAD = 8;
 const GAP = 5;
+// A tile in a column of stacked seats (9 to 12 seats) is at most this tall; the column needs the centre band's height.
 const MAX_TILE_HEIGHT = 110;
+// With no stacked column the centre band is only as tall as its contents (spec 3f) and the tiles take the rest.
+const CENTRE_MIN = 64;
+const MAX_TILE_HEIGHT_OPEN = 150;
 const MAX_TOP_WIDTH = 150;
 const SIDE_WIDTH = 124;
 
@@ -49,7 +53,8 @@ export function phoneSeats(seats: Seat[], viewerSeatId: string | null): PhoneSea
 export function phoneSizes(width: number, height: number, seats: PhoneSeats): PhoneSizes {
   const bottomHeight = Math.max(104, Math.min(124, Math.round(height * 0.3)));
   const upper = height - bottomHeight - PAD * 2 - GAP;
-  const tileHeight = Math.min(MAX_TILE_HEIGHT, Math.floor((upper - GAP) / 2));
+  const stacked = Math.max(seats.left.length, seats.right.length) >= 2;
+  const tileHeight = stacked ? Math.min(MAX_TILE_HEIGHT, Math.floor((upper - GAP) / 2)) : Math.min(MAX_TILE_HEIGHT_OPEN, upper - GAP - CENTRE_MIN);
   const topCount = Math.max(1, seats.top.length);
   const sides = seats.left.length > 0 || seats.right.length > 0;
   // With side columns, as wide as a top tile would be if the columns were part of the row; capped at the full width.

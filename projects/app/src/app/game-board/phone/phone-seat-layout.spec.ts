@@ -47,7 +47,7 @@ describe('phoneSizes', () => {
     expect(sizes.topTileWidth).toBeGreaterThanOrEqual(SLIM_BELOW);
     expect(sizes.slim).toBe(false);
     expect(sizes.bottomHeight).toBe(124);
-    expect(sizes.tileHeight).toBeLessThanOrEqual(110);
+    expect(sizes.tileHeight).toBe(150);
   });
 
   it.each([
@@ -59,6 +59,19 @@ describe('phoneSizes', () => {
     expect(sizes.slim).toBe(true);
     expect(sizes.topTileWidth).toBeGreaterThanOrEqual(SLIM_MIN);
     expect(sizes.sideWidth).toBe(sizes.topTileWidth);
+  });
+
+  it('gives the tiles the height a tight centre band leaves (spec 3f): 64 px for the band, tiles up to 150', () => {
+    const height = 340;
+    const sizes = phoneSizes(760, height, phoneSeats(testSeats(4), 'seat-0'));
+    const centre = height - 16 - sizes.bottomHeight - sizes.tileHeight - 10;
+    expect(centre).toBeGreaterThanOrEqual(64);
+    expect(sizes.tileHeight).toBeGreaterThan(110);
+    expect(sizes.tileHeight).toBeLessThanOrEqual(150);
+  });
+
+  it('keeps the old tile height when two seats stack in a side column', () => {
+    expect(phoneSizes(915, 412, phoneSeats(testSeats(12), 'seat-0')).tileHeight).toBeLessThanOrEqual(110);
   });
 
   it('keeps the bottom row at 104 px on the smallest window', () => {
