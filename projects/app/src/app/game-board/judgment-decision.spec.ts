@@ -61,4 +61,27 @@ describe('judgmentDecision', () => {
   it('is only watching when the engine offers the asked seat nothing it could pick', () => {
     expect(decide(open({ pendingChoice: ask('seat-1') }), 'seat-1', [])).toEqual({ kind: 'watching' });
   });
+
+  describe('a chain’s Judge again ask', () => {
+    const luo = (seatId: string): GeneralOwner => ({ kind: 'general', seatId, slot: 'main', skillId: 'kingdomWars:goddess-luo' });
+    const again = (seatId: string): PendingChoice => ({ ...ask(seatId, false), reason: { kind: 'ability', owner: luo(seatId), abilityId: 'kingdomWars:goddess-luo' } });
+    const going = (pending: Partial<GameState>) => table(view(cardReader('lightning'), 'seat-0', card('j', 'spade', 5), { settled: true, continuing: true, aside: [card('j', 'spade', 5)] }), { pending });
+
+    it('is the engine’s own ask for the seat that is asked', () => {
+      const result = decide(going({ pendingChoice: again('seat-1') }), 'seat-1', askLegal('seat-1'));
+      expect(result).toMatchObject({ kind: 'mine', deciderName: 'Bo', step: { kind: 'ask' } });
+    });
+
+    it('is a waiting line that names the asked seat for everyone else', () => {
+      expect(decide(going({ pendingChoice: again('seat-1') }), 'seat-0', [])).toEqual({ kind: 'continue-watching', ownerName: 'Bo' });
+    });
+
+    it('is a gate while the asked seat’s own view is not on screen', () => {
+      expect(decide(going({ pendingChoice: again('seat-1') }), 'seat-1', askLegal('seat-1'), false)).toEqual({ kind: 'gate', seatId: 'seat-1', deciderName: 'Bo' });
+    });
+
+    it('is nothing for a view that is not continuing', () => {
+      expect(decide(open({ pendingChoice: again('seat-1') }, true), 'seat-1', askLegal('seat-1'))).toBeNull();
+    });
+  });
 });

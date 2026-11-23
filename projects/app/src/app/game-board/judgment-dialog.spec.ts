@@ -121,4 +121,29 @@ describe('JudgmentDialog', () => {
       expect(reveal).toHaveBeenCalledWith('seat-1');
     });
   });
+
+  it('runs the countdown only when the judgment awaits a close, not while a chain goes on', () => {
+    const going = render(skillDescription({ continuing: true, aside: [seven] }));
+    expect(going.el.querySelector('app-decision-countdown')).toBeNull();
+    TestBed.resetTestingModule();
+    const ended = render(skillDescription({ continuing: false, aside: [seven] }));
+    expect(ended.el.querySelector('app-decision-countdown')).not.toBeNull();
+  });
+
+  it('starts the stage afresh for the next judgment of a chain, in the same popup', () => {
+    const { fixture, el, sig } = render(skillDescription({ continuing: true, aside: [seven], key: 'c7' }));
+    const before = el.querySelector('app-judgment-stage');
+    sig.set(skillDescription({ continuing: false, settled: false, aside: [seven], card: king, key: 'ck' }));
+    fixture.detectChanges();
+    expect(el.querySelector('app-judgment-stage')).not.toBe(before);
+    expect(el.querySelectorAll('app-judgment-stage')).toHaveLength(1);
+  });
+
+  it('keeps the same stage while one judgment is replaced', () => {
+    const { fixture, el, sig } = render(skillDescription({ settled: false, key: 'c7' }));
+    const before = el.querySelector('app-judgment-stage');
+    sig.set(skillDescription({ settled: false, card: king, replaced: [seven], key: 'c7' }));
+    fixture.detectChanges();
+    expect(el.querySelector('app-judgment-stage')).toBe(before);
+  });
 });

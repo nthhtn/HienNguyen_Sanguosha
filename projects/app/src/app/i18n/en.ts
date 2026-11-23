@@ -489,6 +489,8 @@ export const en = {
   'judgment.source.card': '{card} on {seat}',
   'judgment.changed': "{owner}'s {ability} replaced {old} with {new}",
   'judgment.waiting': 'Waiting for the judgment to be resolved',
+  'judgment.aside': 'Set Aside',
+  'judgment.mayJudgeAgain': '{name} may judge again',
   'judgment.verdict.good': 'Good for {seat}',
   'judgment.verdict.bad': 'Bad for {seat}',
   'judgment.damage': '−{n} HP',

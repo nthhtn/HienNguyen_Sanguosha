@@ -10,7 +10,7 @@ import { I18n } from '../i18n/i18n.service';
 import { DecisionDock } from './decision-dock';
 import { AskDialog } from './ask-dialog';
 import { JudgmentDialog } from './judgment-dialog';
-import { askToChange, settleJudgment } from '../settled-judgment.testing';
+import { askToChange, askToContinue, settleJudgment } from '../settled-judgment.testing';
 import { cardIdDisplayName } from '../labels';
 import { spriteDurationMs } from './sprite-plan';
 import { ScreenWakeLock } from '../screen-wake-lock.service';
@@ -1113,6 +1113,20 @@ describe('GameBoard: the judgment popup', () => {
       use.click();
       await settle(fixture);
       expect(gameService.state()!.pendingChoice).toBeUndefined();
+    });
+
+    it('asks Judge again inside the Judgment popup, with no dialog of its own, once the verdict has played', async () => {
+      jest.useFakeTimers();
+      gameService.startGame(3, 1, 'vs-bots', [], { judgmentNotice: true });
+      askToContinue(gameService, 'seat-0');
+      const fixture = TestBed.createComponent(GameBoard);
+      await settle(fixture);
+      expect(popups()).toHaveLength(1);
+      expect(asks()).toHaveLength(0);
+      afterHead(fixture);
+      jest.advanceTimersByTime(2100);
+      fixture.detectChanges();
+      expect(document.querySelector('.cdk-overlay-container .decide button.use')).not.toBeNull();
     });
 
     it('still opens the Ask dialog for an ask that is not a changer’s', async () => {

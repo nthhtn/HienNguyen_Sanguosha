@@ -389,7 +389,8 @@ export class GameBoard {
     const choice = this.visibleState()?.pendingChoice;
     if (!choice || choice.seatId !== this.viewerSeatId()) return null;
     // A skill that may change the judgment asks inside the Judgment popup, not in a dialog of its own.
-    if (choice.judgmentChange && this.judgmentView()) return null;
+    // A chain's Judge again ask does the same.
+    if ((choice.judgmentChange || this.judgmentView()?.continuing) && this.judgmentView()) return null;
     return this.legalActions().some((a) => a.kind === 'ChooseOptionAction') ? choice.id : null;
   });
   // The response window whose dialog is showing, so each opens only once.

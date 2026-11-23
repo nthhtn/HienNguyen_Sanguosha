@@ -1,7 +1,7 @@
 import { computed, DestroyRef, effect, inject, Injectable, Signal, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { buildContentRegistry, guozhanMode } from 'content';
-import { getActingSeatIds, getActiveSeatId, previewEffect } from 'engine';
+import { awaitsAcknowledgement, getActingSeatIds, getActiveSeatId, previewEffect } from 'engine';
 import type { Action, ContentRegistry, Effect, EngineContext, DecisionKind, EngineEvent, GameState } from 'engine';
 import { finalSeatViews } from 'protocol';
 import type { GameUpdate, LastGame, RoomSnapshot, ServerMessage } from 'protocol';
@@ -133,7 +133,7 @@ export class RemoteGameService implements BoardGame {
   readonly legalActions: Signal<Action[]> = computed(() => (this.socket.status() === 'open' && !this._waiting() ? (this._update()?.legalActions ?? []) : []));
 
   // A judgment waits for an acknowledgement (the judgmentNotice rule).
-  readonly judgmentSettled: Signal<boolean> = computed(() => !!this._state()?.judgmentView?.settled);
+  readonly judgmentSettled: Signal<boolean> = computed(() => awaitsAcknowledgement(this._state()?.judgmentView));
 
   // What a public popup may read: the member's own view, which already hides what it must.
   readonly publicState: Signal<GameState | null> = this._state.asReadonly();

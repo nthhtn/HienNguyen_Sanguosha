@@ -109,4 +109,22 @@ describe('judgmentDescription', () => {
       expect(description!.changes).toHaveLength(4);
     });
   });
+
+  it('a chain reader’s view lists the cards set aside and says whether the chain goes on', () => {
+    const aside = [card('a1', 'spade', 3), card('a2', 'club', 4)];
+    const description = describeIt(table(view(skillReader(), 'seat-0', aside[1], { aside, continuing: true })));
+    expect(description).toMatchObject({ aside, continuing: true });
+  });
+
+  it('a view with no chain has nothing set aside and does not continue', () => {
+    expect(describeIt(table(view(cardReader('lightning'), 'seat-1', card('j', 'spade', 5))))).toMatchObject({ aside: [], continuing: false });
+  });
+
+  it('names the judgment by the card first turned up, so a replacement keeps it and the next judgment changes it', () => {
+    const first = card('j', 'club', 5);
+    const replaced = view(skillReader(), 'seat-0', card('r1', 'heart', 7), { changes: [{ owner: xiahouOwner, abilityId: 'unyielding', card: card('r1', 'heart', 7), replaced: first }] });
+    expect(describeIt(table(replaced))!.key).toBe('j');
+    expect(describeIt(table(view(skillReader(), 'seat-0', first)))!.key).toBe('j');
+    expect(describeIt(table(view(skillReader(), 'seat-0', card('k', 'club', 6))))!.key).toBe('k');
+  });
 });

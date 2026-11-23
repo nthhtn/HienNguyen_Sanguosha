@@ -58,5 +58,8 @@ export const skillDescription = (over: Partial<JudgmentDescription> = {}): Judgm
   effect: { kind: 'none' },
   hp: null,
   replaced: [],
+  key: seven.instanceId,
+  aside: [],
+  continuing: false,
   ...over,
 });

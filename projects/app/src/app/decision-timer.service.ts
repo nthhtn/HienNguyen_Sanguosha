@@ -1,5 +1,5 @@
 import { DestroyRef, Injectable, Signal, computed, effect, inject, signal, untracked } from '@angular/core';
-import { Action, ClockState, DecisionSpec, EMPTY_CLOCK, GameState, clockRemainingMs, clockStartsInMs, defaultActionsFor, describeDecision, expireClock, switchClock } from 'engine';
+import { Action, ClockState, awaitsAcknowledgement, DecisionSpec, EMPTY_CLOCK, GameState, clockRemainingMs, clockStartsInMs, defaultActionsFor, describeDecision, expireClock, switchClock } from 'engine';
 import { GameService } from './game.service';
 import { PlaybackGate } from './playback-gate.service';
 
@@ -54,7 +54,7 @@ export class DecisionTimer {
     const seatId = this.game.activeSeatId();
     if (!state || !seatId) return null;
     // Behind the gate, or a bot to move; a settled judgment is public, so it is clocked behind the gate too.
-    if (this.game.revealedSeatId() !== seatId && !state.judgmentView?.settled) return null;
+    if (this.game.revealedSeatId() !== seatId && !awaitsAcknowledgement(state.judgmentView)) return null;
     // A local game always has a person at the table, so the judgment animation is played for them.
     const spec = describeDecision(state, seatId, this.game.legalActions(), this.keyOf(state), { leadIn: true });
     // Keys are per game, so nothing paused in one game resumes in the next.

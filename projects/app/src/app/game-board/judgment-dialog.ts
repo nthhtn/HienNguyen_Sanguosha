@@ -23,7 +23,8 @@ export interface JudgmentDialogData {
 
 // A judgment, for every seat at the table to see, as a fixed sequence (JudgmentStage): what required it,
 // the rule, the card and each replacement of it, a check or cross, and what it does. Once no skill can
-// change the card the 3 s countdown closes it; there is no way to skip it.
+// change the card the 3 s countdown closes it; there is no way to skip it. A chain of judgments (Goddess Luo's) keeps
+// this one popup across them, with its cards set aside in view, and waits 5 s at its end.
 // Informational: it asks nothing of the player. Themed in a force colour by its panel class (openForceDialog).
 @Component({
   selector: 'app-judgment-dialog',
@@ -35,15 +36,18 @@ export interface JudgmentDialogData {
     </div>
     @if (data.description(); as d) {
       <mat-dialog-content class="body">
-        <app-judgment-stage
-          [description]="d"
-          [decision]="data.decision?.() ?? null"
-          [instant]="data.resumed ?? false"
-          (chosen)="data.choose?.($event)"
-          (revealed)="data.reveal?.($event)"
-        />
+        <!-- One stage per judgment: a chain's next judgment plays its sequence afresh in the same popup. -->
+        @for (key of [d.key]; track key) {
+          <app-judgment-stage
+            [description]="d"
+            [decision]="data.decision?.() ?? null"
+            [instant]="data.resumed ?? false"
+            (chosen)="data.choose?.($event)"
+            (revealed)="data.reveal?.($event)"
+          />
+        }
       </mat-dialog-content>
-      @if (d.settled) {
+      @if (d.settled && !d.continuing) {
         <app-decision-countdown class="timer" />
       }
     }

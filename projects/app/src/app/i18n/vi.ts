@@ -488,6 +488,8 @@ export const vi: Messages = {
   'judgment.source.card': '{card} của {seat}',
   'judgment.changed': '{ability} của {owner} đổi {old} thành {new}',
   'judgment.waiting': 'Đang chờ lá phán xét được giải quyết',
+  'judgment.aside': 'Lá để riêng',
+  'judgment.mayJudgeAgain': '{name} có thể phán xét tiếp',
   'judgment.verdict.good': 'Tốt cho {seat}',
   'judgment.verdict.bad': 'Xấu cho {seat}',
   'judgment.damage': '−{n} Sinh lực',
