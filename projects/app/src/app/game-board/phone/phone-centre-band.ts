@@ -9,14 +9,14 @@ import { actionHistory } from '../action-history';
 import { PhaseIndicator } from '../phase-indicator';
 import { PlayingCard } from '../playing-card';
 
-// The phone board's middle: the phase and whose turn (with the Draw Pile count), the newest Action History line, the
+// The phone board's middle: the phase and whose turn (the Draw Pile count is in the panel), the newest Action History line, the
 // cards just turned up, and the two buttons the hidden toolbar and the history tiles would otherwise hold.
 @Component({
   selector: 'app-phone-centre-band',
   imports: [MatIconModule, PhaseIndicator, PlayingCard, TPipe],
   template: `
     <div class="info">
-      <app-phase-indicator [state]="state()" [viewerSeatId]="viewerSeatId()" />
+      <app-phase-indicator [state]="state()" [viewerSeatId]="viewerSeatId()" [showDrawPile]="false" />
       @if (latest(); as line) {
         <div class="latest">{{ line }}</div>
       }
@@ -30,21 +30,17 @@ import { PlayingCard } from '../playing-card';
     }
     <div class="buttons">
       <button type="button" class="menu" [attr.aria-label]="'nav.menu' | t" (click)="layout.openNav()"><mat-icon>menu</mat-icon></button>
-      <button type="button" class="history" [attr.aria-label]="'board.panel.open' | t" (click)="layout.togglePanel()"><mat-icon>history</mat-icon></button>
-      @if (chat?.available()) {
-        <button
-          type="button"
-          class="chat"
-          [attr.aria-label]="chat!.unread() > 0 ? ('chat.unread' | t: { n: chat!.unread() }) : ('lobby.chat' | t)"
-          [attr.aria-expanded]="chat!.open()"
-          (click)="chat!.toggle()"
-        >
-          <mat-icon>chat</mat-icon>
-          @if (chat!.unread() > 0) {
-            <span class="unread">{{ chat!.unread() }}</span>
-          }
-        </button>
-      }
+      <button
+        type="button"
+        class="history"
+        [attr.aria-label]="unread() > 0 ? ('board.panel.openUnread' | t: { n: unread() }) : ('board.panel.open' | t)"
+        (click)="layout.togglePanel()"
+      >
+        <mat-icon>history</mat-icon>
+        @if (unread() > 0) {
+          <span class="unread">{{ unread() }}</span>
+        }
+      </button>
     </div>
   `,
   styles: `
@@ -86,5 +82,8 @@ export class PhoneCentreBand {
     const newest = actionHistory(s.log, s.zones, s.players, s.seats, this.i18n.translator).find((entry) => entry.kind === 'action');
     return newest?.kind === 'action' ? newest.text : null;
   });
-  protected readonly turnedUp = computed(() => this.state().zones.find((z) => z.kind === 'processing')?.cards ?? []);
+  // Only the newest card turned up, not all of them (spec 3e).
+  protected readonly turnedUp = computed(() => (this.state().zones.find((z) => z.kind === 'processing')?.cards ?? []).slice(-1));
+  // Chat messages not yet seen, shown on History because the chat lives in the panel; none in a solo game.
+  protected readonly unread = computed(() => (this.chat?.available() ? this.chat.unread() : 0));
 }

@@ -53,6 +53,18 @@ describe('PhaseIndicator', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('app-decision-countdown')).not.toBeNull();
   });
 
+  it('shows the Draw Pile count, and leaves it out when asked (the phone board puts it in its panel)', () => {
+    const show = (hide: boolean) => {
+      const fixture = TestBed.createComponent(PhaseIndicator);
+      fixture.componentRef.setInput('state', state('Play'));
+      if (hide) fixture.componentRef.setInput('showDrawPile', false);
+      fixture.detectChanges();
+      return (fixture.nativeElement as HTMLElement).querySelector('.draw-pile');
+    };
+    expect(show(false)).not.toBeNull();
+    expect(show(true)).toBeNull();
+  });
+
   it('leaves out (you) when it is someone else\'s turn', () => {
     expect(render(state('Play'), 'seat-1')).toBe('Seat 0 – Play Phase');
   });

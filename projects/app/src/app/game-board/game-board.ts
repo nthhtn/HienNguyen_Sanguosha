@@ -179,7 +179,7 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
               @if (layout.panelOpen()) {
                 <div class="panel-scrim" role="presentation" (click)="layout.closePanel()"></div>
                 <aside class="panel" cdkTrapFocus [cdkTrapFocusAutoCapture]="true">
-                  <app-board-panel [actionHistory]="actionHistory()" [discardHistory]="discardHistory()" />
+                  <app-board-panel [actionHistory]="actionHistory()" [discardHistory]="discardHistory()" [drawPileCount]="drawPileCount()" />
                 </aside>
               }
             } @else {
@@ -336,6 +336,8 @@ export class GameBoard {
   protected readonly layout = inject(Layout);
   // Your own seat's zoom, shared with the other seats (Layout.seatScale, which shrinks with more players) on phone and
   // medium; null on large, where the board's CSS and the table fit it themselves.
+  // The Draw Pile count, which the phone board's panel shows (the phase indicator shows it on the other layouts).
+  protected readonly drawPileCount = computed(() => this.visibleState()?.zones.find((z) => z.kind === 'drawPile')?.cards.length ?? 0);
   protected readonly ownSeatScale = computed(() => (this.layout.panelAsOverlay() ? this.layout.seatScale(this.visibleState()?.seats.length ?? 4) : null));
   protected readonly ownSeatHeight = computed(() => {
     const scale = this.ownSeatScale();

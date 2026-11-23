@@ -1,47 +1,65 @@
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { CardInstance } from 'engine';
-import { ActionHistoryEntry } from './action-history';
+import type { ChatMessage } from 'protocol';
+import { Layout } from '../layout.service';
+import { BoardChatState } from '../online/board-chat-state.service';
+import { ChatService } from '../online/chat.service';
 import { BoardPanel } from './board-panel';
-import { DiscardHistoryEntry } from './discard-history';
-
-const sha: CardInstance = { instanceId: 'sha-1', definitionId: 'sha', suit: 'spade', rank: 7 };
-const actions: ActionHistoryEntry[] = [
-  { kind: 'action', text: 'Seat 3 used Sha (7 ♠) on Hing', card: sha },
-  { kind: 'turn', turnNumber: 2, seatName: 'Seat 3' },
-];
-const discards: DiscardHistoryEntry[] = [{ kind: 'card', card: sha, inPile: true }];
-
-function render(actionHistory: ActionHistoryEntry[], discardHistory: DiscardHistoryEntry[]) {
-  const fixture = TestBed.createComponent(BoardPanel);
-  fixture.componentRef.setInput('actionHistory', actionHistory);
-  fixture.componentRef.setInput('discardHistory', discardHistory);
-  fixture.detectChanges();
-  return { fixture, el: fixture.nativeElement as HTMLElement };
-}
-
-const tabs = (el: HTMLElement) => [...el.querySelectorAll('[role="tab"]')] as HTMLElement[];
 
 describe('BoardPanel', () => {
-  it('has an Action History tab, selected first, and a Discard Pile tab', () => {
-    const { el } = render(actions, discards);
-    expect(tabs(el).map((t) => t.textContent!.trim())).toEqual(['Action History', 'Discard Pile']);
-    expect(tabs(el)[0].getAttribute('aria-selected')).toBe('true');
-    expect(el.querySelector('app-action-history-list')).not.toBeNull();
-    expect(el.querySelector('app-action-history-list')!.textContent).toContain('Seat 3 used Sha (7 ♠) on Hing');
+  function render(options: { chat?: boolean; phone?: boolean; drawPileCount?: number | null } = {}) {
+    const providers: unknown[] = [
+      { provide: Layout, useValue: { toolbarHidden: signal(options.phone ?? false) } },
+      { provide: ChatService, useValue: { messages: signal<ChatMessage[]>([]), error: signal(null), send: jest.fn() } },
+    ];
+    if (options.chat) providers.push(BoardChatState);
+    TestBed.configureTestingModule({ providers: providers as never[] });
+    const state = options.chat ? TestBed.inject(BoardChatState) : null;
+    state?.setAvailable(true);
+    const fixture = TestBed.createComponent(BoardPanel);
+    fixture.componentRef.setInput('actionHistory', []);
+    fixture.componentRef.setInput('discardHistory', []);
+    if (options.drawPileCount !== undefined) fixture.componentRef.setInput('drawPileCount', options.drawPileCount);
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    const tabs = () => [...el.querySelectorAll('[role="tab"]')] as HTMLElement[];
+    return { fixture, el, state, tabs };
+  }
+
+  it('shows the Draw Pile count above the tabs when given one, and nothing when not', () => {
+    expect(render({ drawPileCount: 54 }).el.querySelector('.draw-pile')!.textContent).toContain('Draw Pile 54');
+    TestBed.resetTestingModule();
+    expect(render().el.querySelector('.draw-pile')).toBeNull();
   });
 
-  it('switches to the discard pile', async () => {
-    const { fixture, el } = render(actions, discards);
-    tabs(el)[1].click();
-    fixture.detectChanges();
+  it('has two tabs with no chat, or off the phone board', () => {
+    expect(render().tabs()).toHaveLength(2);
+    TestBed.resetTestingModule();
+    expect(render({ chat: true, phone: false }).tabs()).toHaveLength(2);
+  });
+
+  it('adds a Chat tab in an online room on the phone board, and opening it makes the chat open', async () => {
+    const { fixture, el, state, tabs } = render({ chat: true, phone: true });
+    expect(tabs().map((t) => t.textContent!.trim())).toEqual(['Action History', 'Discard Pile', 'Chat']);
+    expect(state!.open()).toBe(false);
+    tabs()[2].click();
     await fixture.whenStable();
     fixture.detectChanges();
-    expect(tabs(el)[1].getAttribute('aria-selected')).toBe('true');
-    expect(el.querySelector('app-discard-history-list li')).not.toBeNull();
+    expect(el.querySelector('app-chat-panel')).not.toBeNull();
+    expect(state!.open()).toBe(true);
+    tabs()[0].click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(state!.open()).toBe(false);
   });
 
-  it('says so when nothing has happened yet', () => {
-    const { el } = render([], []);
-    expect(el.textContent).toContain('Nothing has happened yet');
+  it('is not viewing the chat once the panel is gone', async () => {
+    const { fixture, state, tabs } = render({ chat: true, phone: true });
+    tabs()[2].click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(state!.open()).toBe(true);
+    fixture.destroy();
+    expect(state!.open()).toBe(false);
   });
 });
