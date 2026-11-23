@@ -61,6 +61,17 @@ interface CandidateViewModel {
               <div class="left">
                 <div class="art">
                   <app-card-art size="large" [skin]="true" [id]="vm.id" [label]="vm.name" />
+                  <button
+                    mat-icon-button
+                    type="button"
+                    class="general-info"
+                    [attr.aria-label]="'ui.info' | t: { name: vm.name }"
+                    (click)="openInfo(vm.id); $event.stopPropagation()"
+                    (keydown.enter)="$event.stopPropagation()"
+                    (keydown.space)="$event.stopPropagation()"
+                  >
+                    <mat-icon>info</mat-icon>
+                  </button>
                   @if (vm.role; as role) {
                     <span class="role-chip" [class.deputy]="role === 'Deputy'">{{ roleName(role) }}</span>
                   }
@@ -75,17 +86,6 @@ interface CandidateViewModel {
                 </div>
               </div>
               <div class="right">
-                <button
-                  mat-icon-button
-                  type="button"
-                  class="general-info"
-                  [attr.aria-label]="'ui.info' | t: { name: vm.name }"
-                  (click)="openInfo(vm.id); $event.stopPropagation()"
-                  (keydown.enter)="$event.stopPropagation()"
-                  (keydown.space)="$event.stopPropagation()"
-                >
-                  <mat-icon>info</mat-icon>
-                </button>
                 <div class="effects">
                   @if (vm.display?.title; as title) {
                     <div class="title">{{ title }}</div>
@@ -194,7 +194,10 @@ interface CandidateViewModel {
     /* Main and Deputy differ by style, not colour: no kingdom's hue. */
     .role-chip.deputy { background: var(--mat-sys-surface); color: var(--mat-sys-primary); box-shadow: inset 0 0 0 2px var(--mat-sys-primary); }
     /* Info opens the General's full window; only the phone board shows it (its skill text does not scroll). */
-    .general-info { display: none; position: absolute; top: 0; right: 0; z-index: 1; color: var(--mat-sys-on-surface-variant); }
+    .general-info {
+      display: none; position: absolute; top: 2px; left: 2px; z-index: 1;
+      color: #fff; background: rgb(0 0 0 / 0.45); border-radius: 50%;
+    }
     .caption { flex: none; box-sizing: border-box; height: var(--caption-height); padding: 6px 4px; text-align: center; overflow: hidden; }
     .name { font: var(--mat-sys-title-medium); }
     .meta { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 4px; }
@@ -223,33 +226,29 @@ interface CandidateViewModel {
       --art-width: 130px; max-width: none; height: 270px;
     }
     :host-context([data-layout='medium']) .bar { position: sticky; bottom: 0; z-index: 2; background: var(--mat-sys-surface-container); border-radius: 12px; }
-    /* Phone board (the installed app on a phone): one screen, no page scroll (spec, "Windows on the phone" and 3c). Cards
-       are 85% of the card area's height, 16 px apart, so the next row peeks; their art follows (96 px wide at most). The
-       name, force and HP lie over the bottom of the art. A card's skill text does not scroll (a swipe scrolls the list);
-       its Info button opens the General's full window. The header and the bar with Confirm stay on screen. */
+    /* Phone board (the installed app on a phone): one screen, no page scroll (spec, "Windows on the phone" and 3c). Each
+       candidate is only its portrait, with the name, force and HP over its foot and an Info button (the skills are in
+       the Info window); all of them sit in one centred row as tall as the card area, nothing to scroll. The header and
+       the bar with Confirm stay on screen. */
     :host-context([data-layout='compact']) .intro h2 { margin-top: 0; font: var(--mat-sys-title-large); }
     :host-context([data-layout='compact']) .hint { margin: 2px 0 4px; }
     :host-context([data-layout='compact']) .candidates {
-      container-type: size;
-      justify-content: flex-start; overflow-y: auto; overscroll-behavior: contain; margin: 4px 0; padding: 4px;
-      display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); align-content: start;
+      display: flex; flex-direction: row; justify-content: center; align-items: stretch; gap: 8px;
+      overflow: hidden; margin: 4px 0; padding: 4px;
     }
     :host-context([data-layout='compact']) .row { display: contents; }
     :host-context([data-layout='compact']) .candidate {
-      --art-width: min(96px, calc((85cqh - 6px) * 200 / 290)); max-width: none; height: 85cqh;
+      --art-width: 100%; flex: 1 1 0; min-width: 0; max-width: 130px; height: 100%;
     }
-    :host-context([data-layout='compact']) .left { position: relative; }
+    :host-context([data-layout='compact']) .left { position: relative; width: 100%; max-width: none; }
     :host-context([data-layout='compact']) .art { flex: 1; min-height: 0; aspect-ratio: auto; }
+    :host-context([data-layout='compact']) .right { display: none; }
     :host-context([data-layout='compact']) .caption {
       position: absolute; left: 0; right: 0; bottom: 0; height: auto; padding: 14px 4px 4px;
       background: linear-gradient(transparent, rgb(0 0 0 / 0.8)); color: #fff;
     }
     :host-context([data-layout='compact']) .caption .name { font-size: 14px; line-height: 1.15; }
     :host-context([data-layout='compact']) .caption .meta { flex-wrap: wrap; margin-top: 2px; }
-    :host-context([data-layout='compact']) .right { position: relative; }
-    :host-context([data-layout='compact']) .effects {
-      overflow: hidden; mask-image: linear-gradient(to bottom, #000 75%, transparent); -webkit-mask-image: linear-gradient(to bottom, #000 75%, transparent);
-    }
     :host-context([data-layout='compact']) .general-info { display: inline-flex; }
     :host-context([data-layout='compact']) .bar { padding: 4px 8px; }
     @media (max-width: 600px) {

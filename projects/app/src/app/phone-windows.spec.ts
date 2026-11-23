@@ -87,15 +87,16 @@ describe('windows on the phone board', () => {
     const rule = (selector: string) =>
       new RegExp(`:host-context\\(\\[data-layout='compact'\\]\\) ${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\{([^}]*)\\}`).exec(picker)?.[1] ?? '';
 
-    it('does not scroll inside a card: skill text is cut, and the Info button shows', () => {
-      expect(rule('.effects')).toMatch(/overflow:\s*hidden/);
+    it('shows only the portrait card: no skills half, and the Info button', () => {
+      expect(rule('.right')).toMatch(/display:\s*none/);
       expect(rule('.general-info')).toMatch(/display:\s*inline-flex/);
       expect(picker).toMatch(/\.general-info \{[^}]*display:\s*none/);
     });
 
-    it('lets the next row peek, 16 px apart', () => {
-      expect(rule('.candidate')).toMatch(/height:\s*85cqh/);
-      expect(px(rule('.candidates'), 'gap')).toBe(16);
+    it('puts every candidate in one row with no scrolling', () => {
+      expect(rule('.candidates')).toMatch(/display:\s*flex/);
+      expect(rule('.candidates')).toMatch(/overflow:\s*hidden/);
+      expect(rule('.candidate')).toMatch(/height:\s*100%/);
     });
 
     it('lays the name, force and HP over the bottom of the art', () => {

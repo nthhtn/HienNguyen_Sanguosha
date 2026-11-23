@@ -195,10 +195,10 @@ The developer played on the Honor 400 Pro and mis-touched Play and Info: on the 
 - **Action buttons** (developer's choice, an exception to the 44 px tap rule): The buttons in the phone board's action column are 36 px tall with 13 px text on one line; a label too long ends in "…" and shows in full on a long press (tooltip).
 - Tablets and computers keep the Play and Info buttons on the card, as today.
 - **Menu drawer** (developer's choice): 220 px wide on the phone board layout (its longest item needs about 142 px; it was 320 px).
-- **General picker** (developer's choices):
-  - **No scrolling inside a card:** A card's skill text no longer scrolls on the phone; it is cut with a fade at the bottom. A small Info button on each card opens the General's full window (the same one Seat Details opens), without picking the General. Swipes anywhere scroll the list of cards.
-  - **The next row peeks:** Cards are about 85% of the card area's height with 16 px gaps, so the next row shows at the bottom.
-  - **Name, force and HP over the art** (builder's call): The caption sits over the bottom of the portrait on a dark fade instead of below it, so the art keeps its size and the HP row is never cut.
+- **General picker** (developer's choices, revised 2026-11-23):
+  - **Portrait cards in one row:** On the phone each candidate is only its portrait, with the name, force and HP over the bottom of it on a dark fade, and a small Info button. The skills half of the card is not shown on the phone; the Info button opens the General's full window (the same one Seat Details opens) without picking the General.
+  - **One row, no scrolling:** All candidates (5 or 7) sit side by side in one centred row that fills the card area's height, so every card is visible at once.
+  - Tablets and computers keep today's cards with their skills.
 
 ### 4. Windows on the phone
 
