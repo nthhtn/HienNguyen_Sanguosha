@@ -84,6 +84,10 @@ describe('windows on the phone board', () => {
       expect(Number(/\.timer \{ width: (\d+)px; \}/.exec(band)?.[1])).toBeGreaterThanOrEqual(140);
     });
 
+    it("Seat Details colours the player's name by force, beating Material's title colour", () => {
+      expect(read('game-board/phone/seat-details-dialog.ts')).toMatch(/h2\.mdc-dialog__title \{ color: var\(--force-text/);
+    });
+
     it('Seat Details writes the HP and hand summary in bold', () => {
       expect(read('game-board/phone/seat-details-dialog.ts')).toMatch(/\.summary \{ font-weight: 700; \}/);
     });

@@ -122,7 +122,8 @@ interface CardSection {
     }
   `,
   styles: `
-    h2 { color: var(--force-text, inherit); }
+    /* Material's own title colour rule is more specific than a bare h2, so the class is part of the selector. */
+    h2.mdc-dialog__title { color: var(--force-text, inherit); }
     .summary, .states, .form { margin: 0 0 8px; font-size: 14px; }
     .summary { font-weight: 700; }
     .states { display: flex; flex-wrap: wrap; gap: 6px; }
