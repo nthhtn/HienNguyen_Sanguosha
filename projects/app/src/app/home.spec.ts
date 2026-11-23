@@ -77,6 +77,29 @@ describe('Home', () => {
     expect(event.prompt).toHaveBeenCalled();
   });
 
+  describe('on an iPhone', () => {
+    const agent = navigator.userAgent;
+    const setAgent = (value: string) => Object.defineProperty(navigator, 'userAgent', { configurable: true, value });
+    afterEach(() => setAgent(agent));
+
+    it('tells an iPhone how to add the app to the home screen, and to turn the phone sideways, instead of the Chrome line', () => {
+      setAgent('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Version/17.0 Mobile/15E148 Safari/604.1');
+      const el = render({ width: 390, height: 844 });
+      expect(el.querySelector('.install-ios')!.textContent).toContain('Share');
+      expect(el.querySelector('.install-ios')!.textContent).toContain('Add to Home Screen');
+      expect(el.querySelector('.install-ios')!.textContent).toContain('sideways');
+      expect(el.querySelector('.install-manual')).toBeNull();
+      expect(el.querySelector('button.install-app')).toBeNull();
+    });
+
+    it('keeps the Chrome line on an Android phone', () => {
+      setAgent('Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/120.0 Mobile Safari/537.36');
+      const el = render({ width: 412, height: 915 });
+      expect(el.querySelector('.install-manual')).not.toBeNull();
+      expect(el.querySelector('.install-ios')).toBeNull();
+    });
+  });
+
   it('reads in Vietnamese', async () => {
     const el = render({ playOffline: true, width: 915, height: 412 });
     await TestBed.inject(I18n).setLocale('vi');

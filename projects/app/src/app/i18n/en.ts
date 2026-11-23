@@ -357,6 +357,7 @@ export const en = {
   'play.installHint': 'Install the app to play on this phone.',
   'home.install.title': 'Get the Phone App',
   'home.install.body': 'Install it for full screen and a board made for phones.',
+  'home.install.ios': 'On iPhone, tap Share, then Add to Home Screen, and turn the phone sideways to play.',
   'home.install.manual': 'In Chrome, open the menu and choose Install app.',
   'play.installApp': 'Install App',
   'play.needsLargerScreen': 'Playing needs a tablet or computer screen.',

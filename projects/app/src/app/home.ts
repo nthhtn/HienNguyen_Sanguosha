@@ -34,6 +34,8 @@ import { Layout } from './layout.service';
               <p>{{ 'home.install.body' | t }}</p>
               @if (installPrompt.available()) {
                 <button mat-stroked-button type="button" class="install-app" (click)="installPrompt.install()">{{ 'play.installApp' | t }}</button>
+              } @else if (ios) {
+                <p class="install-ios">{{ 'home.install.ios' | t }}</p>
               } @else {
                 <p class="install-manual">{{ 'home.install.manual' | t }}</p>
               }
@@ -61,6 +63,8 @@ export class Home {
   protected readonly flags = inject(FEATURE_FLAGS);
   protected readonly layout = inject(Layout);
   protected readonly installPrompt = inject(InstallPrompt);
+  // An iPhone or iPad has no install button; Safari's Share menu adds the app to the home screen.
+  protected readonly ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
   // Sign In and the guest page come back to Rooms afterwards.
   protected readonly back = { returnUrl: '/rooms' };
 }

@@ -356,6 +356,7 @@ export const vi: Messages = {
   'play.installHint': 'Cài ứng dụng để chơi trên điện thoại này.',
   'home.install.title': 'Cài ứng dụng trên điện thoại',
   'home.install.body': 'Cài để chơi toàn màn hình, với bàn chơi làm riêng cho điện thoại.',
+  'home.install.ios': 'Trên iPhone, chạm Chia sẻ rồi chọn Thêm vào MH chính, và xoay ngang điện thoại để chơi.',
   'home.install.manual': 'Trong Chrome, mở menu rồi chọn Cài đặt ứng dụng.',
   'play.installApp': 'Cài ứng dụng',
   'play.needsLargerScreen': 'Cần màn hình máy tính bảng hoặc máy tính để chơi.',

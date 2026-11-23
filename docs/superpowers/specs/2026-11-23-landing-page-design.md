@@ -14,7 +14,7 @@ A small front door for the hosted site. Approved by the developer on 2026-11-23:
   - **Play Online:** Goes to Rooms; a signed-out visitor is sent to Sign In and returned to Rooms afterwards.
   - **Play as Guest:** Goes to the guest page and returns to Rooms.
   - **Play Offline:** Only where offline play is on (the dev build), goes to Setup.
-- **Install card:** On a phone browser tab the installed app could play on (the existing `Layout.installWouldHelp`): a title, one sentence, an Install App button where Chrome offers one, otherwise one line saying where Chrome's menu has it.
+- **Install card:** On a phone browser tab the installed app could play on (the existing `Layout.installWouldHelp`): a title, one sentence, an Install App button where Chrome offers one, otherwise one line saying where Chrome's menu has it. On an iPhone or iPad, which has no install button, one line says to tap Share, then Add to Home Screen, and to turn the phone sideways (an iPhone cannot lock the screen to landscape). `index.html` also gives iOS its home screen icon (`apple-touch-icon`) and full-screen flag, which it reads there and not from the manifest.
 - **Links:** Sign In and Rules.
 
 ## Non-goals and anti-goals
@@ -30,7 +30,7 @@ A small front door for the hosted site. Approved by the developer on 2026-11-23:
 
 ## Text
 
-- **New messages:** `home.install.title`, `home.install.body`, `home.install.manual`, in English and Vietnamese (Vietnamese starts as a draft). Buttons reuse `nav.online`, `auth.playAsGuest`, `nav.play`, `nav.signIn`, `nav.rules` and `play.installApp`.
+- **New messages:** `home.install.title`, `home.install.body`, `home.install.manual`, `home.install.ios`, in English and Vietnamese (Vietnamese starts as a draft). Buttons reuse `nav.online`, `auth.playAsGuest`, `nav.play`, `nav.signIn`, `nav.rules` and `play.installApp`.
 
 ## Checks
 

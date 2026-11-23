@@ -42,4 +42,11 @@ describe('web app manifest', () => {
     expect(html).toContain('<link rel="manifest" href="manifest.webmanifest" />');
     expect(html).toContain('<meta name="theme-color" content="#3b332c" />');
   });
+
+  it('gives an iPhone its home screen icon and full screen, which it takes from index.html and not from the manifest', () => {
+    const html = readFileSync(join(__dirname, '../index.html'), 'utf8');
+    expect(html).toContain('<link rel="apple-touch-icon" href="images/ui/brand/icon-192.png" />');
+    expect(html).toContain('<meta name="apple-mobile-web-app-capable" content="yes" />');
+    expect(pngSize(join(ASSETS, 'ui/brand/icon-192.png'))).toEqual([192, 192]);
+  });
 });
