@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { requireSignIn } from './auth/require-sign-in';
 import { offlineOnly } from './feature-flags';
 import { DEV_ROUTES } from './dev/dev-routes';
+import { homeRedirect } from './home-redirect';
 import { playRedirect } from './play-redirect';
 
 // Lazy-loaded so the initial bundle carries only the shell; each screen pulls
@@ -23,5 +24,6 @@ export const routes: Routes = [
   { path: 'reset-password', loadComponent: () => import('./auth/reset-password').then((m) => m.ResetPassword) },
   // No sign-in: a player reads their window size here before they have an account.
   { path: 'device-info', loadComponent: () => import('./device-info').then((m) => m.DeviceInfo) },
-  { path: '', redirectTo: 'setup', pathMatch: 'full' },
+  // The front door; the installed app and signed-in players are sent on to Play (homeRedirect).
+  { path: '', pathMatch: 'full', canActivate: [homeRedirect], loadComponent: () => import('./home').then((m) => m.Home) },
 ];
