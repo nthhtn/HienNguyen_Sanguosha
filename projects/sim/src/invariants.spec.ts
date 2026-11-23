@@ -112,6 +112,11 @@ describe('judgment notice invariants', () => {
     expect(checkInvariants(baseState({ judgmentView: view(true) }))).toEqual([]);
   });
 
+  it('does not flag a chain that goes on: its owner is asked, and nobody needs to acknowledge', () => {
+    const state = baseState({ judgmentView: { ...view(true), continuing: true as const, aside: [] } as never });
+    expect(checkInvariants(state)).not.toContain('A settled judgment has no seat able to acknowledge it');
+  });
+
   it('flags a settled judgment with no seat able to acknowledge it', () => {
     const state = baseState({ judgmentView: view(true) });
     const nobody = { ...state, seats: state.seats.map((s) => ({ ...s, eliminated: true })) };

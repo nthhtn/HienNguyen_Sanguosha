@@ -231,6 +231,13 @@ describe('RemoteGameService: a settled judgment', () => {
     expect(game.botThinkingSeatId()).toBeNull();
   });
 
+  it('a chainEnd clock on a bot seat that a person is closing is not "thinking", as a notice clock is not', () => {
+    const takenOver: RoomSnapshot = { ...PLAYING, members: PLAYING.members.map((m) => (m.playerId === 'p-bo' ? { ...m, botControlled: true } : m)) };
+    socket.serverSends(welcome(takenOver, 'p-ann', { ...settled, clock: { seatId: 'seat-1', kind: 'chainEnd', startsAt: 0, endsAt: 5_000, totalSeconds: 5, serverNow: 0 } }));
+    expect(game.botSeatIds()).toContain('seat-1');
+    expect(game.botThinkingSeatId()).toBeNull();
+  });
+
   it("a bot's own notice clock is \"thinking\"", () => {
     const takenOver: RoomSnapshot = { ...PLAYING, members: PLAYING.members.map((m) => (m.playerId === 'p-bo' ? { ...m, botControlled: true } : m)) };
     socket.serverSends(welcome(takenOver, 'p-ann', { ...settled, clock: { seatId: 'seat-1', kind: 'notice', startsAt: 0, endsAt: 1_500, totalSeconds: 1.5, serverNow: 0, bot: true } }));

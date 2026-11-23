@@ -6,7 +6,7 @@ function state(phase: GameState['phase'], handSize = 0, combinedHp = 4): GameSta
   return {
     seats: [{
       id: 'seat-0', index: 0, kingdom: 'Wei',
-      generals: { main: { generalDefinitionId: 'g1', revealed: false }, deputy: { generalDefinitionId: 'g2', revealed: false } },
+      generals: { main: { generalDefinitionId: 'g1', revealed: true }, deputy: { generalDefinitionId: 'g2', revealed: false } },
       combinedHp, maxCombinedHp: 4,
       hand: { zoneId: 'seat-0:hand' }, equipped: { zoneId: 'seat-0:equip' }, judgment: { zoneId: 'seat-0:judgment' }, eliminated: false,
     }],

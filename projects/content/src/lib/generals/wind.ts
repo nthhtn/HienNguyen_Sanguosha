@@ -118,8 +118,16 @@ export const violentSpirit: SkillDefinition = {
 type DamageStep = Extract<Effect, { kind: 'DamageEffect' }>;
 type Dying = Extract<Effect, { kind: 'DyingEffect' }>;
 
-// Her hand cards that count as hearts.
-const heartsIn = (state: GameState, seatId: string, registry: ContentRegistry) => handOf(state, seatId).filter((c) => suitOf(state, seatId, c, registry) === 'heart');
+// Her hand cards that count as hearts, as if her own General were face up: Fantasy reveals it when used, and Beauty (on the
+// same General) then counts her spades as hearts. A hidden General's modifiers are off, so reading the suit as the table
+// stands would hide that spade from a Fantasy she can use.
+const heartsIn = (state: GameState, owner: GeneralOwner, registry: ContentRegistry) => {
+  const faceUp: GameState = {
+    ...state,
+    seats: state.seats.map((seat) => (seat.id === owner.seatId && seat.generals ? { ...seat, generals: { ...seat.generals, [owner.slot]: { ...seat.generals[owner.slot], revealed: true } } } : seat)),
+  };
+  return handOf(state, owner.seatId).filter((c) => suitOf(faceUp, owner.seatId, c, registry) === 'heart');
+};
 
 // Fantasy (may): when damage would be dealt to you, you may discard a heart
 // card to move it onto another living seat (same source, amount and cause).
@@ -130,11 +138,11 @@ export const fantasy: SkillDefinition = {
     on<DamageStep>('before:DamageEffect', {
       condition: (state, step, owner, registry) =>
         step.damage.target.seatId === owner.seatId && step.damage.amount > 0 && !(step.acted ?? []).includes(abilityKey(owner)) &&
-        heartsIn(state, owner.seatId, registry).length > 0 && otherLivingSeatIds(state, owner.seatId).length > 0,
+        heartsIn(state, owner, registry).length > 0 && otherLivingSeatIds(state, owner.seatId).length > 0,
       effect: (state, step, owner, registry) => {
         const passed: DamageStep = { ...step, acted: [...(step.acted ?? []), abilityKey(owner)] };
         const pick = selectionOf(state, owner, {
-          of: 'cards', eligibleIds: heartsIn(state, owner.seatId, registry).map((c) => c.instanceId), min: 1, max: 1,
+          of: 'cards', eligibleIds: heartsIn(state, owner, registry).map((c) => c.instanceId), min: 1, max: 1,
           then: { kind: 'skill-step', step: skillStep(owner, 'discarded', { damage: passed }) }, onCancel: [passed],
         });
         return [ask(owner, [pick], [passed])];

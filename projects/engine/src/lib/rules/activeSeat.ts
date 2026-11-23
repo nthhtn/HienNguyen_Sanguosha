@@ -1,4 +1,5 @@
 import { GameState, PendingChoice } from '../domain/types';
+import { awaitsAcknowledgement } from './judgmentWait';
 
 // The one decision an eliminated seat still makes: a choice opened by a General skill of its own
 // (an afterDeath skill asks the dead seat's player: Kingdom Wars Sorrow). Any other choice it is named in waits for no one.
@@ -17,7 +18,7 @@ export function getActiveSeatId(state: GameState): string | null {
     const candidates = state.generalSelection?.candidates ?? {};
     return state.seats.find((s) => Object.prototype.hasOwnProperty.call(candidates, s.id))?.id ?? null;
   }
-  if (state.judgmentView?.settled) return noticeSeatId(state);
+  if (awaitsAcknowledgement(state.judgmentView)) return noticeSeatId(state);
   if (state.pendingChoice && ownSkillChoice(state.pendingChoice) && state.seats.some((s) => s.id === state.pendingChoice!.seatId)) return state.pendingChoice.seatId;
   const candidateId =
     state.pendingChoice?.seatId ??
@@ -44,7 +45,7 @@ export function getActingSeatIds(state: GameState): string[] {
 // Whether a seat owes a decision that pauses the queue: a response, a choice,
 // a selection, an arrangement or a judgment waiting to be acknowledged.
 export function decisionPending(state: GameState): boolean {
-  return !!state.judgmentView?.settled || !!state.pendingResponse || !!state.pendingChoice || !!state.pendingSelection || !!state.pendingArrangement;
+  return awaitsAcknowledgement(state.judgmentView) || !!state.pendingResponse || !!state.pendingChoice || !!state.pendingSelection || !!state.pendingArrangement;
 }
 
 // Who acts on a settled judgment: the first living human in seat order, else the

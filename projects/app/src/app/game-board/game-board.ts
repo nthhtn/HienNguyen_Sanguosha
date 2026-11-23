@@ -389,7 +389,8 @@ export class GameBoard {
     const choice = this.visibleState()?.pendingChoice;
     if (!choice || choice.seatId !== this.viewerSeatId()) return null;
     // A skill that may change the judgment asks inside the Judgment popup, not in a dialog of its own.
-    if (choice.judgmentChange && this.judgmentView()) return null;
+    // A chain's Judge again ask does the same.
+    if ((choice.judgmentChange || this.judgmentView()?.continuing) && this.judgmentView()) return null;
     return this.legalActions().some((a) => a.kind === 'ChooseOptionAction') ? choice.id : null;
   });
   // The response window whose dialog is showing, so each opens only once.
@@ -727,7 +728,7 @@ export class GameBoard {
 
   private noticeDialog: MatDialogRef<ResolutionNoticeDialog> | null = null;
 
-  // Opens the Resolution Notice, themed in the Force of the seat that caused it. It closes itself after 5
+  // Opens the Resolution Notice, themed in the Force of the seat that caused it. It closes itself after 3
   // seconds, and the director then lets go of playback and offers the next.
   private showNotice(content: ResolutionNoticeContent | undefined): void {
     if (!content || this.noticeDialog || this.destroyed) return;

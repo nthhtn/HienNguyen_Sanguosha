@@ -7,6 +7,7 @@ import {
   GameRules,
   GameState,
   createGame,
+  awaitsAcknowledgement,
   describeDecision,
   getActiveSeatId,
   getLegalActions,
@@ -138,7 +139,7 @@ export class GameService {
   });
 
   // A judgment waits for an acknowledgement (the judgmentNotice rule).
-  readonly judgmentSettled: Signal<boolean> = computed(() => !!this._state()?.judgmentView?.settled);
+  readonly judgmentSettled: Signal<boolean> = computed(() => awaitsAcknowledgement(this._state()?.judgmentView));
 
   // Whether the viewer can close the settled judgment: someone other than a bot acts on it.
   readonly canCloseJudgment: Signal<boolean> = computed(() => {

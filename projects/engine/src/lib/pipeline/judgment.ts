@@ -11,13 +11,14 @@ const JUDGMENT_STEP_KINDS = new Set([
   'JudgeEffect',
   'JudgmentShownEffect',
   'JudgmentResolveEffect',
+  'JudgmentChainEndedEffect',
   'JudgmentDoneEffect',
   'ReplaceJudgmentEffect',
   'DelayedCleanupEffect',
 ]);
 type JudgmentStepEffect = Extract<
   Effect,
-  { kind: 'JudgeEffect' | 'JudgmentShownEffect' | 'JudgmentResolveEffect' | 'JudgmentDoneEffect' | 'ReplaceJudgmentEffect' | 'DelayedCleanupEffect' }
+  { kind: 'JudgeEffect' | 'JudgmentShownEffect' | 'JudgmentResolveEffect' | 'JudgmentChainEndedEffect' | 'JudgmentDoneEffect' | 'ReplaceJudgmentEffect' | 'DelayedCleanupEffect' }
 >;
 
 export function isJudgmentStepEffect(effect: Effect): effect is JudgmentStepEffect {
@@ -50,14 +51,34 @@ export function applyJudgmentStepEffect(state: GameState, effect: JudgmentStepEf
         { kind: 'JudgmentEvent', seatId: effect.seatId, reader: effect.reader, card: judged },
       ];
       const judgment: Judgment = { seatId: effect.seatId, reader: effect.reader, card: judged, ...(effect.data ? { data: effect.data } : {}) };
-      const view: Partial<GameState> = state.rules?.judgmentNotice ? { judgmentView: { ...judgment, changes: [], settled: false, rounds: 0 } } : {};
+      // A chain reader's view carries the cards set aside so far: the previous judgment's, while its chain goes on.
+      const chains = effect.reader.kind === 'skill' && !!skillOf(state, effect.reader.owner, registry)?.chainsJudgment;
+      const previous = state.judgmentView;
+      const carried = previous?.continuing && previous.reader.kind === 'skill' && effect.reader.kind === 'skill' && previous.reader.owner.seatId === effect.reader.owner.seatId ? (previous.aside ?? []) : [];
+      const view: Partial<GameState> = state.rules?.judgmentNotice ? { judgmentView: { ...judgment, changes: [], settled: false, rounds: 0, ...(chains ? { aside: [...carried] } : {}) } } : {};
       return { state: queueFront({ ...state, ...view, zones, rng, log: [...state.log, ...events] }, [{ kind: 'JudgmentShownEffect', judgment }]), events };
     }
     case 'JudgmentShownEffect':
       // Every skill that changes judgments has had its say: the card stands. With the
       // judgmentNotice rule the game now waits; acknowledging it resolves the judgment.
-      if (state.judgmentView) return { state: { ...state, judgmentView: { ...state.judgmentView, settled: true } }, events: [] };
+      if (state.judgmentView) {
+        const view = state.judgmentView;
+        const reader = view.reader;
+        const chain = reader.kind === 'skill' ? skillOf(state, reader.owner, registry)?.chainsJudgment : undefined;
+        // A chain reader's final card that goes on: shown but not waited on; the reader sets it aside and asks next.
+        if (chain && reader.kind === 'skill' && chain(state, { owner: reader.owner, seatId: view.seatId, judged: view.card, ...(view.data ? { data: view.data } : {}) }, registry)) {
+          const settled = { ...view, settled: true as const, continuing: true as const, aside: [...(view.aside ?? []), view.card] };
+          return { state: queueFront({ ...state, judgmentView: settled }, [{ kind: 'JudgmentResolveEffect', judgment: effect.judgment }]), events: [] };
+        }
+        return { state: { ...state, judgmentView: { ...view, settled: true } }, events: [] };
+      }
       return { state: queueFront(state, [{ kind: 'JudgmentResolveEffect', judgment: effect.judgment }]), events: [] };
+    case 'JudgmentChainEndedEffect': {
+      const view = state.judgmentView;
+      if (!view?.aside) return { state, events: [] };
+      const { continuing: _going, ...rest } = view;
+      return { state: { ...state, judgmentView: { ...rest, settled: true, ended: true } }, events: [] };
+    }
     case 'JudgmentResolveEffect': {
       const done: Effect = { kind: 'JudgmentDoneEffect', judgment: effect.judgment };
       const readings = readJudgment(state, effect.judgment, done, registry);

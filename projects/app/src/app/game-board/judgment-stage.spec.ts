@@ -286,4 +286,67 @@ describe('JudgmentStage', () => {
       expect(el.querySelector('.decide .waiting')!.textContent).toContain('Waiting for the judgment to be resolved');
     });
   });
+
+  describe('a judgment chain', () => {
+    const chainOf = (over: Partial<JudgmentDescription> = {}) => skillDescription({ card: seven, aside: [king, seven], continuing: true, key: 'ck', ...over });
+    const mine: JudgmentDecisionView = {
+      kind: 'mine',
+      deciderName: 'Hing',
+      step: {
+        kind: 'ask',
+        description: {
+          title: 'Goddess Luo', prompt: 'Judge again?', hint: null, card: null, generalId: null, useLabel: 'Use',
+          use: { kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'c', optionId: 'use' },
+          decline: { kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: 'c', optionId: 'decline' },
+        },
+      },
+    };
+
+    it('shows the Set Aside row with the cards set aside before the current one', () => {
+      const { el, at } = render(chainOf({ aside: [king, seven], continuing: false }));
+      at(10_000);
+      expect(el.querySelector('.aside')!.textContent).toContain('Set Aside');
+      expect(count(el, '.aside app-playing-card')).toBe(2);
+    });
+
+    it('adds the card just judged to the row only once its verdict has been shown', () => {
+      const { el, at } = render(chainOf({ aside: [king, seven] }));
+      at(2099);
+      expect(count(el, '.aside app-playing-card')).toBe(1);
+      at(1);
+      expect(count(el, '.aside app-playing-card')).toBe(2);
+    });
+
+    it('has no Set Aside row for a judgment that is not a chain', () => {
+      const { el, at } = render(skillDescription());
+      at(10_000);
+      expect(count(el, '.aside')).toBe(0);
+    });
+
+    it('opens the Judge again ask under the consequence once the verdict has played', () => {
+      const { fixture, el, at } = render(chainOf());
+      fixture.componentRef.setInput('decision', mine);
+      at(4099);
+      expect(count(el, 'app-ask-panel')).toBe(0);
+      at(1);
+      expect(count(el, 'app-ask-panel')).toBe(1);
+    });
+
+    it('shows others who may judge again, by name', () => {
+      const { fixture, el, at } = render(chainOf());
+      fixture.componentRef.setInput('decision', { kind: 'continue-watching', ownerName: 'Zhen Ji' } satisfies JudgmentDecisionView);
+      at(10_000);
+      expect(el.querySelector('.decide .waiting')!.textContent).toContain('Zhen Ji may judge again');
+    });
+
+    it('shows the set-aside cards at once, with no motion, when rebuilt part-way', () => {
+      TestBed.configureTestingModule({});
+      const fixture = TestBed.createComponent(JudgmentStage);
+      fixture.componentRef.setInput('description', chainOf({ continuing: false }));
+      fixture.componentRef.setInput('instant', true);
+      fixture.detectChanges();
+      fixture.detectChanges();
+      expect(count(fixture.nativeElement as HTMLElement, '.aside app-playing-card')).toBe(2);
+    });
+  });
 });

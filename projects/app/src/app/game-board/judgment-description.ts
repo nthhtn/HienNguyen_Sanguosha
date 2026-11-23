@@ -33,6 +33,12 @@ export interface JudgmentDescription {
   hp: { seatName: string; current: number; max: number | null } | null;
   // The cards that were replaced, oldest first; only the last three, so the stack stays readable.
   replaced: CardInstance[];
+  // The judgment's identity: the card first turned up, which a replacement leaves alone and the next judgment of a
+  // chain changes. The popup starts its sequence afresh when it changes.
+  key: string;
+  // A chain's cards set aside so far (empty when the reader has no chain), and whether the chain goes on past this card.
+  aside: CardInstance[];
+  continuing: boolean;
 }
 
 // How many replaced cards stay in view.
@@ -104,5 +110,8 @@ export function judgmentDescription(state: GameState, registry: ContentRegistry,
     force, source, judgedSeatName: name(view.seatId), card: view.card, changes, settled: view.settled, outcome, waiting,
     rule: judgmentRuleText(judgmentReaderId(reader), localeOf(tr)), verdict, effect, hp,
     replaced: view.changes.slice(-REPLACED_IN_VIEW).map((change) => change.replaced),
+    key: (view.changes[0]?.replaced ?? view.card).instanceId,
+    aside: view.aside ?? [],
+    continuing: !!view.continuing,
   };
 }

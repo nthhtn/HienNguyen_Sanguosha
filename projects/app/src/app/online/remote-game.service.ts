@@ -1,7 +1,7 @@
 import { computed, DestroyRef, effect, inject, Injectable, Signal, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { buildContentRegistry, guozhanMode } from 'content';
-import { getActingSeatIds, getActiveSeatId, previewEffect } from 'engine';
+import { awaitsAcknowledgement, getActingSeatIds, getActiveSeatId, previewEffect } from 'engine';
 import type { Action, ContentRegistry, Effect, EngineContext, DecisionKind, EngineEvent, GameState } from 'engine';
 import { finalSeatViews } from 'protocol';
 import type { GameUpdate, LastGame, RoomSnapshot, ServerMessage } from 'protocol';
@@ -10,6 +10,9 @@ import type { Msg } from '../i18n/msg';
 import type { DecisionTimer } from '../decision-timer.service';
 import type { GameMode, GameService, SelectionRosterEntry } from '../game.service';
 import { SocketService } from './socket.service';
+
+// The clocks of a judgment that anyone at the table may close: a settled judgment's, and the end of a chain's.
+const isNoticeClock = (kind: DecisionKind): boolean => kind === 'notice' || kind === 'chainEnd';
 
 // What GameBoard reads from GameService. The online board provides
 // RemoteGameService in its place, so the board itself stays as it is.
@@ -130,7 +133,7 @@ export class RemoteGameService implements BoardGame {
   readonly legalActions: Signal<Action[]> = computed(() => (this.socket.status() === 'open' && !this._waiting() ? (this._update()?.legalActions ?? []) : []));
 
   // A judgment waits for an acknowledgement (the judgmentNotice rule).
-  readonly judgmentSettled: Signal<boolean> = computed(() => !!this._state()?.judgmentView?.settled);
+  readonly judgmentSettled: Signal<boolean> = computed(() => awaitsAcknowledgement(this._state()?.judgmentView));
 
   // What a public popup may read: the member's own view, which already hides what it must.
   readonly publicState: Signal<GameState | null> = this._state.asReadonly();
@@ -149,7 +152,7 @@ export class RemoteGameService implements BoardGame {
   readonly botThinkingSeatId: Signal<string | null> = computed(() => {
     const clock = this._clock();
     // A settled judgment's clock on a bot-played seat is a person's to close, unless it is the bot's own move delay.
-    return clock && this.botSeatIds().includes(clock.seatId) && (clock.kind !== 'notice' || clock.bot) ? clock.seatId : null;
+    return clock && this.botSeatIds().includes(clock.seatId) && (!isNoticeClock(clock.kind) || clock.bot) ? clock.seatId : null;
   });
 
   // How the last game ended, until the player dismisses it. It comes from
@@ -283,7 +286,7 @@ export class RemoteDecisionClock implements Pick<DecisionTimer, 'secondsLeft' | 
   private readonly own = computed(() => {
     const clock = this.game.clock();
     // A settled judgment's countdown is for everyone, whichever seat the clock is on.
-    return clock && (clock.seatId === this.game.humanSeatId() || (clock.kind === 'notice' && !clock.bot)) && !this.game.paused() ? clock : null;
+    return clock && (clock.seatId === this.game.humanSeatId() || (isNoticeClock(clock.kind) && !clock.bot)) && !this.game.paused() ? clock : null;
   });
 
   // The countdown holds its full length while the animation it follows plays, as the engine's clock does.

@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, DestroyRef, OnInit, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
 import { Action, JUDGMENT_LEAD_IN_MS } from 'engine';
 import { MatButtonModule } from '@angular/material/button';
@@ -35,7 +36,7 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
 // it on, and a language switch only changes the words.
 @Component({
   selector: 'app-judgment-stage',
-  imports: [MatButtonModule, AskPanel, CardArt, DecisionCountdown, HpIcons, PlayingCard, SelectionPanel, TPipe],
+  imports: [MatButtonModule, NgTemplateOutlet, AskPanel, CardArt, DecisionCountdown, HpIcons, PlayingCard, SelectionPanel, TPipe],
   template: `
     @let d = description();
     <div class="stage" [style.--verdict]="verdictColour()">
@@ -89,6 +90,17 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
         }
       </div>
 
+      @if (asideCards().length > 0) {
+        <section class="aside" [attr.aria-label]="'judgment.aside' | t">
+          <span class="aside-label">{{ 'judgment.aside' | t }}</span>
+          <div class="aside-cards">
+            @for (c of asideCards(); track c.instanceId) {
+              <div class="aside-card"><app-playing-card [card]="c" size="small" /></div>
+            }
+          </div>
+        </section>
+      }
+
       <!-- Each replacement in words, for screen readers: the cards swap too fast to be read off the table. -->
       @if (d.changes.length > 0) {
         <ul class="changes" aria-live="polite">
@@ -102,25 +114,7 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
         @if (!d.settled) {
           @if (decision(); as dec) {
             @if (decisionOpen()) {
-              <div class="decide">
-                @switch (dec.kind) {
-                  @case ('mine') {
-                    @if (dec.step.kind === 'ask') {
-                      <app-ask-panel [description]="dec.step.description" (chosen)="chosen.emit($event)" />
-                    } @else {
-                      <app-selection-panel [description]="dec.step.description" (chosen)="chosen.emit($event)" />
-                    }
-                    <app-decision-countdown />
-                  }
-                  @case ('watching') {
-                    <p class="waiting"><span class="spin"></span>{{ 'judgment.waiting' | t }}</p>
-                  }
-                  @case ('gate') {
-                    <p class="pass">{{ 'reveal.pass' | t: { name: dec.deciderName } }}</p>
-                    <button mat-flat-button type="button" class="reveal" (click)="revealed.emit(dec.seatId)">{{ 'reveal.tap' | t }}</button>
-                  }
-                }
-              </div>
+              <ng-container [ngTemplateOutlet]="decideArea" [ngTemplateOutletContext]="{ $implicit: dec }" />
             } @else if (d.waiting; as waiting) {
               <p class="waiting"><span class="spin"></span>{{ waiting }}</p>
             }
@@ -162,9 +156,40 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
           @if (d.outcome; as outcome) {
             <p class="line" [class.in]="consequenceOn()">{{ outcome }}</p>
           }
+          <!-- A chain's Judge again ask, once the verdict has played. -->
+          @if (d.continuing && tailDone()) {
+            @if (decision(); as dec) {
+              <ng-container [ngTemplateOutlet]="decideArea" [ngTemplateOutletContext]="{ $implicit: dec }" />
+            }
+          }
         }
       </section>
     </div>
+
+    <ng-template #decideArea let-dec>
+      <div class="decide">
+        @switch (dec.kind) {
+          @case ('mine') {
+            @if (dec.step.kind === 'ask') {
+              <app-ask-panel [description]="dec.step.description" (chosen)="chosen.emit($event)" />
+            } @else {
+              <app-selection-panel [description]="dec.step.description" (chosen)="chosen.emit($event)" />
+            }
+            <app-decision-countdown />
+          }
+          @case ('watching') {
+            <p class="waiting"><span class="spin"></span>{{ 'judgment.waiting' | t }}</p>
+          }
+          @case ('continue-watching') {
+            <p class="waiting"><span class="spin"></span>{{ 'judgment.mayJudgeAgain' | t: { name: dec.ownerName } }}</p>
+          }
+          @case ('gate') {
+            <p class="pass">{{ 'reveal.pass' | t: { name: dec.deciderName } }}</p>
+            <button mat-flat-button type="button" class="reveal" (click)="revealed.emit(dec.seatId)">{{ 'reveal.tap' | t }}</button>
+          }
+        }
+      </div>
+    </ng-template>
   `,
   styles: `
     :host { display: block; }
@@ -201,6 +226,11 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
     .verdict-label { font: var(--mat-sys-label-medium); font-weight: 600; color: var(--verdict); text-align: center; opacity: 0; transition: opacity 0.3s 0.5s; }
     .verdict-label.show { opacity: 1; }
 
+    .aside { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 12px; border: 1px dashed var(--mat-sys-outline-variant); }
+    .aside-label { font: var(--mat-sys-label-large); color: var(--force-text); }
+    .aside-cards { display: flex; flex-wrap: wrap; gap: 6px; }
+    .aside-card { animation: aside-in 0.35s ease-out both; }
+    @keyframes aside-in { from { opacity: 0; transform: translateY(-10px); } }
     .cons { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 12px; min-height: 110px; border-radius: 12px; border: 1px solid var(--mat-sys-outline-variant); }
     .decide { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px; }
     .pass { margin: 0; font: var(--mat-sys-title-medium); text-align: center; }
@@ -227,6 +257,7 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
     :host-context([data-layout='compact']) .cons { min-height: 0; padding: 6px 12px; gap: 4px; }
     @media (prefers-reduced-motion: reduce) {
       .rise, .pc, .inner, .stamp, .verdict-label, .arrow, .line, .chip, .dmg { transition-duration: 0s !important; transition-delay: 0s !important; }
+      .aside-card { animation: none; }
       .stamp.show circle, .stamp.show path, .spin { animation-duration: 0s !important; animation-delay: 0s !important; }
     }
   `,
@@ -257,6 +288,8 @@ export class JudgmentStage implements OnInit {
   private readonly headDone = signal(false);
   protected readonly stampShown = signal(false);
   protected readonly consequenceOn = signal(false);
+  // The verdict and consequence have played: a chain's ask may open.
+  protected readonly tailDone = signal(false);
   private readonly lostCount = signal(0);
   // The decision area is open once the head has played, and again after each replacement's swap.
   protected readonly decisionOpen = signal(false);
@@ -271,6 +304,12 @@ export class JudgmentStage implements OnInit {
     const d = this.description();
     const all = [...d.replaced, d.card];
     return all.map((card, i) => ({ card, age: all.length - 1 - i }));
+  });
+
+  // A chain's cards set aside. The card just judged joins them once its verdict has been shown.
+  protected readonly asideCards = computed(() => {
+    const d = this.description();
+    return d.continuing && !this.stampShown() ? d.aside.filter((c) => c.instanceId !== d.card.instanceId) : d.aside;
   });
 
   protected readonly verdictColour = computed(() => (this.description().verdict === 'good' ? 'var(--good)' : 'var(--mat-sys-error)'));
@@ -341,7 +380,7 @@ export class JudgmentStage implements OnInit {
       { at: wait, run: () => this.stampShown.set(true) },
       { at: wait + CONSEQUENCE_AFTER, run: () => this.consequenceOn.set(true) },
       ...Array.from({ length: amount }, (_, n) => ({ at: wait + CONSEQUENCE_AFTER + n * HEART_GAP, run: () => this.lostCount.set(n + 1) })),
-      { at: wait + UNLOCK_AFTER, run: () => this.unlocked.emit() },
+      { at: wait + UNLOCK_AFTER, run: () => { this.tailDone.set(true); this.unlocked.emit(); } },
     ];
     // The verdict beat of a judgment that needs no wait runs now, in the beat that finished the head.
     for (const beat of beats.filter((b) => b.at <= 0)) beat.run();

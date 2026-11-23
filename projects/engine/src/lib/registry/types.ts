@@ -128,6 +128,14 @@ export interface JudgedContext {
   done: Effect;
 }
 
+// What a chain reader decides on: the final card of one of its judgments.
+export interface JudgmentChainContext {
+  owner: GeneralOwner;
+  seatId: string;
+  judged: CardInstance;
+  data?: Record<string, unknown>;
+}
+
 // A skill reading its own judgment (Unyielding, Iron Cavalry, River Goddess).
 export interface SkillJudgedContext {
   owner: GeneralOwner;
@@ -288,6 +296,9 @@ export interface SkillDefinition extends Abilities {
   active?: ActiveSkill;
   // Reads a judgment this skill asked for (JudgmentReader 'skill').
   onJudged?(state: GameState, ctx: SkillJudgedContext, registry: ContentRegistry): unknown[];
+  // Marks a reader whose judgments chain (Goddess Luo): its judgment view lives on from one judgment to the next. The
+  // return value says whether this final card goes on, in which case nobody closes the judgment and the reader asks next.
+  chainsJudgment?(state: GameState, ctx: JudgmentChainContext, registry: ContentRegistry): boolean;
   // One step of this skill's own resolution (SkillStepEffect), for skills that
   // decide in several moves (Raid, Kindness, Sow Revolt). Its effects go to the
   // front of the queue.

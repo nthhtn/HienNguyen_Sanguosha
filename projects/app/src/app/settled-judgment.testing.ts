@@ -31,6 +31,24 @@ export function settleJudgment(service: GameService, eliminated: string[] = [], 
   inner.scheduleBotIfDue();
 }
 
+// Puts a running game into a judgment chain's ask: the card just judged is final and set aside (the verdict is shown),
+// the chain goes on without a close, and `seatId` is asked whether to judge again (an ask that is not a changer's).
+export function askToContinue(service: GameService, seatId: string): void {
+  settleJudgment(service, [], 2);
+  const inner = service as unknown as { _state: WritableSignal<GameState | null>; scheduleBotIfDue(): void };
+  const state = inner._state()!;
+  const owner = { kind: 'general' as const, seatId, slot: 'main' as const, skillId: 'kingdomWars:goddess-luo' };
+  inner._state.set({
+    ...state,
+    judgmentView: { ...state.judgmentView!, continuing: true, aside: [state.judgmentView!.card] },
+    pendingChoice: {
+      id: `ask-luo-${seatId}`, seatId, reason: { kind: 'ability', owner, abilityId: 'kingdomWars:goddess-luo' }, verb: 'use',
+      options: [{ id: 'use', shows: { kind: 'use' }, effects: [] }, { id: 'decline', shows: { kind: 'decline' }, effects: [] }],
+    },
+  });
+  inner.scheduleBotIfDue();
+}
+
 // Puts a running game into a judgment that is still open, with `seatId` asked whether a skill of its may change
 // the card: the pending choice is the one a changer's ask opens, marked as a judgment change, with Use and Don't.
 // `flagged: false` makes it an ask that is not a changer's, which keeps its own dialog.

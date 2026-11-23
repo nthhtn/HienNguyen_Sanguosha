@@ -89,8 +89,11 @@ export function forceOf(kingdom: Kingdom | undefined): Force {
   return kingdom === 'Wei' || kingdom === 'Shu' || kingdom === 'Wu' || kingdom === 'Qun' ? kingdom : 'none';
 }
 
-// A seat's force colour: an Ambitionist plays for no Kingdom and has its own (purple).
-export function seatForce(seat: Pick<Seat, 'kingdom' | 'allegiance'> | null | undefined): Force {
+// A seat's force colour: an Ambitionist plays for no Kingdom and has its own (purple). While none of its Generals is
+// face up a seat has no force colour, its own viewer's included: the viewer's seat is not masked, so it knows its Kingdom,
+// but it may still become an Ambitionist, so it keeps the hidden colour until its first General is revealed.
+export function seatForce(seat: (Pick<Seat, 'kingdom' | 'allegiance'> & Partial<Pick<Seat, 'generals'>>) | null | undefined): Force {
+  if (seat?.generals && !seat.generals.main.revealed && !seat.generals.deputy.revealed) return 'none';
   return seat?.allegiance === 'ambitionist' ? 'Ambitionist' : forceOf(seat?.kingdom);
 }
 

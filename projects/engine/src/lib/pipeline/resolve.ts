@@ -9,6 +9,7 @@ import { lookupCard } from '../registry/lookup';
 import { GatheredTrigger, gatherTriggeredSkills } from '../skills/triggers';
 import { findZoneByKind, moveCard, requireZoneOfKind } from '../cards/zones';
 import { decisionPending } from '../rules/activeSeat';
+import { awaitsAcknowledgement } from '../rules/judgmentWait';
 import { cardsOverHandLimit } from '../rules/handLimit';
 import { validateArrangement } from '../rules/arrangement';
 import { advancePhaseOrTurn, discardOwed, phaseWaitsForPlayer, startWindowOpens } from '../rules/phaseSequence';
@@ -825,11 +826,13 @@ function resolveAction(state: GameState, action: Action, ctx: EngineContext): Re
 
     case 'AcknowledgeJudgmentAction': {
       const view = state.judgmentView;
-      if (!view?.settled) throw new Error('No settled judgment to acknowledge');
+      if (!awaitsAcknowledgement(view)) throw new Error('No settled judgment to acknowledge');
       const { judgmentView: _closed, ...rest } = state;
       const acknowledged: EngineEvent = { kind: 'JudgmentAcknowledgedEvent', seatId: action.seatId, ...(action.by ? { by: action.by } : {}), source: action.timeout ? 'timeout' : 'close' };
-      const judgment = { seatId: view.seatId, reader: view.reader, card: view.card, ...(view.data ? { data: view.data } : {}) };
-      return { state: queueFront({ ...rest, log: [...rest.log, acknowledged] }, [{ kind: 'JudgmentResolveEffect', judgment }]), events: [acknowledged] };
+      const judgment = { seatId: view!.seatId, reader: view!.reader, card: view!.card, ...(view!.data ? { data: view!.data } : {}) };
+      // A chain that has ended was read when each of its cards was; closing it only closes the popup.
+      const next = view!.ended ? { ...rest, log: [...rest.log, acknowledged] } : queueFront({ ...rest, log: [...rest.log, acknowledged] }, [{ kind: 'JudgmentResolveEffect', judgment }]);
+      return { state: next, events: [acknowledged] };
     }
 
     default:

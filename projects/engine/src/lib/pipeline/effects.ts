@@ -91,6 +91,8 @@ export type Effect =
   // before-triggers (`acted`: those that had their say; `changedBy`: the seat
   // that replaced the card last).
   | { kind: 'JudgmentShownEffect'; judgment: Judgment; acted?: string[]; changedBy?: string }
+  // The chain of a skill's judgments is over (a stop, or no card left): the view now waits for its acknowledgement.
+  | { kind: 'JudgmentChainEndedEffect' }
   // Step 3: the reader reads the final card.
   | { kind: 'JudgmentResolveEffect'; judgment: Judgment }
   // Step 4: the card goes to the discard pile, unless something took it

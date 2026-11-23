@@ -10,6 +10,8 @@ export type JudgmentDecisionView =
   // Someone else is asked: a waiting line that names no one. Who is asked would show who holds a skill that
   // can change a judgment, a fact the table may not know.
   | { kind: 'watching' }
+  // A chain's Judge again ask while someone else is asked: it names the seat, whose skill is public.
+  | { kind: 'continue-watching'; ownerName: string }
   // The asked seat's own view is not on screen yet (Pass and Play): the hand-off comes first.
   | { kind: 'gate'; seatId: string; deciderName: string };
 
@@ -18,10 +20,12 @@ export type JudgmentDecisionView =
 // `legal`: what the engine offers the viewer. `shown`: whether the viewer's own view is on screen.
 export function judgmentDecision(state: GameState, viewerSeatId: string, legal: readonly Action[], tr: Translator = englishTranslator, shown = true): JudgmentDecisionView | null {
   const view = state.judgmentView;
-  const pending = state.pendingChoice?.judgmentChange ? state.pendingChoice : state.pendingSelection?.judgmentChange ? state.pendingSelection : null;
-  if (!view || view.settled || !pending) return null;
+  // A chain's ask: the verdict of the card just set aside is shown and the owner asks whether to judge again.
+  const chainAsk = view?.continuing && state.pendingChoice && !state.pendingChoice.judgmentChange ? state.pendingChoice : null;
+  const pending = chainAsk ?? (state.pendingChoice?.judgmentChange ? state.pendingChoice : state.pendingSelection?.judgmentChange ? state.pendingSelection : null);
+  if (!view || (view.settled && !chainAsk) || !pending) return null;
   const deciderName = seatName(state.players, pending.seatId, tr);
-  if (pending.seatId !== viewerSeatId) return { kind: 'watching' };
+  if (pending.seatId !== viewerSeatId) return chainAsk ? { kind: 'continue-watching', ownerName: deciderName } : { kind: 'watching' };
   if (!shown) return { kind: 'gate', seatId: pending.seatId, deciderName };
   const ask = describeAsk(state, viewerSeatId, legal, tr);
   if (ask) return { kind: 'mine', step: { kind: 'ask', description: ask }, deciderName };

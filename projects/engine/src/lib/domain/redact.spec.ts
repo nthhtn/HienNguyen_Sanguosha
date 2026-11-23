@@ -474,6 +474,16 @@ describe('redactStateForSeat: a judgment on show', () => {
   it('shows the owner their own skill', () => {
     expect(JSON.stringify(redactStateForSeat(withView(), 'seat-b').judgmentView)).toContain('refusing-death');
   });
+
+  it('keeps the cards set aside in a chain for every seat, without revealing the skill', () => {
+    const chained = (): GameState => ({ ...withView(), judgmentView: { ...withView().judgmentView!, aside: [judged], continuing: true } });
+    for (const viewer of ['seat-a', 'seat-b']) {
+      const view = redactStateForSeat(chained(), viewer).judgmentView!;
+      expect(view.aside).toEqual([judged]);
+      expect(view.continuing).toBe(true);
+    }
+    expect(JSON.stringify(redactStateForSeat(chained(), 'seat-a').judgmentView)).not.toContain('refusing-death');
+  });
 });
 
 

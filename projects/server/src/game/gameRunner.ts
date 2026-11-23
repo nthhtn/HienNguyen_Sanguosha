@@ -1,5 +1,5 @@
 import type { BotPolicy, BotTurnMemory } from 'bots';
-import { batchPlaybackMs, defaultActionsFor, describeDecision, EMPTY_CLOCK, expireClock, GAME_START_LEAD_IN_MS, getActingSeatIds, getActiveSeatId, getLegalActions, redactStateForSeat, switchClock } from 'engine';
+import { awaitsAcknowledgement, batchPlaybackMs, defaultActionsFor, describeDecision, EMPTY_CLOCK, expireClock, GAME_START_LEAD_IN_MS, getActingSeatIds, getActiveSeatId, getLegalActions, redactStateForSeat, switchClock } from 'engine';
 import type { Action, ClockState, DecisionKind, DecisionSpec, EngineContext, GameState } from 'engine';
 import { BOT_THINK_MS } from 'protocol';
 import type { ActionSource, GameClockView, GameUpdate } from 'protocol';
@@ -193,7 +193,7 @@ export class GameRunner {
   // Whether this seat may close the settled judgment: a living human seat no bot is playing.
   private canClose(seatId: string): boolean {
     const seat = this.record.seats.find((s) => s.seatId === seatId);
-    return !!this.state.judgmentView?.settled && seat?.kind === 'human' && !this.isBotPlayed(seatId) && !this.state.seats.find((x) => x.id === seatId)?.eliminated;
+    return awaitsAcknowledgement(this.state.judgmentView) && seat?.kind === 'human' && !this.isBotPlayed(seatId) && !this.state.seats.find((x) => x.id === seatId)?.eliminated;
   }
 
   // The member has a connection again. A taken-over seat comes back now (no
@@ -386,7 +386,7 @@ export class GameRunner {
   // A settled judgment while a person is playing is closed by the clock (or a person), never by a
   // bot, even when the seat that acts on it is one a bot is playing.
   private closedByClock(): boolean {
-    return !!this.state.judgmentView?.settled && this.personControlled();
+    return awaitsAcknowledgement(this.state.judgmentView) && this.personControlled();
   }
 
   private cancel(): void {

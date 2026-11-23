@@ -529,11 +529,11 @@ function settle(runner: GameRunner, rounds = 0): void {
 describe('GameRunner: a settled judgment', () => {
   const ack = (seatId: string, extra: object = {}) => ({ kind: 'AcknowledgeJudgmentAction', seatId, ...extra });
 
-  it('runs the 5 second notice clock while a person plays, and acknowledges by timeout', async () => {
+  it('runs the 3 second notice clock while a person plays, and acknowledges by timeout', async () => {
     const { runner, host, scheduler } = setup();
     settle(runner);
-    expect(runner.updateFor('p0', 0)!.clock).toMatchObject({ seatId: 'seat-0', kind: 'notice', totalSeconds: 5 });
-    await scheduler.advance(JUDGMENT_LEAD_IN_MS.head + JUDGMENT_LEAD_IN_MS.tail + 4_999);
+    expect(runner.updateFor('p0', 0)!.clock).toMatchObject({ seatId: 'seat-0', kind: 'notice', totalSeconds: 3 });
+    await scheduler.advance(JUDGMENT_LEAD_IN_MS.head + JUDGMENT_LEAD_IN_MS.tail + 2_999);
     expect(host.stored).toHaveLength(0);
     await scheduler.advance(1);
     expect(host.stored).toEqual([expect.objectContaining({ seatId: 'seat-0', source: 'timeout', action: ack('seat-0', { timeout: true }) })]);
@@ -545,7 +545,7 @@ describe('GameRunner: a settled judgment', () => {
     settle(none.runner);
     const noneClock = none.runner.updateFor('p0', 0)!.clock!;
     expect(noneClock.startsAt - noneClock.serverNow).toBe(JUDGMENT_LEAD_IN_MS.head + JUDGMENT_LEAD_IN_MS.tail);
-    expect(noneClock.endsAt - noneClock.startsAt).toBe(5_000);
+    expect(noneClock.endsAt - noneClock.startsAt).toBe(3_000);
     const asked = setup();
     settle(asked.runner, 2);
     const askedClock = asked.runner.updateFor('p0', 0)!.clock!;
@@ -582,11 +582,11 @@ describe('GameRunner: a settled judgment', () => {
     expect(runner.botControlled('p0')).toBe(true);
     const before = host.stored.length;
     settle(runner);
-    expect(runner.updateFor('p1', 0)!.clock).toMatchObject({ seatId: 'seat-0', kind: 'notice', totalSeconds: 5 });
+    expect(runner.updateFor('p1', 0)!.clock).toMatchObject({ seatId: 'seat-0', kind: 'notice', totalSeconds: 3 });
     await scheduler.advance(BOT_DELAY_MS);
     expect(host.stored).toHaveLength(before);
-    // The person at the table closes it once the animation and the 5 s countdown have played.
-    await scheduler.advance(JUDGMENT_LEAD_IN_MS.head + JUDGMENT_LEAD_IN_MS.tail + 5_000 - BOT_DELAY_MS);
+    // The person at the table closes it once the animation and the 3 s countdown have played.
+    await scheduler.advance(JUDGMENT_LEAD_IN_MS.head + JUDGMENT_LEAD_IN_MS.tail + 3_000 - BOT_DELAY_MS);
     expect(host.stored[before]).toMatchObject({ seatId: 'seat-0', source: 'timeout', action: ack('seat-0', { timeout: true }) });
   });
 
@@ -920,5 +920,76 @@ describe('GameRunner: pacing by playback', () => {
     settle(runner, 2);
     const clock = runner.updateFor('p0', 0)!.clock!;
     expect(clock.startsAt - clock.serverNow).toBe(JUDGMENT_LEAD_IN_MS.tail);
+  });
+});
+
+// A judgment chain (Goddess Luo): the view is settled for the table to read, and the skill's owner is asked whether to go on.
+function chain(runner: GameRunner, view: object, ask?: string): void {
+  settle(runner, 2);
+  const inner = runner as unknown as { state: GameState; clock: { running: null; paused: object }; reschedule(): void };
+  // settle() started a notice clock on this very step; the chain's own decision starts afresh.
+  inner.clock = { running: null, paused: {} };
+  const judged = inner.state.judgmentView!.card;
+  inner.state = {
+    ...inner.state,
+    judgmentView: { ...inner.state.judgmentView!, aside: [judged], ...view } as GameState['judgmentView'],
+    ...(ask
+      ? {
+          pendingChoice: {
+            id: `ask-goddess-luo-${ask}`, seatId: ask, reason: { kind: 'ability', owner: { kind: 'general', seatId: ask, slot: 'main', skillId: 'kingdomWars:goddess-luo' }, abilityId: 'kingdomWars:goddess-luo' }, verb: 'use',
+            options: [{ id: 'use', shows: { kind: 'use' }, effects: [] }, { id: 'decline', shows: { kind: 'decline' }, effects: [] }],
+          },
+        }
+      : {}),
+  };
+  inner.reschedule();
+}
+
+describe('GameRunner: a judgment chain', () => {
+  const ack = (seatId: string, extra: object = {}) => ({ kind: 'AcknowledgeJudgmentAction', seatId, ...extra });
+
+  it("gives the owner's Judge again ask its own clock, after the verdict's animation", () => {
+    const { runner } = setup();
+    chain(runner, { continuing: true }, 'seat-0');
+    const clock = runner.updateFor('p0', 0)!.clock!;
+    expect(clock).toMatchObject({ seatId: 'seat-0', kind: 'ask', totalSeconds: 20 });
+    expect(clock.startsAt - clock.serverNow).toBe(JUDGMENT_LEAD_IN_MS.tail);
+  });
+
+  it("has a bot owner's Judge again wait for the verdict's animation while a person is at the table", async () => {
+    const { runner, host, scheduler } = setup({ kinds: ['human', 'bot'] });
+    chain(runner, { continuing: true }, 'seat-1');
+    await scheduler.advance(JUDGMENT_LEAD_IN_MS.tail + BOT_DELAY_MS - 1);
+    expect(host.stored).toHaveLength(0);
+    await scheduler.advance(1);
+    expect(host.stored[0]).toMatchObject({ seatId: 'seat-1', source: 'bot' });
+  });
+
+  it('runs a 5 second chainEnd clock at the end, which a bot owner does not close while a person plays', async () => {
+    const { runner, host, scheduler } = setup({ kinds: ['human', 'bot'] });
+    chain(runner, { settled: true });
+    expect(runner.updateFor('p0', 0)!.clock).toMatchObject({ kind: 'chainEnd', totalSeconds: 5 });
+    await scheduler.advance(BOT_DELAY_MS);
+    expect(host.stored).toHaveLength(0);
+    await scheduler.advance(JUDGMENT_LEAD_IN_MS.tail + 5_000);
+    expect(host.stored[0]).toMatchObject({ source: 'timeout', action: ack('seat-0', { timeout: true }) });
+  });
+
+  it('a chainEnd timeout does not count towards takeover', async () => {
+    const { runner, host, scheduler } = setup({ connected: [] });
+    for (let i = 0; i < 3; i++) {
+      chain(runner, { settled: true, ended: true });
+      const before = host.stored.length;
+      await scheduler.advance(10_000);
+      expect(host.stored[before]).toMatchObject({ source: 'timeout', action: ack('seat-0', { timeout: true }) });
+    }
+    expect(runner.botControlled('p0')).toBe(false);
+  });
+
+  it('a game of bots closes the end of a chain after the bot delay and never stalls', async () => {
+    const { runner, host, scheduler } = setup({ kinds: ['bot', 'bot'], connected: [] });
+    chain(runner, { settled: true, ended: true });
+    await scheduler.advance(BOT_DELAY_MS);
+    expect(host.stored[host.stored.length - 1]).toMatchObject({ seatId: 'seat-0', source: 'bot', action: ack('seat-0') });
   });
 });
