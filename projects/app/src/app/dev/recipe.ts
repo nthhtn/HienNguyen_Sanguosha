@@ -140,6 +140,44 @@ export function setGenerals(state: GameState, registry: ContentRegistry, seatId:
   };
 }
 
+// The seat's Generals, `slots` of them, face up.
+export function revealGenerals(state: GameState, seatId: string, slots: Array<'main' | 'deputy'> = ['main', 'deputy']): GameState {
+  return {
+    ...state,
+    seats: state.seats.map((s) =>
+      s.id === seatId && s.generals
+        ? { ...s, generals: { main: { ...s.generals.main, revealed: s.generals.main.revealed || slots.includes('main') }, deputy: { ...s.generals.deputy, revealed: s.generals.deputy.revealed || slots.includes('deputy') } } }
+        : s
+    ),
+  };
+}
+
+// The draw pile's top cards are, in order, the first card of each wanted suit (cards already put on top stay put),
+// so the judgments that follow turn up black and red in the order the scenario needs.
+export function stackDrawPile(state: GameState, suits: Array<'spade' | 'heart' | 'club' | 'diamond'>): GameState {
+  const pile = state.zones.find((z) => z.kind === 'drawPile');
+  if (!pile) throw new Error('No draw pile');
+  const rest = [...pile.cards];
+  const top = suits.map((suit) => {
+    const at = rest.findIndex((c) => c.suit === suit);
+    if (at < 0) throw new Error(`No ${suit} card left in the draw pile`);
+    return rest.splice(at, 1)[0];
+  });
+  return { ...state, zones: state.zones.map((z) => (z.id === pile.id ? { ...z, cards: [...top, ...rest] } : z)) };
+}
+
+// Gives the seat `count` cards of `suit` from the draw pile, never one of `avoid` (a card that would answer a window).
+export function giveOfSuit(state: GameState, seatId: string, suit: 'spade' | 'heart' | 'club' | 'diamond', count: number, avoid: string[] = ['shan', 'peach', 'wuxie']): GameState {
+  const hand = seatOf(state, seatId).hand.zoneId;
+  let zones = state.zones;
+  for (let i = 0; i < count; i++) {
+    const card = zones.filter((z) => z.id !== hand).flatMap((z) => z.cards).find((c) => c.suit === suit && !avoid.includes(c.definitionId));
+    if (!card) throw new Error(`No ${suit} card to give`);
+    zones = moveCard(zones, card.instanceId, hand);
+  }
+  return { ...state, zones };
+}
+
 export function setHp(state: GameState, seatId: string, hp: number): GameState {
   return { ...state, seats: state.seats.map((s) => (s.id === seatId ? { ...s, combinedHp: hp } : s)) };
 }
