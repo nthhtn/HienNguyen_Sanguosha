@@ -64,10 +64,26 @@ describe('PhoneSeatTile', () => {
     expect(tile.classList).toContain('responding');
   });
 
-  it('is slim when asked, giving the name row to the name: no bot icon, only filled Judgment boxes, HP as numbers', () => {
+  it('shows a bot without the prefix and with the robot icon, on a full tile', () => {
+    const el = render(testSeat('seat-3', 3), { name: '[Bot] Zhou Cang', isBot: true });
+    expect(el.querySelector('.name')!.textContent!.trim()).toBe('Zhou Cang');
+    expect(el.querySelector('.bot')).not.toBeNull();
+    expect(el.querySelector('button.tile')!.getAttribute('aria-label')).toBe('[Bot] Zhou Cang');
+  });
+
+  it('leaves an old bot name and a human name as they are', () => {
+    const old = render(testSeat('seat-3', 3), { name: 'Bot 1', isBot: true });
+    expect(old.querySelector('.name')!.textContent!.trim()).toBe('Bot 1');
+    expect(old.querySelector('.bot')).not.toBeNull();
+    const human = render(testSeat('seat-3', 3), { name: 'Bob [Bot] x', isBot: false });
+    expect(human.querySelector('.name')!.textContent!.trim()).toBe('Bob [Bot] x');
+    expect(human.querySelector('.bot')).toBeNull();
+  });
+
+  it('is slim when asked, giving the name row to the name: the robot icon, only filled Judgment boxes, HP as numbers', () => {
     const el = render(testSeat('seat-3', 3, { combinedHp: 3, maxCombinedHp: 4 }), { slim: true, isBot: true, judgment: [card('j1', 'lightning')] });
     expect(el.querySelector('.tile')!.classList).toContain('slim');
-    expect(el.querySelector('.bot')).toBeNull();
+    expect(el.querySelector('.bot')).not.toBeNull();
     expect(el.querySelectorAll('.judgment-box')).toHaveLength(1);
     expect(el.querySelector('.hp')!.textContent!.trim()).toBe('favorite3/4');
     expect(el.querySelector('.hp')!.getAttribute('aria-label')).toBe('HP 3/4');

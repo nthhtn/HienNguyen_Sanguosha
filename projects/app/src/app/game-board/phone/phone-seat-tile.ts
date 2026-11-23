@@ -1,6 +1,7 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { BOT_NAME_PREFIX } from 'protocol';
 import { CardInstance, EQUIP_SLOTS, EquipSlot, GeneralInstance, Seat } from 'engine';
 import { AMBITIONIST_ICON_URL, equipSlotOf, generalFaceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls } from 'content';
 import { cardIdDisplayName, seatForce } from '../../labels';
@@ -33,8 +34,8 @@ const MAX_HP_ICONS = 8;
         @if (seat().allegiance === 'ambitionist') {
           <img class="ambitionist-mark" [src]="ambitionistIcon" [alt]="'label.kingdom.Ambitionist' | t" />
         }
-        <span class="name" [attr.title]="name()">{{ name() }}</span>
-        @if (isBot() && !slim()) {
+        <span class="name" [attr.title]="name()">{{ shownName() }}</span>
+        @if (isBot()) {
           <mat-icon class="bot" [attr.aria-label]="'seat.computerAria' | t">smart_toy</mat-icon>
         }
         @if (isViewer()) {
@@ -203,6 +204,11 @@ export class PhoneSeatTile {
 
   private readonly i18n = inject(I18n);
   protected readonly ambitionistIcon = AMBITIONIST_ICON_URL;
+  // A bot is marked by the robot icon, so the "[Bot] " text is dropped from its name; any other name stays as it is.
+  protected readonly shownName = computed(() => {
+    const name = this.name();
+    return this.isBot() && name.startsWith(BOT_NAME_PREFIX) ? name.slice(BOT_NAME_PREFIX.length) : name;
+  });
   protected readonly force = computed(() => seatForce(this.seat()));
   protected readonly showDying = computed(() => !this.seat().eliminated && (this.dying() ?? this.seat().combinedHp <= 0));
   protected readonly shownDamage = computed(() => {
