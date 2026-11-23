@@ -2,6 +2,12 @@ import { TestBed } from '@angular/core/testing';
 import { CardInstance, Seat } from 'engine';
 import { SeatTile } from './seat-tile';
 
+// Both of a seat's Generals face up, as a seat whose Kingdom the table knows has at least one.
+const shownGenerals = (): Seat['generals'] => ({
+  main: { generalDefinitionId: 'kingdomWars:zhang-fei', revealed: true },
+  deputy: { generalDefinitionId: 'hidden', revealed: false },
+});
+
 function makeSeat(overrides: Partial<Seat> = {}): Seat {
   return {
     id: 'seat-1',
@@ -234,13 +240,19 @@ describe('SeatTile', () => {
 
   it('colours the border after the seat’s force, and yellow while it is hidden', () => {
     for (const kingdom of ['Wei', 'Shu', 'Wu', 'Qun'] as const) {
-      expect(render({ ...makeSeat(), kingdom }).querySelector('.tile')!.getAttribute('data-force')).toBe(kingdom);
+      expect(render({ ...makeSeat(), kingdom, generals: shownGenerals() }).querySelector('.tile')!.getAttribute('data-force')).toBe(kingdom);
     }
     expect(render({ ...makeSeat(), kingdom: 'hidden' }).querySelector('.tile')!.getAttribute('data-force')).toBe('none');
   });
 
+  it('colours the viewer’s own seat yellow until one of its Generals is revealed, though it knows its Kingdom (it may become an Ambitionist)', () => {
+    const own = { ...makeSeat(), kingdom: 'Shu' as const };
+    expect(render(own, { isViewer: true }).querySelector('.tile')!.getAttribute('data-force')).toBe('none');
+    expect(render({ ...own, generals: shownGenerals() }, { isViewer: true }).querySelector('.tile')!.getAttribute('data-force')).toBe('Shu');
+  });
+
   it('shows an Ambitionist as such, in its own (purple) force', () => {
-    const el = render({ ...makeSeat(), kingdom: 'Wei', allegiance: 'ambitionist' });
+    const el = render({ ...makeSeat(), kingdom: 'Wei', allegiance: 'ambitionist', generals: shownGenerals() });
     expect(el.querySelector('.tile')!.getAttribute('data-force')).toBe('Ambitionist');
     expect(el.querySelector('.kingdom')!.textContent!.trim()).toBe('Ambitionist');
   });
@@ -268,10 +280,10 @@ describe('SeatTile', () => {
   });
 
   it('keeps the force colour on the turn owner and on a responding seat', () => {
-    const owner = render({ ...makeSeat(), kingdom: 'Shu' }, { isTurnOwner: true }).querySelector('.tile')!;
+    const owner = render({ ...makeSeat(), generals: shownGenerals(), kingdom: 'Shu' }, { isTurnOwner: true }).querySelector('.tile')!;
     expect(owner.getAttribute('data-force')).toBe('Shu');
     expect(owner.classList).toContain('turn-owner');
-    const responding = render({ ...makeSeat(), kingdom: 'Wu' }, { isResponding: true }).querySelector('.tile')!;
+    const responding = render({ ...makeSeat(), generals: shownGenerals(), kingdom: 'Wu' }, { isResponding: true }).querySelector('.tile')!;
     expect(responding.getAttribute('data-force')).toBe('Wu');
   });
 
@@ -283,10 +295,10 @@ describe('SeatTile', () => {
   });
 
   it('shows status lines in the seat’s force colour, even once eliminated', () => {
-    const dying = render({ ...makeSeat(), kingdom: 'Wu', combinedHp: 0 }).querySelector('.status')!;
+    const dying = render({ ...makeSeat(), generals: shownGenerals(), kingdom: 'Wu', combinedHp: 0 }).querySelector('.status')!;
     expect(dying.classList).toContain('force-status');
     expect(dying.getAttribute('data-force')).toBe('Wu');
-    const out = render({ ...makeSeat(), kingdom: 'Shu', eliminated: true }).querySelector('.status')!;
+    const out = render({ ...makeSeat(), generals: shownGenerals(), kingdom: 'Shu', eliminated: true }).querySelector('.status')!;
     expect(out.textContent).toContain('Eliminated');
     expect(out.getAttribute('data-force')).toBe('Shu');
     expect(render({ ...makeSeat(), kingdom: 'hidden' }, { isResponding: true }).querySelector('.status')!.getAttribute('data-force')).toBe('none');

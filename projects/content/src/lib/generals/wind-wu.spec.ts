@@ -31,6 +31,31 @@ describe('Xiao Qiao — Fantasy', () => {
   });
 });
 
+describe('Xiao Qiao — Fantasy while her General is hidden', () => {
+  const hidden: TableOptions['generals'] = { 'seat-a': ['xiao-qiao', 'filler-sun-ce', false] };
+
+  it('is asked with only a spade in hand: Beauty makes it a heart once Fantasy reveals her', () => {
+    const asked = h.run(table({ 'seat-a:hand': [card('sp', 'sha', 'spade')] }, { generals: hidden }), [hit(1)]);
+    expect(askedAbout(asked)).toBe('fantasy');
+    const s = h.use(asked);
+    expect(s.seats.find((x) => x.id === 'seat-a')!.generals!.main.revealed).toBe(true);
+    expect(s.pendingSelection?.eligibleIds).toEqual(['sp']);
+    const moved = h.choose(h.select(s, 'sp'), 'seat-c');
+    expect(hp(moved, 'seat-a')).toBe(4);
+    expect(hp(moved, 'seat-c')).toBe(3);
+  });
+
+  it("Don't keeps her hidden and the damage is hers", () => {
+    const s = h.decline(h.run(table({ 'seat-a:hand': [card('sp', 'sha', 'spade')] }, { generals: hidden }), [hit(1)]));
+    expect(hp(s, 'seat-a')).toBe(3);
+    expect(s.seats.find((x) => x.id === 'seat-a')!.generals!.main.revealed).toBe(false);
+  });
+
+  it('is not asked with no heart and no spade in hand: asking would tell the table what she holds', () => {
+    expect(h.run(table({ 'seat-a:hand': [card('cl', 'sha', 'club')] }, { generals: hidden }), [hit(1)]).pendingChoice).toBeUndefined();
+  });
+});
+
 describe('Xiao Qiao — Beauty and the delayed Tools', () => {
   const judgedOnHer = (tool: string, judged: ReturnType<typeof card>) =>
     kw.settle(table({ 'seat-a:judgment': [card('t', tool, 'spade', 1)], drawPile: [judged, ...Array.from({ length: 4 }, (_, i) => card(`f${i}`, 'shan', 'diamond'))] }, { generals: xiaoQiao, phase: 'Start' }));
