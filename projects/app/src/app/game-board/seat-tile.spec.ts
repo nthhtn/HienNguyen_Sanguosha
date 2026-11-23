@@ -130,8 +130,8 @@ describe('SeatTile', () => {
   });
 
   it('labels the viewer’s own tile', () => {
-    expect(render(makeSeat(), { isViewer: true }).textContent).toContain('(you)');
-    expect(render(makeSeat()).textContent).not.toContain('(you)');
+    expect(render(makeSeat(), { isViewer: true }).textContent).toContain('(You)');
+    expect(render(makeSeat()).textContent).not.toContain('(You)');
   });
 
   it('highlights the turn owner and tags a responding seat', () => {

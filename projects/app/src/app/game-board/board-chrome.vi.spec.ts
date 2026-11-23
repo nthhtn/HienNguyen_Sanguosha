@@ -65,7 +65,7 @@ describe('PhaseIndicator in Vietnamese', () => {
   };
 
   it('names the turn, the owner (a nameless seat in Vietnamese), you, the phase and the draw pile', () => {
-    expect(render(state('Play'), 'seat-0').bar).toBe('Lượt 2 Người chơi 0 (bạn) – Giai đoạn ra bài Chồng bài rút 9');
+    expect(render(state('Play'), 'seat-0').bar).toBe('Lượt 2 Người chơi 0 (Bạn) – Giai đoạn ra bài Chồng bài rút 9');
     expect(render(state('Judgment'), 'seat-1').bar).toBe('Lượt 2 Người chơi 0 – Giai đoạn phán xét Chồng bài rút 9');
   });
 
@@ -77,10 +77,10 @@ describe('PhaseIndicator in Vietnamese', () => {
     const { fixture } = render(state('Play'), 'seat-0');
     await TestBed.inject(I18n).setLocale('en');
     await fixture.whenStable();
-    expect(text(fixture.nativeElement as HTMLElement)).toBe('Turn 2 Seat 0 (you) – Play Phase Draw Pile 9');
+    expect(text(fixture.nativeElement as HTMLElement)).toBe('Turn 2 Seat 0 (You) – Play Phase Draw Pile 9');
     await TestBed.inject(I18n).setLocale('vi');
     await fixture.whenStable();
-    expect(text(fixture.nativeElement as HTMLElement)).toBe('Lượt 2 Người chơi 0 (bạn) – Giai đoạn ra bài Chồng bài rút 9');
+    expect(text(fixture.nativeElement as HTMLElement)).toBe('Lượt 2 Người chơi 0 (Bạn) – Giai đoạn ra bài Chồng bài rút 9');
   });
 });
 
