@@ -74,11 +74,9 @@ export interface DiscardDialogData {
     .tick { position: absolute; top: 2px; right: 2px; z-index: 1; color: var(--force); background: #fff; border-radius: 50%; }
     .timer { display: block; padding: 8px 24px 0; }
     .foot { display: contents; }
-    /* The phone board (spec 4b, 3g): the hand is one row of full-size cards that scrolls sideways, and the countdown
-       and the button share one row. */
-    :host-context([data-layout='compact']) .hand { display: flex; flex-wrap: nowrap; gap: 8px; overflow-x: auto; padding: 8px 4px 6px; }
-    :host-context([data-layout='compact']) .hand li { flex: none; }
-    :host-context([data-layout='compact']) .card { width: auto; }
+    /* The phone board (spec 3h): full-size cards wrap into rows with room between them; a hand taller than the window
+       scrolls vertically, and the countdown and the button share one row below it. */
+    :host-context([data-layout='compact']) .hand { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 10px; padding: 4px; }
     :host-context([data-layout='compact']) .hint { margin-bottom: 6px; }
     :host-context([data-layout='compact']) .foot { display: flex; align-items: center; gap: 8px; }
     :host-context([data-layout='compact']) .foot .timer { flex: 1 1 auto; min-width: 0; padding: 0 0 0 12px; }

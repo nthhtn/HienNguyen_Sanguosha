@@ -230,6 +230,14 @@ interface CandidateViewModel {
        two rows (4 + 3 or 3 + 2) each take half the card area's height and are centred. A card is as tall as its row:
        the portrait on the left with a small Info button in its corner, and the name, force and HP to its right (the
        skills are in the Info window). Nothing scrolls; the header and the bar with Confirm stay on screen. */
+    /* The same width whatever is picked: the view must not follow the bar's contents, which change as the picks do
+       (spec 3h). */
+    :host-context([data-layout='compact']) { width: 100%; }
+    :host-context([data-layout='compact']) .bar { width: 100%; box-sizing: border-box; }
+    /* The role chip fits the portrait: one line, 12 px. */
+    :host-context([data-layout='compact']) .role-chip {
+      top: 2px; right: 2px; left: 2px; padding: 1px 2px; font-size: 12px; line-height: 1.2; text-align: center; white-space: nowrap;
+    }
     :host-context([data-layout='compact']) .intro h2 { margin-top: 0; font: var(--mat-sys-title-large); }
     :host-context([data-layout='compact']) .hint { margin: 2px 0 4px; }
     :host-context([data-layout='compact']) .candidates {

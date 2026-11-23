@@ -65,13 +65,26 @@ describe('windows on the phone board', () => {
   });
 
   describe('feedback from the third phone test (spec 3g)', () => {
-    it('Discard: the hand is a full-size row that scrolls sideways, with no minimum width that pushes the buttons out', () => {
+    it('Discard: full-size cards wrap with room between them and scroll vertically, with no minimum width that pushes the buttons out (spec 3h)', () => {
       const source = read('game-board/discard-dialog.ts');
       const rule = /:host-context\(\[data-layout='compact'\]\) \.hand \{([^}]*)\}/.exec(source)?.[1] ?? '';
-      expect(rule).toMatch(/display:\s*flex/);
-      expect(rule).toMatch(/flex-wrap:\s*nowrap/);
-      expect(rule).toMatch(/overflow-x:\s*auto/);
+      expect(rule).toMatch(/minmax\(84px, 1fr\)/);
+      expect(Number(/gap:\s*(\d+)px/.exec(rule)?.[1])).toBeGreaterThanOrEqual(10);
+      expect(rule).not.toMatch(/overflow-x/);
       expect(source).not.toMatch(/min-width:\s*600px/);
+    });
+
+    it('the General selection column stretches to the full width, so its width never follows the bar (spec 3h)', () => {
+      expect(read('game-board/game-board.ts')).toMatch(/\.selecting \{ flex-direction: column; align-items: stretch; \}/);
+    });
+
+    it('General selection keeps one width whatever is picked, and its role chip stays on one line (spec 3h)', () => {
+      const source = read('game-board/general-selection.ts');
+      expect(source).toMatch(/:host-context\(\[data-layout='compact'\]\) \{ width: 100%; \}/);
+      expect(source).toMatch(/:host-context\(\[data-layout='compact'\]\) \.bar \{ width: 100%/);
+      const chip = /:host-context\(\[data-layout='compact'\]\) \.role-chip \{([^}]*)\}/.exec(source)?.[1] ?? '';
+      expect(chip).toMatch(/white-space:\s*nowrap/);
+      expect(px(chip, 'font-size')).toBeGreaterThanOrEqual(12);
     });
 
     it('the Judgment outcome box has no minimum height on the phone board', () => {
@@ -108,11 +121,13 @@ describe('windows on the phone board', () => {
     expect(px(rule, 'font-size')).toBeGreaterThanOrEqual(12);
   });
 
-  it('keep the selection panel buttons on screen while its cards scroll (Compete, picks)', () => {
+  it('keep the selection panel buttons below a card area that scrolls, never over a card (Compete, picks, Amass; spec 3h)', () => {
     const panel = read('game-board/selection-panel.ts');
-    const rule = /:host-context\(\[data-layout='compact'\]\) \.actions \{([^}]*)\}/.exec(panel)?.[1] ?? '';
-    expect(rule).toMatch(/position:\s*sticky/);
-    expect(rule).toMatch(/bottom:\s*0/);
+    const items = /:host-context\(\[data-layout='compact'\]\) \.items \{([^}]*)\}/.exec(panel)?.[1] ?? '';
+    expect(items).toMatch(/overflow-y:\s*auto/);
+    const actions = /:host-context\(\[data-layout='compact'\]\) \.actions \{([^}]*)\}/.exec(panel)?.[1] ?? '';
+    expect(actions).not.toMatch(/position:\s*sticky/);
+    expect(read('game-board/selection-dialog.ts')).toMatch(/:host-context\(\[data-layout='compact'\]\) mat-dialog-content \{[^}]*overflow:\s*hidden/);
   });
 
   describe('Game Over and the online result', () => {

@@ -244,6 +244,14 @@ The developer asked for a lighter centre band, with the in-game extras grouped i
 - **Centre band countdown:** The timer is wide enough for its clock icon, seconds and bar, which were clipped.
 - **General pictures** (answer to a question, no change): The face crops are 101 to 126 px square and the portraits 250 × 292 px. A tile picture about 85 px wide is drawn at about 300 device pixels on a phone with a pixel ratio of 3.5, so it is enlarged about 2.5 times beyond its natural resolution, and even the full portrait would be. A sharper picture needs higher-resolution source art.
 
+### 3h. Feedback from the fourth real-phone test (2026-11-23)
+
+- **General picker** (developer's choices):
+  - **Role badge:** The Main and Deputy badge on a portrait is one line at 12 px and fits the portrait (it wrapped and was cut).
+  - **Stable size:** The picker has the same width and card positions whether no General, one or two are picked. Cause: On narrow screens the picker's column was as wide as its widest content, and the bar's content changes with the picks; the column now stretches to the full width.
+- **Discard and card-pick windows** (developer's choice, replaces the sideways scroll of 3g for the Discard window): The cards are full size and wrap into rows with room between them; when they do not all fit they scroll vertically inside their own area, and the buttons sit below it and never cover a card. This holds for the Discard phase window and for picks such as Amass and Compete.
+- **Centre band** (developer's choice): A player's name in the newest line is in their force's colour, bold.
+
 ### 4. Windows on the phone
 
 Every window that can open during a game must fit a 760 × 340 px window without the page scrolling, with its buttons always on screen. If the content is long, the content scrolls inside the window and the buttons stay fixed.

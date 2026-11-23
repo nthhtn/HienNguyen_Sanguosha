@@ -41,6 +41,14 @@ describe('PhoneCentreBand', () => {
     expect(el.querySelector('.latest')!.textContent!.trim().length).toBeGreaterThan(0);
   });
 
+  it("shows a player's name in the newest line in their force's colour (spec 3h)", () => {
+    const { el } = render(state());
+    const who = el.querySelector('.latest .who');
+    expect(who).not.toBeNull();
+    expect(who!.getAttribute('data-force')).toBeTruthy();
+    expect(who!.textContent).toMatch(/^Seat \d$/);
+  });
+
   it('opens the menu drawer from Menu', () => {
     const { el } = render(state());
     (el.querySelector('button.menu') as HTMLButtonElement).click();
