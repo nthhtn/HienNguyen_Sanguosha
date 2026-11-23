@@ -21,7 +21,7 @@ describe('PhoneSeatTile', () => {
     return fixture.nativeElement as HTMLElement;
   }
 
-  it('shows the name, HP, hand count, both Generals, three Judgment boxes and four Equipment boxes', () => {
+  it('shows the name, HP, hand count, both Generals and only the Judgment and Equipment cards the seat has', () => {
     const el = render(testSeat('seat-3', 3, { combinedHp: 3, maxCombinedHp: 4 }), {
       judgment: [card('j1', 'lightning')],
       equipment: [card('e1', 'serpent-spear')],
@@ -30,13 +30,16 @@ describe('PhoneSeatTile', () => {
     expect(el.querySelector('.hp')!.getAttribute('aria-label')).toBe('HP 3/4');
     expect(el.querySelector('.hand')!.textContent).toContain('5');
     expect(el.querySelectorAll('.general')).toHaveLength(2);
-    const judgment = el.querySelectorAll('.judgment-box');
-    expect(judgment).toHaveLength(3);
-    expect([...judgment].filter((b) => b.classList.contains('filled'))).toHaveLength(1);
-    const equipment = el.querySelectorAll('.equip-box');
-    expect(equipment).toHaveLength(4);
+    expect(el.querySelectorAll('.judgment-box')).toHaveLength(1);
+    expect(el.querySelectorAll('.equip-box')).toHaveLength(1);
     expect(el.querySelector('.equip-box[data-slot="weapon"]')!.classList).toContain('filled');
-    expect(el.querySelector('.equip-box[data-slot="armor"]')!.classList).not.toContain('filled');
+  });
+
+  it('draws no boxes for a seat with no Judgment or Equipment cards, but keeps the Equipment row', () => {
+    const el = render(testSeat('seat-3', 3));
+    expect(el.querySelectorAll('.judgment-box')).toHaveLength(0);
+    expect(el.querySelectorAll('.equip-box')).toHaveLength(0);
+    expect(el.querySelector('.equipment')).not.toBeNull();
   });
 
   it('shows the chained mark only for a chained seat, with an accessible name', () => {
