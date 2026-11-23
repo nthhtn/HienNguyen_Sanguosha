@@ -12,8 +12,8 @@ export const harvestNotice: ResolutionNoticeDefinition = {
     return {
       source: { kind: 'card', id: 'harvest' },
       seatIds: picks.map((p) => p.seatId),
-      // A card and a name per seat is more to read than most notices.
-      seconds: 10,
+      // A card and a name per seat is more to read than most notices: a second per participant, at most 5.
+      seconds: Math.min(picks.length, 5),
       steps: [],
       cards: [],
       seatCards: picks.map((p) => ({ seatId: p.seatId, card: p.shows.card })),

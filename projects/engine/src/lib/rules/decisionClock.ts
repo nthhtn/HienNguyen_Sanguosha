@@ -22,7 +22,7 @@ export const DECISION_SECONDS = {
   discard: 30,
   selection: 300,
   // A settled judgment, for anyone to read and close: the countdown after its animation.
-  notice: 5,
+  notice: 3,
   // A look at cards or a General that is only shown, then closed (Ascertain's look).
   look: 30,
   // A skill's decision whether to change a judgment's card; the card pick that follows has its own clock of the same length.

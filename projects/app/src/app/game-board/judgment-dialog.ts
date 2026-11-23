@@ -23,7 +23,7 @@ export interface JudgmentDialogData {
 
 // A judgment, for every seat at the table to see, as a fixed sequence (JudgmentStage): what required it,
 // the rule, the card and each replacement of it, a check or cross, and what it does. Once no skill can
-// change the card the 5 s countdown closes it; there is no way to skip it.
+// change the card the 3 s countdown closes it; there is no way to skip it.
 // Informational: it asks nothing of the player. Themed in a force colour by its panel class (openForceDialog).
 @Component({
   selector: 'app-judgment-dialog',

@@ -14,7 +14,7 @@ import { SeatPortrait } from './seat-portrait';
 
 // Seconds a notice stays before it closes itself, unless its content asks for another length
 // (`ResolutionNoticeContent.seconds`). There is no button and no skip.
-export const NOTICE_SECONDS = 5;
+export const NOTICE_SECONDS = 3;
 
 export interface ResolutionNoticeDialogData {
   content: ResolutionNoticeContent;

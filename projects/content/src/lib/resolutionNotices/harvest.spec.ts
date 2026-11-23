@@ -12,10 +12,16 @@ describe('Harvest notice', () => {
     const n = harvestNotice.describe(span('harvest', 'a', ['a', 'b'], [played('harvest', 'a', ['a', 'b']), picks('a', peach), picks('b', sha)]), view())!;
     expect(n.seatIds).toEqual(['a', 'b']);
     expect(n.seatCards).toEqual([{ seatId: 'a', card: peach }, { seatId: 'b', card: sha }]);
-    expect(n.seconds).toBe(10);
+    expect(n.seconds).toBe(2);
     expect(n.steps).toEqual([]);
     expect(n.cards).toEqual([]);
     expect(n.outcome).toMatchObject({ tone: 'neutral', headline: { key: 'notice.harvest.done' }, text: { key: 'notice.harvest.text' } });
+  });
+  it('lasts one second per participant, at most 5', () => {
+    const seats = ['a', 'b', 'c', 'd', 'e', 'f'];
+    const lasts = (n: number) =>
+      harvestNotice.describe(span('harvest', 'a', seats.slice(0, n), [played('harvest', 'a', seats.slice(0, n)), ...seats.slice(0, n).map((id) => picks(id, card(`c-${id}`, 'peach')))]), view())!.seconds;
+    expect([lasts(2), lasts(4), lasts(6)]).toEqual([2, 4, 5]);
   });
   it('has nothing to show when no seat took a card', () => {
     expect(harvestNotice.describe(span('harvest', 'a', ['a'], [played('harvest', 'a', ['a'])]), view())).toBeNull();
