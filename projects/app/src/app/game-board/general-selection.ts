@@ -5,7 +5,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ChooseGeneralsAction, ContentRegistry, Kingdom, combinedMaxHp } from 'engine';
 import { GeneralDisplayData, generalDisplayData } from 'content';
+import { MatDialog } from '@angular/material/dialog';
 import { CardArt } from './card-art';
+import { GeneralInfoDialog, GeneralInfoDialogData } from './general-info-dialog';
 import { HpIcons } from '../hp-icons';
 import { DecisionCountdown } from './decision-countdown';
 import { generalDisplayName, kingdomDisplayName } from '../labels';
@@ -59,6 +61,17 @@ interface CandidateViewModel {
               <div class="left">
                 <div class="art">
                   <app-card-art size="large" [skin]="true" [id]="vm.id" [label]="vm.name" />
+                  <button
+                    mat-icon-button
+                    type="button"
+                    class="general-info"
+                    [attr.aria-label]="'ui.info' | t: { name: vm.name }"
+                    (click)="openInfo(vm.id); $event.stopPropagation()"
+                    (keydown.enter)="$event.stopPropagation()"
+                    (keydown.space)="$event.stopPropagation()"
+                  >
+                    <mat-icon>info</mat-icon>
+                  </button>
                   @if (vm.role; as role) {
                     <span class="role-chip" [class.deputy]="role === 'Deputy'">{{ roleName(role) }}</span>
                   }
@@ -180,6 +193,11 @@ interface CandidateViewModel {
     }
     /* Main and Deputy differ by style, not colour: no kingdom's hue. */
     .role-chip.deputy { background: var(--mat-sys-surface); color: var(--mat-sys-primary); box-shadow: inset 0 0 0 2px var(--mat-sys-primary); }
+    /* Info opens the General's full window; only the phone board shows it (its skill text does not scroll). */
+    .general-info {
+      display: none; position: absolute; top: 0; right: 0; z-index: 1;
+      color: var(--mat-sys-on-surface-variant);
+    }
     .caption { flex: none; box-sizing: border-box; height: var(--caption-height); padding: 6px 4px; text-align: center; overflow: hidden; }
     .name { font: var(--mat-sys-title-medium); }
     .meta { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 4px; }
@@ -208,21 +226,36 @@ interface CandidateViewModel {
       --art-width: 130px; max-width: none; height: 270px;
     }
     :host-context([data-layout='medium']) .bar { position: sticky; bottom: 0; z-index: 2; background: var(--mat-sys-surface-container); border-radius: 12px; }
-    /* Phone board (the installed app on a phone): one screen, no page scroll (spec, "Windows on the phone"). Each card is
-       as tall as the card area and its art follows (about 85 px wide on an 800 x 366 window, 96 px at most); more cards
-       scroll inside the area, and the header and the bar with Confirm stay on screen. */
+    /* Phone board (the installed app on a phone): one screen, no page scroll (spec, "Windows on the phone" and 3c). The
+       two rows (4 + 3 or 3 + 2) each take half the card area's height and are centred. A card is as tall as its row:
+       the portrait on the left with a small Info button in its corner, and the name, force and HP to its right (the
+       skills are in the Info window). Nothing scrolls; the header and the bar with Confirm stay on screen. */
     :host-context([data-layout='compact']) .intro h2 { margin-top: 0; font: var(--mat-sys-title-large); }
     :host-context([data-layout='compact']) .hint { margin: 2px 0 4px; }
     :host-context([data-layout='compact']) .candidates {
-      --caption-height: 52px;
-      container-type: size;
-      justify-content: flex-start; overflow-y: auto; overscroll-behavior: contain; margin: 4px 0; padding: 4px;
-      display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); align-content: start;
+      display: flex; flex-direction: column; justify-content: center; gap: 6px;
+      overflow: hidden; margin: 4px 0; padding: 4px;
     }
-    :host-context([data-layout='compact']) .row { display: contents; }
+    :host-context([data-layout='compact']) .row { display: flex; flex: 1 1 0; min-height: 0; justify-content: center; gap: 8px; }
     :host-context([data-layout='compact']) .candidate {
-      --art-width: min(96px, calc((100cqh - var(--caption-height) - 6px) * 200 / 290)); max-width: none; height: 100cqh;
+      flex: 0 1 186px; min-width: 0; max-width: 186px; height: 100%;
     }
+    :host-context([data-layout='compact']) .left { flex-direction: row; width: 100%; max-width: none; }
+    :host-context([data-layout='compact']) .art { flex: none; height: 100%; aspect-ratio: 200 / 290; }
+    :host-context([data-layout='compact']) .right { display: none; }
+    :host-context([data-layout='compact']) .caption {
+      flex: 1; min-width: 0; height: auto; padding: 4px 6px; text-align: left;
+      display: flex; flex-direction: column; justify-content: center; gap: 2px; overflow: hidden;
+    }
+    :host-context([data-layout='compact']) .caption .name { font-size: 14px; line-height: 1.15; overflow-wrap: anywhere; }
+    :host-context([data-layout='compact']) .caption .meta { flex-direction: column; align-items: flex-start; gap: 2px; margin-top: 2px; }
+    :host-context([data-layout='compact']) .caption ::ng-deep app-hp-icons img { width: 12px; height: auto; }
+    :host-context([data-layout='compact']) .general-info {
+      display: inline-flex; top: auto; right: auto; bottom: 2px; left: 2px;
+      --mat-icon-button-state-layer-size: 32px; width: 32px; height: 32px; padding: 4px;
+      color: #fff; background: rgb(0 0 0 / 0.5); border-radius: 50%;
+    }
+    :host-context([data-layout='compact']) .general-info mat-icon { font-size: 20px; width: 20px; height: 20px; }
     :host-context([data-layout='compact']) .bar { padding: 4px 8px; }
     @media (max-width: 600px) {
       .bar { gap: 8px; }
@@ -240,6 +273,11 @@ export class GeneralSelection {
   readonly chosen = output<ChooseGeneralsAction>();
 
   private readonly i18n = inject(I18n);
+  private readonly dialog = inject(MatDialog);
+
+  protected openInfo(generalDefinitionId: string): void {
+    this.dialog.open<GeneralInfoDialog, GeneralInfoDialogData>(GeneralInfoDialog, { data: { generalDefinitionId }, width: 'min(92vw, 520px)' });
+  }
 
   // UI-only state: the player's picks in order, [main, deputy].
   protected readonly selected = signal<string[]>([]);

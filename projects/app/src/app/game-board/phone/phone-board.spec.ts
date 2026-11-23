@@ -121,4 +121,79 @@ describe('PhoneBoard', () => {
       expect(expected.topTileWidth).not.toBe(phoneSizes(915, 412, phoneSeats(testSeats(12), 'seat-0')).topTileWidth);
     });
   });
+
+  describe('a picked hand card', () => {
+    const peach = { instanceId: 'p1', definitionId: 'peach', suit: 'heart' as const, rank: 3 };
+    const sha = { instanceId: 's1', definitionId: 'sha', suit: 'spade' as const, rank: 7 };
+    const eat = { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'p1', targets: [] } as unknown as Action;
+    const endPhase = { kind: 'EndPhaseAction', seatId: 'seat-0' } as unknown as Action;
+
+    function withHand(handActions: Action[]) {
+      const { fixture, el } = render(4);
+      fixture.componentRef.setInput('hand', [peach, sha]);
+      fixture.componentRef.setInput('handActions', handActions);
+      fixture.componentRef.setInput('boardActions', [endPhase]);
+      fixture.detectChanges();
+      const chosen: Action[] = [];
+      const played: Action[] = [];
+      fixture.componentInstance.actionChosen.subscribe((a) => chosen.push(a));
+      fixture.componentInstance.played.subscribe((a) => played.push(a));
+      const pick = (id: string) => {
+        (el.querySelector(`app-hand-view [data-card-id="${id}"]`) as HTMLElement).click();
+        fixture.detectChanges();
+      };
+      return { fixture, el, chosen, played, pick };
+    }
+
+    it('shows its Play and Info at the top of the action column', () => {
+      const { el, pick } = withHand([eat]);
+      expect(el.querySelector('.actions app-hand-card-actions')).toBeNull();
+      pick('p1');
+      const first = el.querySelector('.actions')!.firstElementChild!;
+      expect(first.tagName.toLowerCase()).toBe('app-hand-card-actions');
+      expect(first.querySelector('button.play')).not.toBeNull();
+      expect(first.querySelector('button.info')).not.toBeNull();
+    });
+
+    it('plays it from the action column and clears the pick', () => {
+      const { fixture, el, played, pick } = withHand([eat]);
+      pick('p1');
+      (el.querySelector('.actions app-hand-card-actions button.play') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      expect(played).toEqual([eat]);
+      expect(el.querySelector('.actions app-hand-card-actions')).toBeNull();
+    });
+
+    it('shows only Info for a card that cannot be played', () => {
+      const { el, pick } = withHand([eat]);
+      pick('s1');
+      expect(el.querySelector('.actions app-hand-card-actions button.play')).toBeNull();
+      expect(el.querySelector('.actions app-hand-card-actions button.info')).not.toBeNull();
+    });
+
+    it('clears the pick when the card leaves the hand', () => {
+      const { fixture, el, pick } = withHand([eat]);
+      pick('p1');
+      fixture.componentRef.setInput('hand', [sha]);
+      fixture.detectChanges();
+      expect(el.querySelector('.actions app-hand-card-actions')).toBeNull();
+    });
+
+    it('clears the pick when another action is chosen', () => {
+      const { el, chosen, pick, fixture } = withHand([eat]);
+      pick('p1');
+      (el.querySelector('.actions app-action-list button') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      expect(chosen).toEqual([endPhase]);
+      expect(el.querySelector('.actions app-hand-card-actions')).toBeNull();
+    });
+
+    it('puts the card back on a second tap', () => {
+      const { el, pick } = withHand([eat]);
+      pick('p1');
+      pick('p1');
+      expect(el.querySelector('.actions app-hand-card-actions')).toBeNull();
+    });
+  });
 });
+

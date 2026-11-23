@@ -59,6 +59,54 @@ describe('HandView', () => {
   afterEach(() => overlay()?.replaceChildren());
 
 
+  describe('on the phone board (overlap)', () => {
+    let picks: (string | null)[];
+    beforeEach(() => {
+      fixture.componentRef.setInput('fit', 'overlap');
+      picks = [];
+      fixture.componentInstance.picked.subscribe((id) => picks.push(id));
+      fixture.detectChanges();
+    });
+
+    it('shows no buttons on the cards', () => {
+      expect(el.querySelector('.overlay')).toBeNull();
+      expect(el.querySelector('button.play')).toBeNull();
+    });
+
+    it('picks a card on a tap, and puts the picked card back on another tap', () => {
+      card(hand[0].instanceId).click();
+      expect(picks).toEqual([hand[0].instanceId]);
+      fixture.componentRef.setInput('pickedId', hand[0].instanceId);
+      fixture.detectChanges();
+      expect(card(hand[0].instanceId).classList).toContain('picked');
+      card(hand[0].instanceId).click();
+      expect(picks).toEqual([hand[0].instanceId, null]);
+      expect(played).toEqual([]);
+    });
+
+    it('picks another card instead of the picked one', () => {
+      fixture.componentRef.setInput('pickedId', hand[0].instanceId);
+      fixture.detectChanges();
+      card(hand[1].instanceId).click();
+      expect(picks).toEqual([hand[1].instanceId]);
+    });
+  });
+
+  it("leaves Space to the Play and Info buttons on tablets and computers", () => {
+    card(hand[0].instanceId).focus();
+    const event = new KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true, cancelable: true });
+    playButton(hand[0].instanceId).dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it('emits no pick on a tap on tablets and computers', () => {
+    const picks: (string | null)[] = [];
+    fixture.componentInstance.picked.subscribe((id) => picks.push(id));
+    card(hand[0].instanceId).click();
+    expect(picks).toEqual([]);
+    expect(el.querySelector('.overlay')).not.toBeNull();
+  });
+
   it('renders every hand card in one row, each with Play and Info buttons', () => {
     const row = el.querySelector('.hand-row')!;
     expect(row.querySelectorAll('.hand-card')).toHaveLength(3);

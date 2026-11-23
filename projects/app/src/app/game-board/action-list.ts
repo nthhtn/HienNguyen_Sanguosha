@@ -3,6 +3,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { Action, ContentRegistry, GameState, findSkill } from 'engine';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { actionLabel, conversionLabel, registryCardName, targetLabel } from '../labels';
 import { TargetLabel } from './target-label';
 import { TargetsDialog, TargetsDialogData } from './targets-dialog';
@@ -51,19 +52,19 @@ interface ConversionGroup {
 
 @Component({
   selector: 'app-action-list',
-  imports: [MatButtonModule, MatMenuModule, TargetLabel, TPipe],
+  imports: [MatButtonModule, MatMenuModule, MatTooltipModule, TargetLabel, TPipe],
   template: `
     <div class="action-list">
       @for (item of labeledActions(); track item.action) {
-        <button mat-stroked-button type="button" (click)="actionChosen.emit(item.action)">{{ item.label }}</button>
+        <button mat-stroked-button type="button" [matTooltip]="item.label" [matTooltipDisabled]="!compact()" (click)="actionChosen.emit(item.action)">{{ item.label }}</button>
       }
       @for (group of conversionGroups(); track group.label) {
         @if (group.template) {
-          <button mat-stroked-button type="button" class="conversion" (click)="pickTargets(group)">{{ group.label }}</button>
+          <button mat-stroked-button type="button" class="conversion" [matTooltip]="group.label" [matTooltipDisabled]="!compact()" (click)="pickTargets(group)">{{ group.label }}</button>
         } @else if (group.direct) {
-          <button mat-stroked-button type="button" class="conversion" (click)="actionChosen.emit(group.direct)">{{ group.label }}</button>
+          <button mat-stroked-button type="button" class="conversion" [matTooltip]="group.label" [matTooltipDisabled]="!compact()" (click)="actionChosen.emit(group.direct)">{{ group.label }}</button>
         } @else {
-          <button mat-stroked-button type="button" class="conversion" [matMenuTriggerFor]="targets">{{ group.label }}</button>
+          <button mat-stroked-button type="button" class="conversion" [matTooltip]="group.label" [matTooltipDisabled]="!compact()" [matMenuTriggerFor]="targets">{{ group.label }}</button>
           <mat-menu #targets="matMenu">
             @for (use of group.uses; track use.label) {
               <button mat-menu-item type="button" (click)="actionChosen.emit(use.action)"><app-target-label [label]="use.label" [prefix]="'actions.targeting' | t" [targets]="use.action.targets" [state]="state()" /></button>
@@ -78,6 +79,8 @@ interface ConversionGroup {
   `,
 })
 export class ActionList {
+  // The phone board: labels are cut to one line there, so each button carries its full label as a long-press tooltip.
+  readonly compact = input(false);
   readonly actions = input.required<Action[]>();
   readonly state = input.required<GameState>();
   readonly registry = input.required<ContentRegistry>();

@@ -1,67 +1,9 @@
 import { Component, DestroyRef, ElementRef, computed, inject, input, output, signal } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
-import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
-import { Action, CardInstance, ContentRegistry, GameState, Target } from 'engine';
-import { actionLabel, targetLabel, targetingParts } from '../labels';
-import { TargetLabel } from './target-label';
+import { Action, CardInstance, ContentRegistry, GameState } from 'engine';
 import { PlayingCard } from './playing-card';
-import { CardInfoDialog, CardInfoDialogData } from './card-info-dialog';
-import { TargetsDialog, TargetsDialogData } from './targets-dialog';
+import { HandCardActions, handCardViewModels } from './hand-card-actions';
 import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
-import type { Translator } from '../i18n/translator';
-
-type PlayCard = Extract<Action, { kind: 'PlayCardAction' }>;
-
-interface HandCardViewModel {
-  card: CardInstance;
-  name: string;
-  actions: LabeledPlay[];
-  // Two-seat plays (Coerce: the holder, then the victim), grouped by first seat.
-  pairs: { seatId: string; labeled: LabeledPlay; seconds: LabeledPlay[] }[] | null;
-  // A lone targeted play is still shown as a menu: the viewer decides whether
-  // the only target is really the one they want.
-  confirmTargets: boolean;
-  // A play with several equal targets (Sha with Sky Scorcher): picked in the Choose Targets window.
-  template: PlayCard | null;
-  // Beside a template, the card's other plays (Chains' Recast): a menu then
-  // offers the template's window and these.
-  besideTemplate: LabeledPlay[];
-  templateLabel: string;
-}
-
-// A menu entry: the plain label, and where its targets begin when it names any.
-interface LabeledPlay {
-  action: Action;
-  label: string;
-  targeting: { prefix: string; targets: Target[] } | null;
-}
-
-function labeled(action: Action, state: GameState, registry: ContentRegistry, tr: Translator): LabeledPlay {
-  return { action, label: actionLabel(action, state, registry, tr), targeting: targetingParts(action, state, registry, tr) };
-}
-
-function cardInstanceIdOf(action: Action): string | undefined {
-  return action.kind === 'PlayCardAction' ? action.cardInstanceId : undefined;
-}
-
-// Two-seat plays grouped by their first seat, in order: "Play Coerce
-// Targeting Seat 1", then "At Seat 2".
-function groupPairs(plays: PlayCard[], state: GameState, registry: ContentRegistry, tr: Translator): NonNullable<HandCardViewModel['pairs']> {
-  const groups: NonNullable<HandCardViewModel['pairs']> = [];
-  for (const play of plays) {
-    const [first, second]: Target[] = play.targets;
-    let group = groups.find((g) => g.seatId === first.seatId);
-    if (!group) {
-      group = { seatId: first.seatId, labeled: labeled({ ...play, targets: [first] }, state, registry, tr), seconds: [] };
-      groups.push(group);
-    }
-    group.seconds.push({ action: play, label: tr('hand.atTarget', { target: targetLabel(second, state.players, tr) }), targeting: { prefix: tr('hand.at'), targets: [second] } });
-  }
-  return groups;
-}
 
 // The viewer's own hand as one row of cards. Hovering (or focusing, for touch)
 // a card reveals its Play button (only when the card can be played), from the engine's legal actions for that card
@@ -91,66 +33,27 @@ export function handStep(width: number, count: number, cardWidth: number, gap: n
 
 @Component({
   selector: 'app-hand-view',
-  imports: [MatButtonModule, MatIconModule, MatMenuModule, PlayingCard, TargetLabel, TPipe],
+  imports: [PlayingCard, HandCardActions, TPipe],
   template: `
     <div class="hand-row" role="list" [class.overlap]="fit() === 'overlap'">
       @for (vm of cardViewModels(); track vm.card.instanceId; let first = $first) {
-        <div class="hand-card" role="listitem" tabindex="0" [attr.data-card-id]="vm.card.instanceId" [style.margin-left.px]="first ? null : overlapMargin()">
+        <div
+          class="hand-card"
+          role="listitem"
+          tabindex="0"
+          [attr.data-card-id]="vm.card.instanceId"
+          [class.picked]="vm.card.instanceId === pickedId()"
+          [style.margin-left.px]="first ? null : overlapMargin()"
+          (click)="tap(vm.card.instanceId)"
+          (keydown.enter)="keyTap($event, vm.card.instanceId)"
+          (keydown.space)="keyTap($event, vm.card.instanceId)"
+        >
           <app-playing-card [card]="vm.card" />
-          <div class="overlay">
-            @if (vm.template && vm.besideTemplate.length > 0) {
-              <button mat-flat-button type="button" class="play" [matMenuTriggerFor]="withPick">
-                <mat-icon>play_arrow</mat-icon> {{ 'hand.play' | t }}
-              </button>
-              <mat-menu #withPick="matMenu">
-                <button mat-menu-item type="button" (click)="pickTargets(vm)">{{ vm.templateLabel }}</button>
-                @for (choice of vm.besideTemplate; track choice.action) {
-                  <button mat-menu-item type="button" (click)="played.emit(choice.action)"><app-target-label [label]="choice.label" [prefix]="choice.targeting?.prefix ?? null" [targets]="choice.targeting?.targets ?? []" [state]="state()" /></button>
-                }
-              </mat-menu>
-            } @else if (vm.template) {
-              <button mat-flat-button type="button" class="play" (click)="pickTargets(vm)">
-                <mat-icon>play_arrow</mat-icon> {{ 'hand.play' | t }}
-              </button>
-            } @else if (vm.pairs) {
-              <button mat-flat-button type="button" class="play" [matMenuTriggerFor]="firsts">
-                <mat-icon>play_arrow</mat-icon> {{ 'hand.play' | t }}
-              </button>
-              <mat-menu #firsts="matMenu">
-                @for (group of vm.pairs; track group.seatId) {
-                  <button mat-menu-item type="button" [matMenuTriggerFor]="seconds" [matMenuTriggerData]="{ group }"><app-target-label [label]="group.labeled.label" [prefix]="group.labeled.targeting?.prefix ?? null" [targets]="group.labeled.targeting?.targets ?? []" [state]="state()" /></button>
-                }
-              </mat-menu>
-              <mat-menu #seconds="matMenu">
-                <ng-template matMenuContent let-group="group">
-                  @for (second of group.seconds; track second.label) {
-                    <button mat-menu-item type="button" (click)="played.emit(second.action)"><app-target-label [label]="second.label" [prefix]="second.targeting?.prefix ?? null" [targets]="second.targeting?.targets ?? []" [state]="state()" /></button>
-                  }
-                </ng-template>
-              </mat-menu>
-            } @else if (vm.confirmTargets || vm.actions.length > 1) {
-              <button mat-flat-button type="button" class="play" [matMenuTriggerFor]="choices">
-                <mat-icon>play_arrow</mat-icon> {{ 'hand.play' | t }}
-              </button>
-              <mat-menu #choices="matMenu">
-                @for (choice of vm.actions; track choice.action) {
-                  <button mat-menu-item type="button" (click)="played.emit(choice.action)"><app-target-label [label]="choice.label" [prefix]="choice.targeting?.prefix ?? null" [targets]="choice.targeting?.targets ?? []" [state]="state()" /></button>
-                }
-              </mat-menu>
-            } @else if (vm.actions.length > 0) {
-              <button
-                mat-flat-button
-                type="button"
-                class="play"
-                (click)="played.emit(vm.actions[0].action)"
-              >
-                <mat-icon>play_arrow</mat-icon> {{ 'hand.play' | t }}
-              </button>
-            }
-            <button mat-stroked-button type="button" class="info" (click)="openInfo(vm)">
-              <mat-icon>info</mat-icon> {{ 'hand.info' | t }}
-            </button>
-          </div>
+          @if (fit() === 'row') {
+            <div class="overlay">
+              <app-hand-card-actions [vm]="vm" [state]="state()" (played)="played.emit($event)" />
+            </div>
+          }
         </div>
       } @empty {
         <span class="empty">{{ 'hand.empty' | t }}</span>
@@ -190,24 +93,23 @@ export function handStep(width: number, count: number, cardWidth: number, gap: n
     }
     .hand-card:hover .overlay,
     .hand-card:focus-within .overlay { opacity: 1; pointer-events: auto; }
-    .overlay button {
+    .overlay ::ng-deep button {
       min-width: 0;
       height: 32px;
       padding: 0 6px;
       font-size: 12px;
       --mat-button-outlined-label-text-color: #fff;
     }
-    .overlay mat-icon { margin-right: 2px; font-size: 18px; width: 18px; height: 18px; }
+    .overlay ::ng-deep mat-icon { margin-right: 2px; font-size: 18px; width: 18px; height: 18px; }
     .empty { color: var(--mat-sys-on-surface-variant); }
     /* Medium layout: a shorter row. */
     :host-context([data-layout='medium']) .hand-row { padding: 12px 4px 0; }
-    /* Phone board: cards overlap when they do not fit (each card keeps at least 44 px showing, then the row scrolls),
-       the card in use comes to the front, and its buttons are full-size tap targets. */
+    /* Phone board: cards overlap when they do not fit (each card keeps at least 44 px showing, then the row scrolls). A
+       tap picks a card (spec 3c): it lifts, is outlined and comes to the front; its buttons are in the action column. */
     .hand-row.overlap { gap: 0; padding: 12px 4px 0; }
     .hand-row.overlap .hand-card:hover,
-    .hand-row.overlap .hand-card:focus-within { z-index: 1; }
-    .hand-row.overlap .overlay { top: auto; bottom: 0; min-height: 100%; }
-    .hand-row.overlap .overlay button { height: auto; min-height: 44px; font-size: 14px; }
+    .hand-row.overlap .hand-card:focus-within { transform: none; }
+    .hand-row.overlap .hand-card.picked { transform: translateY(-10px); z-index: 1; box-shadow: 0 0 0 3px #e0a92e; }
     .hand-row.overlap ::ng-deep app-playing-card .name {
       font-size: 14px; line-height: 1.1; white-space: normal; overflow-wrap: anywhere;
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
@@ -234,49 +136,24 @@ export class HandView {
   readonly state = input.required<GameState>();
   readonly registry = input.required<ContentRegistry>();
   readonly played = output<Action>();
+  // The phone board's picked card (its buttons are in the action column), and a tap that picks or puts back a card.
+  readonly pickedId = input<string | null>(null);
+  readonly picked = output<string | null>();
 
-  private readonly dialog = inject(MatDialog);
+  protected tap(cardId: string): void {
+    if (this.fit() !== 'overlap') return;
+    this.picked.emit(cardId === this.pickedId() ? null : cardId);
+  }
+
+  // Enter or Space on the card itself picks it on the phone board. Keys from a button inside the card (Play and Info on
+  // tablets and computers) are left to that button.
+  protected keyTap(event: Event, cardId: string): void {
+    if (this.fit() !== 'overlap' || event.target !== event.currentTarget) return;
+    event.preventDefault();
+    this.tap(cardId);
+  }
+
   private readonly i18n = inject(I18n);
 
-  protected readonly cardViewModels = computed<HandCardViewModel[]>(() =>
-    this.cards().map((card) => {
-      const plays = this.actions().filter((a): a is PlayCard => a.kind === 'PlayCardAction' && a.cardInstanceId === card.instanceId);
-      const pairs = plays.length > 0 && plays.every((p) => p.targets.length === 2) ? groupPairs(plays, this.state(), this.registry(), this.i18n.translator) : null;
-      const actions = this.actions()
-        .filter((action) => cardInstanceIdOf(action) === card.instanceId)
-        .map((action) => labeled(action, this.state(), this.registry(), this.i18n.translator));
-      const template = plays.find((p) => !!p.pickTargets) ?? null;
-      return {
-        card,
-        name: CardInfoDialog.nameFor(card.definitionId, this.registry().cards.get(card.definitionId)?.name, this.i18n.translator),
-        actions,
-        pairs,
-        confirmTargets: plays.length > 0 && plays.every((p) => p.targets.length > 0),
-        template,
-        besideTemplate: template ? actions.filter((a) => a.action !== template) : [],
-        templateLabel: template ? actionLabel(template, this.state(), this.registry(), this.i18n.translator) : '',
-      };
-    })
-  );
-
-  // The Choose Targets window, then the play at the seats picked (none: nothing is played).
-  protected pickTargets(vm: HandCardViewModel): void {
-    const template = vm.template;
-    if (!template?.pickTargets) return;
-    this.dialog
-      .open<TargetsDialog, TargetsDialogData, string[]>(TargetsDialog, { data: { title: vm.name, pick: template.pickTargets, state: this.state() }, width: 'min(92vw, 420px)' })
-      .beforeClosed()
-      .subscribe((ids) => {
-        if (!ids?.length) return;
-        const { pickTargets: _pick, ...play } = template;
-        this.played.emit({ ...play, targets: ids.map((seatId) => ({ kind: 'seat' as const, seatId })) });
-      });
-  }
-
-  protected openInfo(vm: HandCardViewModel): void {
-    this.dialog.open<CardInfoDialog, CardInfoDialogData>(CardInfoDialog, {
-      data: { card: vm.card, name: vm.name },
-      width: 'min(92vw, 480px)',
-    });
-  }
+  protected readonly cardViewModels = computed(() => handCardViewModels(this.cards(), this.actions(), this.state(), this.registry(), this.i18n.translator));
 }

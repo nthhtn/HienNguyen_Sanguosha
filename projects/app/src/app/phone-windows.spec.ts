@@ -66,5 +66,62 @@ describe('windows on the phone board', () => {
       expect(px(compactRule(source, '.result mat-card-actions button'), 'min-height')).toBeGreaterThanOrEqual(44);
     });
   });
+
+  it("keep the phone board's action buttons 36 px tall on one line", () => {
+    const board = read('game-board/phone/phone-board.ts');
+    const rule = /\.actions ::ng-deep button \{([^}]*)\}/.exec(board)?.[1] ?? '';
+    expect(px(rule, 'height')).toBe(36);
+    expect(px(rule, 'font-size')).toBe(13);
+    expect(rule).toMatch(/white-space:\s*nowrap/);
+    expect(rule).toMatch(/text-overflow:\s*ellipsis/);
+  });
+
+  it('keep the menu drawer 220 px wide on the phone board layout', () => {
+    const app = read('app.css');
+    const rule = /:host-context\(\[data-layout='compact'\]\) \.nav-drawer \{([^}]*)\}/.exec(app)?.[1] ?? '';
+    expect(px(rule, 'width')).toBe(220);
+  });
+
+  describe('the General picker on the phone', () => {
+    const picker = read('game-board/general-selection.ts');
+    const rule = (selector: string) =>
+      new RegExp(`:host-context\\(\\[data-layout='compact'\\]\\) ${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\{([^}]*)\\}`).exec(picker)?.[1] ?? '';
+
+    it('shows only the portrait card: no skills half, and the Info button', () => {
+      expect(rule('.right')).toMatch(/display:\s*none/);
+      expect(rule('.general-info')).toMatch(/display:\s*inline-flex/);
+      expect(picker).toMatch(/\.general-info \{[^}]*display:\s*none/);
+    });
+
+    it('keeps the two rows (4 + 3, 3 + 2) with no scrolling, cards as tall as their row', () => {
+      expect(rule('.candidates')).toMatch(/flex-direction:\s*column/);
+      expect(rule('.candidates')).toMatch(/overflow:\s*hidden/);
+      expect(rule('.row')).toMatch(/display:\s*flex/);
+      expect(rule('.row')).toMatch(/flex:\s*1 1 0/);
+      expect(rule('.candidate')).toMatch(/height:\s*100%/);
+    });
+
+    it('puts the name, force and HP beside the portrait, the Info button in the portrait corner', () => {
+      expect(rule('.left')).toMatch(/flex-direction:\s*row/);
+      expect(rule('.art')).toMatch(/aspect-ratio:\s*200 \/ 290/);
+      expect(rule('.caption')).not.toMatch(/position:\s*absolute/);
+      expect(rule('.general-info')).toMatch(/bottom:\s*2px/);
+    });
+  });
+
+  describe('full-bleed background pages (Rooms, lobby, sign-in) in the installed app', () => {
+    it('the content area publishes its real side padding, safe areas included', () => {
+      const app = read('app.css');
+      expect(app).toMatch(/--content-inline-start:\s*max\(16px, env\(safe-area-inset-left, 0px\)\)/);
+      expect(app).toMatch(/--content-inline-end:\s*max\(16px, env\(safe-area-inset-right, 0px\)\)/);
+    });
+
+    it.each(['online/online-page.css', 'auth/auth-card.css'])('%s cancels that padding exactly and fills the height under the toolbar', (file) => {
+      const css = read(file);
+      expect(css).toMatch(/calc\(-1 \* var\(--content-inline-start, 16px\)\)/);
+      expect(css).toMatch(/calc\(-1 \* var\(--content-inline-end, 16px\)\)/);
+      expect(css).toMatch(/min-height:\s*calc\(100dvh - var\(--mat-toolbar-standard-height, 64px\)\)/);
+    });
+  });
 });
 

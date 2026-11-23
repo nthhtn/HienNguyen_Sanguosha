@@ -1,9 +1,9 @@
-import { readFileSync } from 'fs';
-import { join } from 'path';
 import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { MatTooltip } from '@angular/material/tooltip';
 import { ChooseGeneralsAction, ContentRegistry, GeneralDefinition, Kingdom } from 'engine';
+import { MatDialog } from '@angular/material/dialog';
+import { GeneralInfoDialog } from './general-info-dialog';
 import { GeneralSelection } from './general-selection';
 
 function general(id: string, kingdom: Kingdom, maxHp: number): [string, GeneralDefinition] {
@@ -41,6 +41,15 @@ describe('GeneralSelection', () => {
     fixture.componentInstance.chosen.subscribe((a) => emitted.push(a));
     fixture.detectChanges();
     el = fixture.nativeElement as HTMLElement;
+  });
+
+  it("opens the General's full window from a card's Info button, without picking it", () => {
+    const dialog = TestBed.inject(MatDialog);
+    const open = jest.spyOn(dialog, 'open').mockReturnValue({} as never);
+    (card('w1').querySelector('button.general-info') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(open).toHaveBeenCalledWith(GeneralInfoDialog, expect.objectContaining({ data: { generalDefinitionId: 'w1' } }));
+    expect(badge('w1')).toBe('');
   });
 
   it('renders one card per candidate with its kingdom and HP', () => {
@@ -192,14 +201,5 @@ describe('GeneralSelection layout and info', () => {
   });
 
 
-  it('gives the phone board its own card size, so the General art shows and the cards scroll inside the window', () => {
-    // jsdom applies no component styles, so read the rules for the compact layout from the source.
-    const source = readFileSync(join(__dirname, 'general-selection.ts'), 'utf8');
-    const rule = (selector: string) => new RegExp(`:host-context\\(\\[data-layout='compact'\\]\\) ${selector.replace('.', '\\.')} \\{([^}]*)\\}`).exec(source)?.[1] ?? '';
-    // The art follows the card area's height (a size container), up to 96 px wide.
-    expect(rule('.candidate')).toMatch(/--art-width: min\(96px, calc\(\(100cqh/);
-    expect(rule('.candidates')).toMatch(/container-type: size/);
-    expect(rule('.candidates')).toMatch(/overflow-y: auto/);
-  });
 });
 

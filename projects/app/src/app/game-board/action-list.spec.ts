@@ -1,5 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Action, ContentRegistry, GameState } from 'engine';
+import { By } from '@angular/platform-browser';
+import { MatTooltip } from '@angular/material/tooltip';
 import { ActionList } from './action-list';
 
 function emptyState(): GameState {
@@ -191,4 +193,27 @@ describe('ActionList', () => {
     fixture.detectChanges();
     expect((fixture.nativeElement as HTMLElement).querySelectorAll('button')).toHaveLength(0);
   });
+
+  describe('compact (the phone board)', () => {
+    function tooltips(compact: boolean) {
+      const fixture = TestBed.createComponent(ActionList);
+      fixture.componentRef.setInput('actions', [{ kind: 'EndPhaseAction', seatId: 'seat-0' }]);
+      fixture.componentRef.setInput('state', emptyState());
+      fixture.componentRef.setInput('registry', emptyRegistry());
+      fixture.componentRef.setInput('compact', compact);
+      fixture.detectChanges();
+      return fixture.debugElement.queryAll(By.directive(MatTooltip)).map((d) => d.injector.get(MatTooltip));
+    }
+
+    it('gives each button its full label as a long-press tooltip', () => {
+      const [tip] = tooltips(true);
+      expect(tip.message).toBe('End Phase');
+      expect(tip.disabled).toBe(false);
+    });
+
+    it('shows no tooltips on tablets and computers', () => {
+      expect(tooltips(false).every((t) => t.disabled)).toBe(true);
+    });
+  });
 });
+

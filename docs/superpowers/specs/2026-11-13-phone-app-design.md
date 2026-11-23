@@ -187,6 +187,19 @@ The developer ran the phone board on the Honor 400 Pro through a test tunnel and
 - **No thinking line:** The phone board does not show which bot is thinking (developer, 2026-11-22).
 - **Install hint judged by the screen, not the tab:** A Chrome tab loses height to the address bar, so the tab's window can be too small for the phone board when the installed app would not be (the Honor 400 Pro tab is 759 × 269). The hint uses the screen's size (`screen.width` × `screen.height`, either way round) minus nothing, against the 760 × 340 floor.
 
+### 3c. Touch fixes from playing on the phone (2026-11-23)
+
+The developer played on the Honor 400 Pro and mis-touched Play and Info: on the phone board they appear on the card as it is touched, so the same tap that opens a card can press one of them.
+
+- **Picking a card** (developer's choice): On the phone board a tap on a hand card only picks it: it lifts and is outlined, and nothing is played. Its actions (Play, with its menu or targets window, and Info) appear full width at the top of the action column, above the other actions, at the column's 36 px height. A tap on the picked card puts it back; a tap on another card picks that one instead. Nothing appears on the card itself. Playing the card, or the card leaving the hand, clears the pick.
+- **Action buttons** (developer's choice, an exception to the 44 px tap rule): The buttons in the phone board's action column are 36 px tall with 13 px text on one line; a label too long ends in "…" and shows in full on a long press (tooltip).
+- Tablets and computers keep the Play and Info buttons on the card, as today.
+- **Menu drawer** (developer's choice): 220 px wide on the phone board layout (its longest item needs about 142 px; it was 320 px).
+- **General picker** (developer's choices, revised 2026-11-23):
+  - **Portrait and basic info:** On the phone each candidate is its portrait with the name, force and HP beside it (to its right) and a small Info button in the card's corner. (Over the portrait, at two rows' height, the caption hid the portrait and the Info button hid the name.) The skills half of the card is not shown on the phone; the Info button opens the General's full window (the same one Seat Details opens) without picking the General.
+  - **Two rows, no scrolling** (revised by the developer, 2026-11-23): As on a computer, 7 candidates sit 4 on top and 3 below, 5 sit 3 on top and 2 below, each row centred and half the card area's height, so every card is visible at once.
+  - Tablets and computers keep today's cards with their skills.
+
 ### 4. Windows on the phone
 
 Every window that can open during a game must fit a 760 × 340 px window without the page scrolling, with its buttons always on screen. If the content is long, the content scrolls inside the window and the buttons stay fixed.
