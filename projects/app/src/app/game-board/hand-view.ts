@@ -37,11 +37,21 @@ export function handStep(width: number, count: number, cardWidth: number, gap: n
   template: `
     <div class="hand-row" role="list" [class.overlap]="fit() === 'overlap'">
       @for (vm of cardViewModels(); track vm.card.instanceId; let first = $first) {
-        <div class="hand-card" role="listitem" tabindex="0" [attr.data-card-id]="vm.card.instanceId" [style.margin-left.px]="first ? null : overlapMargin()">
+        <div
+          class="hand-card"
+          role="listitem"
+          tabindex="0"
+          [attr.data-card-id]="vm.card.instanceId"
+          [class.picked]="vm.card.instanceId === pickedId()"
+          [style.margin-left.px]="first ? null : overlapMargin()"
+          (click)="tap(vm.card.instanceId)"
+        >
           <app-playing-card [card]="vm.card" />
-          <div class="overlay">
-            <app-hand-card-actions [vm]="vm" [state]="state()" (played)="played.emit($event)" />
-          </div>
+          @if (fit() === 'row') {
+            <div class="overlay">
+              <app-hand-card-actions [vm]="vm" [state]="state()" (played)="played.emit($event)" />
+            </div>
+          }
         </div>
       } @empty {
         <span class="empty">{{ 'hand.empty' | t }}</span>
@@ -92,13 +102,12 @@ export function handStep(width: number, count: number, cardWidth: number, gap: n
     .empty { color: var(--mat-sys-on-surface-variant); }
     /* Medium layout: a shorter row. */
     :host-context([data-layout='medium']) .hand-row { padding: 12px 4px 0; }
-    /* Phone board: cards overlap when they do not fit (each card keeps at least 44 px showing, then the row scrolls),
-       the card in use comes to the front, and its buttons are full-size tap targets. */
+    /* Phone board: cards overlap when they do not fit (each card keeps at least 44 px showing, then the row scrolls). A
+       tap picks a card (spec 3c): it lifts, is outlined and comes to the front; its buttons are in the action column. */
     .hand-row.overlap { gap: 0; padding: 12px 4px 0; }
     .hand-row.overlap .hand-card:hover,
-    .hand-row.overlap .hand-card:focus-within { z-index: 1; }
-    .hand-row.overlap .overlay { top: auto; bottom: 0; min-height: 100%; }
-    .hand-row.overlap .overlay ::ng-deep button { height: auto; min-height: 44px; font-size: 14px; }
+    .hand-row.overlap .hand-card:focus-within { transform: none; }
+    .hand-row.overlap .hand-card.picked { transform: translateY(-10px); z-index: 1; box-shadow: 0 0 0 3px #e0a92e; }
     .hand-row.overlap ::ng-deep app-playing-card .name {
       font-size: 14px; line-height: 1.1; white-space: normal; overflow-wrap: anywhere;
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
@@ -125,6 +134,14 @@ export class HandView {
   readonly state = input.required<GameState>();
   readonly registry = input.required<ContentRegistry>();
   readonly played = output<Action>();
+  // The phone board's picked card (its buttons are in the action column), and a tap that picks or puts back a card.
+  readonly pickedId = input<string | null>(null);
+  readonly picked = output<string | null>();
+
+  protected tap(cardId: string): void {
+    if (this.fit() !== 'overlap') return;
+    this.picked.emit(cardId === this.pickedId() ? null : cardId);
+  }
 
   private readonly i18n = inject(I18n);
 
