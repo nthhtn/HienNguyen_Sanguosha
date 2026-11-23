@@ -81,6 +81,7 @@
     </button>
     <ng-container *ngTemplateOutlet="brand" />
     <span class="spacer"></span>
+    <app-language-switcher />
     <ng-container *ngTemplateOutlet="toggles" />
   }
 </mat-toolbar>
@@ -152,7 +153,6 @@
           <a class="drawer-link sign-in" routerLink="/sign-in"><mat-icon>login</mat-icon>{{ 'nav.signIn' | t }}</a>
         }
       }
-      <app-language-switcher />
     </div>
     @if (flags.playbackSettings) {
       <div class="drawer-group drawer-playback-speed">

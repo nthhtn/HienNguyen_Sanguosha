@@ -110,9 +110,9 @@ export function handStep(width: number, count: number, cardWidth: number, gap: n
     .hand-row.overlap .hand-card:hover,
     .hand-row.overlap .hand-card:focus-within { transform: none; }
     .hand-row.overlap .hand-card.picked { transform: translateY(-10px); z-index: 1; box-shadow: 0 0 0 3px #e0a92e; }
+    /* A name stays inside its card: one line, 12 px, with an ellipsis (spec 3f). */
     .hand-row.overlap ::ng-deep app-playing-card .name {
-      font-size: 14px; line-height: 1.1; white-space: normal; overflow-wrap: anywhere;
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      font-size: 12px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
   `,
 })

@@ -13,7 +13,7 @@ import type { SeatCue } from '../playback/seat-cues';
 import { ShownDamage } from '../damage-effects';
 import { SpriteEffect } from '../sprite-effect';
 
-const SLOT_ICONS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
+export const SLOT_ICONS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
   weapon: { label: 'slot.weapon', icon: 'gavel' },
   armor: { label: 'slot.armor', icon: 'shield' },
   defensiveMount: { label: 'slot.defensiveMount', icon: 'add' },

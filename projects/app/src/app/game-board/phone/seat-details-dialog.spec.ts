@@ -2,6 +2,7 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import type { CardInstance, CardZone, GameState, Seat } from 'engine';
+import { HIDDEN_GENERAL_ART_URL } from 'content';
 import { CardInfoDialog } from '../card-info-dialog';
 import { GeneralInfoDialog } from '../general-info-dialog';
 import { SeatDetailsDialog, SeatDetailsData } from './seat-details-dialog';
@@ -73,6 +74,23 @@ describe('SeatDetailsDialog', () => {
     expect(deputy.querySelectorAll('.skill')).toHaveLength(0);
   });
 
+  it('shows the hidden-General picture for a hidden General (spec 3f)', () => {
+    const { el } = render(state(revealed()));
+    const picture = el.querySelector('.general[data-slot="deputy"] img.portrait')!;
+    expect(picture.getAttribute('src')).toBe(HIDDEN_GENERAL_ART_URL);
+  });
+
+  it('shows the four Equipment slots in one row, always: a card face where filled, a dimmed box where empty (spec 3f)', () => {
+    const { el } = render(state(revealed(), [card('e1', 'serpent-spear'), card('e2', 'red-hare')]));
+    const slots = [...el.querySelectorAll('.equipment .slot')];
+    expect(slots.map((s) => s.getAttribute('data-slot'))).toEqual(['weapon', 'armor', 'defensiveMount', 'offensiveMount']);
+    expect(slots.map((s) => s.classList.contains('empty'))).toEqual([false, true, true, false]);
+    expect(slots[0].querySelector('app-playing-card')).not.toBeNull();
+    expect(slots[1].querySelector('app-playing-card')).toBeNull();
+    expect(slots[1].querySelector('button')).toBeNull();
+    expect(slots[1].getAttribute('title')).toContain('empty');
+  });
+
   it('lists Equipment and Judgment by name, each opening the card info window', () => {
     const { el, open } = render(state(revealed(), [card('e1', 'serpent-spear')], [card('j1', 'lightning')]));
     const equipment = el.querySelectorAll<HTMLButtonElement>('.equipment button.card');
@@ -82,9 +100,9 @@ describe('SeatDetailsDialog', () => {
     expect(open).toHaveBeenCalledWith(CardInfoDialog, expect.objectContaining({ data: expect.objectContaining({ card: card('e1', 'serpent-spear') }) }));
   });
 
-  it('leaves out a section with no cards', () => {
+  it('leaves out Judgment with no cards, but keeps the four empty Equipment slots', () => {
     const { el } = render(state(revealed()));
-    expect(el.querySelector('.equipment')).toBeNull();
+    expect(el.querySelectorAll('.equipment .slot.empty')).toHaveLength(4);
     expect(el.querySelector('.judgment')).toBeNull();
   });
 

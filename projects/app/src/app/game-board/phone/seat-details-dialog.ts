@@ -1,8 +1,9 @@
 import { Component, Signal, computed, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogActions, MatDialogContent, MatDialogRef, MatDialogTitle } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
-import { CardInstance, GameState, GeneralInstance, isSeatDying } from 'engine';
-import { abilityName, generalDisplayData, generalSkinUrl } from 'content';
+import { MatIconModule } from '@angular/material/icon';
+import { CardInstance, EQUIP_SLOTS, GameState, GeneralInstance, isSeatDying } from 'engine';
+import { abilityName, equipSlotOf, generalDisplayData, generalSkinUrl, HIDDEN_GENERAL_ART_URL } from 'content';
 import { cardIdDisplayName, generalDisplayName, seatForce, seatName } from '../../labels';
 import { I18n } from '../../i18n/i18n.service';
 import { TPipe } from '../../i18n/t.pipe';
@@ -10,6 +11,8 @@ import type { MessageKey } from '../../i18n/messages';
 import { localeOf } from '../../i18n/translator';
 import { CardInfoDialog, CardInfoDialogData } from '../card-info-dialog';
 import { GeneralInfoDialog, GeneralInfoDialogData } from '../general-info-dialog';
+import { PlayingCard } from '../playing-card';
+import { SLOT_ICONS } from './phone-seat-tile';
 
 // The live state (the board's visible, redacted state) and the seat to show. A signal, so the window follows the game.
 export interface SeatDetailsData {
@@ -27,7 +30,7 @@ interface CardSection {
 // with each General and card opening its existing info window. It shows only what the visible state holds.
 @Component({
   selector: 'app-seat-details-dialog',
-  imports: [MatDialogTitle, MatDialogContent, MatDialogActions, MatButtonModule, TPipe],
+  imports: [MatDialogTitle, MatDialogContent, MatDialogActions, MatButtonModule, MatIconModule, PlayingCard, TPipe],
   template: `
     @if (seat(); as seat) {
       <h2 mat-dialog-title [attr.data-force]="force()">{{ name() }}</h2>
@@ -46,7 +49,7 @@ interface CardSection {
           @for (g of generals(); track g.slot) {
             <section class="general" [attr.data-slot]="g.slot">
               @if (g.hidden) {
-                <div class="portrait hidden"></div>
+                <img class="portrait hidden" [src]="hiddenArt" alt="" />
                 <div class="text"><span class="general-name">{{ 'avatar.hidden' | t }}</span></div>
               } @else {
                 <button type="button" class="open-general" (click)="openGeneral(g.id)">
@@ -65,6 +68,23 @@ interface CardSection {
             </section>
           }
         </div>
+        <section class="equipment">
+          <h3>{{ 'seat.equipment' | t }}</h3>
+          <div class="slots">
+            @for (s of equipmentSlots(); track s.slot) {
+              @if (s.card; as equipped) {
+                <button type="button" class="card slot" [attr.data-slot]="s.slot" [attr.aria-label]="s.name" (click)="openCard(equipped, s.name)">
+                  <app-playing-card [card]="equipped" />
+                </button>
+              } @else {
+                <div class="slot empty" [attr.data-slot]="s.slot" [attr.title]="'seat.slotEmpty' | t: { slot: s.label }">
+                  <mat-icon aria-hidden="true">{{ s.icon }}</mat-icon>
+                  <span>{{ s.label }}</span>
+                </div>
+              }
+            }
+          </div>
+        </section>
         @for (section of sections(); track section.key) {
           <section [class]="section.key">
             <h3>{{ section.title | t }}</h3>
@@ -106,6 +126,12 @@ interface CardSection {
       display: block; width: 100%; min-height: 44px; margin-bottom: 4px; padding: 4px 10px; text-align: left;
       border: 1px solid var(--mat-sys-outline-variant); border-radius: 8px; background: transparent; color: inherit; font-size: 14px; cursor: pointer;
     }
+    .slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; justify-items: center; }
+    .equipment .card.slot { width: auto; min-height: 0; margin: 0; padding: 0; border: 0; border-radius: 4px; }
+    .slot.empty {
+      box-sizing: border-box; width: 70px; height: 96px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px; padding: 4px; text-align: center; border: 1px dashed var(--mat-sys-outline); border-radius: 4px; opacity: 0.55; font-size: 12px;
+    }
     .counts-as { display: block; font-size: 12px; color: var(--mat-sys-on-surface-variant); }
   `,
 })
@@ -144,6 +170,17 @@ export class SeatDetailsDialog {
     return [this.general('main', seat.generals.main), this.general('deputy', seat.generals.deputy)];
   });
 
+  protected readonly hiddenArt = HIDDEN_GENERAL_ART_URL;
+
+  // The four Equipment slots in their fixed order, filled or not (spec 3f).
+  protected readonly equipmentSlots = computed(() => {
+    const cards = this.zone(this.seat()?.equipped.zoneId);
+    return EQUIP_SLOTS.map((slot) => {
+      const card = cards.find((c) => equipSlotOf(c.definitionId) === slot) ?? null;
+      return { slot, card, name: card ? this.cardName(card.definitionId) : '', label: this.i18n.t(SLOT_ICONS[slot].label), icon: SLOT_ICONS[slot].icon };
+    });
+  });
+
   protected readonly sections = computed<CardSection[]>(() => {
     const seat = this.seat();
     if (!seat) return [];
@@ -158,7 +195,6 @@ export class SeatDetailsDialog {
       })),
     });
     return [
-      section('equipment', 'seat.equipment', this.zone(seat.equipped.zoneId)),
       section('judgment', 'seat.judgment', this.zone(seat.judgment.zoneId), true),
       section('pile', 'seat.underGeneral', this.zone(seat.pile?.zoneId)),
       section('stash', 'seat.farms', this.zone(seat.stash?.zoneId)),

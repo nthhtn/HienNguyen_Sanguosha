@@ -19,6 +19,14 @@ describe('windows on the phone board', () => {
     expect(overlay).toMatch(/button\s*\{[^}]*min-height:\s*44px/);
   });
 
+  it('draw card names in the phone hand on one line with an ellipsis at 12 px (spec 3f)', () => {
+    const hand = read('game-board/hand-view.ts');
+    const rule = /\.hand-row\.overlap ::ng-deep app-playing-card \.name \{([^}]*)\}/.exec(hand)?.[1] ?? '';
+    expect(px(rule, 'font-size')).toBe(12);
+    expect(rule).toMatch(/white-space:\s*nowrap/);
+    expect(rule).toMatch(/text-overflow:\s*ellipsis/);
+  });
+
   it('draw card names in windows at 14 px', () => {
     expect(overlay).toMatch(/app-playing-card \.name\s*\{[^}]*font-size:\s*14px/);
   });
