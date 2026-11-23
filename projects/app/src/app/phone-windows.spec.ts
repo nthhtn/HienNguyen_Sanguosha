@@ -102,5 +102,20 @@ describe('windows on the phone board', () => {
       expect(rule('.caption')).toMatch(/position:\s*absolute/);
     });
   });
+
+  describe('full-bleed background pages (Rooms, lobby, sign-in) in the installed app', () => {
+    it('the content area publishes its real side padding, safe areas included', () => {
+      const app = read('app.css');
+      expect(app).toMatch(/--content-inline-start:\s*max\(16px, env\(safe-area-inset-left, 0px\)\)/);
+      expect(app).toMatch(/--content-inline-end:\s*max\(16px, env\(safe-area-inset-right, 0px\)\)/);
+    });
+
+    it.each(['online/online-page.css', 'auth/auth-card.css'])('%s cancels that padding exactly and fills the height under the toolbar', (file) => {
+      const css = read(file);
+      expect(css).toMatch(/calc\(-1 \* var\(--content-inline-start, 16px\)\)/);
+      expect(css).toMatch(/calc\(-1 \* var\(--content-inline-end, 16px\)\)/);
+      expect(css).toMatch(/min-height:\s*calc\(100dvh - var\(--mat-toolbar-standard-height, 64px\)\)/);
+    });
+  });
 });
 
