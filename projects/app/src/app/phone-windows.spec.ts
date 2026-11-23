@@ -31,6 +31,34 @@ describe('windows on the phone board', () => {
     expect(overlay).toMatch(/\.cdk-overlay-dark-backdrop\s*\{[^}]*rgb\(0 0 0 \/ 0\.15\)/);
   });
 
+  describe('Response and Discard in two columns and one footer row (spec 4b)', () => {
+    const compact = (source: string, selector: string) =>
+      new RegExp(`:host-context\\(\\[data-layout='compact'\\]\\) ${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\{([^}]*)\\}`).exec(source)?.[1] ?? '';
+
+    it('Response puts the description and the choices side by side', () => {
+      const source = read('game-board/response-dialog.ts');
+      expect(compact(source, 'mat-dialog-content')).toMatch(/display:\s*grid/);
+      expect(compact(source, 'mat-dialog-content')).toMatch(/grid-template-columns:\s*minmax\(0, 1fr\) minmax\(0, 1fr\)/);
+    });
+
+    it('Response hides an empty Skills block', () => {
+      expect(compact(read('game-board/response-dialog.ts'), '.skills.none')).toMatch(/display:\s*none/);
+    });
+
+    it('Response and Discard keep the countdown and the button on one row', () => {
+      for (const file of ['response-dialog.ts', 'discard-dialog.ts']) {
+        const rule = compact(read(`game-board/${file}`), '.foot');
+        expect(rule).toMatch(/display:\s*flex/);
+        expect(rule).toMatch(/align-items:\s*center/);
+      }
+    });
+
+    it('Discard packs the cards into narrow columns, at least 64 px each', () => {
+      const rule = compact(read('game-board/discard-dialog.ts'), '.hand');
+      expect(rule).toMatch(/minmax\(64px, 1fr\)/);
+    });
+  });
+
   it('draw card names in windows at 14 px', () => {
     expect(overlay).toMatch(/app-playing-card \.name\s*\{[^}]*font-size:\s*14px/);
   });
