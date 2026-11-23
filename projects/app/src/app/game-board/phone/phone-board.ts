@@ -9,6 +9,7 @@ import { seatName } from '../../labels';
 import { ActionList } from '../action-list';
 import type { AvatarSkill } from '../avatar-skills';
 import type { ShownDamage } from '../damage-effects';
+import { HandCardActions, handCardViewModels } from '../hand-card-actions';
 import { HandView } from '../hand-view';
 import { PlaybackLayer } from '../playback/playback-layer';
 import type { SeatCue } from '../playback/seat-cues';
@@ -25,7 +26,7 @@ const BOARD_PADDING = 8;
 // the same state and legal actions as the web board and decides no rules.
 @Component({
   selector: 'app-phone-board',
-  imports: [NgTemplateOutlet, MatButtonModule, ActionList, HandView, PhoneCentreBand, PhoneSeatTile, PlaybackLayer],
+  imports: [NgTemplateOutlet, MatButtonModule, ActionList, HandCardActions, HandView, PhoneCentreBand, PhoneSeatTile, PlaybackLayer],
   template: `
     <ng-template #tile let-seat let-slim="slim">
       <app-phone-seat-tile
@@ -77,12 +78,26 @@ const BOARD_PADDING = 8;
             <div class="seat" [attr.data-seat-id]="seat.id"><ng-container *ngTemplateOutlet="tile; context: { $implicit: seat, slim: false }" /></div>
           }
         </div>
-        <app-hand-view class="hand" fit="overlap" [cards]="hand()" [actions]="handActions()" [state]="state()" [registry]="registry()" (played)="played.emit($event)" />
+        <app-hand-view
+          class="hand"
+          fit="overlap"
+          [cards]="hand()"
+          [actions]="handActions()"
+          [state]="state()"
+          [registry]="registry()"
+          [pickedId]="pickedCard()?.instanceId ?? null"
+          (picked)="picked.set($event)"
+          (played)="play($event)"
+        />
         <div class="actions">
-          @for (skill of usableSkills(); track skill.skillId) {
-            <button mat-stroked-button type="button" class="skill" (click)="actionChosen.emit(skill.action!)">{{ skill.label }}</button>
+          <!-- The picked hand card's Play and Info, above everything else (spec 3c). -->
+          @if (pickedCardVm(); as vm) {
+            <app-hand-card-actions [vm]="vm" [state]="state()" (played)="play($event)" />
           }
-          <app-action-list [actions]="boardActions()" [state]="state()" [registry]="registry()" (actionChosen)="actionChosen.emit($event)" />
+          @for (skill of usableSkills(); track skill.skillId) {
+            <button mat-stroked-button type="button" class="skill" (click)="choose(skill.action!)">{{ skill.label }}</button>
+          }
+          <app-action-list [actions]="boardActions()" [state]="state()" [registry]="registry()" (actionChosen)="choose($event)" />
         </div>
       </div>
       <app-playback-layer
@@ -163,6 +178,24 @@ export class PhoneBoard {
   protected readonly sizes = computed(() => phoneSizes(this.room().width, this.room().height, this.seats()));
   protected readonly viewerSeat = computed(() => this.state().seats.find((s) => s.id === this.viewerSeatId()) ?? null);
   // Only the skills the engine offers now; the others would be disabled buttons taking room.
+  // The hand card picked with a tap; none once it has left the hand.
+  protected readonly picked = signal<string | null>(null);
+  protected readonly pickedCard = computed(() => this.hand().find((c) => c.instanceId === this.picked()) ?? null);
+  protected readonly pickedCardVm = computed(() => {
+    const card = this.pickedCard();
+    return card ? handCardViewModels([card], this.handActions(), this.state(), this.registry(), this.i18n.translator)[0] : null;
+  });
+
+  protected play(action: Action): void {
+    this.picked.set(null);
+    this.played.emit(action);
+  }
+
+  protected choose(action: Action): void {
+    this.picked.set(null);
+    this.actionChosen.emit(action);
+  }
+
   protected readonly usableSkills = computed(() => this.skills().filter((s) => s.action !== null));
   // The centre band's middle and height, from the board's top, for playback's caption and played cards.
   protected readonly centre = computed(() => {
