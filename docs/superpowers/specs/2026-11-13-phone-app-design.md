@@ -247,7 +247,7 @@ The developer asked for a lighter centre band, with the in-game extras grouped i
 ### 3h. Feedback from the fourth real-phone test (2026-11-23)
 
 - **General picker** (developer's choices):
-  - **Role badge:** The Main and Deputy badge on a portrait is one line at 12 px and fits the portrait (it wrapped and was cut).
+  - **Role badge:** The Main and Deputy badge sits in the bottom right corner of the General card, not over the portrait, as narrow as its longest word so its text wraps inside it (12 px), and it never spills out of the badge.
   - **Stable size:** The picker has the same width and card positions whether no General, one or two are picked. Cause: On narrow screens the picker's column was as wide as its widest content, and the bar's content changes with the picks; the column now stretches to the full width.
 - **Discard and card-pick windows** (developer's choice, replaces the sideways scroll of 3g for the Discard window): The cards are full size and wrap into rows with room between them; when they do not all fit they scroll vertically inside their own area, and the buttons sit below it and never cover a card. This holds for the Discard phase window and for picks such as Amass and Compete.
 - **Centre band** (developer's choice): A player's name in the newest line is in their force's colour, bold.

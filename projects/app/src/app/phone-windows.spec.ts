@@ -78,12 +78,15 @@ describe('windows on the phone board', () => {
       expect(read('game-board/game-board.ts')).toMatch(/\.selecting \{ flex-direction: column; align-items: stretch; \}/);
     });
 
-    it('General selection keeps one width whatever is picked, and its role chip stays on one line (spec 3h)', () => {
+    it('General selection keeps one width whatever is picked, and its role badge wraps in the bottom right corner of the card (spec 3h)', () => {
       const source = read('game-board/general-selection.ts');
       expect(source).toMatch(/:host-context\(\[data-layout='compact'\]\) \{ width: 100%; \}/);
       expect(source).toMatch(/:host-context\(\[data-layout='compact'\]\) \.bar \{ width: 100%/);
       const chip = /:host-context\(\[data-layout='compact'\]\) \.role-chip \{([^}]*)\}/.exec(source)?.[1] ?? '';
-      expect(chip).toMatch(/white-space:\s*nowrap/);
+      expect(chip).toMatch(/bottom:\s*6px/);
+      expect(chip).toMatch(/right:\s*6px/);
+      expect(chip).toMatch(/width:\s*min-content/);
+      expect(chip).toMatch(/white-space:\s*normal/);
       expect(px(chip, 'font-size')).toBeGreaterThanOrEqual(12);
     });
 
