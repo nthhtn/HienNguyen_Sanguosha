@@ -31,7 +31,7 @@ export const DECISION_SECONDS = {
   // A skill's decision whether to change a judgment's card; the card pick that follows has its own clock of the same length.
   judgmentChange: 20,
   // One budget for a whole Play phase, paused while a response is under way.
-  play: 180,
+  play: 300,
 } as const;
 
 export type DecisionKind = keyof typeof DECISION_SECONDS;

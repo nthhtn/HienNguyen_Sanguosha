@@ -151,7 +151,7 @@ How long a person has is a rule, so the engine owns it, in
 | `start` (the Start window's reveal) | 20 | One per window |
 | `discard` | 30 | One per decision |
 | `selection` (General Selection) | 300 | One per seat for the whole pick |
-| `play` | 180 | One for the whole Play Phase, paused while a response is under way |
+| `play` | 300 | One for the whole Play Phase, paused while a response is under way |
 | `judgmentChange` | 15 | A skill's decision (ask, then card pick) to change an unsettled judgment, one clock per ask |
 | `notice` | 3 | A settled judgment popup, after its animation |
 | `chainEnd` | 5 | The end of a judgment chain (Goddess Luo): Her cards stay in view a moment longer |

@@ -587,7 +587,7 @@ deciding seat's Force; the Compete popup by the source General's.
   - The Start reveal: 20 s.
   - A discard: 30 s.
   - The General Selection: 300 s.
-  - A whole Play Phase: 180 s.
+  - A whole Play Phase: 300 s.
   - A skill's decision to change a judgment: 15 s.
   - A settled judgment notice: 3 s.
   - The end of a judgment chain: 5 s.

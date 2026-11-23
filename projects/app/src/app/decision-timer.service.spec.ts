@@ -87,12 +87,12 @@ describe('DecisionTimer', () => {
       expect(game.state()!.turn.ownerSeatId).toBe(owner);
     });
 
-    it('gives the Play phase 180 seconds', () => {
+    it('gives the Play phase 300 seconds', () => {
       toPlayPhase();
       expect(timer.secondsLeft()).toBe(DECISION_SECONDS.play);
-      expect(timer.totalSeconds()).toBe(180);
+      expect(timer.totalSeconds()).toBe(300);
       advance(10);
-      expect(timer.secondsLeft()).toBe(170);
+      expect(timer.secondsLeft()).toBe(290);
     });
 
     it('ends the Play phase when time runs out', () => {
@@ -131,7 +131,7 @@ describe('DecisionTimer', () => {
         if (!aimed) continue;
         const owner = game.activeSeatId()!;
         advance(100);
-        expect(timer.secondsLeft()).toBe(80);
+        expect(timer.secondsLeft()).toBe(200);
         game.submit(aimed);
         if (!waitsOnDamageAnswer(game.state()!)) continue;
         // The response belongs to seat-1: its own 20 seconds once its view shows.
@@ -145,7 +145,7 @@ describe('DecisionTimer', () => {
         TestBed.tick();
         // Back in the owner's Play phase: resumed, not restarted.
         expect(game.state()!.phase).toBe('Play');
-        expect(timer.secondsLeft()).toBe(80);
+        expect(timer.secondsLeft()).toBe(200);
         return;
       }
       throw new Error('no seed gave seat-0 a targeted play');

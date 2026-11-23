@@ -47,7 +47,7 @@ describe('describeDecision', () => {
   });
 
   it('gives each kind of decision its seconds', () => {
-    expect(DECISION_SECONDS).toMatchObject({ wuxie: 20, noAnswer: 5, look: 30, dying: 20, response: 20, ask: 20, pick: 30, arrange: 90, start: 20, discard: 30, selection: 300, play: 180, judgmentChange: 20, notice: 3 });
+    expect(DECISION_SECONDS).toMatchObject({ wuxie: 20, noAnswer: 5, look: 30, dying: 20, response: 20, ask: 20, pick: 30, arrange: 90, start: 20, discard: 30, selection: 300, play: 300, judgmentChange: 20, notice: 3 });
   });
 
   it('times a pending response as a response of this state', () => {
@@ -84,30 +84,30 @@ describe('switchClock', () => {
 
   it('starts a new decision with its full budget', () => {
     const clock = switchClock(EMPTY_CLOCK, play, 1_000);
-    expect(clock.running).toEqual({ decision: play, startsAt: 1_000, endsAt: 181_000, totalMs: 180_000 });
-    expect(clockRemainingMs(clock, 1_000)).toBe(180_000);
+    expect(clock.running).toEqual({ decision: play, startsAt: 1_000, endsAt: 301_000, totalMs: 300_000 });
+    expect(clockRemainingMs(clock, 1_000)).toBe(300_000);
   });
 
   it('keeps the same clock running when the decision keeps its key', () => {
     const started = switchClock(EMPTY_CLOCK, play, 1_000);
     const later = switchClock(started, { ...play, seatId: 'seat-0' }, 50_000);
-    expect(later.running?.endsAt).toBe(181_000);
+    expect(later.running?.endsAt).toBe(301_000);
   });
 
   it('pauses a clock it switches away from and resumes it with the time it had left', () => {
     const started = switchClock(EMPTY_CLOCK, play, 0);
     const answering = switchClock(started, response, 100_000);
-    expect(answering.paused).toEqual({ 'play:3:seat-0': 80_000 });
+    expect(answering.paused).toEqual({ 'play:3:seat-0': 200_000 });
     expect(answering.running?.endsAt).toBe(120_000);
     const back = switchClock(answering, play, 110_000);
-    expect(back.running?.endsAt).toBe(190_000);
+    expect(back.running?.endsAt).toBe(310_000);
     expect(back.paused).toEqual({ 'step:k9': 10_000 });
   });
 
   it('pauses when no decision is open', () => {
     const paused = switchClock(switchClock(EMPTY_CLOCK, play, 0), null, 10_000);
     expect(paused.running).toBeNull();
-    expect(paused.paused).toEqual({ 'play:3:seat-0': 170_000 });
+    expect(paused.paused).toEqual({ 'play:3:seat-0': 290_000 });
     expect(clockRemainingMs(paused, 10_000)).toBeNull();
   });
 
