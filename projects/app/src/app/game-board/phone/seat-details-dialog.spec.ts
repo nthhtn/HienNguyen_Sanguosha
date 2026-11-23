@@ -96,8 +96,22 @@ describe('SeatDetailsDialog', () => {
     const equipment = el.querySelectorAll<HTMLButtonElement>('.equipment button.card');
     expect(equipment).toHaveLength(1);
     expect(el.querySelectorAll('.judgment button.card')).toHaveLength(1);
+    expect(el.querySelector('.judgment button.card app-playing-card')).not.toBeNull();
     equipment[0].click();
     expect(open).toHaveBeenCalledWith(CardInfoDialog, expect.objectContaining({ data: expect.objectContaining({ card: card('e1', 'serpent-spear') }) }));
+  });
+
+  it('splits into Equipment and Judgment columns only when there are Judgment cards (spec 3g)', () => {
+    expect(render(state(revealed())).el.querySelector('.cards-area')!.classList).not.toContain('with-judgment');
+    TestBed.resetTestingModule();
+    const { el } = render(state(revealed(), [], [card('j1', 'lightning')]));
+    expect(el.querySelector('.cards-area')!.classList).toContain('with-judgment');
+    expect(el.querySelectorAll('.judgment .slot')).toHaveLength(1);
+  });
+
+  it('writes the summary in bold (spec 3g)', () => {
+    const { el } = render(state(revealed()));
+    expect(el.querySelector('.summary')).not.toBeNull();
   });
 
   it('leaves out Judgment with no cards, but keeps the four empty Equipment slots', () => {

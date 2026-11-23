@@ -229,6 +229,14 @@ From the Resolution Notice, picker and Judgment work (PR #62, 2026-11-09). The d
 - **Why it waits.** The developer chose to leave them for later (2026-11-22). None stops a game.
 - **Revisit when.** The real-phone check, or a later pass on the phone board.
 
+### Sharp General pictures on phone tiles
+
+- **What is missing.** A phone seat tile draws each General's face crop (101 to 126 px square) enlarged to about 85 CSS px, which is about 300 device pixels at a pixel ratio of 3.5: about 2.5 times past the picture's real resolution, so it looks soft.
+- **The idea.** Draw each face at its natural resolution (picture pixels divided by the phone's pixel ratio, about 30 to 36 px on the Honor 400 Pro), keep the tile its size, and fill the room with the General's name and its skill names (names only on slim tiles).
+- **Other ways.** A wider crop (about 70% of the portrait, 66 crops to re-cut), or the full 250 × 292 portrait in the slot (nearly natural, smaller faces, no new assets).
+- **Why it waits.** The developer deferred it (2026-11-23). The tile is readable as it is.
+- **Revisit when.** The phone board gets a polish pass, or higher-resolution General art exists.
+
 ### Notices for skills and equipment abilities
 
 - **What is missing.**

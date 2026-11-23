@@ -52,7 +52,8 @@ import { PlayingCard } from '../playing-card';
     app-phase-indicator { position: static; }
     app-phase-indicator ::ng-deep .phase-indicator { margin: 0; padding: 2px 8px; justify-content: flex-start; font-size: 14px; border-radius: 6px; }
     app-phase-indicator ::ng-deep .count { font-size: 14px; }
-    app-phase-indicator ::ng-deep .timer { width: 96px; }
+    app-phase-indicator ::ng-deep .timer { width: 150px; }
+    app-phase-indicator ::ng-deep .timer .bar { min-width: 24px; }
     .turned-up ::ng-deep app-playing-card .name { font-size: 14px; }
     .latest { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .turned-up { flex: none; display: flex; gap: 4px; }

@@ -68,6 +68,7 @@ interface CardSection {
             </section>
           }
         </div>
+        <div class="cards-area" [class.with-judgment]="judgmentCards().length > 0">
         <section class="equipment">
           <h3>{{ 'seat.equipment' | t }}</h3>
           <div class="slots">
@@ -85,6 +86,22 @@ interface CardSection {
             }
           </div>
         </section>
+        @if (judgmentCards().length) {
+          <section class="judgment">
+            <h3>{{ 'seat.judgment' | t }}</h3>
+            <div class="slots">
+              @for (entry of judgmentCards(); track entry.card.instanceId) {
+                <button type="button" class="card slot" [attr.aria-label]="entry.name" (click)="openCard(entry.card, entry.name)">
+                  <app-playing-card [card]="entry.card" />
+                  @if (entry.countsAs; as countsAs) {
+                    <span class="counts-as">{{ 'seat.countsAs' | t: { card: countsAs } }}</span>
+                  }
+                </button>
+              }
+            </div>
+          </section>
+        }
+        </div>
         @for (section of sections(); track section.key) {
           <section [class]="section.key">
             <h3>{{ section.title | t }}</h3>
@@ -105,8 +122,10 @@ interface CardSection {
     }
   `,
   styles: `
-    h2 { color: var(--force-text, inherit); }
+    /* Material's own title colour rule is more specific than a bare h2, so the class is part of the selector. */
+    h2.mdc-dialog__title { color: var(--force-text, inherit); }
     .summary, .states, .form { margin: 0 0 8px; font-size: 14px; }
+    .summary { font-weight: 700; }
     .states { display: flex; flex-wrap: wrap; gap: 6px; }
     .state { padding: 2px 8px; border-radius: 10px; background: var(--mat-sys-surface-container-high); font-size: 14px; }
     .generals { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 8px; }
@@ -126,8 +145,13 @@ interface CardSection {
       display: block; width: 100%; min-height: 44px; margin-bottom: 4px; padding: 4px 10px; text-align: left;
       border: 1px solid var(--mat-sys-outline-variant); border-radius: 8px; background: transparent; color: inherit; font-size: 14px; cursor: pointer;
     }
-    .slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; justify-items: center; }
-    .equipment .card.slot { width: auto; min-height: 0; margin: 0; padding: 0; border: 0; border-radius: 4px; }
+    .slots { display: grid; grid-template-columns: repeat(4, 70px); gap: 8px; justify-content: space-around; }
+    /* With Judgment cards: Equipment 2 x 2 on the left, Judgment in up to 3 columns on the right (spec 3g). */
+    .cards-area.with-judgment { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0 24px; }
+    .cards-area.with-judgment .equipment .slots { grid-template-columns: repeat(2, 70px); justify-content: start; }
+    .cards-area.with-judgment .judgment .slots { grid-template-columns: repeat(3, 70px); justify-content: start; }
+    .card.slot { width: auto; min-height: 0; margin: 0; padding: 0; border: 0; border-radius: 4px; background: none; }
+    .judgment .counts-as { width: 70px; }
     .slot.empty {
       box-sizing: border-box; width: 70px; height: 96px; display: flex; flex-direction: column; align-items: center; justify-content: center;
       gap: 4px; padding: 4px; text-align: center; border: 1px dashed var(--mat-sys-outline); border-radius: 4px; opacity: 0.55; font-size: 12px;
@@ -181,21 +205,27 @@ export class SeatDetailsDialog {
     });
   });
 
-  protected readonly sections = computed<CardSection[]>(() => {
+  // Judgment cards as card faces, with what a card counts as; none at all when there are none (spec 3g).
+  protected readonly judgmentCards = computed(() => {
     const seat = this.seat();
     if (!seat) return [];
     const countsAs = this.state().zones.find((z) => z.id === seat.judgment.zoneId)?.countsAs ?? {};
-    const section = (key: string, title: MessageKey, cards: CardInstance[], withCountsAs = false): CardSection => ({
+    return this.zone(seat.judgment.zoneId).map((card) => ({
+      card,
+      name: this.cardName(card.definitionId),
+      countsAs: countsAs[card.instanceId] ? this.cardName(countsAs[card.instanceId]) : null,
+    }));
+  });
+
+  protected readonly sections = computed<CardSection[]>(() => {
+    const seat = this.seat();
+    if (!seat) return [];
+    const section = (key: string, title: MessageKey, cards: CardInstance[]): CardSection => ({
       key,
       title,
-      cards: cards.map((card) => ({
-        card,
-        name: this.cardName(card.definitionId),
-        countsAs: withCountsAs && countsAs[card.instanceId] ? this.cardName(countsAs[card.instanceId]) : null,
-      })),
+      cards: cards.map((card) => ({ card, name: this.cardName(card.definitionId), countsAs: null })),
     });
     return [
-      section('judgment', 'seat.judgment', this.zone(seat.judgment.zoneId), true),
       section('pile', 'seat.underGeneral', this.zone(seat.pile?.zoneId)),
       section('stash', 'seat.farms', this.zone(seat.stash?.zoneId)),
     ].filter((s) => s.cards.length > 0);

@@ -101,7 +101,7 @@ describe('AskDialog, ArrangeDialog and DiscardDialog in Vietnamese', () => {
     const hand: CardInstance[] = [{ instanceId: 'c1', definitionId: 'sha', suit: 'spade', rank: 7 }, { instanceId: 'c2', definitionId: 'shan', suit: 'heart', rank: 2 }];
     const two = await mount(DiscardDialog, { cards: hand, count: 2 });
     expect(text(two.el.querySelector('h2'))).toBe('Bỏ 2 lá bài');
-    expect(text(two.el.querySelector('.hint'))).toBe('Bài trên tay của bạn vượt giới hạn. Chọn 2 lá để bỏ · đã chọn 0/2');
+    expect(text(two.el.querySelector('.hint'))).toBe('Bài trên tay của bạn vượt giới hạn. Chọn 2 lá để bỏ · Đã chọn 0/2');
     expect(text(two.el.querySelector('button.discard'))).toContain('Bỏ bài');
     const one = await mount(DiscardDialog, { cards: hand, count: 1 });
     expect(text(one.el.querySelector('h2'))).toBe('Bỏ 1 lá bài');

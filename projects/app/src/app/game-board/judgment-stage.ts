@@ -220,6 +220,11 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
     .cons.on .dmg { opacity: 1; }
     .line { margin: 0; font: var(--mat-sys-title-small); text-align: center; opacity: 0; transform: translateY(6px); transition: opacity 0.3s, transform 0.3s; }
     .line.in { opacity: 1; transform: none; }
+    /* The phone board (spec 3g): the outcome box is only as tall as its contents, and the stage is tighter. */
+    :host-context([data-layout='compact']) .stage { gap: 8px; }
+    :host-context([data-layout='compact']) .source { padding: 6px 12px; }
+    :host-context([data-layout='compact']) .arena { min-height: 0; padding: 0; }
+    :host-context([data-layout='compact']) .cons { min-height: 0; padding: 6px 12px; gap: 4px; }
     @media (prefers-reduced-motion: reduce) {
       .rise, .pc, .inner, .stamp, .verdict-label, .arrow, .line, .chip, .dmg { transition-duration: 0s !important; transition-delay: 0s !important; }
       .stamp.show circle, .stamp.show path, .spin { animation-duration: 0s !important; animation-delay: 0s !important; }
