@@ -24,6 +24,8 @@ describe('windows on the phone board', () => {
     expect(px(overlay, '--mat-dialog-subhead-line-height')).toBe(24);
     expect(overlay).toMatch(/--mat-dialog-headline-padding:\s*8px 12px 4px/);
     expect(overlay).toMatch(/--mat-dialog-content-padding:\s*12px/);
+    // With an actions row Material uses this token instead, so the title and the content line up at 12 px.
+    expect(overlay).toMatch(/--mat-dialog-with-actions-content-padding:\s*12px 12px 0/);
     expect(overlay).toMatch(/--mat-dialog-actions-padding:\s*8px 12px/);
   });
 

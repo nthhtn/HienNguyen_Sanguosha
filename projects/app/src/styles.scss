@@ -169,6 +169,8 @@ html[data-layout='compact'] .cdk-overlay-container {
   --mat-dialog-subhead-line-height: 24px;
   --mat-dialog-headline-padding: 8px 12px 4px;
   --mat-dialog-content-padding: 12px;
+  // A window with an actions row takes this padding instead, and it overrides the one above.
+  --mat-dialog-with-actions-content-padding: 12px 12px 0;
   --mat-dialog-actions-padding: 8px 12px;
   // The board stays readable behind a window.
   .cdk-overlay-dark-backdrop {
