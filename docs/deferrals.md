@@ -163,16 +163,15 @@ When an item is done, delete its entry and say where it went in the commit.
 
 ### Keeping the free host awake
 
-- **What is missing.**
-  - A free Render web service sleeps after about 15 minutes without traffic.
-  - The first visit then waits for a cold start.
-- **Why it waits.**
-  - Decided on 2026-10-26 to accept the sleep for now.
-  - On 2026-11-04 the pinger was documented (the monitor itself is set up outside the repo).
-  - Games survive it: The server rebuilds each running game by replaying its action log.
+- **Status.** Mostly done: The developer set up an external pinger on `/health` (2026-11-23), as described in [deployment.md](deployment.md), "Keeping it awake". The service no longer sleeps between visits, so the installed phone app opens without a cold start.
+- **What is still missing.**
+  - **Restarts:** A deploy or a crash still gives one slow start and drops the sockets. Games survive it: The server rebuilds each running game by replaying its action log.
+  - **Hours:** Render's free tier has 750 instance-hours a month, and one always-awake service uses about 744, so no second free service can stay awake in the workspace.
+  - **Supabase:** `/health` does not touch the database, so a free Supabase project can still pause after a week without use; a paused project needs a visit to the dashboard.
+- **Why it waits.** The pinger covers the friends-only game. A different host would remove the limits.
 - **Revisit when.**
-  - The cold start gets in the way of playing.
-  - A pinger on `/health` (set up in [deployment.md](deployment.md), "Keeping it awake"), or an always-on host such as an Oracle Always Free VM, would fix it.
+  - The Render hours or the Supabase pause get in the way.
+  - An always-on host such as an Oracle Always Free VM would remove both.
 
 ### A verified database certificate
 
