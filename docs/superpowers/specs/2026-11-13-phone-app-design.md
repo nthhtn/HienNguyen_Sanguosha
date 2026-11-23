@@ -233,6 +233,15 @@ Every window that can open during a game must fit a 760 × 340 px window without
 
 These are the same components with phone styles, not second copies, unless a window cannot be made to fit; then the builder says so in the plan.
 
+### 4b. Smaller windows on the phone board (2026-11-23)
+
+The developer found the windows too big on the phone: They fit, but Material's spacing takes about 100 px of a 366 px screen and the dark backdrop hides the board.
+
+- **Dense chrome** (developer's choice, numbers are Claude's calls): On the phone board layout, every window gets a 18 px title (was 24 px) with 8 px 12 px 4 px padding, 12 px content padding on all sides, and a 8 px 12 px actions row. Set through Material's dialog tokens on the overlay container, in one place (`styles.scss`), so no window gets its own copy.
+- **Lighter backdrop** (developer's choice): The backdrop behind a window is 15% black (Material's is 32%), so the board stays readable behind it.
+- **Unchanged:** Buttons stay 44 px and text stays 12 px or more; medium and large layouts keep Material's sizes.
+- **Side-by-side layouts** (developer's choice, conditional): For the Response, Choice, Discard and Selection windows, the prompt sits left and the choices right, but only for windows that still scroll at 800 × 366 after the two changes above. Which windows those are needs the browser audit at 800 × 366 and 760 × 340, which has not run yet.
+
 ## Sizes (the answer to "too small to read")
 
 These hold on the phone board and in every window opened from it.

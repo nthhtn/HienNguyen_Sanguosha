@@ -19,6 +19,18 @@ describe('windows on the phone board', () => {
     expect(overlay).toMatch(/button\s*\{[^}]*min-height:\s*44px/);
   });
 
+  it('trim the window chrome: an 18 px title, 12 px content padding, a compact actions row (spec 4b)', () => {
+    expect(px(overlay, '--mat-dialog-subhead-size')).toBe(18);
+    expect(px(overlay, '--mat-dialog-subhead-line-height')).toBe(24);
+    expect(overlay).toMatch(/--mat-dialog-headline-padding:\s*8px 12px 4px/);
+    expect(overlay).toMatch(/--mat-dialog-content-padding:\s*12px/);
+    expect(overlay).toMatch(/--mat-dialog-actions-padding:\s*8px 12px/);
+  });
+
+  it('lighten the backdrop to 15% so the board shows through (spec 4b)', () => {
+    expect(overlay).toMatch(/\.cdk-overlay-dark-backdrop\s*\{[^}]*rgb\(0 0 0 \/ 0\.15\)/);
+  });
+
   it('draw card names in windows at 14 px', () => {
     expect(overlay).toMatch(/app-playing-card \.name\s*\{[^}]*font-size:\s*14px/);
   });

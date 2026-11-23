@@ -164,6 +164,16 @@ html[data-layout='compact'] .cdk-overlay-container {
   --mat-button-protected-container-height: 44px;
   --mat-button-tonal-container-height: 44px;
   --mat-icon-button-state-layer-size: 44px;
+  // Dense window chrome (spec 4b): Material's 24 px title and padding take about 100 px of a 366 px screen.
+  --mat-dialog-subhead-size: 18px;
+  --mat-dialog-subhead-line-height: 24px;
+  --mat-dialog-headline-padding: 8px 12px 4px;
+  --mat-dialog-content-padding: 12px;
+  --mat-dialog-actions-padding: 8px 12px;
+  // The board stays readable behind a window.
+  .cdk-overlay-dark-backdrop {
+    background: rgb(0 0 0 / 0.15);
+  }
   button {
     min-height: 44px;
   }
