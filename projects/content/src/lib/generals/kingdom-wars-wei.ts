@@ -67,9 +67,11 @@ const bequeathedStrategy: SkillDefinition = {
 const GODDESS_LUO_ID = 'kingdomWars:goddess-luo';
 const heldOf = (data: Record<string, unknown> | undefined): string[] => (data?.['held'] as string[] | undefined) ?? [];
 const goddessLuoEnd = (owner: GeneralOwner, held: string[]): Effect => skillStep(owner, 'end', { held });
+// The chain is over without a red card (a stop, no card left, or her death): the judgment popup waits to be closed, then she takes the cards.
+const chainEnded: Effect = { kind: 'JudgmentChainEndedEffect' };
 // One more judgment; with no card left to judge, the process ends.
 const goddessLuoJudge = (owner: GeneralOwner, held: string[]): Effect => ({
-  kind: 'JudgeEffect', seatId: owner.seatId, reader: { kind: 'skill', owner }, data: { held }, otherwise: [goddessLuoEnd(owner, held)],
+  kind: 'JudgeEffect', seatId: owner.seatId, reader: { kind: 'skill', owner }, data: { held }, otherwise: [chainEnded, goddessLuoEnd(owner, held)],
 });
 
 const goddessLuo: SkillDefinition = {
@@ -82,12 +84,14 @@ const goddessLuo: SkillDefinition = {
       effect: (_state, _event, owner) => [ask(owner, [goddessLuoJudge(owner, [])])],
     }),
   ],
+  // Her judgments share one popup: a black final card goes on without a close, a red one ends it.
+  chainsJudgment: (state, { owner, judged }, registry) => riverGoddessOutcome(state, owner.seatId, judged, registry) === 'again',
   onJudged: (state, { owner, judged, data, done }, registry) => {
     const held = heldOf(data);
     if (riverGoddessOutcome(state, owner.seatId, judged, registry) === 'ends') return [done, goddessLuoEnd(owner, held)];
     const now = [...held, judged.instanceId];
     // Out of processing before `done`, so `done` leaves it be; then judge again, or stop and acquire.
-    return [stashMove(state, owner.seatId, judged.instanceId, requireZoneOfKind(state.zones, 'processing').id), done, ask(owner, [goddessLuoJudge(owner, now)], [goddessLuoEnd(owner, now)])];
+    return [stashMove(state, owner.seatId, judged.instanceId, requireZoneOfKind(state.zones, 'processing').id), done, ask(owner, [goddessLuoJudge(owner, now)], [chainEnded, goddessLuoEnd(owner, now)])];
   },
   // 'end': every held card still in the stash goes to her hand, or to the discard pile if she is out.
   onStep: (state, step) => {

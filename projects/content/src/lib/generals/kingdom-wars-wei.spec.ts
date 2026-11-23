@@ -1,5 +1,5 @@
 import type { GameState, GeneralOwner } from 'engine';
-import { redactStateForSeat } from 'engine';
+import { awaitsAcknowledgement, getActiveSeatId, redactStateForSeat } from 'engine';
 import { abilityLog, askedAbout, card, handIds, harness, hp, ids, kwMode, table, TableOptions } from './skills.testing';
 
 const h = harness();
@@ -179,10 +179,12 @@ describe('Kingdom Wars Zhen Ji, Goddess Luo', () => {
   const kw = harness(kwMode);
   type H = ReturnType<typeof harness>;
   // seat-d's turn ends; seat-a's starts, with `general` beside `partner`.
-  const startOfTurn = (general: string, drawPile: ReturnType<typeof card>[], o: { partner?: string; hand?: ReturnType<typeof card>[]; hp?: number; with?: H } = {}) =>
-    (o.with ?? stub).settle(
-      table({ drawPile, 'seat-a:hand': o.hand ?? [] }, { generals: { 'seat-a': [general, o.partner ?? 'filler-xun-yu'] }, owner: 'seat-d', phase: 'End', hp: { 'seat-a': o.hp ?? 4 } })
-    );
+  const startOfTurn = (general: string, drawPile: ReturnType<typeof card>[], o: { partner?: string; hand?: ReturnType<typeof card>[]; hp?: number; with?: H; notice?: boolean } = {}) =>
+    (o.with ?? stub).settle({
+      ...table({ drawPile, 'seat-a:hand': o.hand ?? [] }, { generals: { 'seat-a': [general, o.partner ?? 'filler-xun-yu'] }, owner: 'seat-d', phase: 'End', hp: { 'seat-a': o.hp ?? 4 } }),
+      // The judgment popup's rule: the judgments of a chain share one view.
+      ...(o.notice ? { rules: { judgmentNotice: true } } : {}),
+    });
   const b1 = card('b1', 'sha', 'spade', 3);
   const b2 = card('b2', 'shan', 'club', 4);
   const r1 = card('r1', 'peach', 'heart', 5);
@@ -276,6 +278,110 @@ describe('Kingdom Wars Zhen Ji, Goddess Luo', () => {
     expect(ids(s, 'discardPile')).toEqual(['b1']);
     expect(handIds(s, 'seat-a')).toEqual([]);
     expect(ids(s, 'seat-a:stash')).toEqual([]);
+  });
+});
+
+describe('Kingdom Wars Zhen Ji, Goddess Luo: the judgment chain (judgmentNotice)', () => {
+  const stub = harness();
+  const kw = harness(kwMode);
+  const general = 'kingdomWars:zhen-ji';
+  const b1 = card('b1', 'sha', 'spade', 3);
+  const b2 = card('b2', 'shan', 'club', 4);
+  const r1 = card('r1', 'peach', 'heart', 5);
+  const rest = [card('x1', 'shan', 'diamond', 6), card('x2', 'shan', 'diamond', 7)];
+  const start = (pile: ReturnType<typeof card>[], o: { partner?: string; hand?: ReturnType<typeof card>[]; hp?: number; with?: ReturnType<typeof harness> } = {}) =>
+    (o.with ?? stub).settle({
+      ...table({ drawPile: pile, 'seat-a:hand': o.hand ?? [] }, { generals: { 'seat-a': [general, o.partner ?? 'filler-xun-yu'] }, owner: 'seat-d', phase: 'End', hp: { 'seat-a': o.hp ?? 4 } }),
+      rules: { judgmentNotice: true },
+    });
+  const close = (s: GameState, h = stub) => h.act(s, { kind: 'AcknowledgeJudgmentAction', seatId: getActiveSeatId(s)!, timeout: true });
+
+  it('black, black, red: one view throughout; the red awaits a close; closing gives her both black cards', () => {
+    let s = stub.use(start([b1, b2, r1, ...rest]));
+    expect(s.judgmentView).toMatchObject({ settled: true, continuing: true, aside: [b1] });
+    expect(ids(s, 'seat-a:stash')).toEqual(['b1']);
+    s = stub.use(s);
+    expect(s.judgmentView).toMatchObject({ settled: true, continuing: true, aside: [b1, b2] });
+    s = stub.use(s);
+    expect(s.judgmentView).toMatchObject({ settled: true, card: r1, aside: [b1, b2] });
+    expect(awaitsAcknowledgement(s.judgmentView)).toBe(true);
+    expect(handIds(s, 'seat-a')).toEqual([]);
+    s = close(s);
+    expect(s).not.toHaveProperty('judgmentView');
+    expect(handIds(s, 'seat-a')).toEqual(['b1', 'b2']);
+    expect(ids(s, 'discardPile')).toEqual(['r1']);
+    expect(s.pendingChoice).toBeUndefined();
+  });
+
+  it('a black card needs no close: the next thing offered is the ask', () => {
+    const s = stub.use(start([b1, b2, r1, ...rest]));
+    expect(stub.legal(s, 'seat-a').every((a) => a.kind === 'ChooseOptionAction')).toBe(true);
+    expect(askedAbout(s)).toBe('kingdomWars:goddess-luo');
+  });
+
+  it('stopping after one black card: the view awaits a close, and closing gives her that card', () => {
+    let s = stub.decline(stub.use(start([b1, b2, r1, ...rest])));
+    expect(s.judgmentView).toMatchObject({ settled: true, ended: true, aside: [b1] });
+    expect(awaitsAcknowledgement(s.judgmentView)).toBe(true);
+    expect(handIds(s, 'seat-a')).toEqual([]);
+    s = close(s);
+    expect(s).not.toHaveProperty('judgmentView');
+    expect(handIds(s, 'seat-a')).toEqual(['b1']);
+    expect(ids(s, 'seat-a:stash')).toEqual([]);
+    expect(ids(s, 'drawPile')[0]).toBe('b2');
+  });
+
+  it('a changer turns a black card red: the chain ends and the cards set aside are kept', () => {
+    const h = card('h', 'peach', 'heart', 9);
+    let s = stub.use(start([b1, b2, r1, ...rest], { partner: 'sima-yi', hand: [h] }));
+    expect(askedAbout(s)).toBe('devil');
+    s = stub.decline(s);
+    expect(s.judgmentView).toMatchObject({ continuing: true, aside: [b1] });
+    s = stub.use(s);
+    expect(askedAbout(s)).toBe('devil');
+    s = stub.select(stub.use(s), 'h');
+    expect(s.judgmentView).toMatchObject({ settled: true, card: h, aside: [b1] });
+    expect(awaitsAcknowledgement(s.judgmentView)).toBe(true);
+    s = close(s);
+    expect(handIds(s, 'seat-a')).toEqual(['b1']);
+    expect(ids(s, 'discardPile')).toEqual(expect.arrayContaining(['b2', 'h']));
+  });
+
+  it('if she dies between judgments, the set-aside cards are discarded and one close ends the chain', () => {
+    const lethal = { kind: 'DamageEffect' as const, damage: { source: null, target: { kind: 'seat' as const, seatId: 'seat-a' }, amount: 1, nature: 'normal' as const, cause: {} } };
+    const before = kw.use(start([b1, b2, r1, ...rest], { hp: 1, with: kw }));
+    const choice = before.pendingChoice!;
+    const reason = choice.reason as Extract<typeof choice.reason, { kind: 'ability' }>;
+    const effects = (optionId: string) => choice.options.find((o) => o.id === optionId)!.effects;
+    const ask = { kind: 'AskUseEffect' as const, owner: reason.owner as GeneralOwner, abilityId: reason.abilityId, effects: effects('use'), otherwise: effects('decline') };
+    let s = kw.run({ ...before, pendingChoice: undefined }, [lethal, ask]);
+    while (s.pendingResponse) s = kw.pass(s);
+    expect(s.seats.find((x) => x.id === 'seat-a')!.eliminated).toBe(true);
+    expect(awaitsAcknowledgement(s.judgmentView)).toBe(true);
+    s = close(s, kw);
+    expect(s).not.toHaveProperty('judgmentView');
+    expect(ids(s, 'discardPile')).toContain('b1');
+    expect(handIds(s, 'seat-a')).toEqual([]);
+  });
+
+  it('with no card left to judge after one black card, the chain ends with one close', () => {
+    let s = stub.use(stub.use(start([b1])));
+    expect(s.judgmentView).toMatchObject({ settled: true, ended: true, aside: [b1] });
+    s = close(s);
+    expect(s).not.toHaveProperty('judgmentView');
+    expect(handIds(s, 'seat-a')).toEqual(['b1']);
+  });
+
+  it('River Goddess (Identity) has no chain: its judgment awaits a close and carries no aside', () => {
+    const s = stub.use(
+      stub.settle({
+        ...table({ drawPile: [b1, b2, r1, ...rest] }, { generals: { 'seat-a': ['zhen-ji', 'filler-xun-yu'] }, owner: 'seat-d', phase: 'End' }),
+        rules: { judgmentNotice: true },
+      })
+    );
+    expect(s.judgmentView).toMatchObject({ settled: true, card: b1 });
+    expect(s.judgmentView).not.toHaveProperty('aside');
+    expect(awaitsAcknowledgement(s.judgmentView)).toBe(true);
   });
 });
 
