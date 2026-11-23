@@ -9,6 +9,7 @@ import { getLegalActions } from '../rules/legality';
 import { defaultActionsFor } from '../rules/defaultActions';
 import { usedCardOf } from '../domain/usedCard';
 import { EngineEvent } from './events';
+import { awaitsAcknowledgement } from '../rules/judgmentWait';
 
 const mode: GameModeDefinition = {
   id: 'stub',
@@ -444,5 +445,78 @@ describe('judgment notice', () => {
     expect(ended.result).not.toBeNull();
     expect(ended).not.toHaveProperty('judgmentView');
     expect(idsIn(ended, 'processing')).toEqual([]);
+  });
+});
+
+describe('a judgment chain', () => {
+  const s1 = card('s1', 'x', 'spade', 3);
+  const s2 = card('s2', 'x', 'spade', 4);
+  const r1 = card('r1', 'x', 'heart', 5);
+  let reads = 0;
+  const chainAsk = (o: GeneralOwner): Effect => ({
+    kind: 'AskUseEffect', owner: o, abilityId: 'chain',
+    effects: [{ kind: 'JudgeEffect', seatId: 'seat-a', reader: { kind: 'skill', owner: o } }],
+    otherwise: [{ kind: 'JudgmentChainEndedEffect' }],
+  });
+  // A seat-a skill that judges again after a spade: the spade is set aside in its hand, and it may judge once more.
+  const chainer: SkillDefinition = {
+    id: 'chain',
+    chainsJudgment: (_state, { judged }) => judged.suit === 'spade',
+    onJudged: (_state, { owner, judged, done }) => {
+      reads += 1;
+      return judged.suit === 'spade' ? [{ kind: 'MoveCardEffect', cardInstanceId: judged.instanceId, toZoneId: 'seat-a:hand', onlyFrom: 'processing' }, done, chainAsk(owner)] : [done];
+    },
+  };
+  const c = ctxWith([chainer]);
+  const first: Effect = { kind: 'JudgeEffect', seatId: 'seat-a', reader: { kind: 'skill', owner: owner('chain') } };
+  const start = (pile: CardInstance[]) =>
+    settleWith({ ...table({ queue: [first], revealed: true, cards: { drawPile: pile } }), rules: { judgmentNotice: true } }, c);
+  const answer = (s: GameState, optionId: string) => resolve(s, { kind: 'ChooseOptionAction', seatId: 'seat-a', choiceId: s.pendingChoice!.id, optionId }, c).state;
+  beforeEach(() => { reads = 0; });
+
+  it('a chaining final card does not wait for an acknowledgement: the ask follows', () => {
+    const next = start([s1, r1]);
+    expect(next.judgmentView).toMatchObject({ settled: true, continuing: true, aside: [s1] });
+    expect(awaitsAcknowledgement(next.judgmentView)).toBe(false);
+    expect(next.pendingChoice).toMatchObject({ seatId: 'seat-a', reason: { abilityId: 'chain' } });
+    expect(idsIn(next, 'seat-a:hand')).toEqual(['s1']);
+  });
+
+  it('the view survives into the next judgment and keeps the cards set aside', () => {
+    const next = answer(start([s1, s2, r1]), 'use');
+    expect(next.judgmentView).toMatchObject({ settled: true, continuing: true, card: s2, aside: [s1, s2] });
+  });
+
+  it('a final card that does not continue awaits an acknowledgement, with the set-aside cards kept', () => {
+    const next = answer(start([s1, r1]), 'use');
+    expect(next.judgmentView).toMatchObject({ settled: true, card: r1, aside: [s1] });
+    expect(next.judgmentView).not.toHaveProperty('continuing');
+    expect(awaitsAcknowledgement(next.judgmentView)).toBe(true);
+    expect(getLegalActions(next, 'seat-a', c.registry)).toEqual([{ kind: 'AcknowledgeJudgmentAction', seatId: 'seat-a' }]);
+    const closed = resolve(next, { kind: 'AcknowledgeJudgmentAction', seatId: 'seat-a' }, c).state;
+    expect(closed).not.toHaveProperty('judgmentView');
+    expect(idsIn(closed, 'discardPile')).toEqual(['r1']);
+  });
+
+  it('JudgmentChainEndedEffect makes the view await an acknowledgement, and closing it does not read the judgment again', () => {
+    const next = answer(start([s1, r1]), 'decline');
+    expect(next.judgmentView).toMatchObject({ settled: true, ended: true });
+    expect(next.judgmentView).not.toHaveProperty('continuing');
+    expect(awaitsAcknowledgement(next.judgmentView)).toBe(true);
+    const closed = resolve(next, { kind: 'AcknowledgeJudgmentAction', seatId: 'seat-a', timeout: true }, c).state;
+    expect(closed).not.toHaveProperty('judgmentView');
+    expect(reads).toBe(1);
+    expect(idsIn(closed, 'seat-a:hand')).toEqual(['s1']);
+  });
+
+  it('a reader without chainsJudgment has no aside', () => {
+    const plain = settle({ ...table({ queue: [{ kind: 'JudgeEffect', seatId: 'seat-a', reader: { kind: 'card', card: usedCardOf(card('o1', 'omen')) } }], cards: { drawPile: [s1] } }), rules: { judgmentNotice: true } });
+    expect(plain.judgmentView).not.toHaveProperty('aside');
+  });
+
+  it('JudgmentChainEndedEffect with no view changes nothing', () => {
+    const next = settleWith(table({ queue: [{ kind: 'JudgmentChainEndedEffect' }] }), c);
+    expect(next).not.toHaveProperty('judgmentView');
+    expect(next.resolutionQueue ?? []).toEqual([]);
   });
 });

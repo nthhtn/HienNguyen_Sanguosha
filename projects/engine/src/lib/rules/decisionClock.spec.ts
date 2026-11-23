@@ -240,6 +240,33 @@ describe('describeDecision around a judgment', () => {
   });
 });
 
+describe('describeDecision around a judgment chain', () => {
+  const ack: Action = { kind: 'AcknowledgeJudgmentAction', seatId: 'seat-0' };
+  const withLeadIn = { leadIn: true };
+
+  it('gives a chain reader’s settled view a chainEnd clock of 5 seconds', () => {
+    const view = { settled: true, rounds: 2, aside: [] };
+    expect(describeDecision(state({ judgmentView: view }), 'seat-0', [ack], 'k', withLeadIn)).toEqual({ kind: 'chainEnd', seatId: 'seat-0', key: 'step:k', leadInMs: JUDGMENT_LEAD_IN_MS.tail });
+    expect(DECISION_SECONDS.chainEnd).toBe(5);
+  });
+
+  it('keeps notice for a view with no chain', () => {
+    expect(describeDecision(state({ judgmentView: { settled: true, rounds: 2 } }), 'seat-0', [ack], 'k')?.kind).toBe('notice');
+  });
+
+  it('gives an ended chain no lead-in: its verdict has already played', () => {
+    const view = { settled: true, ended: true, rounds: 2, aside: [] };
+    expect(describeDecision(state({ judgmentView: view }), 'seat-0', [ack], 'k', withLeadIn)).toMatchObject({ kind: 'chainEnd', leadInMs: 0 });
+  });
+
+  it('times the ask under a continuing view as an ask that waits for the verdict animation', () => {
+    const view = { settled: true, continuing: true, rounds: 0, aside: [{ instanceId: 's1' }] };
+    const pending = { judgmentView: view, pendingChoice: { verb: 'use' } };
+    expect(describeDecision(state(pending), 'seat-0', [endPhase], 'k', withLeadIn)).toEqual({ kind: 'ask', seatId: 'seat-0', key: 'step:k', leadInMs: JUDGMENT_LEAD_IN_MS.tail });
+    expect(describeDecision(state(pending), 'seat-0', [endPhase], 'k')).toEqual({ kind: 'ask', seatId: 'seat-0', key: 'step:k', leadInMs: 0 });
+  });
+});
+
 describe('GAME_START_LEAD_IN_MS', () => {
   it('is 3 seconds', () => {
     expect(GAME_START_LEAD_IN_MS).toBe(3000);

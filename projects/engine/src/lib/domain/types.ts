@@ -345,6 +345,14 @@ export interface JudgmentView {
   // How many times a skill that may change the card has been asked (the first ask of a decision, not its
   // follow-up pick), so the clocks know how much animation has played. Read as 0 when absent.
   rounds: number;
+  // Set for a reader whose judgments chain (SkillDefinition.chainsJudgment): the cards set aside so far, public,
+  // carried from one judgment of the chain to the next. Absent for every other reader.
+  aside?: CardInstance[];
+  // The card is final and shown, and the chain goes on without anyone closing it: the reader asks next.
+  continuing?: true;
+  // The chain is over (a stop, or nothing left to judge with): the game waits for the acknowledgement alone, and
+  // closing it must not read the judgment again.
+  ended?: true;
 }
 
 // A judgment under way: whose it is, who reads it, what the reader passed

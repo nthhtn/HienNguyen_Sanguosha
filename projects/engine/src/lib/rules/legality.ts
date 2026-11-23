@@ -5,6 +5,7 @@ import { ContentRegistry, Conversion, PlayOptionsContext, TargetPick } from '../
 import { abilityUseKey, skillsInPlay } from '../skills/generalSkills';
 import { sameValue } from './offered';
 import { decisionPending, getActingSeatIds, getActiveSeatId, ownSkillChoice } from './activeSeat';
+import { awaitsAcknowledgement } from './judgmentWait';
 import { getLegalGeneralChoices } from './generalSelection';
 import { discardOwed } from './phaseSequence';
 
@@ -28,7 +29,7 @@ export function getLegalActions(state: GameState, seatId: string, registry?: Con
   if (!actingSeat) return [];
   if (actingSeat.eliminated) {
     const choice = state.pendingChoice;
-    return choice?.seatId === seatId && ownSkillChoice(choice) && !state.judgmentView?.settled && state.phase !== 'GeneralSelection' ? chooseOptions(choice, seatId) : [];
+    return choice?.seatId === seatId && ownSkillChoice(choice) && !awaitsAcknowledgement(state.judgmentView) && state.phase !== 'GeneralSelection' ? chooseOptions(choice, seatId) : [];
   }
 
   if (state.phase === 'GeneralSelection') {
@@ -39,7 +40,7 @@ export function getLegalActions(state: GameState, seatId: string, registry?: Con
   }
 
   // A judgment waiting to be acknowledged: one action, for the seat that acts on it.
-  if (state.judgmentView?.settled) {
+  if (awaitsAcknowledgement(state.judgmentView)) {
     return getActiveSeatId(state) === seatId ? [{ kind: 'AcknowledgeJudgmentAction', seatId }] : [];
   }
 
