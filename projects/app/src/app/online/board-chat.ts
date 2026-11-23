@@ -13,7 +13,9 @@ import { BoardChatState } from './board-chat-state.service';
   selector: 'app-board-chat',
   imports: [MatButtonModule, MatIconModule, ChatPanel, TPipe],
   template: `
-    @if (state.open()) {
+    <!-- On the phone board the right-hand panel holds the chat (its Chat tab), so nothing is drawn here. -->
+    @if (layout.toolbarHidden()) {
+    } @else if (state.open()) {
       <aside class="drawer" [attr.aria-label]="'lobby.chat' | t">
         <header>
           <h2>{{ 'lobby.chat' | t }}</h2>
@@ -21,8 +23,7 @@ import { BoardChatState } from './board-chat-state.service';
         </header>
         <app-chat-panel [you]="you()" [canSend]="canSend()" />
       </aside>
-    } @else if (!layout.toolbarHidden()) {
-      <!-- While the phone board is open its Chat button is in the centre band. -->
+    } @else {
       <button
         mat-flat-button
         type="button"
@@ -95,6 +96,7 @@ export class BoardChat {
     // Each game's chat starts closed, with what was said before it counted as seen.
     this.state.reset();
     effect(() => this.state.setYou(this.you()));
+    effect(() => this.state.setCanSend(this.canSend()));
     this.state.setAvailable(true);
     inject(DestroyRef).onDestroy(() => this.state.setAvailable(false));
   }

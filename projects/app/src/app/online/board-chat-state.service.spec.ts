@@ -37,4 +37,25 @@ describe('BoardChatState', () => {
     state.setAvailable(true);
     expect(state.available()).toBe(true);
   });
+
+  it('viewing opens the chat and marks everything seen; leaving it counts new messages again', () => {
+    const { state, messages } = setup();
+    messages.update((all) => [...all, chatMessage(1, 'Bo', 'hi')]);
+    expect(state.unread()).toBe(1);
+    state.setViewing(true);
+    expect(state.open()).toBe(true);
+    expect(state.unread()).toBe(0);
+    state.setViewing(false);
+    expect(state.open()).toBe(false);
+    messages.update((all) => [...all, chatMessage(2, 'Cy', 'again')]);
+    expect(state.unread()).toBe(1);
+  });
+
+  it('exposes who you are and whether you can send', () => {
+    const { state } = setup();
+    expect(state.you()).toBe('p-ann');
+    expect(state.canSend()).toBe(true);
+    state.setCanSend(false);
+    expect(state.canSend()).toBe(false);
+  });
 });

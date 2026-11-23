@@ -104,16 +104,17 @@ describe('BoardChat', () => {
       expect(toggle()).not.toBeNull();
     });
 
-    it('has no floating Chat button while the phone board is open, and opens from the shared state', async () => {
+    it('draws nothing while the phone board is open: the right-hand panel holds the chat there', async () => {
       const { fixture, el, toggle } = await render(fakeChat());
       TestBed.inject(Layout).setBoardOpen(true);
       fixture.detectChanges();
       expect(toggle()).toBeNull();
       const state = TestBed.inject(BoardChatState);
       expect(state.available()).toBe(true);
-      state.toggle();
+      state.setViewing(true);
       fixture.detectChanges();
-      expect(el.querySelector('.drawer app-chat-panel')).not.toBeNull();
+      expect(el.querySelector('.drawer')).toBeNull();
+      expect(el.querySelector('app-chat-panel')).toBeNull();
     });
   });
 

@@ -209,6 +209,16 @@ The developer asked to drop what a tile shows without information, so names and 
 - **Bot marker** (developer's choice): Every phone tile of a bot, slim ones too, shows the robot icon beside the name, and the "[Bot] " text is not part of the shown name. A bot whose stored name has no such prefix (an old "Bot 1") shows its name as it is. The icon keeps its accessible label. The web board, Action History and Seat Details are unchanged (Claude's call: those are not tiles).
 - **Accessible names:** An empty slot is no longer an element, so the tile's tooltips for empty slots go; filled boxes keep theirs.
 
+### 3e. A lighter centre band and one right-hand panel (2026-11-23)
+
+The developer asked for a lighter centre band, with the in-game extras grouped into the slide-out panel.
+
+- **One right-hand panel** (developer's choice): The History button opens the existing panel that slides in from the right. On the phone board it gets a third tab, Chat, beside History and Discard Pile. The Menu drawer is separate and stays as it is, sliding in from the left with its links, battlefield, account, language and playback speed.
+- **Chat button leaves the band** (follows from the above, Claude's call): The Chat tab shows only in an online room. The unread count shows on the tab, and also as a badge on the History button while the panel is closed, so a message is never missed. The floating Chat button stays on tablets and computers, and the chat drawer there is unchanged.
+- **Draw Pile count** (developer's choice): The count moves out of the centre band into the panel, as a line above the tabs (Claude's call: it is visible whichever tab is open). The web board keeps it in the phase indicator.
+- **Last played card** (developer's choice): The band shows only the newest card the engine has in the processing zone, not all of them.
+- **Cancel** (developer's request): No Cancel button; a tap on the picked card again puts it back (already the rule in 3c). Which Cancel the developer meant is still to be confirmed.
+
 ### 4. Windows on the phone
 
 Every window that can open during a game must fit a 760 × 340 px window without the page scrolling, with its buttons always on screen. If the content is long, the content scrolls inside the window and the buttons stay fixed.

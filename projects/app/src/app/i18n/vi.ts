@@ -348,6 +348,7 @@ export const vi: Messages = {
   'board.selection.waiting': 'Đang chờ những người chơi khác chọn Tướng',
   'board.gameStartsIn': 'Ván đấu bắt đầu sau {n}',
   'board.panel.open': 'Lịch sử',
+  'board.panel.openUnread': 'Lịch sử, {n} chưa đọc',
   'board.rotate.title': 'Hãy xoay thiết bị',
   'board.rotate.hint': 'Bảng Quốc chiến cần màn hình rộng hơn. Hãy xoay thiết bị sang ngang để tiếp tục chơi.',
   'board.small.title': 'Cần màn hình lớn hơn',

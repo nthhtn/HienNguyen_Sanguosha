@@ -349,6 +349,7 @@ export const en = {
   'board.selection.waiting': 'Waiting for the other players to choose',
   'board.gameStartsIn': 'Game starts in {n}',
   'board.panel.open': 'History',
+  'board.panel.openUnread': 'History, {n} unread',
   'board.rotate.title': 'Rotate Your Device',
   'board.rotate.hint': 'The Guozhan board needs a wider screen. Turn your device sideways to keep playing.',
   'board.small.title': 'Larger Screen Needed',
