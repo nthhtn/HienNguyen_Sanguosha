@@ -16,8 +16,9 @@ import { ChatPanel } from '../online/chat-panel';
   selector: 'app-board-panel',
   imports: [MatTabsModule, ActionHistoryList, DiscardHistoryList, ChatPanel, TPipe],
   template: `
-    @if (drawPileCount() !== null) {
-      <div class="draw-pile">{{ 'phase.drawPile' | t: { n: drawPileCount() } }}</div>
+    @let drawPile = drawPileCount();
+    @if (drawPile !== null) {
+      <div class="draw-pile">{{ 'phase.drawPile' | t: { n: drawPile } }}</div>
     }
     <mat-tab-group animationDuration="0ms" stretchTabs="true" (selectedIndexChange)="selected.set($event)">
       <mat-tab [label]="'history.title' | t">
