@@ -27,7 +27,9 @@ import { TPipe } from '../i18n/t.pipe';
         <!-- At zero: End Phase, or Continue in the Start window. -->
         <app-decision-countdown class="timer" />
       }
-      {{ ' ' }}<span class="count draw-pile">{{ 'phase.drawPile' | t: { n: drawPileCount() } }}</span>
+      @if (showDrawPile()) {
+        {{ ' ' }}<span class="count draw-pile">{{ 'phase.drawPile' | t: { n: drawPileCount() } }}</span>
+      }
     </div>
   `,
   styles: `
@@ -49,6 +51,8 @@ import { TPipe } from '../i18n/t.pipe';
 export class PhaseIndicator {
   readonly state = input.required<GameState>();
   readonly viewerSeatId = input<string | null>(null);
+  // The phone board's centre band leaves the Draw Pile count to its panel (spec 3e).
+  readonly showDrawPile = input(true);
 
   private readonly i18n = inject(I18n);
 
