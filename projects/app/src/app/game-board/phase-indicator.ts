@@ -5,7 +5,7 @@ import { DecisionCountdown } from './decision-countdown';
 import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
 
-// Whose turn it is and which phase, e.g. "Seat 0 (you) – Play Phase", between
+// Whose turn it is and which phase, e.g. "Seat 0 (You) – Play Phase", between
 // the turn number and the draw pile count.
 // The turn owner's name and timer are in their force colour.
 // Presentational: every value comes from the (redacted) state or the engine.

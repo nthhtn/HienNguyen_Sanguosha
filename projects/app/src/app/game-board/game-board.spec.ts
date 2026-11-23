@@ -240,7 +240,7 @@ describe('GameBoard', () => {
     expect(el.querySelector('app-round-table')).not.toBeNull();
     expect(el.querySelectorAll('app-round-table app-seat-tile')).toHaveLength(2);
     expect(el.querySelector(`app-round-table [data-seat-id="${viewer}"]`)).toBeNull();
-    expect(el.querySelector('.your-seat app-seat-tile')!.textContent).toContain('(you)');
+    expect(el.querySelector('.your-seat app-seat-tile')!.textContent).toContain('(You)');
     const state = gameService.visibleState()!;
     const ownHand = state.zones.find((z) => z.id === state.seats.find((s) => s.id === viewer)!.hand.zoneId)!;
     expect(el.querySelectorAll('.your-hand app-hand-view .hand-card')).toHaveLength(ownHand.cards.length);
@@ -704,7 +704,7 @@ describe('GameBoard in vs-bots mode', () => {
     fixture.detectChanges();
     const el = fixture.nativeElement as HTMLElement;
     expect(el.querySelector('app-reveal-gate-overlay')).toBeNull();
-    expect(el.querySelector('.your-seat app-seat-tile')!.textContent).toContain('(you)');
+    expect(el.querySelector('.your-seat app-seat-tile')!.textContent).toContain('(You)');
     expect(el.querySelector('app-round-table .thinking')!.textContent).toContain('is thinking');
     // Nothing is playable while a bot acts (Review Focus 4).
     const playButtons = [...el.querySelectorAll('app-hand-view button.play')] as HTMLButtonElement[];
@@ -722,7 +722,7 @@ describe('GameBoard in vs-bots mode', () => {
     const indicator = (fixture.nativeElement as HTMLElement).querySelector('app-phase-indicator')!;
     const timer = indicator.querySelector('app-decision-countdown')!;
     const label = indicator.textContent!.replace(timer.textContent!, '').replace(/\s+/g, ' ').trim();
-    expect(label).toMatch(/^Turn 1 Seat 0 \(you\) – Play Phase Draw Pile \d+$/);
+    expect(label).toMatch(/^Turn 1 Seat 0 \(You\) – Play Phase Draw Pile \d+$/);
     // Your own Play phase is timed: 300 seconds for the whole phase.
     expect(timer.textContent).toContain('180s');
   });

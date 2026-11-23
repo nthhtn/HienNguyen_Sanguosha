@@ -63,14 +63,16 @@ const NO_RESPONSE = 'no-response';
       </div>
 
       <mat-radio-group class="options" [value]="picked()" (change)="picked.set($event.value)" [attr.aria-label]="'respDialog.choose' | t">
-        <h3>{{ 'respDialog.skills' | t }}</h3>
-        @for (option of data.skills; track option.id) {
-          <mat-radio-button class="option skill-option" [value]="option.id" [attr.data-option-id]="option.id">
-            {{ option.label }}
-          </mat-radio-button>
-        } @empty {
-          <p class="empty">{{ 'respDialog.noSkills' | t }}</p>
-        }
+        <div class="skills" [class.none]="!data.skills.length">
+          <h3>{{ 'respDialog.skills' | t }}</h3>
+          @for (option of data.skills; track option.id) {
+            <mat-radio-button class="option skill-option" [value]="option.id" [attr.data-option-id]="option.id">
+              {{ option.label }}
+            </mat-radio-button>
+          } @empty {
+            <p class="empty">{{ 'respDialog.noSkills' | t }}</p>
+          }
+        </div>
 
         <h3>{{ 'respDialog.cards' | t }}</h3>
         <div class="cards">
@@ -95,10 +97,12 @@ const NO_RESPONSE = 'no-response';
       </mat-radio-group>
     </mat-dialog-content>
     <!-- Below the choices, above the button. At zero: No Response. -->
-    <app-decision-countdown class="timer" />
-    <mat-dialog-actions align="end">
-      <button mat-flat-button type="button" class="confirm" (click)="confirm()">{{ confirmLabel() }}</button>
-    </mat-dialog-actions>
+    <div class="foot">
+      <app-decision-countdown class="timer" />
+      <mat-dialog-actions align="end">
+        <button mat-flat-button type="button" class="confirm" (click)="confirm()">{{ confirmLabel() }}</button>
+      </mat-dialog-actions>
+    </div>
   `,
   styles: `
     .description { margin-bottom: 12px; }
@@ -115,6 +119,18 @@ const NO_RESPONSE = 'no-response';
     .empty { margin: 0 0 4px 12px; color: var(--mat-sys-on-surface-variant); font: var(--mat-sys-body-medium); }
     .no-response { margin-top: 12px; }
     .timer { display: block; padding: 8px 24px 0; }
+    .foot { display: contents; }
+    /* The phone board (spec 4b): the description beside the choices, an empty Skills block gone, and the countdown
+       and the button on one row, so a Response window needs no scrolling at 800 x 366. */
+    :host-context([data-layout='compact']) mat-dialog-content { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 16px; align-items: start; }
+    :host-context([data-layout='compact']) .description { margin-bottom: 0; }
+    :host-context([data-layout='compact']) .skills.none { display: none; }
+    :host-context([data-layout='compact']) h3 { margin-top: 0; }
+    :host-context([data-layout='compact']) .no-response { margin-top: 4px; }
+    :host-context([data-layout='compact']) .card-option app-playing-card { padding: 0; }
+    :host-context([data-layout='compact']) .description p { margin-bottom: 2px; }
+    :host-context([data-layout='compact']) .foot { display: flex; align-items: center; gap: 8px; }
+    :host-context([data-layout='compact']) .foot .timer { flex: 1 1 auto; min-width: 0; padding: 0 0 0 12px; }
   `,
 })
 export class ResponseDialog {
