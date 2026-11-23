@@ -45,6 +45,8 @@ export function handStep(width: number, count: number, cardWidth: number, gap: n
           [class.picked]="vm.card.instanceId === pickedId()"
           [style.margin-left.px]="first ? null : overlapMargin()"
           (click)="tap(vm.card.instanceId)"
+          (keydown.enter)="tap(vm.card.instanceId)"
+          (keydown.space)="tap(vm.card.instanceId); $event.preventDefault()"
         >
           <app-playing-card [card]="vm.card" />
           @if (fit() === 'row') {

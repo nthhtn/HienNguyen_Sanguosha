@@ -2,6 +2,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import { Component, DestroyRef, ElementRef, afterNextRender, computed, inject, input, output, signal, viewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Action, CardInstance, ContentRegistry, GameState, Seat, isSeatDying } from 'engine';
 import { I18n } from '../../i18n/i18n.service';
 import { Layout } from '../../layout.service';
@@ -26,7 +27,7 @@ const BOARD_PADDING = 8;
 // the same state and legal actions as the web board and decides no rules.
 @Component({
   selector: 'app-phone-board',
-  imports: [NgTemplateOutlet, MatButtonModule, ActionList, HandCardActions, HandView, PhoneCentreBand, PhoneSeatTile, PlaybackLayer],
+  imports: [NgTemplateOutlet, MatButtonModule, MatTooltipModule, ActionList, HandCardActions, HandView, PhoneCentreBand, PhoneSeatTile, PlaybackLayer],
   template: `
     <ng-template #tile let-seat let-slim="slim">
       <app-phone-seat-tile
@@ -95,9 +96,9 @@ const BOARD_PADDING = 8;
             <app-hand-card-actions [vm]="vm" [state]="state()" (played)="play($event)" />
           }
           @for (skill of usableSkills(); track skill.skillId) {
-            <button mat-stroked-button type="button" class="skill" (click)="choose(skill.action!)">{{ skill.label }}</button>
+            <button mat-stroked-button type="button" class="skill" [matTooltip]="skill.label" (click)="choose(skill.action!)">{{ skill.label }}</button>
           }
-          <app-action-list [actions]="boardActions()" [state]="state()" [registry]="registry()" (actionChosen)="choose($event)" />
+          <app-action-list [compact]="true" [actions]="boardActions()" [state]="state()" [registry]="registry()" (actionChosen)="choose($event)" />
         </div>
       </div>
       <app-playback-layer
@@ -140,8 +141,15 @@ const BOARD_PADDING = 8;
       --mat-button-outlined-label-text-color: #fbf7ec; --mat-button-outlined-outline-color: rgb(251 247 236 / 0.5);
       --mat-button-outlined-disabled-label-text-color: rgb(251 247 236 / 0.45);
     }
-    .actions .skill { min-height: 44px; font-size: 14px; }
-    .actions app-action-list ::ng-deep button { min-height: 44px; font-size: 14px; }
+    /* Slimmer buttons on one line (spec 3c, the developer's exception to the 44 px rule); a long label ends in "…" and
+       shows in full on a long press. The picked card's Play and Info are full width at the top. */
+    .actions ::ng-deep button {
+      height: 36px; min-height: 36px; width: 100%; padding: 0 8px; font-size: 13px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      --mat-button-outlined-container-height: 36px; --mat-button-filled-container-height: 36px;
+    }
+    .actions ::ng-deep .mdc-button__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .actions app-action-list ::ng-deep .action-list { gap: 6px; margin: 0; }
   `,
 })
 export class PhoneBoard {

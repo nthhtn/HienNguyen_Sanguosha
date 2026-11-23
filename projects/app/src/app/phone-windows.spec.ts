@@ -66,5 +66,14 @@ describe('windows on the phone board', () => {
       expect(px(compactRule(source, '.result mat-card-actions button'), 'min-height')).toBeGreaterThanOrEqual(44);
     });
   });
+
+  it("keep the phone board's action buttons 36 px tall on one line", () => {
+    const board = read('game-board/phone/phone-board.ts');
+    const rule = /\.actions ::ng-deep button \{([^}]*)\}/.exec(board)?.[1] ?? '';
+    expect(px(rule, 'height')).toBe(36);
+    expect(px(rule, 'font-size')).toBe(13);
+    expect(rule).toMatch(/white-space:\s*nowrap/);
+    expect(rule).toMatch(/text-overflow:\s*ellipsis/);
+  });
 });
 
