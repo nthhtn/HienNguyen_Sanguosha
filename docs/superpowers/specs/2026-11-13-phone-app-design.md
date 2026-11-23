@@ -196,8 +196,8 @@ The developer played on the Honor 400 Pro and mis-touched Play and Info: on the 
 - Tablets and computers keep the Play and Info buttons on the card, as today.
 - **Menu drawer** (developer's choice): 220 px wide on the phone board layout (its longest item needs about 142 px; it was 320 px).
 - **General picker** (developer's choices, revised 2026-11-23):
-  - **Portrait cards in one row:** On the phone each candidate is only its portrait, with the name, force and HP over the bottom of it on a dark fade, and a small Info button. The skills half of the card is not shown on the phone; the Info button opens the General's full window (the same one Seat Details opens) without picking the General.
-  - **One row, no scrolling:** All candidates (5 or 7) sit side by side in one centred row that fills the card area's height, so every card is visible at once.
+  - **Portrait and basic info:** On the phone each candidate is its portrait with the name, force and HP beside it (to its right) and a small Info button in the card's corner. (Over the portrait, at two rows' height, the caption hid the portrait and the Info button hid the name.) The skills half of the card is not shown on the phone; the Info button opens the General's full window (the same one Seat Details opens) without picking the General.
+  - **Two rows, no scrolling** (revised by the developer, 2026-11-23): As on a computer, 7 candidates sit 4 on top and 3 below, 5 sit 3 on top and 2 below, each row centred and half the card area's height, so every card is visible at once.
   - Tablets and computers keep today's cards with their skills.
 
 ### 4. Windows on the phone

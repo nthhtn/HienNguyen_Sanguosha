@@ -195,8 +195,8 @@ interface CandidateViewModel {
     .role-chip.deputy { background: var(--mat-sys-surface); color: var(--mat-sys-primary); box-shadow: inset 0 0 0 2px var(--mat-sys-primary); }
     /* Info opens the General's full window; only the phone board shows it (its skill text does not scroll). */
     .general-info {
-      display: none; position: absolute; top: 2px; left: 2px; z-index: 1;
-      color: #fff; background: rgb(0 0 0 / 0.45); border-radius: 50%;
+      display: none; position: absolute; top: 0; right: 0; z-index: 1;
+      color: var(--mat-sys-on-surface-variant);
     }
     .caption { flex: none; box-sizing: border-box; height: var(--caption-height); padding: 6px 4px; text-align: center; overflow: hidden; }
     .name { font: var(--mat-sys-title-medium); }
@@ -226,30 +226,36 @@ interface CandidateViewModel {
       --art-width: 130px; max-width: none; height: 270px;
     }
     :host-context([data-layout='medium']) .bar { position: sticky; bottom: 0; z-index: 2; background: var(--mat-sys-surface-container); border-radius: 12px; }
-    /* Phone board (the installed app on a phone): one screen, no page scroll (spec, "Windows on the phone" and 3c). Each
-       candidate is only its portrait, with the name, force and HP over its foot and an Info button (the skills are in
-       the Info window); all of them sit in one centred row as tall as the card area, nothing to scroll. The header and
-       the bar with Confirm stay on screen. */
+    /* Phone board (the installed app on a phone): one screen, no page scroll (spec, "Windows on the phone" and 3c). The
+       two rows (4 + 3 or 3 + 2) each take half the card area's height and are centred. A card is as tall as its row:
+       the portrait on the left with a small Info button in its corner, and the name, force and HP to its right (the
+       skills are in the Info window). Nothing scrolls; the header and the bar with Confirm stay on screen. */
     :host-context([data-layout='compact']) .intro h2 { margin-top: 0; font: var(--mat-sys-title-large); }
     :host-context([data-layout='compact']) .hint { margin: 2px 0 4px; }
     :host-context([data-layout='compact']) .candidates {
-      display: flex; flex-direction: row; justify-content: center; align-items: stretch; gap: 8px;
+      display: flex; flex-direction: column; justify-content: center; gap: 6px;
       overflow: hidden; margin: 4px 0; padding: 4px;
     }
-    :host-context([data-layout='compact']) .row { display: contents; }
+    :host-context([data-layout='compact']) .row { display: flex; flex: 1 1 0; min-height: 0; justify-content: center; gap: 8px; }
     :host-context([data-layout='compact']) .candidate {
-      --art-width: 100%; flex: 1 1 0; min-width: 0; max-width: 130px; height: 100%;
+      flex: 0 1 186px; min-width: 0; max-width: 186px; height: 100%;
     }
-    :host-context([data-layout='compact']) .left { position: relative; width: 100%; max-width: none; }
-    :host-context([data-layout='compact']) .art { flex: 1; min-height: 0; aspect-ratio: auto; }
+    :host-context([data-layout='compact']) .left { flex-direction: row; width: 100%; max-width: none; }
+    :host-context([data-layout='compact']) .art { flex: none; height: 100%; aspect-ratio: 200 / 290; }
     :host-context([data-layout='compact']) .right { display: none; }
     :host-context([data-layout='compact']) .caption {
-      position: absolute; left: 0; right: 0; bottom: 0; height: auto; padding: 14px 4px 4px;
-      background: linear-gradient(transparent, rgb(0 0 0 / 0.8)); color: #fff;
+      flex: 1; min-width: 0; height: auto; padding: 4px 6px; text-align: left;
+      display: flex; flex-direction: column; justify-content: center; gap: 2px; overflow: hidden;
     }
-    :host-context([data-layout='compact']) .caption .name { font-size: 14px; line-height: 1.15; }
-    :host-context([data-layout='compact']) .caption .meta { flex-wrap: wrap; margin-top: 2px; }
-    :host-context([data-layout='compact']) .general-info { display: inline-flex; }
+    :host-context([data-layout='compact']) .caption .name { font-size: 14px; line-height: 1.15; overflow-wrap: anywhere; }
+    :host-context([data-layout='compact']) .caption .meta { flex-direction: column; align-items: flex-start; gap: 2px; margin-top: 2px; }
+    :host-context([data-layout='compact']) .caption ::ng-deep app-hp-icons img { width: 12px; height: auto; }
+    :host-context([data-layout='compact']) .general-info {
+      display: inline-flex; top: auto; right: auto; bottom: 2px; left: 2px;
+      --mat-icon-button-state-layer-size: 32px; width: 32px; height: 32px; padding: 4px;
+      color: #fff; background: rgb(0 0 0 / 0.5); border-radius: 50%;
+    }
+    :host-context([data-layout='compact']) .general-info mat-icon { font-size: 20px; width: 20px; height: 20px; }
     :host-context([data-layout='compact']) .bar { padding: 4px 8px; }
     @media (max-width: 600px) {
       .bar { gap: 8px; }

@@ -93,14 +93,19 @@ describe('windows on the phone board', () => {
       expect(picker).toMatch(/\.general-info \{[^}]*display:\s*none/);
     });
 
-    it('puts every candidate in one row with no scrolling', () => {
-      expect(rule('.candidates')).toMatch(/display:\s*flex/);
+    it('keeps the two rows (4 + 3, 3 + 2) with no scrolling, cards as tall as their row', () => {
+      expect(rule('.candidates')).toMatch(/flex-direction:\s*column/);
       expect(rule('.candidates')).toMatch(/overflow:\s*hidden/);
+      expect(rule('.row')).toMatch(/display:\s*flex/);
+      expect(rule('.row')).toMatch(/flex:\s*1 1 0/);
       expect(rule('.candidate')).toMatch(/height:\s*100%/);
     });
 
-    it('lays the name, force and HP over the bottom of the art', () => {
-      expect(rule('.caption')).toMatch(/position:\s*absolute/);
+    it('puts the name, force and HP beside the portrait, the Info button in the portrait corner', () => {
+      expect(rule('.left')).toMatch(/flex-direction:\s*row/);
+      expect(rule('.art')).toMatch(/aspect-ratio:\s*200 \/ 290/);
+      expect(rule('.caption')).not.toMatch(/position:\s*absolute/);
+      expect(rule('.general-info')).toMatch(/bottom:\s*2px/);
     });
   });
 
