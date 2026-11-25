@@ -28,6 +28,8 @@ import { GeneralSelection } from './general-selection';
 import { HandView } from './hand-view';
 import { cardDefinitionId } from '../labels';
 import { EFFECT_URLS, MUSIC_PLAYER_FACTORY } from '../music.service';
+import { PLAY_BOARD_SCENARIOS } from '../dev/scenarios/play-board';
+import { setWindowSize } from '../layout.testing';
 
 @Component({ template: 'info' })
 class InfoProbe {}
@@ -1582,4 +1584,55 @@ describe('GameBoard battle playback', () => {
       expect(openDialogs(CompeteDialog)).toHaveLength(1);
     });
   });
+
+  describe('tutorial anchors', () => {
+    const marked = (el: HTMLElement, id: string) => el.querySelectorAll(`[data-tutorial="${id}"]`);
+
+    function renderPlayPhase(width: number, height: number): HTMLElement {
+      setWindowSize(width, height);
+      const scenario = PLAY_BOARD_SCENARIOS.find((s) => s.id === 'play-own-turn')!;
+      gameService.startFromState(scenario.build(gameService.registry), 'vs-bots');
+      const fixture = TestBed.createComponent(GameBoard);
+      fixture.detectChanges();
+      return fixture.nativeElement as HTMLElement;
+    }
+
+    it('puts one anchor on each part of the large board a lesson points at', () => {
+      const el = renderPlayPhase(1400, 900);
+      for (const id of ['seat:seat-0', 'hp:seat-0', 'generals:seat-0', 'general-info:seat-0', 'hand', 'end-phase', 'phase-indicator', 'discard-pile', 'action-history']) {
+        expect({ id, count: marked(el, id).length }).toEqual({ id, count: 1 });
+      }
+    });
+
+    it('anchors a seat tile for each seat on the table, not only the viewer’s', () => {
+      const el = renderPlayPhase(1400, 900);
+      for (const seatId of ['seat-1', 'seat-2', 'seat-3']) expect(marked(el, `seat:${seatId}`)).toHaveLength(1);
+    });
+
+    it('anchors every hand card by its card, and its Play button when it can be played', () => {
+      const el = renderPlayPhase(1400, 900);
+      expect(marked(el, 'hand-card:sha').length).toBeGreaterThanOrEqual(1);
+      expect(marked(el, 'hand-card:peach')).toHaveLength(1);
+      expect(marked(el, 'play-button:sha').length).toBeGreaterThanOrEqual(1);
+      // Wuxie cannot be played in the Play Phase: its card is anchored, with no Play button to point at.
+      expect(marked(el, 'hand-card:wuxie')).toHaveLength(1);
+      expect(marked(el, 'play-button:wuxie')).toHaveLength(0);
+    });
+
+    it('marks the hand row, the End Phase button and the seat’s own parts on the medium board as well', () => {
+      const el = renderPlayPhase(1000, 700);
+      for (const id of ['seat:seat-0', 'hp:seat-0', 'hand', 'end-phase', 'phase-indicator']) expect({ id, count: marked(el, id).length }).toEqual({ id, count: 1 });
+      // The medium board folds the two history tiles into a panel, so these have nothing to point at there.
+      expect(marked(el, 'discard-pile')).toHaveLength(0);
+      expect(marked(el, 'action-history')).toHaveLength(0);
+    });
+
+    it('anchors the End Phase button and nothing else in the action list', () => {
+      const el = renderPlayPhase(1400, 900);
+      const anchored = [...el.querySelectorAll('app-action-list [data-tutorial]')];
+      expect(anchored.map((e) => e.getAttribute('data-tutorial'))).toEqual(['end-phase']);
+      expect(anchored[0].textContent).toContain('End Phase');
+    });
+  });
 });
+

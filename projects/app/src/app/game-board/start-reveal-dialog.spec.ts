@@ -34,3 +34,16 @@ describe('StartRevealDialog', () => {
     expect(close).toHaveBeenCalledWith(['main', 'deputy']);
   });
 });
+
+describe('StartRevealDialog tutorial anchors', () => {
+  it('marks each General slot and the confirm button', () => {
+    const { el } = render();
+    const marked = [...el.querySelectorAll('[data-tutorial]')].map((e) => [e.tagName.toLowerCase(), e.getAttribute('data-tutorial')]);
+    expect(marked).toEqual([
+      ['button', 'reveal-slot:main'],
+      ['button', 'reveal-slot:deputy'],
+      ['button', 'reveal-confirm'],
+    ]);
+  });
+});
+

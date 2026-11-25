@@ -1,5 +1,5 @@
 // The ids put in `data-tutorial` on board elements, one builder per anchor. A lesson step names its target
-// with a builder (`anchor.hand()`), and the board puts the same string on the element with `tutorialAnchor`.
+// with a builder (`anchor.hand()`), and the board puts the same string on the element with `appTutorialAnchor`.
 export type RevealSlot = 'main' | 'deputy';
 
 export const anchor = {

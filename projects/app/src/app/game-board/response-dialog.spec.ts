@@ -153,3 +153,21 @@ describe('ResponseDialog', () => {
     expect(el.querySelectorAll('mat-dialog-actions button')).toHaveLength(1);
   });
 });
+
+describe('ResponseDialog tutorial anchors', () => {
+  it('marks a card option by its card, and the confirm button', () => {
+    const { el } = render([{ id: 'shan-1', action: respond, card: shan, label: 'Dodge (2 ♥)' }]);
+    const marked = [...el.querySelectorAll('[data-tutorial]')].map((e) => [e.tagName.toLowerCase(), e.getAttribute('data-tutorial')]);
+    expect(marked).toEqual([
+      ['mat-radio-button', 'response-card:shan'],
+      ['button', 'response-confirm'],
+    ]);
+  });
+
+  it('marks the confirm button even with no card to answer with (a Pass)', () => {
+    const { el } = render([]);
+    expect(el.querySelectorAll('[data-tutorial="response-confirm"]')).toHaveLength(1);
+    expect(el.querySelectorAll('[data-tutorial^="response-card:"]')).toHaveLength(0);
+  });
+});
+
