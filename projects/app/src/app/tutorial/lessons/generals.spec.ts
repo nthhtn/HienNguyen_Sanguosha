@@ -36,6 +36,10 @@ describe('the Your Generals lesson on the phone board', () => {
     }
   });
 
+  it('rings the History button for the two steps that live under it', () => {
+    for (const id of ['discard-pile', 'action-history']) expect([id, textOf(id).phone?.target]).toEqual([id, 'history-button']);
+  });
+
   it('keeps the desktop wording where the phone board matches', () => {
     for (const id of ['two-generals', 'shared-hp', 'hand']) expect(textOf(id).phone).toBeUndefined();
   });

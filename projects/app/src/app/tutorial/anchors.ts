@@ -14,6 +14,8 @@ export const anchor = {
   phaseIndicator: () => 'phase-indicator',
   discardPile: () => 'discard-pile',
   actionHistory: () => 'action-history',
+  // The phone's History button, which opens the panel holding the Discard Pile and the Action History.
+  historyButton: () => 'history-button',
   targetSeat: (seatId: string) => `target-seat:${seatId}`,
   responseCard: (definitionId: string) => `response-card:${definitionId}`,
   responseConfirm: () => 'response-confirm',

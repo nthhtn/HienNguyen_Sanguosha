@@ -44,6 +44,7 @@ import { PlayingCard } from '../playing-card';
       <button
         type="button"
         class="history"
+        [appTutorialAnchor]="anchor.historyButton()"
         [attr.aria-label]="unread() > 0 ? ('board.panel.openUnread' | t: { n: unread() }) : ('board.panel.open' | t)"
         (click)="layout.togglePanel()"
       >

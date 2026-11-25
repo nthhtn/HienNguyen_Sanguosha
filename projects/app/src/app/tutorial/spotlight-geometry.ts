@@ -19,6 +19,11 @@ const MARGIN = 8;
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), Math.max(min, max));
 
+// A box scaled about the page's origin: a rect in zoomed units turned back into screen units.
+export function scaleBox(box: Box, factor: number): Box {
+  return { left: box.left * factor, top: box.top * factor, width: box.width * factor, height: box.height * factor };
+}
+
 // The target with `padding` around it, clamped to the viewport: what the spotlight leaves uncovered.
 export function holeBox(target: Box, viewport: Size, padding: number): Box {
   const left = clamp(target.left - padding, 0, viewport.width);

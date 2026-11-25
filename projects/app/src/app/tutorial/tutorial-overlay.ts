@@ -3,6 +3,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { TPipe } from '../i18n/t.pipe';
 import type { MessageKey } from '../i18n/messages';
 import { Layout } from '../layout.service';
+import { anchorBox } from './anchor-rect';
 import { Box, Size, cardPlacement, holeBlockers, holeBox } from './spotlight-geometry';
 import { TutorialService } from './tutorial.service';
 
@@ -150,14 +151,16 @@ export class TutorialOverlay {
       this.box.set(null);
       return;
     }
-    const r = el.getBoundingClientRect();
-    const inside = r.left >= 0 && r.top >= 0 && r.right <= viewport.width && r.bottom <= viewport.height;
+    const r = anchorBox(el);
+    const right = r.left + r.width;
+    const bottom = r.top + r.height;
+    const inside = r.left >= 0 && r.top >= 0 && right <= viewport.width && bottom <= viewport.height;
     if (!this.scrolled && (r.width > 0 || r.height > 0)) {
       this.scrolled = true;
       if (!inside) el.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
     }
-    const seen = r.width > 0 && r.height > 0 && r.right > 0 && r.bottom > 0 && r.left < viewport.width && r.top < viewport.height;
-    this.box.set(seen ? { left: r.left, top: r.top, width: r.width, height: r.height } : null);
+    const seen = r.width > 0 && r.height > 0 && right > 0 && bottom > 0 && r.left < viewport.width && r.top < viewport.height;
+    this.box.set(seen ? r : null);
   }
 }
 
