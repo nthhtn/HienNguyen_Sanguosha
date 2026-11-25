@@ -28,7 +28,8 @@ export interface StartRevealDialogData {
 // first. The engine offers it as one ConfirmRevealsAction; at zero the clock confirms with none.
 @Component({
   selector: 'app-start-reveal-dialog',
-  host: { 'data-tutorial': anchor.revealDialog() },
+  // A block, so the host has a box the Tutorial's spotlight can cut a hole around (an inline host has none).
+  host: { 'data-tutorial': anchor.revealDialog(), style: 'display: block' },
   imports: [MatDialogModule, MatButtonModule, MatIconModule, CardArt, DecisionCountdown, MinimizeButton, TPipe, TutorialAnchor],
   template: `
     <div class="title-row">

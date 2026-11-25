@@ -29,6 +29,8 @@ describe('TargetsDialog tutorial anchor', () => {
     const fixture = TestBed.createComponent(TargetsDialog);
     fixture.detectChanges();
     expect((fixture.nativeElement as HTMLElement).getAttribute('data-tutorial')).toBe('targets-dialog');
+    // A block, so the host has a box the spotlight can cut a hole around.
+    expect((fixture.nativeElement as HTMLElement).style.display).toBe('block');
   });
 });
 

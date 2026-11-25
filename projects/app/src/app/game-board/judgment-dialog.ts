@@ -30,7 +30,8 @@ export interface JudgmentDialogData {
 @Component({
   selector: 'app-judgment-dialog',
   imports: [MatDialogModule, JudgmentStage, DecisionCountdown, MinimizeButton, TPipe],
-  host: { 'data-tutorial': anchor.judgmentDialog() },
+  // A block, so the host has a box the Tutorial's spotlight can cut a hole around (an inline host has none).
+  host: { 'data-tutorial': anchor.judgmentDialog(), style: 'display: block' },
   template: `
     <div class="title-row">
       <h2 mat-dialog-title>{{ 'judgment.title' | t }}</h2>

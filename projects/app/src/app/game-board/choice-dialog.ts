@@ -43,7 +43,8 @@ export interface ChoiceDialogData {
 // Closes only through that button, with the engine's own ChooseOptionAction.
 @Component({
   selector: 'app-choice-dialog',
-  host: { 'data-tutorial': anchor.choiceDialog() },
+  // A block, so the host has a box the Tutorial's spotlight can cut a hole around (an inline host has none).
+  host: { 'data-tutorial': anchor.choiceDialog(), style: 'display: block' },
   imports: [MatDialogModule, MatButtonModule, PlayingCard, CardArt, SeatPortrait, DecisionCountdown, MinimizeButton],
   template: `
     <div class="title-row">

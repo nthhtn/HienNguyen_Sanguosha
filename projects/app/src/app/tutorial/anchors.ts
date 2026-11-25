@@ -36,6 +36,8 @@ export const anchor = {
   judgmentResult: () => 'judgment-result',
   // The pick window of Steal, Break and the like: a card, a seat or a label, then Confirm.
   choiceDialog: () => 'choice-dialog',
+  // The Play menu's item that opens that window, for a card that has other plays beside it (Chains and its Recast).
+  pickTargets: () => 'pick-targets',
   // The window that picks several seats for one card (Chains): tick the seats, then Confirm.
   targetsDialog: () => 'targets-dialog',
 } as const;

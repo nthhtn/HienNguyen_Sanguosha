@@ -30,6 +30,8 @@ describe('ChoiceDialog', () => {
   it('marks the whole window for the Tutorial, which spotlights it while the beginner picks', () => {
     const { el } = render();
     expect(el.getAttribute('data-tutorial')).toBe('choice-dialog');
+    // A block, so the host has a box the spotlight can cut a hole around.
+    expect(el.style.display).toBe('block');
   });
 
   it('has a View Board button to minimize it', () => {

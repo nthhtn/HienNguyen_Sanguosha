@@ -29,10 +29,10 @@ export const CHAINS_LESSON: Lesson = {
     { id: 'intro', textKey: 'tutorial.chains.s1', target: anchor.hand(), completes: { kind: 'next' } },
     {
       // Condenses rules.chains.chainText. Chains is played through a window that picks the seats, so the step rings it once it
-      // is open, then the Play button, then the card.
+      // is open, then the menu item that opens it (the Play menu also holds Recast), then the Play button, then the card.
       id: 'play-chains',
       textKey: 'tutorial.chains.s2',
-      target: [anchor.targetsDialog(), anchor.playButton('chains'), anchor.handCard('chains')],
+      target: [anchor.targetsDialog(), anchor.pickTargets(), anchor.playButton('chains'), anchor.handCard('chains')],
       phone: { textKey: 'tutorial.chains.s2p' },
       completes: {
         kind: 'action',

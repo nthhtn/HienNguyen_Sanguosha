@@ -597,7 +597,8 @@ deciding seat's Force; the Compete popup by the source General's.
   - **Lists:** A `target` may list several ids (a card, then its Play button, then a seat in the menu); the ring goes to the first one on the page.
   - **Missing anchors:** A step with no anchor on screen shows as a centred card. The medium layout has no Discard Pile or Action History anchor.
   - **Zoom:** The viewer's own seat is shrunk with CSS `zoom`, and current browsers report such a rect in the element's own units. `anchor-rect.ts` probes the browser once and scales the rect back to screen units, so the ring sits on the seat.
-  - **Dialogs:** A dialog carries one whole-window anchor on its host element.
+  - **Dialogs:** A dialog carries one whole-window anchor on its host element. The host is a block (`style: 'display: block'`), since an inline host has no box and the spotlight would cover the whole screen.
+  - **Menus:** A menu item can carry an anchor too (`pick-targets` is the Play menu's item that opens the Choose Targets window, beside Recast), since the dim blocks every click outside the ring.
 - **Phone.** When `Layout.kind()` is `compact` the card and spotlight use each step's `phone` variant. The phone board has no Generals panel, so the Generals lesson uses phone wording. Its Discard Pile and Action History steps ring the History button (`anchor.historyButton()`), since both sit in the panel it opens.
 - **Progress.** `progress.ts` keeps the finished lesson ids in `localStorage` (`tutorial.completed`). The list marks them done, and the finished panel offers the next lesson.
   - **Known ids:** Only ids in its `LESSON_IDS` list are read back, so a new lesson id is added there too.

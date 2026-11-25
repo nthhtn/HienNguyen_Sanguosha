@@ -96,8 +96,8 @@ describe('the Chains lesson steps', () => {
     expect(allows(step('play-fire'), fireAt(chained, 'seat-3'), chained)).toBe(false);
   });
 
-  it('spotlights the pick window, falling back to the Play button and the card, and the chain badge, falling back to the seat', () => {
-    expect(step('play-chains').target).toEqual(['targets-dialog', 'play-button:chains', 'hand-card:chains']);
+  it('spotlights the pick window, falling back to the menu item that opens it, the Play button and the card, and the chain badge, falling back to the seat', () => {
+    expect(step('play-chains').target).toEqual(['targets-dialog', 'pick-targets', 'play-button:chains', 'hand-card:chains']);
     expect(step('chained').target).toEqual(['chain-badge:seat-1', 'seat:seat-1']);
   });
 

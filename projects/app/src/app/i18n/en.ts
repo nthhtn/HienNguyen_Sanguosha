@@ -1364,8 +1364,8 @@ export const en = {
   // Condenses rules.chains.lead.
   'tutorial.chains.s1': 'Chains links seats together. A chained seat passes fire and thunder damage on to every other chained seat.',
   // Condenses rules.chains.chainText.
-  'tutorial.chains.s2': 'Hover over Chains and press Play. Tick the seat on each side of you, then press Confirm. Chains works on 1 or 2 seats at any distance.',
-  'tutorial.chains.s2p': 'Tap Chains and press Play. Tick the seat on each side of you, then press Confirm. Chains works on 1 or 2 seats at any distance.',
+  'tutorial.chains.s2': 'Hover over Chains, press Play and choose Play Chains (Recast only swaps the card for a new one). Tick the seat on each side of you, then press Confirm. Chains works on 1 or 2 seats at any distance.',
+  'tutorial.chains.s2p': 'Tap Chains, press Play and choose Play Chains (Recast only swaps the card for a new one). Tick the seat on each side of you, then press Confirm. Chains works on 1 or 2 seats at any distance.',
   'tutorial.chains.s3': 'Both seats are chained now, and the badge shows it. Playing Chains on a chained seat would free it again.',
   'tutorial.chains.s4': 'Hover over Fire Attack and press Play, then choose one of the chained seats. Fire Attack deals fire damage if it is not answered.',
   'tutorial.chains.s4p': 'Tap Fire Attack, press Play, then choose one of the chained seats. Fire Attack deals fire damage if it is not answered.',
