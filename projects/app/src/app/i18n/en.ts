@@ -1295,6 +1295,28 @@ export const en = {
   'tutorial.damage.s4p': 'Peach recovers 1 HP. Tap it and press Play.',
   'tutorial.damage.s5': 'Your Peach recovered 1 HP.',
   'tutorial.damage.s6': 'Recovery can never take you above your maximum HP, so a Peach at full HP would be wasted.',
+  'tutorial.equipment.title': 'Equipment',
+  'tutorial.equipment.summary': 'Wear a Weapon, an Armor and a Mount, and see how they change who you can attack.',
+  // Condenses rules.cardTypes.equipmentText.
+  'tutorial.equipment.s1': 'These are Equipment cards. Once played they stay in front of you: a Weapon sets how far you attack, an Armor defends, and a Mount changes distance.',
+  // Condenses rules.distance.range2.
+  'tutorial.equipment.s2': 'Hover over Black Pommel and press Play. A Weapon sets your attack range: with it your range is 2 instead of 1.',
+  'tutorial.equipment.s2p': 'Tap Black Pommel and press Play. A Weapon sets your attack range: with it your range is 2 instead of 1.',
+  // Condenses rules.distance.text and rules.distance.range1.
+  'tutorial.equipment.s3': 'Your Weapon sits in your Equipment area. Distance is the steps round the table, and the seat across from you is 3 steps away, so a range of 2 still cannot reach it.',
+  // Condenses rules.cardTypes.role.eightTrigrams.
+  'tutorial.equipment.s4': 'Hover over Eight Trigrams and press Play. An Armor defends you: when you need a Shan, it judges for you and a red card counts as one.',
+  'tutorial.equipment.s4p': 'Tap Eight Trigrams and press Play. An Armor defends you: when you need a Shan, it judges for you and a red card counts as one.',
+  // Condenses rules.distance.minus.
+  'tutorial.equipment.s5': 'Hover over Red Hare and press Play. A Minus Mount takes 1 off the distance from you to every other seat.',
+  'tutorial.equipment.s5p': 'Tap Red Hare and press Play. A Minus Mount takes 1 off the distance from you to every other seat.',
+  // Condenses rules.distance.minus and rules.distance.range1.
+  'tutorial.equipment.s6': 'The seat across from you is now 2 steps away, inside your range of 2. Only the Weapon and the Mount together bring it into reach.',
+  'tutorial.equipment.s7': 'Hover over Sha and press Play, then choose the seat across from you.',
+  'tutorial.equipment.s7p': 'Tap Sha, press Play, then choose the seat across from you.',
+  // Condenses rules.response.shaDamage.
+  'tutorial.equipment.s8': 'That seat holds no Shan, so it passes and takes 1 damage. Without your Equipment the Sha could not have reached it.',
+  'tutorial.equipment.s9': 'Equipment stays on until it is replaced or destroyed, and each seat wears at most one of each kind. Click a worn card at any time to read what it does.',
   'tutorial.page.title': 'Tutorial',
   'tutorial.page.intro': 'Short lessons on the real board. A spotlight shows you what to do, one step at a time.',
   'tutorial.group.basics': 'Basics',

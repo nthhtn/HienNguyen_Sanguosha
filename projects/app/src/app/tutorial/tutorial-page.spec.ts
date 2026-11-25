@@ -48,10 +48,10 @@ describe('TutorialPage', () => {
   });
 
   describe('the list', () => {
-    it('shows the five lessons in order, each with its summary and a Start Lesson button', () => {
+    it('shows the five Basics lessons in order on the first tab, each with its summary and a Start Lesson button', () => {
       const { el } = create();
       const items = [...el.querySelectorAll('.lesson')];
-      expect(items.map((i) => i.getAttribute('data-lesson'))).toEqual(LESSONS.map((l) => l.id));
+      expect(items.map((i) => i.getAttribute('data-lesson'))).toEqual(LESSONS.filter((l) => l.group === 'basics').map((l) => l.id));
       expect(items).toHaveLength(5);
       expect(text(items[0].querySelector('h3'))).toBe('Your Generals');
       expect(text(items[0].querySelector('.summary'))).toContain('Main General and Deputy General');

@@ -33,3 +33,6 @@ export const isRespondWith =
   (definitionId: string) =>
   (action: Action, state: GameState): boolean =>
     action.kind === 'RespondAction' && definitionOf(state, action.cardInstanceId) === definitionId;
+
+// A bot's scripted pick: pass on its response window (it holds nothing that could answer).
+export const passes = (legal: Action[]): Action | undefined => legal.find((a) => a.kind === 'PassAction');
