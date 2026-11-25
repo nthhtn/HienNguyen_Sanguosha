@@ -4,6 +4,7 @@
 export * from './lib/registry';
 export * from './lib/modes/guozhan';
 export * from './lib/decks';
+export * from './lib/artSets';
 export * from './lib/assets';
 export * from './lib/kingdomWarsCards';
 export * from './lib/kingdomWarsGenerals';

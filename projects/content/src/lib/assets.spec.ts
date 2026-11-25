@@ -6,6 +6,7 @@ import { wikiKingdomWarsGenerals } from './wikiKingdomWarsGenerals';
 import { generalsData } from '../../data/generals';
 import { kingdomWarsGeneralIds } from './kingdomWarsGenerals';
 import { kingdomWarsGeneralId } from './generalIds';
+import { ART_SET_CATALOG, ArtChoice, ArtSetCatalog } from './artSets';
 import { AMBITIONIST_ICON_URL, assetFile, SPRITE_IDS, CARD_BACK_ART_URL, kingdomBannerUrl, spriteSheet, cardArtUrl, GENERAL_PLACEHOLDER_ART_URL, generalDeathVoiceUrl, generalFaceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls, skillFileId, skillPreviewUrl } from './assets';
 
 describe('cardArtUrl', () => {
@@ -333,3 +334,55 @@ describe('generalFaceUrl', () => {
   });
 });
 
+
+describe('portraits and faces by art set', () => {
+  const entry = (portraits: string[], faces: string[]) => ({ names: { en: 'x', vi: 'x' }, provenance: 'test', portraits, faces });
+  const catalog: ArtSetCatalog = {
+    order: ['classic', 'ink'],
+    sets: { classic: entry(['cao-cao', 'guan-yu', 'zhang-fei'], ['cao-cao', 'guan-yu', 'zhang-fei']), ink: entry(['cao-cao', 'guan-yu'], ['cao-cao']) },
+  };
+  const choice = (global: string, overrides: Record<string, string> = {}): ArtChoice => ({ global, overrides, catalog });
+
+  it('serves the chosen set for a General it covers and classic for one it does not', () => {
+    expect(generalSkinUrl('guan-yu', choice('ink'))).toBe('/images/generals/skins/ink/shu/guanyu.webp');
+    expect(generalSkinUrl('zhang-fei', choice('ink'))).toBe('/images/generals/skins/classic/shu/zhangfei.webp');
+  });
+
+  it('uses the override of the base General for a Kingdom Wars id', () => {
+    expect(generalSkinUrl('kingdomWars:guan-yu', choice('classic', { 'guan-yu': 'ink' }))).toBe('/images/generals/skins/ink/shu/guanyu.webp');
+  });
+
+  it('gives the face of the set that supplied the portrait', () => {
+    expect(generalFaceUrl('cao-cao', choice('ink'))).toBe('/images/generals/faces/ink/wei/caocao.webp');
+  });
+
+  it('gives no face when the set that supplied the portrait has none, so no other set\'s face is borrowed', () => {
+    expect(generalFaceUrl('guan-yu', choice('ink'))).toBeNull();
+  });
+});
+
+describe('the shipped art set catalog', () => {
+  const assets = join(__dirname, '../../assets');
+
+  it('starts with classic', () => {
+    expect(ART_SET_CATALOG.order[0]).toBe('classic');
+  });
+
+  it('has a portrait file, and a face file where listed, for every General of every set', () => {
+    const missing: string[] = [];
+    for (const [set, entry] of Object.entries(ART_SET_CATALOG.sets)) {
+      for (const id of entry.portraits) {
+        const skin = (skins as Record<string, string>)[id];
+        if (!existsSync(join(assets, assetFile(`generals/skins/${set}/${skin}`)))) missing.push(`${set}/${id} portrait`);
+        if (entry.faces.includes(id) && !existsSync(join(assets, assetFile(`generals/faces/${set}/${skin}`)))) missing.push(`${set}/${id} face`);
+      }
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it('gives classic a portrait and a face for every General with a skin', () => {
+    const everyone = Object.keys(skins).sort();
+    expect([...ART_SET_CATALOG.sets['classic'].portraits].sort()).toEqual(everyone);
+    expect([...ART_SET_CATALOG.sets['classic'].faces].sort()).toEqual(everyone);
+  });
+});
