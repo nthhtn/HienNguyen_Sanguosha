@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import type { ArtSetCatalog } from 'content';
 import { ART_SET_CATALOG_TOKEN, ArtSets } from './art-sets.service';
 import { fakeCatalog, provideFakeArtSets } from './art-sets.testing';
@@ -14,12 +14,24 @@ function render() {
 
 const radios = (el: HTMLElement) => [...el.querySelectorAll('input[type="radio"]')] as HTMLInputElement[];
 const row = (el: HTMLElement, id: string) => el.querySelector(`li[data-general="${id}"]`) as HTMLLIElement | null;
-const select = (el: HTMLElement, id: string) => row(el, id)!.querySelector('select') as HTMLSelectElement;
-const optionTexts = (s: HTMLSelectElement) => [...s.options].map((o) => o.textContent!.trim());
+
+// The per General choice is Material's select: open the row's, and its options appear in the overlay.
+async function openRow(fixture: ComponentFixture<ArtSetsDialog>, el: HTMLElement, id: string): Promise<HTMLElement[]> {
+  (row(el, id)!.querySelector('mat-select .mat-mdc-select-trigger') as HTMLElement).click();
+  fixture.detectChanges();
+  await fixture.whenStable();
+  fixture.detectChanges();
+  return [...document.querySelectorAll('mat-option')] as HTMLElement[];
+}
+const texts = (options: HTMLElement[]) => options.map((o) => o.textContent!.trim());
+const shown = (el: HTMLElement, id: string) => row(el, id)!.querySelector('.mat-mdc-select-value')!.textContent!.trim();
 
 describe('ArtSetsDialog', () => {
   beforeEach(() => localStorage.clear());
-  afterEach(() => localStorage.clear());
+  afterEach(() => {
+    localStorage.clear();
+    document.querySelector('.cdk-overlay-container')?.replaceChildren();
+  });
 
   it('offers one radio per set with its coverage, and checks the global set', () => {
     const { el } = render();
@@ -40,23 +52,22 @@ describe('ArtSetsDialog', () => {
     expect(radios(el).map((r) => r.checked)).toEqual([false, true]);
   });
 
-  it('lists only Generals that some other set covers, each offering only the sets that have art for it', () => {
-    const { el } = render();
+  it('lists only Generals that some other set covers, each offering only the sets that have art for it', async () => {
+    const { fixture, el } = render();
     expect([...el.querySelectorAll('li[data-general]')].map((li) => li.getAttribute('data-general'))).toEqual(['cao-cao', 'guan-yu']);
     expect(row(el, 'zhao-yun')).toBeNull();
-    expect(optionTexts(select(el, 'cao-cao'))).toEqual(['Use Global Set (Classic)', 'Classic', 'Ink Wash']);
+    expect(texts(await openRow(fixture, el, 'cao-cao'))).toEqual(['Use Global Set (Classic)', 'Classic', 'Ink Wash']);
   });
 
-  it('sets an override from a row, and clears it with the first option', () => {
+  it('sets an override from a row, and clears it with the first option', async () => {
     const { fixture, el, arts } = render();
-    const s = select(el, 'guan-yu');
-    s.value = 'ink';
-    s.dispatchEvent(new Event('change'));
+    (await openRow(fixture, el, 'guan-yu'))[2].click();
     fixture.detectChanges();
     expect(arts.overrides()).toEqual({ 'guan-yu': 'ink' });
-    expect(select(el, 'guan-yu').value).toBe('ink');
-    s.value = '';
-    s.dispatchEvent(new Event('change'));
+    expect(shown(el, 'guan-yu')).toBe('Ink Wash');
+    await fixture.whenStable();
+    (await openRow(fixture, el, 'guan-yu'))[0].click();
+    fixture.detectChanges();
     expect(arts.overrides()).toEqual({});
   });
 
@@ -72,7 +83,7 @@ describe('ArtSetsDialog', () => {
     expect(arts.overrides()).toEqual({});
   });
 
-  it('names the set that will actually show in the Use Global Set option, not one that lacks the General', () => {
+  it('names the set that will actually show in the Use Global Set option, not one that lacks the General', async () => {
     const base = fakeCatalog();
     const catalog: ArtSetCatalog = {
       order: [...base.order, 'studio'],
@@ -84,8 +95,9 @@ describe('ArtSetsDialog', () => {
     fixture.detectChanges();
     const el = fixture.nativeElement as HTMLElement;
     // Ink covers Cao Cao and Guan Yu but not Zhao Yun, who falls back to Classic under the global Ink Wash.
-    expect(optionTexts(select(el, 'zhao-yun'))).toEqual(['Use Global Set (Classic)', 'Classic', 'Studio']);
-    expect(optionTexts(select(el, 'cao-cao'))[0]).toBe('Use Global Set (Ink Wash)');
+    expect(texts(await openRow(fixture, el, 'zhao-yun'))).toEqual(['Use Global Set (Classic)', 'Classic', 'Studio']);
+    document.querySelector('.cdk-overlay-container')?.replaceChildren();
+    expect(texts(await openRow(fixture, el, 'cao-cao'))[0]).toBe('Use Global Set (Ink Wash)');
   });
 
   it('shows set names in Vietnamese', async () => {

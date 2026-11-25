@@ -13,6 +13,11 @@ export function fakeCatalog(): ArtSetCatalog {
   };
 }
 
+// A catalog with only classic, so a test of "only one set ships" does not depend on how many sets really ship.
+export function soloCatalog(): ArtSetCatalog {
+  return { order: ['classic'], sets: { classic: fakeCatalog().sets['classic'] } };
+}
+
 export function provideFakeArtSets(): Provider[] {
   return [{ provide: ART_SET_CATALOG_TOKEN, useValue: fakeCatalog() }];
 }

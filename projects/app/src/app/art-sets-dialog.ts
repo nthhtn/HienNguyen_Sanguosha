@@ -1,6 +1,8 @@
 import { Component, Injector, computed, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
 import { artSetName, DEFAULT_ART_SET, generalDisplayData, generalSkinUrl, resolveArtSet, setsCovering } from 'content';
 import { ArtSets } from './art-sets.service';
 import { I18n } from './i18n/i18n.service';
@@ -10,7 +12,7 @@ import { generalDisplayName } from './labels';
 // The art set picker: one global set, and an override per General that some other set covers. The choice lives in ArtSets.
 @Component({
   selector: 'app-art-sets-dialog',
-  imports: [MatDialogModule, MatButtonModule, TPipe],
+  imports: [MatDialogModule, MatButtonModule, MatFormFieldModule, MatSelectModule, TPipe],
   template: `
     <h2 mat-dialog-title>{{ 'artSets.title' | t }}</h2>
     <mat-dialog-content class="content">
@@ -41,12 +43,14 @@ import { generalDisplayName } from './labels';
               <li [attr.data-general]="g.id">
                 <img [src]="g.url" alt="" />
                 <span class="general-name">{{ g.name }}</span>
-                <select [attr.aria-label]="g.name" (change)="artSets.setOverride(g.id, $any($event.target).value || null)">
-                  <option value="" [selected]="!g.override">{{ 'artSets.useGlobal' | t: { set: g.globalName } }}</option>
-                  @for (s of g.sets; track s.id) {
-                    <option [value]="s.id" [selected]="g.override === s.id">{{ s.name }}</option>
-                  }
-                </select>
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                  <mat-select [aria-label]="g.name" [value]="g.override ?? ''" (selectionChange)="artSets.setOverride(g.id, $event.value || null)">
+                    <mat-option value="">{{ 'artSets.useGlobal' | t: { set: g.globalName } }}</mat-option>
+                    @for (s of g.sets; track s.id) {
+                      <mat-option [value]="s.id">{{ s.name }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
               </li>
             }
           </ul>
@@ -75,13 +79,12 @@ import { generalDisplayName } from './labels';
     .general-name { min-width: 0; overflow-wrap: anywhere; }
     .generals img { width: 36px; height: 48px; object-fit: cover; object-position: top; border-radius: 4px; }
     .set input { accent-color: var(--mat-sys-primary, #1d5fa8); }
-    /* The browser's own select, dressed like the rest of the app: the page font, a 44 px touch target, room for the arrow. */
-    select { box-sizing: border-box; width: 100%; min-height: 44px; padding: 0 36px 0 12px; font: inherit; font-size: 0.9rem; color: inherit; background-color: #fff; border: 1px solid #b4b4b4; border-radius: 8px; cursor: pointer; text-overflow: ellipsis; }
-    select:focus-visible { outline: 2px solid var(--mat-sys-primary, #1d5fa8); outline-offset: 1px; }
+    /* Material's select, so the chevron and the option list match the rest of the app; kept compact for a row. */
+    mat-form-field { width: 100%; font-size: 0.9rem; --mat-form-field-container-height: 44px; --mat-form-field-container-vertical-padding: 10px; }
     .clear { min-height: 44px; }
     @media (max-width: 520px) {
       .generals li { grid-template-columns: 36px minmax(0, 1fr); }
-      .generals select { grid-column: 1 / -1; }
+      .generals mat-form-field { grid-column: 1 / -1; }
     }
   `,
 })

@@ -1,10 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { ART_SET_CATALOG_TOKEN, ArtSets } from './art-sets.service';
-import { fakeCatalog, provideFakeArtSets } from './art-sets.testing';
+import { fakeCatalog, soloCatalog } from './art-sets.testing';
 
-function service(withFake = true): ArtSets {
+function service(catalog = fakeCatalog()): ArtSets {
   TestBed.resetTestingModule();
-  TestBed.configureTestingModule({ providers: withFake ? provideFakeArtSets() : [] });
+  TestBed.configureTestingModule({ providers: [{ provide: ART_SET_CATALOG_TOKEN, useValue: catalog }] });
   return TestBed.inject(ArtSets);
 }
 
@@ -13,7 +13,7 @@ describe('ArtSets', () => {
   afterEach(() => jest.restoreAllMocks());
 
   it('starts on classic with no overrides, and is multiple only with more than one set', () => {
-    expect(service(false).multiple).toBe(false);
+    expect(service(soloCatalog()).multiple).toBe(false);
     const arts = service();
     expect(arts.multiple).toBe(true);
     expect(arts.global()).toBe('classic');

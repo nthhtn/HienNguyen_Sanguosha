@@ -1,5 +1,5 @@
 import { ART_SET_CATALOG_TOKEN } from './art-sets.service';
-import { fakeCatalog } from './art-sets.testing';
+import { fakeCatalog, soloCatalog } from './art-sets.testing';
 import { BattlefieldBackgrounds } from './battlefield-background.service';
 import { computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -206,6 +206,7 @@ describe('App', () => {
     };
 
     it('offers no Art Sets entry while only one set ships', async () => {
+      TestBed.overrideProvider(ART_SET_CATALOG_TOKEN, { useValue: soloCatalog() });
       const { el, fixture } = await render();
       await settle(fixture);
       expect(el.querySelector('button.nav-art-sets')).toBeNull();
@@ -456,6 +457,7 @@ describe('App', () => {
     });
 
     it('lists Art Sets in the drawer only when more than one set ships, and closes the drawer when it opens the picker', async () => {
+      TestBed.overrideProvider(ART_SET_CATALOG_TOKEN, { useValue: soloCatalog() });
       const single = await openDrawer();
       await new Promise((resolve) => setTimeout(resolve));
       single.fixture.detectChanges();
