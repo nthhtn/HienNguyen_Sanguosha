@@ -1,9 +1,22 @@
 {
   "classic": {
-    "names": { "en": "Classic", "vi": "Cổ điển" },
+    "names": {
+      "en": "Classic",
+      "vi": "Cổ điển"
+    },
     "provenance": {
       "en": "The original portraits, from open-source references.",
       "vi": "Các chân dung gốc, lấy từ những nguồn tham khảo mã nguồn mở."
+    }
+  },
+  "ravages-of-time": {
+    "names": {
+      "en": "Ravages of Time",
+      "vi": "Hỏa phụng liêu nguyên"
+    },
+    "provenance": {
+      "en": "Artwork from the manhua Ravages of Time (Chen Mou), used for the Generals it covers. Not owned by this project; removed or replaced on request.",
+      "vi": "Tranh từ bộ truyện tranh Hỏa phụng liêu nguyên (Trần Mưu), dùng cho các Tướng mà bộ tranh có. Không thuộc sở hữu của dự án; sẽ gỡ hoặc thay thế khi có yêu cầu."
     }
   }
 }
