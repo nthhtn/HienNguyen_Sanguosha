@@ -195,5 +195,44 @@ describe('PhoneBoard', () => {
       expect(el.querySelector('.actions app-hand-card-actions')).toBeNull();
     });
   });
+  describe('tutorial anchors', () => {
+    const sha = { instanceId: 's1', definitionId: 'sha', suit: 'spade' as const, rank: 7 };
+    const play = { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 's1', targets: [] } as unknown as Action;
+    const endPhase = { kind: 'EndPhaseAction', seatId: 'seat-0' } as unknown as Action;
+    const count = (el: HTMLElement, id: string) => el.querySelectorAll(`[data-tutorial="${id}"]`).length;
+
+    function renderPlayPhase() {
+      const { fixture, el } = render(4);
+      fixture.componentRef.setInput('hand', [sha]);
+      fixture.componentRef.setInput('handActions', [play]);
+      fixture.componentRef.setInput('boardActions', [endPhase]);
+      fixture.detectChanges();
+      return { fixture, el };
+    }
+
+    it('anchors the viewer seat, its HP and its Generals, once each', () => {
+      const { el } = renderPlayPhase();
+      for (const id of ['seat:seat-0', 'hp:seat-0', 'general-info:seat-0']) expect([id, count(el, id)]).toEqual([id, 1]);
+    });
+
+    it('anchors every other seat once', () => {
+      const { el } = renderPlayPhase();
+      for (const id of ['seat:seat-1', 'seat:seat-2', 'seat:seat-3']) expect([id, count(el, id)]).toEqual([id, 1]);
+    });
+
+    it('anchors the hand, its cards, End Phase and the phase indicator once each', () => {
+      const { el } = renderPlayPhase();
+      for (const id of ['hand', 'hand-card:sha', 'end-phase', 'phase-indicator']) expect([id, count(el, id)]).toEqual([id, 1]);
+    });
+
+    it('anchors Play in the action column only once a card is picked', () => {
+      const { fixture, el } = renderPlayPhase();
+      expect(count(el, 'play-button:sha')).toBe(0);
+      (el.querySelector('app-hand-view [data-card-id="s1"]') as HTMLElement).click();
+      fixture.detectChanges();
+      expect(el.querySelectorAll('.actions [data-tutorial="play-button:sha"]')).toHaveLength(1);
+      expect(el.querySelector('.actions [data-tutorial="play-button:sha"]')!.tagName).toBe('BUTTON');
+    });
+  });
 });
 

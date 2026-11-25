@@ -1248,6 +1248,10 @@ export const en = {
   'tutorial.generals.s4': 'These are your cards, your hand. On your turn you play them from here.',
   'tutorial.generals.s5': 'Cards that were used or thrown away go to the Discard Pile.',
   'tutorial.generals.s6': 'The Action History lists everything that happens, so you can always catch up.',
+  // The phone board has no Discard Pile or Action History in view: Seat Details and History hold them.
+  'tutorial.generals.s3p': 'Tap your seat at any time to read your Generals’ skills and Force. Try it after this lesson.',
+  'tutorial.generals.s5p': 'Cards that were used or thrown away go to the Discard Pile. Open History to see it.',
+  'tutorial.generals.s6p': 'The Action History lists everything that happens, so you can always catch up. Open History to read it.',
   'tutorial.next': 'Next',
   'tutorial.exit': 'Exit Tutorial',
 } satisfies Record<string, string>;

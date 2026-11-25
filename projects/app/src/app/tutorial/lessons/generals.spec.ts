@@ -25,3 +25,18 @@ describe('the Your Generals lesson start', () => {
     }
   });
 });
+
+describe('the Your Generals lesson on the phone board', () => {
+  const textOf = (id: string) => GENERALS_LESSON.steps.find((s) => s.id === id)!;
+
+  it('words the steps whose desktop wording does not fit the phone board', () => {
+    // A tap on the seat opens Seat Details, and the Discard Pile and Action History sit under History.
+    for (const id of ['general-details', 'discard-pile', 'action-history']) {
+      expect([id, textOf(id).phone?.textKey]).toEqual([id, expect.stringMatching(/^tutorial\.generals\.s[356]p$/)]);
+    }
+  });
+
+  it('keeps the desktop wording where the phone board matches', () => {
+    for (const id of ['two-generals', 'shared-hp', 'hand']) expect(textOf(id).phone).toBeUndefined();
+  });
+});

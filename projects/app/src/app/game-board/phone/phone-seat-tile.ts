@@ -12,6 +12,8 @@ import type { MessageKey } from '../../i18n/messages';
 import type { SeatCue } from '../playback/seat-cues';
 import { ShownDamage } from '../damage-effects';
 import { SpriteEffect } from '../sprite-effect';
+import { TutorialAnchor } from '../../tutorial/tutorial-anchor';
+import { anchor } from '../../tutorial/anchors';
 
 export const SLOT_ICONS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
   weapon: { label: 'slot.weapon', icon: 'gavel' },
@@ -27,7 +29,7 @@ const MAX_HP_ICONS = 8;
 // scaled down; a slim tile is narrower, not smaller. Every tile is one tap target that opens Seat Details.
 @Component({
   selector: 'app-phone-seat-tile',
-  imports: [NgTemplateOutlet, MatIconModule, SpriteEffect, TPipe, TMsgPipe],
+  imports: [NgTemplateOutlet, MatIconModule, SpriteEffect, TPipe, TMsgPipe, TutorialAnchor],
   template: `
     <ng-template #body>
       <div class="name-row">
@@ -47,7 +49,7 @@ const MAX_HP_ICONS = 8;
           }
         </span>
       </div>
-      <div class="generals">
+      <div class="generals" [appTutorialAnchor]="anchor.generalInfo(seat().id)">
         @for (g of generals(); track g.slot) {
           <span class="general" [attr.data-slot]="g.slot" [class.own-hidden]="g.ownHidden">
             <img [src]="g.url" alt="" (error)="faceFailed(g.face)" />
@@ -67,7 +69,7 @@ const MAX_HP_ICONS = 8;
           <app-sprite-effect class="damage-fx" [image]="fx.image" />
         }
       </div>
-      <div class="stats">
+      <div class="stats" [appTutorialAnchor]="anchor.hp(seat().id)">
         @if (slim()) {
           <span class="hp" [attr.aria-label]="'seat.hp' | t: { hp: seat().combinedHp, max: seat().maxCombinedHp }"><mat-icon aria-hidden="true">favorite</mat-icon>{{ seat().combinedHp }}/{{ seat().maxCombinedHp }}</span>
         } @else {
@@ -109,7 +111,7 @@ const MAX_HP_ICONS = 8;
         }
       }
     </ng-template>
-    <button type="button" class="tile" [class]="tileClasses()" [attr.data-force]="force()" [attr.aria-label]="name()" (click)="opened.emit()">
+    <button type="button" class="tile" [appTutorialAnchor]="anchor.seat(seat().id)" [class]="tileClasses()" [attr.data-force]="force()" [attr.aria-label]="name()" (click)="opened.emit()">
       <ng-container [ngTemplateOutlet]="body" />
     </button>
   `,
@@ -184,6 +186,7 @@ const MAX_HP_ICONS = 8;
   `,
 })
 export class PhoneSeatTile {
+  protected readonly anchor = anchor;
   readonly seat = input.required<Seat>();
   readonly name = input.required<string>();
   readonly handCount = input.required<number>();

@@ -26,9 +26,9 @@ export const GENERALS_LESSON: Lesson = {
   steps: [
     { id: 'two-generals', textKey: 'tutorial.generals.s1', target: anchor.seat(BEGINNER), completes: { kind: 'next' } },
     { id: 'shared-hp', textKey: 'tutorial.generals.s2', target: anchor.hp(BEGINNER), completes: { kind: 'next' } },
-    { id: 'general-details', textKey: 'tutorial.generals.s3', target: anchor.generalInfo(BEGINNER), completes: { kind: 'next' } },
+    { id: 'general-details', textKey: 'tutorial.generals.s3', target: anchor.generalInfo(BEGINNER), completes: { kind: 'next' }, phone: { textKey: 'tutorial.generals.s3p' } },
     { id: 'hand', textKey: 'tutorial.generals.s4', target: anchor.hand(), completes: { kind: 'next' } },
-    { id: 'discard-pile', textKey: 'tutorial.generals.s5', target: anchor.discardPile(), completes: { kind: 'next' } },
-    { id: 'action-history', textKey: 'tutorial.generals.s6', target: anchor.actionHistory(), completes: { kind: 'next' } },
+    { id: 'discard-pile', textKey: 'tutorial.generals.s5', target: anchor.discardPile(), completes: { kind: 'next' }, phone: { textKey: 'tutorial.generals.s5p' } },
+    { id: 'action-history', textKey: 'tutorial.generals.s6', target: anchor.actionHistory(), completes: { kind: 'next' }, phone: { textKey: 'tutorial.generals.s6p' } },
   ],
 };
