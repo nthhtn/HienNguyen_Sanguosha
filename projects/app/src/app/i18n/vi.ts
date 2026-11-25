@@ -1234,4 +1234,13 @@ export const vi: Messages = {
   'notice.resurgence.recoveredAll': '{userSeat} hồi {amount} Sinh lực',
   'notice.resurgence.noHeart.one': '{userSeat} không hồi Sinh lực và lấy {rest} lá bài',
   'notice.resurgence.noHeart.other': '{userSeat} không hồi Sinh lực và lấy {rest} lá bài',
+  // Tutorial (draft).
+  'tutorial.generals.title': 'Tướng của bạn',
+  'tutorial.generals.summary': 'Làm quen với Chủ tướng, Phó tướng, Sinh lực và các lá bài trên tay.',
+  'tutorial.generals.s1': 'Bạn giữ hai Tướng: một Chủ tướng và một Phó tướng. Cả hai nằm ở chỗ ngồi của bạn.',
+  'tutorial.generals.s2': 'Sinh lực là chung: bằng một nửa tổng Sinh lực của hai Tướng, làm tròn xuống. Tào Tháo 4 + Quách Gia 3 = 7, một nửa là 3,5, nên Sinh lực của bạn là 3.',
+  'tutorial.generals.s3': 'Bấm vào ảnh của một Tướng bất cứ lúc nào để đọc kỹ năng và thế lực của Tướng đó. Hãy thử sau bài học này.',
+  'tutorial.generals.s4': 'Đây là các lá bài trên tay bạn. Đến lượt mình, bạn đánh bài từ đây.',
+  'tutorial.generals.s5': 'Bài đã dùng hoặc đã bỏ nằm trong Chồng bài bỏ.',
+  'tutorial.generals.s6': 'Lịch sử hành động ghi lại mọi việc đã xảy ra, để bạn luôn theo kịp.',
 };

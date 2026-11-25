@@ -1235,4 +1235,17 @@ export const en = {
   'notice.resurgence.recoveredAll': '{userSeat} recovered {amount} HP',
   'notice.resurgence.noHeart.one': '{userSeat} recovered no HP and took {rest} card',
   'notice.resurgence.noHeart.other': '{userSeat} recovered no HP and took {rest} cards',
+  // Tutorial. The wording condenses the Rules pages named beside each key.
+  'tutorial.generals.title': 'Your Generals',
+  'tutorial.generals.summary': 'Meet your Main General and Deputy General, your HP and your cards.',
+  // Condenses rules.setup.step2.
+  'tutorial.generals.s1': 'You hold two Generals: a Main General and a Deputy General. Both sit on your seat.',
+  // Condenses rules.setup.step3 and rules.setup.hpSum.
+  'tutorial.generals.s2': 'HP is shared. It is half the sum of both Generals’ HP, rounded down: Cao Cao 4 + Guo Jia 3 = 7, half is 3.5, so your HP is 3.',
+  // Condenses rules.cardTypes.generalText.
+  'tutorial.generals.s3': 'Click a General’s picture at any time to read its skills and its Force. Try it after this lesson.',
+  // Condenses rules.overview.beat2.
+  'tutorial.generals.s4': 'These are your cards, your hand. On your turn you play them from here.',
+  'tutorial.generals.s5': 'Cards that were used or thrown away go to the Discard Pile.',
+  'tutorial.generals.s6': 'The Action History lists everything that happens, so you can always catch up.',
 } satisfies Record<string, string>;

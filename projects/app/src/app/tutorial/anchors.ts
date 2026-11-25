@@ -20,3 +20,13 @@ export const anchor = {
   revealSlot: (slot: RevealSlot) => `reveal-slot:${slot}`,
   revealConfirm: () => 'reveal-confirm',
 } as const;
+
+// Whether `id` is one a builder above makes: the board and the lessons agree on the ids through the builders alone.
+// A builder with a parameter makes its id from a prefix, so an id counts when it has that prefix and a value after it.
+export function isAnchorId(id: string): boolean {
+  return (Object.values(anchor) as Array<(value: string) => string>).some((build) => {
+    if (build.length === 0) return id === build('');
+    const prefix = build('');
+    return id.startsWith(prefix) && id.length > prefix.length;
+  });
+}
