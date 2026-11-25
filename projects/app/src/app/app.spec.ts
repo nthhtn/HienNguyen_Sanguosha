@@ -10,7 +10,7 @@ import { AuthService } from './auth/auth.service';
 import { FEATURE_FLAGS } from './feature-flags';
 import { DISPLAY_MODE_OVERRIDE } from './display-mode-override';
 import { Layout } from './layout.service';
-import { MUSIC_PLAYER_FACTORY } from './music.service';
+import { MUSIC_PLAYER_FACTORY, MusicService, SoundEffects } from './music.service';
 
 const me = signal<Me | null>(null);
 const loaded = signal(true);
@@ -73,38 +73,77 @@ describe('App', () => {
     Object.defineProperty(window, 'innerHeight', { configurable: true, value: 768 });
   });
 
-  it('has a music on/off button in the toolbar', async () => {
+  // The two sound switches live in one Sound menu on the right of the bar.
+  async function openSound(fixture: { detectChanges(): void; whenStable(): Promise<unknown> }, el: HTMLElement) {
+    (el.querySelector('button.sound-menu') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    return {
+      music: document.querySelector('.mat-mdc-menu-panel button.music-toggle') as HTMLButtonElement,
+      effects: document.querySelector('.mat-mdc-menu-panel button.effects-toggle') as HTMLButtonElement,
+    };
+  }
+
+  it('has one Sound menu in the toolbar with Background Music and Sound Effect, both on to begin with', async () => {
     localStorage.clear();
     const { fixture, el } = await render();
-    const button = el.querySelector('button.music-toggle') as HTMLButtonElement;
-    expect(button.getAttribute('aria-label')).toBe('Turn Music Off');
-    button.click();
-    fixture.detectChanges();
-    expect(button.getAttribute('aria-label')).toBe('Turn Music On');
-    expect(button.textContent).toContain('music_off');
+    const trigger = el.querySelector('button.sound-menu') as HTMLButtonElement;
+    expect(trigger.getAttribute('aria-label')).toBe('Sound');
+    expect(el.querySelector('button.music-toggle')).toBeNull();
+    const { music, effects } = await openSound(fixture, el);
+    expect([music, effects].map((b) => b.textContent!.replace(/\s+/g, ' ').trim())).toEqual([expect.stringContaining('Background Music'), expect.stringContaining('Sound Effect')]);
+    expect([music, effects].map((b) => b.getAttribute('aria-checked'))).toEqual(['true', 'true']);
+    expect(document.querySelectorAll('.mat-mdc-menu-panel [mat-menu-item]')).toHaveLength(2);
+    // The state is the item's own icon (note or muted note, speaker or muted speaker), with no check mark besides.
+    expect([music, effects].map((b) => [...b.querySelectorAll('mat-icon')].map((i) => i.textContent!.trim()))).toEqual([['music_note'], ['volume_up']]);
     localStorage.clear();
   });
 
-  it('has a separate sound effects on/off button in the toolbar', async () => {
+  it('switches the music with its item, leaving the sound effects as they were', async () => {
     localStorage.clear();
     const { fixture, el } = await render();
-    const button = el.querySelector('button.effects-toggle') as HTMLButtonElement;
-    expect(button.getAttribute('aria-label')).toBe('Turn Sound Effects Off');
-    button.click();
+    (await openSound(fixture, el)).music.click();
     fixture.detectChanges();
-    expect(button.getAttribute('aria-label')).toBe('Turn Sound Effects On');
-    expect((el.querySelector('button.music-toggle') as HTMLButtonElement).getAttribute('aria-label')).toBe('Turn Music Off');
+    expect(TestBed.inject(MusicService).enabled()).toBe(false);
+    expect(TestBed.inject(SoundEffects).enabled()).toBe(true);
+    await fixture.whenStable();
+    const { music, effects } = await openSound(fixture, el);
+    expect([music.getAttribute('aria-checked'), effects.getAttribute('aria-checked')]).toEqual(['false', 'true']);
     localStorage.clear();
   });
 
-  it('has one language button in the toolbar, before the sound buttons', async () => {
+  it('switches the sound effects with their own item, leaving the music as it was', async () => {
+    localStorage.clear();
+    const { fixture, el } = await render();
+    (await openSound(fixture, el)).effects.click();
+    fixture.detectChanges();
+    expect(TestBed.inject(SoundEffects).enabled()).toBe(false);
+    expect(TestBed.inject(MusicService).enabled()).toBe(true);
+    localStorage.clear();
+  });
+
+  it('shows a speaker on the Sound button while either is on, and a muted speaker when both are off', async () => {
+    localStorage.clear();
+    const { fixture, el } = await render();
+    const icon = () => el.querySelector('button.sound-menu mat-icon')!.textContent!.trim();
+    expect(icon()).toBe('volume_up');
+    TestBed.inject(MusicService).toggle();
+    fixture.detectChanges();
+    expect(icon()).toBe('volume_up');
+    TestBed.inject(SoundEffects).toggle();
+    fixture.detectChanges();
+    expect(icon()).toBe('volume_off');
+    localStorage.clear();
+  });
+
+  it('has one language button in the toolbar, before the Sound menu', async () => {
     localStorage.clear();
     const { el } = await render();
     const buttons = [...el.querySelectorAll('mat-toolbar app-language-switcher button')];
     expect(buttons.map((b) => b.getAttribute('aria-label'))).toEqual(['Language']);
     const switcher = el.querySelector('app-language-switcher')!;
-    const music = el.querySelector('button.music-toggle')!;
-    expect(switcher.compareDocumentPosition(music) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const sound = el.querySelector('button.sound-menu')!;
+    expect(switcher.compareDocumentPosition(sound) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     localStorage.clear();
   });
 
@@ -133,11 +172,11 @@ describe('App', () => {
     });
   });
 
-  it('puts Battlefield, the account, the language menu and the sound buttons on the right, in that order', async () => {
+  it('puts Battlefield, the account, the language menu and the Sound menu on the right, in that order', async () => {
     const { el, fixture } = await render();
     TestBed.inject(BattlefieldBackgrounds).available.set(true);
     fixture.detectChanges();
-    const right = ['button.nav-battlefield', 'a.sign-in, button.account', 'app-language-switcher', 'button.music-toggle', 'button.effects-toggle'].map(
+    const right = ['button.nav-battlefield', 'a.sign-in, button.account', 'app-language-switcher', 'button.sound-menu'].map(
       (selector) => el.querySelector(selector)!
     );
     expect(el.querySelector('nav.nav .nav-battlefield')).toBeNull();
@@ -241,12 +280,15 @@ describe('App', () => {
       expect(el.querySelector('button.nav-art-sets')).toBeNull();
     });
 
-    it('has an Art Sets button in the toolbar that opens the picker, when more than one set ships', async () => {
+    it('has an icon-only Choose Art Set button in the toolbar that opens the picker, when more than one set ships', async () => {
       TestBed.overrideProvider(ART_SET_CATALOG_TOKEN, { useValue: fakeCatalog() });
       const { el, fixture } = await render();
       await settle(fixture);
       const button = el.querySelector('button.nav-art-sets') as HTMLButtonElement;
       expect(button.getAttribute('aria-label')).toBe('Choose Art Set');
+      expect(button.getAttribute('title')).toBe('Choose Art Set');
+      expect(button.textContent!.trim()).toBe('palette');
+      expect(button.querySelector('.label')).toBeNull();
       button.click();
       await settle(fixture);
       expect(document.querySelector('app-art-sets-dialog')).not.toBeNull();
@@ -271,6 +313,9 @@ describe('App', () => {
     const preview = el.querySelector('a.nav-preview') as HTMLAnchorElement;
     expect(preview.getAttribute('href')).toBe('/preview');
     expect(preview.getAttribute('aria-label')).toBe('Preview');
+    expect(preview.getAttribute('title')).toBe('Preview');
+    expect(preview.textContent!.trim()).toBe('science');
+    expect(preview.querySelector('.label')).toBeNull();
     expect(preview.classList).toContain('active');
     expect(preview.previousElementSibling!.classList).toContain('spacer');
     await TestBed.inject(Router).navigateByUrl('/setup');
@@ -457,12 +502,11 @@ describe('App', () => {
       return { ...rendered, drawer: rendered.el.querySelector('.nav-drawer') as HTMLElement };
     }
 
-    it('shows the menu button, the title and the sound buttons in the bar, and no links', async () => {
+    it('shows the menu button, the title and the Sound menu in the bar, and no links', async () => {
       const { el } = await render();
       expect(el.querySelector('button.nav-menu')!.getAttribute('aria-label')).toBe('Menu');
       expect(el.querySelector('mat-toolbar h1')?.textContent).toContain('Sanguosha');
-      expect(el.querySelector('button.music-toggle')).not.toBeNull();
-      expect(el.querySelector('button.effects-toggle')).not.toBeNull();
+      expect(el.querySelector('button.sound-menu')).not.toBeNull();
       expect(el.querySelector('nav.nav')).toBeNull();
       expect(el.querySelector('mat-toolbar a.sign-in')).toBeNull();
       expect(el.querySelector('.nav-drawer')).toBeNull();
@@ -520,13 +564,13 @@ describe('App', () => {
       expect(TestBed.inject(Layout).navOpen()).toBe(false);
     });
 
-    it('keeps the language menu out of the drawer and puts it in the bar, before the Music button (spec 3f)', async () => {
+    it('keeps the language menu out of the drawer and puts it in the bar, before the Sound menu (spec 3f)', async () => {
       const { el, drawer } = await openDrawer();
       expect(drawer.querySelector('app-language-switcher')).toBeNull();
       const switcher = el.querySelector('mat-toolbar app-language-switcher')!;
-      const music = el.querySelector('mat-toolbar button.music-toggle')!;
+      const sound = el.querySelector('mat-toolbar button.sound-menu')!;
       expect(switcher).not.toBeNull();
-      expect(switcher.compareDocumentPosition(music) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(switcher.compareDocumentPosition(sound) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
 
     it('marks the current page in the drawer', async () => {

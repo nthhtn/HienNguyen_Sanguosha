@@ -54,10 +54,11 @@ describe('App shell in Vietnamese', () => {
     expect([...el.querySelectorAll('nav.nav > a, nav.nav > button')].map((i) => i.getAttribute('aria-label'))).toEqual(['Chơi ngoại tuyến', 'Chơi trực tuyến', 'Quốc chiến', 'Vương triều chiến', 'Luật', 'Bộ tranh', 'Hướng dẫn']);
   });
 
-  it('the Preview link (dev builds) is named in Vietnamese, in sentence case', async () => {
+  it('the Preview link (dev builds) is an icon named in Vietnamese, in sentence case', async () => {
     const { el } = await render();
     const preview = el.querySelector('a.nav-preview')!;
-    expect(text(preview.querySelector('.label'))).toBe('Xem trước');
+    expect(preview.querySelector('.label')).toBeNull();
+    expect(preview.getAttribute('title')).toBe('Xem trước');
     expect(preview.getAttribute('aria-label')).toBe('Xem trước');
   });
 
@@ -95,17 +96,14 @@ describe('App shell in Vietnamese', () => {
     expect(menuItems()).toEqual(['ann@example.com', 'Đăng xuất']);
   });
 
-  it('the music and sound buttons, in both states, label and tooltip', async () => {
+  it('the Sound menu and its two items, named in Vietnamese in sentence case', async () => {
     const { fixture, el } = await render();
-    const music = el.querySelector('button.music-toggle') as HTMLButtonElement;
-    const effects = el.querySelector('button.effects-toggle') as HTMLButtonElement;
-    expect([music.getAttribute('aria-label'), music.getAttribute('title')]).toEqual(['Tắt nhạc', 'Tắt nhạc']);
-    expect([effects.getAttribute('aria-label'), effects.getAttribute('title')]).toEqual(['Tắt hiệu ứng âm thanh', 'Tắt hiệu ứng âm thanh']);
-    music.click();
-    effects.click();
+    const trigger = el.querySelector('button.sound-menu') as HTMLButtonElement;
+    expect(trigger.getAttribute('aria-label')).toBe('Âm thanh');
+    trigger.click();
     fixture.detectChanges();
-    expect([music.getAttribute('aria-label'), music.getAttribute('title')]).toEqual(['Bật nhạc', 'Bật nhạc']);
-    expect([effects.getAttribute('aria-label'), effects.getAttribute('title')]).toEqual(['Bật hiệu ứng âm thanh', 'Bật hiệu ứng âm thanh']);
+    await fixture.whenStable();
+    expect(menuItems().map((t) => t.replace(/(music_note|music_off|volume_up|volume_off|check)/g, '').trim())).toEqual(['Nhạc nền', 'Hiệu ứng âm thanh']);
   });
 
   it('follows a language switch in place, title included', async () => {
