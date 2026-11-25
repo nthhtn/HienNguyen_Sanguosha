@@ -23,6 +23,16 @@ export const SLOT_ICONS: Record<EquipSlot, { label: MessageKey; icon: string }> 
 };
 // The HP ramp has this many icons (hpIconUrls in content).
 const MAX_HP_ICONS = 8;
+// Face crops are at most this many px square (spec 3g). Larger on screen uses the portrait instead of upscaling.
+export const FACE_CROP_MAX_PX = 126;
+// Name row, stats, equipment and gaps below the General pictures (phone-seat-tile layout).
+export const PHONE_TILE_CHROME_PX = 66;
+
+export function generalArtFitsFaceCrop(tileWidth: number, tileHeight: number, devicePixelRatio: number): boolean {
+  const halfW = Math.max((tileWidth - 12) / 2, 0);
+  const generalsH = Math.max(tileHeight - PHONE_TILE_CHROME_PX, 0);
+  return Math.max(halfW, generalsH) * devicePixelRatio <= FACE_CROP_MAX_PX;
+}
 
 // One seat on the phone board, laid out to be read at arm's length (spec, "The phone board"): the name with up to three
 // Judgment boxes, both Generals, HP and hand count with the chained mark, and four Equipment boxes. Nothing in it is
@@ -51,7 +61,7 @@ const MAX_HP_ICONS = 8;
       </div>
       <div class="generals" [appTutorialAnchor]="anchor.generalInfo(seat().id)">
         @for (g of generals(); track g.slot) {
-          <span class="general" [attr.data-slot]="g.slot" [class.own-hidden]="g.ownHidden">
+          <span class="general" [attr.data-slot]="g.slot" [class.own-hidden]="g.ownHidden" [class.portrait]="g.portrait">
             <img [src]="g.url" alt="" (error)="faceFailed(g.face)" />
             @for (badge of g.badges; track badge) {
               <span class="badge">{{ badge | t }}</span>
@@ -142,6 +152,7 @@ const MAX_HP_ICONS = 8;
     .generals { position: relative; flex: 1 1 auto; min-height: 0; display: flex; gap: 2px; padding: 0 5px; }
     .general { position: relative; flex: 1 1 0; min-width: 0; border-radius: 4px; overflow: hidden; background: var(--force, #6b6058); }
     .general img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
+    .general.portrait img { object-position: top; }
     .general.own-hidden img { opacity: 0.6; }
     .damage-fx { position: absolute; inset: 0; pointer-events: none; }
     .stats { display: flex; align-items: center; gap: 6px; padding: 0 5px; white-space: nowrap; font-weight: 500; }
@@ -202,6 +213,9 @@ export class PhoneSeatTile {
   readonly damageEffect = input<ShownDamage | null>(null);
   readonly dimmed = input(false);
   readonly slim = input(false);
+  // The tile's box on the board, for choosing face crop versus full portrait (spec 3g).
+  readonly tileWidth = input(100);
+  readonly tileHeight = input(100);
   // A tap on the tile (any seat, the viewer's included): Seat Details.
   readonly opened = output<void>();
 
@@ -248,7 +262,8 @@ export class PhoneSeatTile {
   protected readonly generals = computed(() => {
     const generals = this.seat().generals;
     if (!generals) return [];
-    return [this.general('main', generals.main), this.general('deputy', generals.deputy)];
+    const useFace = this.isViewer() || this.slim() || generalArtFitsFaceCrop(this.tileWidth(), this.tileHeight(), this.pixelRatio());
+    return [this.general('main', generals.main, useFace), this.general('deputy', generals.deputy, useFace)];
   });
 
   // A badge about the whole seat lies across both Generals (spec): Face Down, No Skills for the seat, Dying.
@@ -261,23 +276,30 @@ export class PhoneSeatTile {
     return badges;
   });
 
-  private general(slot: 'main' | 'deputy', general: GeneralInstance) {
+  private general(slot: 'main' | 'deputy', general: GeneralInstance, useFace: boolean) {
     const seat = this.seat();
     const hidden = general.generalDefinitionId === 'hidden';
     // A badge about one General lies on that General: No Skills for it alone, and Form on the one that changed.
     const badges: MessageKey[] = [];
     if (!seat.silenced && seat.silencedSlots?.includes(slot)) badges.push('seat.noSkills');
     if (seat.forms?.chosen && seat.forms.slot === slot) badges.push('phone.badge.form');
-    return { slot, ...this.art(general.generalDefinitionId), ownHidden: !hidden && !general.revealed, badges };
+    return { slot, ...this.art(general.generalDefinitionId, useFace), ownHidden: !hidden && !general.revealed, badges };
   }
 
-  // The face crop when there is one and it loads (spec 3b), else the portrait; the hidden art for a hidden General.
+  // The face crop when the tile is small enough (spec 3g), else the portrait; the hidden art for a hidden General.
   private readonly failedFaces = signal<ReadonlySet<string>>(new Set());
 
-  private art(id: string): { url: string | null; face: string | null } {
-    if (id === 'hidden') return { url: HIDDEN_GENERAL_ART_URL, face: null };
-    const face = generalFaceUrl(id);
-    return face && !this.failedFaces().has(face) ? { url: face, face } : { url: generalSkinUrl(id), face: null };
+  private pixelRatio(): number {
+    return typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
+  }
+
+  private art(id: string, useFace: boolean): { url: string | null; face: string | null; portrait: boolean } {
+    if (id === 'hidden') return { url: HIDDEN_GENERAL_ART_URL, face: null, portrait: false };
+    if (useFace) {
+      const face = generalFaceUrl(id);
+      if (face && !this.failedFaces().has(face)) return { url: face, face, portrait: false };
+    }
+    return { url: generalSkinUrl(id), face: null, portrait: true };
   }
 
   protected faceFailed(face: string | null): void {

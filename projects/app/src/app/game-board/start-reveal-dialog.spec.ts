@@ -18,11 +18,17 @@ function render() {
 }
 
 describe('StartRevealDialog', () => {
-  it('shows each hidden General’s art beside its slot and name', () => {
-    const { el } = render();
+  it('shows each hidden General’s art with name and role on the right; tap toggles selection', () => {
+    const { el, fixture } = render();
     const art = [...el.querySelectorAll('.general img')].map((i) => i.getAttribute('src'));
     expect(art).toEqual([generalSkinUrl('cao-cao'), generalSkinUrl('sima-yi')]);
-    expect(el.querySelector('.general[data-slot="main"]')!.textContent).toContain('Cao Cao');
+    expect(el.querySelectorAll('mat-icon')).toHaveLength(0);
+    const main = el.querySelector('.general[data-slot="main"]')!;
+    expect(main.querySelector('.name')!.textContent).toBe('Cao Cao');
+    expect(main.querySelector('.slot')!.textContent).toBe('Main General');
+    (main as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(main.classList.contains('checked')).toBe(true);
   });
 
   it('closes with the ticked slots, Main first', () => {

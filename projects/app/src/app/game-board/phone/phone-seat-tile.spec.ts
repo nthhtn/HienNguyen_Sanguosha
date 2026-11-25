@@ -3,7 +3,7 @@ import { join } from 'path';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import type { CardInstance, Seat } from 'engine';
 import { generalFaceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL } from 'content';
-import { PhoneSeatTile } from './phone-seat-tile';
+import { PhoneSeatTile, generalArtFitsFaceCrop } from './phone-seat-tile';
 import { testSeat } from './phone.testing';
 
 const card = (instanceId: string, definitionId: string): CardInstance => ({ instanceId, definitionId, suit: 'spade', rank: 7 });
@@ -139,6 +139,15 @@ describe('PhoneSeatTile', () => {
     });
   });
 
+  describe('generalArtFitsFaceCrop', () => {
+    it('uses face crops only when the General slot would not upscale past the crop size', () => {
+      expect(generalArtFitsFaceCrop(100, 100, 1)).toBe(true);
+      expect(generalArtFitsFaceCrop(150, 124, 1)).toBe(true);
+      expect(generalArtFitsFaceCrop(150, 124, 2)).toBe(false);
+      expect(generalArtFitsFaceCrop(150, 124, 3.5)).toBe(false);
+    });
+  });
+
   describe('face avatars', () => {
     const generalsOf = (main: string, deputy = 'hidden') => ({
       main: { generalDefinitionId: main, revealed: main !== 'hidden' },
@@ -147,7 +156,7 @@ describe('PhoneSeatTile', () => {
     const src = (el: HTMLElement, slot: 'main' | 'deputy') => (el.querySelector(`.general[data-slot="${slot}"] img`) as HTMLImageElement).getAttribute('src');
 
     it("shows a revealed General's face crop and the hidden art for a hidden one", () => {
-      const el = render(testSeat('seat-3', 3, { generals: generalsOf('cao-cao') }));
+      const el = render(testSeat('seat-3', 3, { generals: generalsOf('cao-cao') }), { tileWidth: 100, tileHeight: 100 });
       expect(src(el, 'main')).toBe(generalFaceUrl('cao-cao'));
       expect(src(el, 'deputy')).toBe(HIDDEN_GENERAL_ART_URL);
     });
@@ -159,10 +168,16 @@ describe('PhoneSeatTile', () => {
     });
 
     it('falls back to the portrait when the face crop does not load', () => {
-      const el = render(testSeat('seat-3', 3, { generals: generalsOf('cao-cao') }));
+      const el = render(testSeat('seat-3', 3, { generals: generalsOf('cao-cao') }), { tileWidth: 100, tileHeight: 100 });
       el.querySelector('.general[data-slot="main"] img')!.dispatchEvent(new Event('error'));
       fixture.detectChanges();
       expect(src(el, 'main')).toBe(generalSkinUrl('cao-cao'));
+    });
+
+    it("keeps the face crop on the viewer's tile even when the tile is large", () => {
+      const el = render(testSeat('seat-0', 0, { generals: generalsOf('cao-cao') }), { isViewer: true, tileWidth: 150, tileHeight: 124 });
+      expect(src(el, 'main')).toBe(generalFaceUrl('cao-cao'));
+      expect(el.querySelector('.general[data-slot="main"]')!.classList).not.toContain('portrait');
     });
   });
 

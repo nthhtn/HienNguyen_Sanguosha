@@ -124,6 +124,30 @@ describe('HTTP app', () => {
       expect(wrong.statusCode).toBe(403);
     });
 
+    it('accepts a Cloudflare tunnel Origin in development when PUBLIC_ORIGIN is still localhost', async () => {
+      ({ app } = await setup({ production: false }));
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/auth/guest',
+        payload: { displayName: 'Tunnel' },
+        headers: { origin: 'https://foo.trycloudflare.com', 'content-type': 'application/json' },
+      });
+      expect(res.statusCode).toBe(201);
+      expect(sessionCookies(res).find((c) => c.name === 'sgs_session')?.secure).toBe(true);
+    });
+
+    it('still refuses a Cloudflare tunnel Origin in production', async () => {
+      ({ app } = await setup({ production: true }));
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/auth/guest',
+        payload: { displayName: 'Tunnel' },
+        headers: { origin: 'https://foo.trycloudflare.com', 'content-type': 'application/json' },
+      });
+      expect(res.statusCode).toBe(403);
+      expect(res.json().code).toBe('bad_origin');
+    });
+
     it('refuses a non-JSON body with 415', async () => {
       ({ app } = await setup());
       const res = await app.inject({ method: 'POST', url: '/api/auth/guest', payload: 'displayName=X', headers: { origin: ORIGIN, 'content-type': 'application/x-www-form-urlencoded' } });
