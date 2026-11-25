@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { wikiKingdomWarsGenerals } from 'content';
+import { provideFakeArtSets } from '../art-sets.testing';
 import { WikiKingdomWarsGeneralEntry } from './wiki-kingdom-wars-general-entry';
 
 // Only Zhou Tai's Refuting Death has a preview here, so the entry's behaviour does not depend on which files ship.
@@ -42,5 +43,17 @@ describe('A skill preview in the Kingdom Wars General entry', () => {
     const el = render('cao-cao').nativeElement as HTMLElement;
     expect(el.querySelector('.preview-play')).toBeNull();
     expect(el.querySelector('video')).toBeNull();
+  });
+});
+
+describe('The Kingdom Wars General entry art sets', () => {
+  beforeEach(() => TestBed.configureTestingModule({ providers: provideFakeArtSets() }));
+  afterEach(() => localStorage.clear());
+
+  it('has an Art Sets button for a General two sets cover, and none for one only classic covers', () => {
+    expect((render('guan-yu').nativeElement as HTMLElement).querySelector('app-general-art-button button.art-sets-button')).not.toBeNull();
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({ providers: provideFakeArtSets() });
+    expect((render('zhou-tai').nativeElement as HTMLElement).querySelector('app-general-art-button button.art-sets-button')).toBeNull();
   });
 });

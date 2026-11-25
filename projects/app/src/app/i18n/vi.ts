@@ -559,6 +559,8 @@ export const vi: Messages = {
   'artSetsPage.inUse': 'Đang dùng',
   'artSetsPage.pinned': 'Đã chọn riêng',
   'artSetsPage.followGlobal': 'Theo bộ tranh chung',
+  'wiki.artSets': 'Bộ tranh ({count})',
+  'artSets.alternates': 'Chọn hình mà Tướng này hiển thị. Mặc định theo bộ tranh chung, trừ khi bạn chọn riêng ở đây.',
   'nav.play': 'Chơi ngoại tuyến',
   'nav.online': 'Chơi trực tuyến',
   'nav.onlineOnly': 'Chơi',

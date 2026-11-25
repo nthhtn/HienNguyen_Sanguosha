@@ -8,15 +8,19 @@ import { SkillTraits } from '../skill-traits';
 import { SoundEffects } from '../music.service';
 import { CardArt } from '../game-board/card-art';
 import { HpIcons } from '../hp-icons';
+import { GeneralArtButton } from './general-art-button';
 import { wikiGeneralView, wikiPackLabel } from './wiki-labels';
 
 // One general in the Wiki: art beside everything the data knows about it.
 @Component({
   selector: 'app-wiki-general-entry',
-  imports: [SkillTraits, CardArt, HpIcons, MatIconModule, TPipe],
+  imports: [SkillTraits, CardArt, GeneralArtButton, HpIcons, MatIconModule, TPipe],
   template: `
     <article class="entry kingdom-{{ general().kingdom }}" [attr.data-id]="general().id">
-      <app-card-art [skin]="true" [id]="general().id" [label]="view().name" size="large" />
+      <div class="art">
+        <app-card-art [skin]="true" [id]="general().id" [label]="view().name" size="large" />
+        <app-general-art-button [general]="general().id" />
+      </div>
       <div class="body">
         <header>
           <h4>
@@ -84,6 +88,7 @@ import { wikiGeneralView, wikiPackLabel } from './wiki-labels';
     .voice:hover, .voice:focus-visible { background: var(--mat-sys-surface-container-high); }
     .voice mat-icon { font-size: 24px; width: 24px; height: 24px; }
     .entry { display: flex; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--mat-sys-outline-variant); }
+    .art { display: grid; justify-items: center; align-content: start; gap: 8px; }
     .body { flex: 1; min-width: 0; }
     header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
     h4 { margin: 0; font: var(--mat-sys-title-large); }

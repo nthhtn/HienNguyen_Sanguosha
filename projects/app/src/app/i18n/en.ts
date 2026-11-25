@@ -560,6 +560,8 @@ export const en = {
   'artSetsPage.inUse': 'In Use',
   'artSetsPage.pinned': 'Pinned',
   'artSetsPage.followGlobal': 'Follow Global Set',
+  'wiki.artSets': 'Art Sets ({count})',
+  'artSets.alternates': 'Pick the artwork this General shows. It follows the global set unless you pick one here.',
   'nav.play': 'Play Offline',
   'nav.online': 'Play Online',
   'nav.onlineOnly': 'Play',

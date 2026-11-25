@@ -8,16 +8,20 @@ import { SkillTraits } from '../skill-traits';
 import { SoundEffects } from '../music.service';
 import { CardArt } from '../game-board/card-art';
 import { HpIcons } from '../hp-icons';
+import { GeneralArtButton } from './general-art-button';
 import { wikiKingdomWarsGeneralView } from './wiki-labels';
 
 // One Kingdom Wars General in the Wiki: art (or a placeholder) beside its text and the state of each skill.
 // The state comes from the content package; this component only shows it.
 @Component({
   selector: 'app-wiki-kingdom-wars-general-entry',
-  imports: [SkillTraits, CardArt, HpIcons, MatIconModule, TPipe],
+  imports: [SkillTraits, CardArt, GeneralArtButton, HpIcons, MatIconModule, TPipe],
   template: `
     <article class="entry kingdom-{{ general().kingdom }}" [attr.data-id]="general().id">
-      <app-card-art [skin]="true" [id]="general().id" [label]="view().name" size="large" />
+      <div class="art">
+        <app-card-art [skin]="true" [id]="general().id" [label]="view().name" size="large" />
+        <app-general-art-button [general]="general().id" />
+      </div>
       <div class="body">
         <header>
           <h4>
@@ -93,6 +97,7 @@ import { wikiKingdomWarsGeneralView } from './wiki-labels';
   `,
   styles: `
     .entry { display: flex; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--mat-sys-outline-variant); }
+    .art { display: grid; justify-items: center; align-content: start; gap: 8px; }
     .body { flex: 1; min-width: 0; }
     h4 { margin: 0; font: var(--mat-sys-title-large); }
     h5 { margin: 12px 0 4px; font: var(--mat-sys-title-small); }
