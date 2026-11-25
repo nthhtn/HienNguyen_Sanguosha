@@ -50,7 +50,7 @@ import { generalDisplayName } from './labels';
               </li>
             }
           </ul>
-          <button mat-button type="button" class="clear" [disabled]="!hasOverrides()" (click)="artSets.clearOverrides()">{{ 'artSets.clearAll' | t }}</button>
+          <button mat-stroked-button type="button" class="clear" [disabled]="!hasOverrides()" (click)="artSets.clearOverrides()">{{ 'artSets.clearAll' | t }}</button>
         </section>
       }
     </mat-dialog-content>
@@ -71,9 +71,18 @@ import { generalDisplayName } from './labels';
     .previews { grid-area: previews; display: flex; gap: 6px; margin-top: 4px; }
     .previews img { width: 44px; height: 58px; object-fit: cover; object-position: top; border-radius: 4px; }
     .generals { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 6px; }
-    .generals li { display: grid; grid-template-columns: 36px 1fr minmax(0, auto); gap: 10px; align-items: center; }
+    .generals li { display: grid; grid-template-columns: 36px minmax(0, 1fr) minmax(0, 270px); gap: 6px 12px; align-items: center; }
+    .general-name { min-width: 0; overflow-wrap: anywhere; }
     .generals img { width: 36px; height: 48px; object-fit: cover; object-position: top; border-radius: 4px; }
-    select { max-width: 100%; }
+    .set input { accent-color: var(--mat-sys-primary, #1d5fa8); }
+    /* The browser's own select, dressed like the rest of the app: the page font, a 44 px touch target, room for the arrow. */
+    select { box-sizing: border-box; width: 100%; min-height: 44px; padding: 0 36px 0 12px; font: inherit; font-size: 0.9rem; color: inherit; background-color: #fff; border: 1px solid #b4b4b4; border-radius: 8px; cursor: pointer; text-overflow: ellipsis; }
+    select:focus-visible { outline: 2px solid var(--mat-sys-primary, #1d5fa8); outline-offset: 1px; }
+    .clear { min-height: 44px; }
+    @media (max-width: 520px) {
+      .generals li { grid-template-columns: 36px minmax(0, 1fr); }
+      .generals select { grid-column: 1 / -1; }
+    }
   `,
 })
 export class ArtSetsDialog {
