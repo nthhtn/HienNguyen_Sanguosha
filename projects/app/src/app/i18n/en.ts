@@ -1261,6 +1261,14 @@ export const en = {
   'tutorial.allegiance.s4': 'The other seats keep their Generals face down, so you cannot tell which Force they belong to until they reveal one.',
   // Condenses rules.overview.beat4.
   'tutorial.allegiance.s5': 'The game ends when every seat still in play shares a Force. The last Force standing wins.',
+  'tutorial.turn.title': 'Turn Structure',
+  'tutorial.turn.summary': 'See the six phases of a turn, end your Play Phase and discard down to your hand limit.',
+  'tutorial.turn.s1': 'A turn has six phases, always in the same order. Watch the phase indicator while the Start, Judgment and Draw Phases pass by themselves.',
+  'tutorial.turn.s2': 'Only the Play Phase waits for you. Here you play cards and use skills in any order.',
+  'tutorial.turn.s3': 'Press End Phase when you are done playing. There is nothing to play now, so end it.',
+  'tutorial.turn.s4': 'Your hand limit equals your current HP. You hold more cards than that, so choose the extra ones to discard.',
+  'tutorial.turn.s5': 'The cards you discarded go to the Discard Pile. Then your turn ends and the next seat begins its turn.',
+  'tutorial.turn.s5p': 'The cards you discarded go to the Discard Pile, which you can open under History. Then your turn ends and the next seat begins its turn.',
   'tutorial.next': 'Next',
   'tutorial.exit': 'Exit Tutorial',
 } satisfies Record<string, string>;

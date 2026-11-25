@@ -22,6 +22,7 @@ export const anchor = {
   revealSlot: (slot: RevealSlot) => `reveal-slot:${slot}`,
   revealConfirm: () => 'reveal-confirm',
   revealDialog: () => 'reveal-dialog',
+  discardDialog: () => 'discard-dialog',
 } as const;
 
 // Whether `id` is one a builder above makes: the board and the lessons agree on the ids through the builders alone.

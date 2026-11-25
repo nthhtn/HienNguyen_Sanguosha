@@ -27,6 +27,11 @@ function render(count: number) {
 }
 
 describe('DiscardDialog', () => {
+  it('marks the whole window for the Tutorial, which spotlights it while the beginner picks the cards', () => {
+    const { el } = render(1);
+    expect(el.getAttribute('data-tutorial')).toBe('discard-dialog');
+  });
+
   it('has a View Board button to minimize it', () => {
     const { el } = render(1);
     expect(el.querySelector('app-minimize-button')).not.toBeNull();

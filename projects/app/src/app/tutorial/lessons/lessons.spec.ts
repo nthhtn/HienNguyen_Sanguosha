@@ -8,7 +8,7 @@ import { playLesson } from './play-lesson.testing';
 const registry = buildContentRegistry();
 
 // The lessons in the order the list shows them. Each lesson's task adds its id here.
-const REGISTERED = ['generals', 'allegiance'];
+const REGISTERED = ['generals', 'allegiance', 'turn'];
 
 describe('the lessons', () => {
   it('are registered in the order of the list, one for each id', () => {
