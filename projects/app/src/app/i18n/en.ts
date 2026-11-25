@@ -1252,6 +1252,15 @@ export const en = {
   'tutorial.generals.s3p': 'Tap your seat at any time to read your Generals’ skills and Force. Try it after this lesson.',
   'tutorial.generals.s5p': 'Cards that were used or thrown away go to the Discard Pile. Open History to see it.',
   'tutorial.generals.s6p': 'The Action History lists everything that happens, so you can always catch up. Open History to read it.',
+  'tutorial.allegiance.title': 'Allegiance',
+  'tutorial.allegiance.summary': 'Learn what a Force is, why Generals start hidden and how a Force wins.',
+  // Condenses rules.setup.step2 and rules.setup.reveal1.
+  'tutorial.allegiance.s1': 'Both your Generals start face down, so nobody can see them. At the start of your own turn this window lets you reveal any of them, or none.',
+  'tutorial.allegiance.s2': 'Tick your Main General, then press Confirm to reveal it.',
+  'tutorial.allegiance.s3': 'Your Main General is face up, so everyone can see your Force: Wei.',
+  'tutorial.allegiance.s4': 'The other seats keep their Generals face down, so you cannot tell which Force they belong to until they reveal one.',
+  // Condenses rules.overview.beat4.
+  'tutorial.allegiance.s5': 'The game ends when every seat still in play shares a Force. The last Force standing wins.',
   'tutorial.next': 'Next',
   'tutorial.exit': 'Exit Tutorial',
 } satisfies Record<string, string>;

@@ -53,4 +53,14 @@ describe('playLesson', () => {
     const waits: Step = { id: 'waits', textKey: text, completes: { kind: 'state', reached: (s) => s.phase !== 'Play' } };
     expect(playLesson({ ...lesson([waits]), build: botDue }, registry)).toEqual([{ stepId: 'waits', ok: false }]);
   });
+
+  it('offers the Start window’s Confirm for each General a step may reveal, not only the empty template', () => {
+    const revealsMain: Step = {
+      id: 'reveals-main',
+      textKey: text,
+      completes: { kind: 'action', allow: [{ kind: 'ConfirmRevealsAction', match: (a) => a.kind === 'ConfirmRevealsAction' && a.slots.includes('main') }] },
+    };
+    const mainUp: Step = { id: 'main-up', textKey: text, completes: { kind: 'state', reached: (s) => s.phase === 'Play' && !!s.seats[0].generals?.main.revealed } };
+    expect(playLesson(lesson([revealsMain, mainUp]), registry).map((s) => s.ok)).toEqual([true, true]);
+  });
 });

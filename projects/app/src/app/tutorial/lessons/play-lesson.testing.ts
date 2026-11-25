@@ -1,10 +1,18 @@
-import { ContentRegistry, GameState, getActiveSeatId, getLegalActions } from 'engine';
+import { Action, ContentRegistry, GameState, getActiveSeatId, getLegalActions } from 'engine';
 import { act } from '../../scenario-kit/recipe';
 import { allows, reachedState } from '../step-rules';
 import { BotMove, Lesson } from '../tutorial-types';
 
 const HUMAN = 'seat-0';
 const MAX_MOVES = 50;
+
+// The Start window offers one Confirm template with no slots; the board fills it with the Generals the player ticks. Every
+// choice of the hidden Generals is a legal Confirm, so a step may allow some of them.
+function withRevealChoices(legal: Action[], state: GameState, seatId: string): Action[] {
+  const hidden = (['main', 'deputy'] as const).filter((slot) => state.seats.find((s) => s.id === seatId)?.generals?.[slot].revealed === false);
+  const subsets = [[], ...hidden.map((slot) => [slot]), ...(hidden.length === 2 ? [[...hidden]] : [])];
+  return legal.flatMap((a): Action[] => (a.kind === 'ConfirmRevealsAction' ? subsets.map((slots) => ({ ...a, slots })) : [a]));
+}
 
 export interface PlayedStep {
   stepId: string;
@@ -39,7 +47,7 @@ export function playLesson(lesson: Lesson, registry: ContentRegistry): PlayedSte
     if (step.completes.kind === 'next') {
       ok = true;
     } else if (step.completes.kind === 'action') {
-      const action = getLegalActions(state, HUMAN, registry).find((a) => allows(step, a, state));
+      const action = withRevealChoices(getLegalActions(state, HUMAN, registry), state, HUMAN).find((a) => allows(step, a, state));
       if (action) {
         state = act(state, registry, action);
         ok = true;

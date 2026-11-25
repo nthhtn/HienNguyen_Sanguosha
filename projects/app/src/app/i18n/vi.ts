@@ -1246,6 +1246,13 @@ export const vi: Messages = {
   'tutorial.generals.s3p': 'Chạm vào chỗ ngồi của bạn bất cứ lúc nào để đọc kỹ năng và thế lực của các Tướng. Hãy thử sau bài học này.',
   'tutorial.generals.s5p': 'Bài đã dùng hoặc đã bỏ nằm trong Chồng bài bỏ. Mở Lịch sử để xem.',
   'tutorial.generals.s6p': 'Lịch sử hành động ghi lại mọi việc đã xảy ra, để bạn luôn theo kịp. Mở Lịch sử để đọc.',
+  'tutorial.allegiance.title': 'Thế lực',
+  'tutorial.allegiance.summary': 'Tìm hiểu thế lực là gì, vì sao Tướng bắt đầu ở trạng thái ẩn và một thế lực thắng như thế nào.',
+  'tutorial.allegiance.s1': 'Cả hai Tướng của bạn bắt đầu ở trạng thái úp, nên không ai thấy. Vào đầu lượt của mình, cửa sổ này cho bạn lật bất kỳ Tướng nào, hoặc không lật.',
+  'tutorial.allegiance.s2': 'Chọn Chủ tướng của bạn, rồi bấm Xác nhận để lật.',
+  'tutorial.allegiance.s3': 'Chủ tướng của bạn đã lật, nên mọi người thấy thế lực của bạn: Ngụy.',
+  'tutorial.allegiance.s4': 'Các ghế khác vẫn úp Tướng, nên bạn chưa biết họ thuộc thế lực nào cho đến khi họ lật một Tướng.',
+  'tutorial.allegiance.s5': 'Ván kết thúc khi mọi người chơi còn trong ván cùng một thế lực. Thế lực còn lại cuối cùng thắng.',
   'tutorial.next': 'Tiếp',
   'tutorial.exit': 'Thoát hướng dẫn',
 };
