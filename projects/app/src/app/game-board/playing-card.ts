@@ -15,57 +15,65 @@ import { TPipe } from '../i18n/t.pipe';
   template: `
     <div class="card" [class.small]="size() === 'small'" [class.large]="size() === 'large'" [attr.title]="showFace() ? ('card.named' | t: { name: name(), face: face() }) : name()">
       <app-card-art [cropped]="true" [size]="size()" [id]="card().definitionId" [label]="name()" />
-      @if (showFace()) {
-        <span class="face" [class.red]="red()">{{ face() }}</span>
-      }
-      @if (nature(); as nature) {
-        <span class="nature" [class.fire]="nature === 'fire'" [class.thunder]="nature === 'thunder'" aria-hidden="true">{{ nature === 'fire' ? '🔥' : '⚡' }}</span>
-      }
-      @if (showStat() && stat(); as stat) {
-        <span class="stat">{{ stat }}</span>
-      }
-      @if (showName()) {
-        <span class="name">{{ name() }}</span>
-      }
+      <div class="overlays">
+        @if (showFace()) {
+          <span class="face" [class.red]="red()">{{ face() }}</span>
+        }
+        @if (nature(); as nature) {
+          <span class="nature" [class.fire]="nature === 'fire'" [class.thunder]="nature === 'thunder'" aria-hidden="true">{{ nature === 'fire' ? '🔥' : '⚡' }}</span>
+        }
+        @if (showStat() && stat(); as stat) {
+          <span class="stat">{{ stat }}</span>
+        }
+        @if (showName()) {
+          <span class="name"><span class="name-text">{{ name() }}</span></span>
+        }
+      </div>
     </div>
   `,
   styles: `
-    :host { display: inline-block; }
-    .card { position: relative; display: block; line-height: 1; }
-    .card app-card-art { display: block; }
+    :host { display: block; width: fit-content; max-width: 100%; }
+    .card { position: relative; display: block; line-height: 0; overflow: hidden; border-radius: 4px; }
+    .card.large { border-radius: 0; }
+    .card app-card-art { display: block; width: 100%; height: auto; }
+    .overlays { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; pointer-events: none; }
     .face {
-      position: absolute; top: 2px; left: 2px; padding: 2px 4px; border-radius: 4px;
+      position: absolute; top: 0; left: 0; max-width: calc(100% - 4px); padding: 2px 4px; border-radius: 0 0 4px 0; box-sizing: border-box;
       background: rgb(255 255 255 / 92%); color: #1b1b1b; box-shadow: 0 0 2px rgb(0 0 0 / 40%);
       font: 700 13px/1 system-ui, sans-serif; white-space: nowrap;
     }
     .face.red { color: #c62828; }
     /* An elemental Sha: the cropped art no longer shows the frame's flame or bolt. */
     .nature {
-      position: absolute; top: 2px; right: 2px; padding: 2px 3px; border-radius: 4px; color: #fff;
+      position: absolute; top: 0; right: 0; padding: 2px 3px; border-radius: 0 0 0 4px; color: #fff;
       box-shadow: 0 0 2px rgb(0 0 0 / 40%); font: 12px/1 system-ui, sans-serif;
     }
     .nature.fire { background: #d84315; }
     .nature.thunder { background: #5e35b1; }
-    .small .nature { top: 1px; right: 1px; padding: 1px 2px; font-size: 9px; border-radius: 3px; }
-    .large .nature { top: 6px; right: 6px; padding: 4px 6px; font-size: 20px; border-radius: 6px; }
+    .small .nature { padding: 1px 2px; font-size: 9px; border-radius: 0 0 0 3px; }
+    .large .nature { top: 0; right: 0; padding: 4px 6px; font-size: 20px; border-radius: 0 0 0 6px; }
     .name {
-      position: absolute; left: 1px; right: 1px; bottom: 1px; padding: 3px 2px; border-radius: 0 0 3px 3px;
-      background: rgb(0 0 0 / 68%); color: #fff; text-align: center;
+      position: absolute; left: 0; right: 0; bottom: 0; padding: 0; border-radius: 0 0 3px 3px; box-sizing: border-box;
+      background: rgb(0 0 0 / 68%); overflow: hidden;
+    }
+    .name-text {
+      display: block; padding: 3px 2px; color: #fff; text-align: center;
       font: 600 11px/1.1 system-ui, sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     /* A weapon's range or a mount's distance: the cropped art no longer shows it. */
     .stat {
-      position: absolute; right: 2px; bottom: 19px; min-width: 14px; box-sizing: border-box; padding: 1px 3px; border-radius: 4px;
+      position: absolute; right: 0; bottom: 19px; min-width: 14px; box-sizing: border-box; padding: 1px 3px; border-radius: 4px 0 0 0;
       background: rgb(255 255 255 / 92%); color: #1b1b1b; box-shadow: 0 0 2px rgb(0 0 0 / 40%);
       font: 700 12px/1.1 system-ui, sans-serif; text-align: center; white-space: nowrap;
     }
-    .small .stat { right: 1px; bottom: 27px; min-width: 11px; padding: 0 2px; font-size: 9px; border-radius: 3px; }
-    .large .stat { right: 6px; bottom: 36px; min-width: 28px; padding: 3px 7px; font-size: 20px; border-radius: 6px; }
-    .small .face { top: 1px; left: 1px; padding: 1px 2px; font-size: 9px; border-radius: 3px; }
-    .large .face { top: 6px; left: 6px; padding: 4px 7px; font-size: 20px; border-radius: 6px; }
-    .large .name { left: 0; right: 0; bottom: 0; padding: 7px 4px; font-size: 17px; border-radius: 0; }
+    .small .stat { bottom: 27px; min-width: 11px; padding: 0 2px; font-size: 9px; border-radius: 3px 0 0 0; }
+    .large .stat { bottom: 36px; min-width: 28px; padding: 3px 7px; font-size: 20px; border-radius: 6px 0 0 0; }
+    .small .face { padding: 1px 2px; font-size: 9px; border-radius: 0 0 3px 0; }
+    .large .face { padding: 4px 7px; font-size: 20px; border-radius: 0 0 6px 0; }
+    .large .name { border-radius: 0; }
+    .large .name-text { padding: 7px 4px; font-size: 17px; }
     /* Slots are narrow: let the name wrap (up to three lines) rather than cut it. */
-    .small .name {
+    .small .name-text {
       padding: 1px; font-size: 7.5px; line-height: 1.05; white-space: normal; overflow-wrap: anywhere;
       display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
     }

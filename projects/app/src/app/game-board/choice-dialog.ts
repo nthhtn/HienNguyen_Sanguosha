@@ -113,6 +113,10 @@ export interface ChoiceDialogData {
     .swatch { width: 28px; height: 28px; border-radius: 50%; background: var(--force); }
     .option[data-force] .label { color: var(--force-text); font-weight: 500; }
     .red-suit .label { color: #c62828; }
+    /* The phone board (spec 3h): portrait tiles are taller than 44 px; do not clip the pick highlight. */
+    :host-context([data-layout='compact']) .option {
+      box-sizing: border-box; min-height: unset; overflow: hidden; align-items: stretch;
+    }
   `,
 })
 export class ChoiceDialog {

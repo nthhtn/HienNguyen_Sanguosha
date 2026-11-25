@@ -5,20 +5,21 @@ import { AccountService, SignedIn } from '../auth/accounts';
 import { AuthRateLimits } from '../auth/rateLimits';
 import { toMe } from '../views/me';
 import { errorBody } from './errors';
-import { clearSessionCookie, SESSION_COOKIE, setSessionCookie } from './session';
+import { clearSessionCookie, SESSION_COOKIE, sessionCookieSecure, setSessionCookie } from './session';
 import { TypedApp } from './types';
 
 export interface AuthRouteDeps {
   accounts: AccountService;
   limits: AuthRateLimits;
   cookieSecure: boolean;
+  production?: boolean;
   now: () => number;
 }
 
 const emailKey = (email: string) => email.trim().toLowerCase();
 
 export function registerAuthRoutes(app: TypedApp, deps: AuthRouteDeps): void {
-  const { accounts, limits, cookieSecure, now } = deps;
+  const { accounts, limits, cookieSecure, production = true, now } = deps;
 
   const tooMany = (reply: FastifyReply) => reply.code(429).send(errorBody('rate_limited'));
 
@@ -31,7 +32,8 @@ export function registerAuthRoutes(app: TypedApp, deps: AuthRouteDeps): void {
 
   const signedIn = async (request: FastifyRequest, reply: FastifyReply, result: SignedIn, status: number) => {
     await endCurrentSession(request);
-    setSessionCookie(reply, result.token, result.expiresAt, cookieSecure);
+    const secure = sessionCookieSecure(production, cookieSecure, request.headers);
+    setSessionCookie(reply, result.token, result.expiresAt, secure);
     return reply.code(status).send(toMe(result.user));
   };
 
@@ -54,7 +56,7 @@ export function registerAuthRoutes(app: TypedApp, deps: AuthRouteDeps): void {
 
   app.post('/api/auth/signout', async (request, reply) => {
     await endCurrentSession(request);
-    clearSessionCookie(reply, cookieSecure);
+    clearSessionCookie(reply, sessionCookieSecure(production, cookieSecure, request.headers));
     return reply.code(204).send();
   });
 

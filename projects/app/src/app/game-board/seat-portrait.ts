@@ -13,18 +13,31 @@ const HIDDEN_ID = 'hidden';
   template: `
     <div class="frame" [class.medium]="size() === 'medium'" [class.fill]="size() === 'fill'">
       @for (url of urls(); track $index) {
-        <img [src]="url" alt="" (error)="markFailed(url)" />
+        <span class="half">
+          <img [src]="url" alt="" (error)="markFailed(url)" />
+        </span>
       }
     </div>
   `,
   styles: `
-    :host { display: inline-block; }
-    .frame { display: flex; width: 72px; height: 52px; border: 2px solid var(--force, var(--force-none)); border-radius: 8px; overflow: hidden; box-sizing: border-box; background: #f1ece2; }
+    :host { display: inline-block; max-width: 100%; line-height: 0; overflow: hidden; }
+    .frame {
+      display: flex; width: 72px; height: 52px; border: 2px solid var(--force, var(--force-none));
+      border-radius: 8px; overflow: hidden; box-sizing: border-box; background: #f1ece2; contain: layout paint;
+    }
     .frame.medium { width: 104px; height: 76px; }
     .frame.fill { width: 100%; height: 92px; }
     :host(.fill-host) { display: block; }
-    img { display: block; flex: 1; min-width: 0; height: 100%; object-fit: cover; object-position: top; }
-    img + img { border-left: 1px solid rgb(0 0 0 / 35%); }
+    /* The phone board (spec 3h): picker cells are often wider than 104 px; scale the frame, keep aspect. */
+    :host-context([data-layout='compact']) {
+      display: block; width: 100%; max-width: 104px; margin-inline: auto;
+    }
+    :host-context([data-layout='compact']) .frame.medium {
+      width: 100%; height: auto; aspect-ratio: 400 / 290; max-height: 76px;
+    }
+    .half { display: block; flex: 1 1 0; min-width: 0; min-height: 0; overflow: hidden; position: relative; }
+    .half + .half { border-left: 1px solid rgb(0 0 0 / 35%); }
+    img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
   `,
 })
 export class SeatPortrait {

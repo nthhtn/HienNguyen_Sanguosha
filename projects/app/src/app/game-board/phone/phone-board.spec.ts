@@ -3,6 +3,7 @@ import type { Action, CardZone, GameState, Seat } from 'engine';
 import { buildContentRegistry } from 'content';
 import type { AvatarSkill } from '../avatar-skills';
 import { MatDialog } from '@angular/material/dialog';
+import { BattlefieldBackgrounds } from '../../battlefield-background.service';
 import { PhoneBoard } from './phone-board';
 import { SeatDetailsDialog } from './seat-details-dialog';
 import { phoneSeats, phoneSizes } from './phone-seat-layout';
@@ -33,6 +34,19 @@ describe('PhoneBoard', () => {
     return { fixture, el: fixture.nativeElement as HTMLElement };
   }
   const tilesIn = (el: HTMLElement, area: string) => el.querySelectorAll(`.${area} [data-seat-id] app-phone-seat-tile`).length;
+
+  it('offers the Battlefield menu while on screen and draws the default table', () => {
+    const backgrounds = TestBed.inject(BattlefieldBackgrounds);
+    const { fixture, el } = render(4);
+    expect(backgrounds.available()).toBe(true);
+    const board = el.querySelector('.phone-board') as HTMLElement;
+    expect(board.style.background).toBe('');
+    backgrounds.select('2');
+    fixture.detectChanges();
+    expect((fixture.componentInstance as PhoneBoard & { background: () => string | null }).background()).toContain('battlefield/2.jpg');
+    fixture.destroy();
+    expect(backgrounds.available()).toBe(false);
+  });
 
   it('puts 7 opponents of an 8-seat game along the top', () => {
     const { el } = render(8);

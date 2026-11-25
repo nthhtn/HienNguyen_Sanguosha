@@ -4,7 +4,12 @@ import { BehaviorSubject } from 'rxjs';
 import { GameService } from '../game.service';
 import { PlaybackSpeed } from '../playback-speed.service';
 import { DevIndex } from './dev-index';
-import { DEV_PREVIEW as DEV_PREVIEW_IN_PRODUCTION, DEV_ROUTES as DEV_ROUTES_IN_PRODUCTION } from './dev-routes.prod';
+import {
+  DEV_FEATURES as DEV_FEATURES_IN_PRODUCTION,
+  DEV_PREVIEW as DEV_PREVIEW_IN_PRODUCTION,
+  DEV_ROUTES as DEV_ROUTES_IN_PRODUCTION,
+} from './dev-routes.prod';
+import { DEV_FEATURES } from './dev-routes';
 import { DEV_PREVIEW } from './dev-routes';
 import { DevScenarioPage } from './dev-scenario-page';
 import { SCENARIOS } from './scenarios';
@@ -88,6 +93,8 @@ describe('dev pages', () => {
   it('dev builds show Preview in the bar and production builds do not (the production file replaces the dev one)', () => {
     expect(DEV_PREVIEW).toBe(true);
     expect(DEV_PREVIEW_IN_PRODUCTION).toBe(false);
+    expect(DEV_FEATURES).toBe(true);
+    expect(DEV_FEATURES_IN_PRODUCTION).toBe(false);
     expect(DEV_ROUTES_IN_PRODUCTION).toEqual([]);
   });
 });
