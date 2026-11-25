@@ -324,6 +324,17 @@ describe('DecisionTimer', () => {
       expect(timer.secondsLeft()).toBe(DECISION_SECONDS.play);
     });
 
+    it('still closes a settled judgment by timeout during a Tutorial lesson, since nothing else on the board can', () => {
+      game.startGame(2, 1, 'vs-bots', [], { judgmentNotice: true });
+      game.setTutorialHooks({ allows: () => true, botMove: () => null, applied: () => undefined });
+      settleJudgment(game);
+      TestBed.tick();
+      expect(game.judgmentSettled()).toBe(true);
+      expect(timer.secondsLeft()).toBe(DECISION_SECONDS.notice);
+      advance((JUDGMENT_LEAD_IN_MS.head + JUDGMENT_LEAD_IN_MS.tail) / 1000 + DECISION_SECONDS.notice + 1.25);
+      expect(game.judgmentSettled()).toBe(false);
+    });
+
     it('stops when the board leaves the screen', () => {
       toPlayPhase();
       board.destroy();

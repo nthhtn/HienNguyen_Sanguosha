@@ -1345,6 +1345,20 @@ export const en = {
   // Condenses rules.response.chain4 and rules.response.breakCancelled.
   'tutorial.wuxie.s5': 'Nobody holds another Wuxie, so Break is cancelled and you keep your cards. Any length of chain works the same way: the last Wuxie decides.',
   'tutorial.wuxie.s5p': 'Nobody holds another Wuxie, so Break is cancelled and you keep your cards. The last Wuxie decides, however long the chain. Open History to read it.',
+  'tutorial.judgment.title': 'Delayed Tools and Judgment',
+  'tutorial.judgment.summary': 'Place Starvation on a seat and watch its Judgment Phase decide what happens.',
+  // Condenses rules.judgment.delayedText.
+  'tutorial.judgment.s1': 'Starvation is a Delayed Tool. It does nothing when you play it: it waits in a judgment area until its holder’s own Judgment Phase.',
+  // Condenses rules.judgment.starvation.
+  'tutorial.judgment.s2': 'Hover over Starvation and press Play, then choose the seat next to you. Starvation can only target a seat at distance 1.',
+  'tutorial.judgment.s2p': 'Tap Starvation, press Play, then choose the seat next to you. Starvation can only target a seat at distance 1.',
+  'tutorial.judgment.s3': 'Starvation now sits in that seat’s judgment area. It stays there, doing nothing, until that seat’s Judgment Phase.',
+  'tutorial.judgment.s4': 'End your Play Phase. The next seat takes its turn, and its Judgment Phase comes first.',
+  // Condenses rules.judgment.step1 and rules.judgment.starvation.
+  'tutorial.judgment.s5': 'The top card of the draw pile is turned face up: a heart. Starvation only spares a club, so anything else costs that seat its Draw Phase. The window closes by itself in a moment.',
+  // Condenses rules.judgment.skipDraw and rules.judgment.step4.
+  'tutorial.judgment.s6': 'That seat skipped its Draw Phase and went straight from Judgment to Play with no new cards. Starvation went to the Discard Pile.',
+  'tutorial.judgment.s7': 'Had the card been a club, the seat would have drawn as usual. A Delayed Tool is judged in its holder’s Judgment Phase, and Wuxie can cancel it when it is judged.',
   'tutorial.page.title': 'Tutorial',
   'tutorial.page.intro': 'Short lessons on the real board. A spotlight shows you what to do, one step at a time.',
   'tutorial.group.basics': 'Basics',
