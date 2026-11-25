@@ -435,10 +435,14 @@ export class GameBoard {
     afterNextRender(() => preloadCardArt(this.gameService.registry.cards.keys()));
     // Decisions are timed only while the board is on screen.
     this.timer.attach(inject(DestroyRef));
-    // The win track while the game is won; back to the background track on leaving.
+    // The win sound (a sound effect) once the game is won, with the music quiet; the music comes back on leaving.
     effect(() => this.centre.set(nextCentre(untracked(this.centre), this.director.current(), this.director.centreStack().length)));
-    effect(() => this.music.setTrack(this.gameOver() ? 'win' : 'background'));
-    inject(DestroyRef).onDestroy(() => this.music.setTrack('background'));
+    effect(() => {
+      const over = !!this.gameOver();
+      this.music.setQuiet(over);
+      if (over) untracked(() => this.sounds.play('win'));
+    });
+    inject(DestroyRef).onDestroy(() => this.music.setQuiet(false));
     // Leaving the board with a decision hidden: nothing else would ever close that dialog.
     inject(DestroyRef).onDestroy(() => this.dock.dismiss());
     // A decision's text is built when its dialog opens, so a language switch while one is

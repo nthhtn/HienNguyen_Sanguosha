@@ -608,18 +608,18 @@
       "audio/effects/weapon.ogg": "f1058a76f660dc74c571e67a6c0cf2abf1c4df8d9b0ff897d621c45f33930c85"
     }
   },
+  "audio/effects/win.ogg": {
+    "output": "4bbdf8d159d75983d40fc220e3c12eb2c7ad5ff6826791aa16c9d29749182181",
+    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
+    "sources": {
+      "audio/effects/win.ogg": "4bbdf8d159d75983d40fc220e3c12eb2c7ad5ff6826791aa16c9d29749182181"
+    }
+  },
   "audio/music/background.ogg": {
     "output": "f7b9bdb7e1a5ef59a1a85122ff760984ffa0bb2edbb9668a94f2772f49c445f9",
     "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
     "sources": {
       "audio/music/background.ogg": "f7b9bdb7e1a5ef59a1a85122ff760984ffa0bb2edbb9668a94f2772f49c445f9"
-    }
-  },
-  "audio/music/win.ogg": {
-    "output": "4bbdf8d159d75983d40fc220e3c12eb2c7ad5ff6826791aa16c9d29749182181",
-    "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
-    "sources": {
-      "audio/music/win.ogg": "4bbdf8d159d75983d40fc220e3c12eb2c7ad5ff6826791aa16c9d29749182181"
     }
   },
   "audio/voice/female/ally-far-attack-near.ogg": {

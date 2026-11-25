@@ -1,7 +1,7 @@
 import { existsSync } from 'fs';
 import { join } from 'path';
 import { TestBed } from '@angular/core/testing';
-import { CARD_VOICES, EFFECT_URLS, MUSIC_PLAYER_FACTORY, MusicPlayer, MusicService, SoundEffects, TRACK_URLS, voiceUrl } from './music.service';
+import { CARD_VOICES, EFFECT_URLS, MUSIC_PLAYER_FACTORY, MusicPlayer, MusicService, SoundEffects, MUSIC_URL, voiceUrl } from './music.service';
 
 class FakePlayer implements MusicPlayer {
   loop = false;
@@ -20,9 +20,10 @@ class FakePlayer implements MusicPlayer {
   }
 }
 
-function setup(stored?: string) {
+function setup(stored?: string, effectsStored?: string) {
   localStorage.clear();
   if (stored !== undefined) localStorage.setItem('music-enabled', stored);
+  if (effectsStored !== undefined) localStorage.setItem('effects-enabled', effectsStored);
   const player = new FakePlayer();
   const urls: string[] = [];
   TestBed.configureTestingModule({
@@ -40,7 +41,7 @@ describe('MusicService', () => {
     const { music, player, urls } = setup();
     music.start();
     await settle();
-    expect(urls).toEqual([TRACK_URLS.background]);
+    expect(urls).toEqual([MUSIC_URL]);
     expect(player.loop).toBe(true);
     expect(player.volume).toBeLessThan(0.5);
     expect(player.paused).toBe(false);
@@ -90,33 +91,35 @@ describe('MusicService', () => {
     expect(music.enabled()).toBe(false);
   });
 
-  it('swaps to the win track, played once, and back to the background track', async () => {
-    const urls: string[] = [];
-    const players: FakePlayer[] = [];
-    localStorage.clear();
-    TestBed.configureTestingModule({
-      providers: [{ provide: MUSIC_PLAYER_FACTORY, useValue: (url: string) => (urls.push(url), players.push(new FakePlayer()), players.at(-1)) }],
-    });
-    const music = TestBed.inject(MusicService);
+  it('goes quiet for the game-over screen and comes back, the same background track each time', async () => {
+    const { music, player, urls } = setup();
     music.start();
     await settle();
-    music.setTrack('win');
+    music.setQuiet(true);
+    expect(player.paused).toBe(true);
+    expect(music.playing()).toBe(false);
+    music.setQuiet(false);
     await settle();
-    expect(urls).toEqual([TRACK_URLS.background, TRACK_URLS.win]);
-    expect(players[0].paused).toBe(true);
-    expect(players[1].paused).toBe(false);
-    expect(players[1].loop).toBe(false);
-    expect(players[0].loop).toBe(true);
-    music.setTrack('background');
-    await settle();
-    expect(players[1].paused).toBe(true);
-    expect(players[0].paused).toBe(false);
-    expect(urls).toHaveLength(2);
+    expect(player.paused).toBe(false);
+    expect(music.playing()).toBe(true);
+    expect(urls).toEqual([MUSIC_URL]);
   });
 
-  it('stays silent on the win track when the viewer turned music off', async () => {
+  it('stays quiet when the music starts while it is quiet, and starts when it stops being quiet', async () => {
+    const { music, player } = setup();
+    music.setQuiet(true);
+    music.start();
+    await settle();
+    expect(player.plays).toBe(0);
+    music.setQuiet(false);
+    await settle();
+    expect(player.plays).toBe(1);
+  });
+
+  it('stays silent after being quiet when the viewer turned music off', async () => {
     const { music, player, urls } = setup('false');
-    music.setTrack('win');
+    music.setQuiet(true);
+    music.setQuiet(false);
     await settle();
     expect(player.plays).toBe(0);
     expect(urls).toEqual([]);
@@ -125,6 +128,22 @@ describe('MusicService', () => {
 
 describe('SoundEffects', () => {
   afterEach(() => localStorage.clear());
+
+  it('plays the win sound as a sound effect, at the music\'s modest volume, whatever the music switch says', () => {
+    const { player, urls } = setup('false');
+    TestBed.inject(SoundEffects).play('win');
+    expect(urls).toEqual([EFFECT_URLS.win]);
+    expect(EFFECT_URLS.win).toBe('/audio/effects/win.ogg');
+    expect(player.plays).toBe(1);
+    expect(player.volume).toBeLessThan(0.5);
+  });
+
+  it('keeps the win sound silent when the sound effects are off, even with the music on', () => {
+    const { player, urls } = setup(undefined, 'false');
+    TestBed.inject(SoundEffects).play('win');
+    expect(urls).toEqual([]);
+    expect(player.plays).toBe(0);
+  });
 
   it('plays the injure and heal sounds, a fresh player each time', () => {
     const { player, urls } = setup();

@@ -1,10 +1,10 @@
 import { DestroyRef, Injectable, InjectionToken, inject, signal } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 
-export type MusicTrack = 'background' | 'win';
-export const TRACK_URLS: Record<MusicTrack, string> = { background: '/audio/music/background.ogg', win: '/audio/music/win.ogg' };
-export type SoundEffect = 'injure' | 'injure-hard' | 'injure-element' | 'chained' | 'heal' | 'weapon' | 'armor' | 'mount' | 'death-wei' | 'death-shu' | 'death-wu' | 'death-qun';
+export const MUSIC_URL = '/audio/music/background.ogg';
+export type SoundEffect = 'win' | 'injure' | 'injure-hard' | 'injure-element' | 'chained' | 'heal' | 'weapon' | 'armor' | 'mount' | 'death-wei' | 'death-shu' | 'death-wu' | 'death-qun';
 export const EFFECT_URLS: Record<SoundEffect, string> = {
+  win: '/audio/effects/win.ogg',
   injure: '/audio/effects/injure.ogg',
   'injure-hard': '/audio/effects/injure-hard.ogg',
   'injure-element': '/audio/effects/injure-element.ogg',
@@ -78,6 +78,8 @@ export const voiceUrl = (gender: VoiceGender, voice: Voice): string => `/audio/v
 // Music sits well under the event sounds so an injury or a heal always stands out.
 const MUSIC_VOLUME = 0.2;
 const EFFECT_VOLUME = 0.8;
+// The win jingle was music and keeps its modest volume now that it is a sound effect.
+const EFFECT_VOLUMES: Partial<Record<SoundEffect, number>> = { win: MUSIC_VOLUME };
 const MUSIC_KEY = 'music-enabled';
 const EFFECTS_KEY = 'effects-enabled';
 
@@ -96,16 +98,15 @@ export const MUSIC_PLAYER_FACTORY = new InjectionToken<(url: string) => MusicPla
   factory: () => (url: string) => new Audio(url),
 });
 
-// The app's music: the background track on a loop, swapped for the win track
-// (played once) when a game is won (setTrack). On unless the viewer
-// switched it off (remembered in this browser). Browsers refuse sound before
-// the first interaction, so a refused start waits for the first click or key.
+// The app's music: the background track on a loop, quiet while a game is won (setQuiet; the win sound is a sound effect,
+// so the effects switch owns it). On unless the viewer switched it off (remembered in this browser). Browsers refuse
+// sound before the first interaction, so a refused start waits for the first click or key.
 @Injectable({ providedIn: 'root' })
 export class MusicService {
   private readonly document = inject(DOCUMENT);
   private readonly createPlayer = inject(MUSIC_PLAYER_FACTORY);
-  private readonly players = new Map<MusicTrack, MusicPlayer>();
-  private track: MusicTrack = 'background';
+  private player: MusicPlayer | undefined;
+  private quiet = false;
   private readonly unlockEvents = ['pointerdown', 'keydown'] as const;
   private readonly unlock = () => this.resume();
 
@@ -128,32 +129,33 @@ export class MusicService {
       this.resume();
     } else {
       this.stopWaitingForUnlock();
-      this.players.get(this.track)?.pause();
+      this.player?.pause();
       this.playing.set(false);
     }
   }
 
-  // Switches to `track`, restarting it from the top; the old one stops.
-  setTrack(track: MusicTrack): void {
-    if (track === this.track) return;
-    this.players.get(this.track)?.pause();
-    this.track = track;
-    this.playing.set(false);
-    const next = this.players.get(track);
-    if (next && next.currentTime !== undefined) next.currentTime = 0;
-    this.resume();
+  // Pauses the music while quiet (the game-over screen) and picks it up again afterwards.
+  setQuiet(quiet: boolean): void {
+    if (quiet === this.quiet) return;
+    this.quiet = quiet;
+    if (quiet) {
+      this.stopWaitingForUnlock();
+      this.player?.pause();
+      this.playing.set(false);
+    } else {
+      this.resume();
+    }
   }
 
   private resume(): void {
-    if (!this.enabled() || this.playing()) return;
-    const track = this.track;
-    const player = this.players.get(track) ?? this.makePlayer(track);
-    this.players.set(track, player);
+    if (!this.enabled() || this.quiet || this.playing()) return;
+    const player = this.player ?? this.makePlayer();
+    this.player = player;
     // play() may return nothing on old engines; treat that as started.
     Promise.resolve(player.play()).then(
       () => {
-        // Switched off, or switched to another track, while the browser was still starting it.
-        if (!this.enabled() || this.track !== track) return player.pause();
+        // Switched off, or gone quiet, while the browser was still starting it.
+        if (!this.enabled() || this.quiet) return player.pause();
         this.playing.set(true);
         this.stopWaitingForUnlock();
       },
@@ -161,10 +163,9 @@ export class MusicService {
     );
   }
 
-  private makePlayer(track: MusicTrack): MusicPlayer {
-    const player = this.createPlayer(TRACK_URLS[track]);
-    // The background track loops; the win track plays through once, then the screen stays quiet.
-    player.loop = track === 'background';
+  private makePlayer(): MusicPlayer {
+    const player = this.createPlayer(MUSIC_URL);
+    player.loop = true;
     player.volume = MUSIC_VOLUME;
     return player;
   }
@@ -193,7 +194,7 @@ export class SoundEffects {
   }
 
   play(effect: SoundEffect): void {
-    this.playUrl(EFFECT_URLS[effect]);
+    this.playUrl(EFFECT_URLS[effect], false, EFFECT_VOLUMES[effect]);
   }
 
   playVoice(gender: VoiceGender, voice: Voice): void {
@@ -216,10 +217,10 @@ export class SoundEffects {
     this.playUrl(url, true);
   }
 
-  private playUrl(url: string, always = false): void {
+  private playUrl(url: string, always = false, volume = EFFECT_VOLUME): void {
     if (!always && !this.enabled()) return;
     const player = this.createPlayer(url);
-    player.volume = EFFECT_VOLUME;
+    player.volume = volume;
     // A browser that refuses (no interaction yet) just misses this one effect.
     Promise.resolve(player.play()).catch(() => undefined);
   }

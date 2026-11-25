@@ -21,7 +21,7 @@ import { PlaybackSpeed } from '../playback-speed.service';
 import { PlaybackDirector } from './playback/playback-director';
 import { SeatTile } from './seat-tile';
 import { CompeteDialog } from './compete-dialog';
-import { MusicService } from '../music.service';
+import { MusicService, SoundEffects } from '../music.service';
 import { SpritePreload } from '../sprite-preload.service';
 import { Action, GameState, cardsOverHandLimit, createRng } from 'engine';
 import { GeneralSelection } from './general-selection';
@@ -1460,7 +1460,8 @@ describe('GameBoard battle playback', () => {
   it('waits for playback before Game Over (Review Focus 4)', () => {
     const other = playPhase();
     create();
-    const tracks = jest.spyOn(TestBed.inject(MusicService), 'setTrack');
+    const quiet = jest.spyOn(TestBed.inject(MusicService), 'setQuiet');
+    const sounds = jest.spyOn(TestBed.inject(SoundEffects), 'play');
     const winner = gameService.activeSeatId()!;
     update((s) => ({
       ...s,
@@ -1471,10 +1472,12 @@ describe('GameBoard battle playback', () => {
     const el = fixture.nativeElement as HTMLElement;
     expect(el.querySelector('app-game-over')).toBeNull();
     expect(el.querySelector('app-round-table')).not.toBeNull();
-    expect(tracks).not.toHaveBeenCalledWith('win');
+    expect(quiet).not.toHaveBeenCalledWith(true);
+    expect(sounds).not.toHaveBeenCalledWith('win');
     tick(1400 + 350);
     expect(el.querySelector('app-game-over')).not.toBeNull();
-    expect(tracks).toHaveBeenLastCalledWith('win');
+    expect(quiet).toHaveBeenLastCalledWith(true);
+    expect(sounds.mock.calls.filter(([effect]) => effect === 'win')).toHaveLength(1);
   });
 
   it('plays a sound with its beat, not with the batch', () => {
