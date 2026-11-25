@@ -1317,6 +1317,21 @@ export const en = {
   // Condenses rules.response.shaDamage.
   'tutorial.equipment.s8': 'That seat holds no Shan, so it passes and takes 1 damage. Without your Equipment the Sha could not have reached it.',
   'tutorial.equipment.s9': 'Equipment stays on until it is replaced or destroyed, and each seat wears at most one of each kind. Click a worn card at any time to read what it does.',
+  'tutorial.tools.title': 'Tools',
+  'tutorial.tools.summary': 'Play Steal and Break, two Tools that take cards from other seats.',
+  // Condenses rules.cardTypes.toolsText.
+  'tutorial.tools.s1': 'Steal and Break are Tools. A Tool is played from your hand for a special effect, and it can reach seats that Sha cannot.',
+  // Condenses rules.distance.range3.
+  'tutorial.tools.s2': 'Hover over Steal and press Play, then choose the seat next to you. Steal can only target a seat at distance 1.',
+  'tutorial.tools.s2p': 'Tap Steal, press Play, then choose the seat next to you. Steal can only target a seat at distance 1.',
+  'tutorial.tools.s3': 'Steal lets you pick the card to take. That seat holds one card in hand, so pick it and press Confirm.',
+  'tutorial.tools.s4': 'The card moved from that seat’s hand to yours. Steal takes a card, and Break only throws one away.',
+  'tutorial.tools.s5': 'Hover over Break and press Play, then choose the seat across from you. Break works at any distance.',
+  'tutorial.tools.s5p': 'Tap Break, press Play, then choose the seat across from you. Break works at any distance.',
+  'tutorial.tools.s6': 'That seat holds no card in hand, only a Weapon in front of it. Pick the Weapon and press Confirm.',
+  'tutorial.tools.s7': 'The Weapon went to the Discard Pile, and the Action History shows both Tools.',
+  'tutorial.tools.s7p': 'The Weapon went to the Discard Pile. Open History to see it and both Tools.',
+  'tutorial.tools.s8': 'Before a Tool takes effect, another seat may cancel it with Wuxie. Nobody held one here, so both worked. The next lesson shows how it is cancelled.',
   'tutorial.page.title': 'Tutorial',
   'tutorial.page.intro': 'Short lessons on the real board. A spotlight shows you what to do, one step at a time.',
   'tutorial.group.basics': 'Basics',

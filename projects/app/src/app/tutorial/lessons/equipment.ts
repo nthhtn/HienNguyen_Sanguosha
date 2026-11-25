@@ -1,7 +1,7 @@
 import { emptyHand, give, playableGame, revealGenerals, setGenerals, setTurn } from '../../scenario-kit/recipe';
 import { anchor } from '../anchors';
-import { ActionPattern, Lesson } from '../tutorial-types';
-import { definitionOf, passes } from './lesson-kit';
+import { Lesson } from '../tutorial-types';
+import { passes, playsCard } from './lesson-kit';
 
 const SEED = 7;
 const BEGINNER = 'seat-0';
@@ -13,15 +13,7 @@ const WEAPON = 'black-pommel';
 const ARMOR = 'eight-trigrams';
 const MOUNT = 'red-hare';
 
-// The beginner plays the `definitionId` card from the hand (aimed at `targetSeatId` when it has a target).
-const plays = (definitionId: string, targetSeatId?: string): ActionPattern => ({
-  kind: 'PlayCardAction',
-  match: (a, s) =>
-    a.kind === 'PlayCardAction' &&
-    a.seatId === BEGINNER &&
-    definitionOf(s, a.cardInstanceId) === definitionId &&
-    (targetSeatId === undefined || (a.targets.length === 1 && a.targets[0].kind === 'seat' && a.targets[0].seatId === targetSeatId)),
-});
+const plays = (definitionId: string, targetSeatId?: string) => playsCard(BEGINNER, definitionId, targetSeatId);
 
 // A card's Play button shows on hover on a computer, so the card is ringed until it appears; on the phone the card is tapped first.
 const playTarget = (definitionId: string) => [anchor.playButton(definitionId), anchor.handCard(definitionId)];
