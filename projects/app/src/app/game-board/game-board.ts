@@ -1,4 +1,6 @@
 import { PhoneBoard } from './phone/phone-board';
+import { TutorialAnchor } from '../tutorial/tutorial-anchor';
+import { anchor } from '../tutorial/anchors';
 import { ScreenWakeLock } from '../screen-wake-lock.service';
 import { CdkTrapFocus } from '@angular/cdk/a11y';
 import { NgTemplateOutlet } from '@angular/common';
@@ -71,7 +73,7 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
   selector: 'app-game-board',
   // The board's own playback: it lives as long as the board does, and reads the board's GameService (online, the remote one).
   providers: [PlaybackDirector],
-  imports: [TPipe, TMsgPipe, DecisionBanner, RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, SelectionRoster, GameStartCountdown, DiscardPile, ActionHistoryPanel, BoardPanel, SmallScreenPrompt, PhoneBoard, CdkTrapFocus, NgTemplateOutlet, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
+  imports: [TPipe, TMsgPipe, TutorialAnchor, DecisionBanner, RevealGateOverlay, ActionList, PhaseIndicator, RoundTable, SeatTile, HandView, GameOver, GeneralSelection, SelectionRoster, GameStartCountdown, DiscardPile, ActionHistoryPanel, BoardPanel, SmallScreenPrompt, PhoneBoard, CdkTrapFocus, NgTemplateOutlet, RouterLink, MatButtonModule, MatIconModule, MatCardModule, MatProgressSpinnerModule],
   template: `
     <!-- On the phone board (fixed over the page) these must sit above it; elsewhere the wrapper adds nothing. -->
     <div class="banners">
@@ -185,7 +187,7 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
               }
             } @else {
             <div class="board">
-              <app-phase-indicator [state]="visible" [viewerSeatId]="viewerSeatId()" />
+              <app-phase-indicator [appTutorialAnchor]="anchor.phaseIndicator()" [state]="visible" [viewerSeatId]="viewerSeatId()" />
               <div class="board-grid">
                 <app-round-table class="battlefield" [reserveBottom]="seatReserve()" [state]="visible" [viewerSeatId]="viewerSeatId()!" [thinkingSeatId]="director.idle() ? gameService.botThinkingSeatId() : null" [botSeatIds]="gameService.botSeatIds()" [cues]="seatCueMap()" [damageEffects]="damageEffects()" [resolving]="resolving()">
                   @if (layout.panelAsOverlay()) {
@@ -223,8 +225,8 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
                 </section>
                 <!-- Bottom right: the action history, then the discard pile; same height. -->
                 @if (!layout.panelAsOverlay()) {
-                  <app-action-history class="history" [history]="actionHistory()" />
-                  <app-discard-pile class="discard" [cards]="discardPile()?.cards ?? []" [history]="discardHistory()" />
+                  <app-action-history class="history" [appTutorialAnchor]="anchor.actionHistory()" [history]="actionHistory()" />
+                  <app-discard-pile class="discard" [appTutorialAnchor]="anchor.discardPile()" [cards]="discardPile()?.cards ?? []" [history]="discardHistory()" />
                 }
               </div>
               @if (layout.panelAsOverlay() && layout.panelOpen()) {
@@ -324,6 +326,7 @@ import { NO_CENTRE, nextCentre, ResolutionCentre, SeatCue, seatCues } from './pl
   `,
 })
 export class GameBoard {
+  protected readonly anchor = anchor;
   protected readonly gameService = inject(GameService);
   private readonly router = inject(Router);
   private readonly dialog = inject(MatDialog);
@@ -527,6 +530,11 @@ export class GameBoard {
       const release = this.releaseCompete;
       this.releaseCompete = null;
       release?.();
+    });
+    // An action the Tutorial refused closed its window for nothing: the decision is still owed, so the window opens again.
+    effect(() => {
+      this.gameService.refusals();
+      untracked(() => this.reopenOwedDialogs());
     });
     effect(() => {
       const turn = this.startRevealDue();
@@ -806,6 +814,14 @@ export class GameBoard {
       const actions = (ids ?? []).map((id) => legal.find((a) => a.cardInstanceId === id)).filter((a): a is DiscardCardAction => !!a);
       if (actions.length > 0) this.gameService.submitAll(actions);
     });
+  }
+
+  private reopenOwedDialogs(): void {
+    if (this.startRevealDue() !== null) this.openStartRevealDialog();
+    const discards = this.discardsDue();
+    if (discards > 0) this.openDiscardDialog(discards);
+    const pendingId = this.responseDue();
+    if (pendingId) this.openResponseDialog(pendingId);
   }
 
   // The start of the viewer's turn: tick the hidden Generals to reveal, Confirm. The engine's one

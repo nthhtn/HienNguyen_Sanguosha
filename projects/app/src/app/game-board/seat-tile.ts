@@ -4,6 +4,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { Action, CardInstance, EQUIP_SLOTS, EquipSlot, Seat } from 'engine';
 import { abilityName, AMBITIONIST_ICON_URL, CHAIN_LEFT_URL, CHAIN_RIGHT_URL, equipSlotOf, generalDisplayData, hpIconUrls, kingdomBannerUrl } from 'content';
 import { cardIdDisplayName, seatForce, seatKingdomLabel } from '../labels';
+import { TutorialAnchor } from '../tutorial/tutorial-anchor';
+import { anchor } from '../tutorial/anchors';
 import { SeatAvatar } from './seat-avatar';
 import { AvatarSkill } from './avatar-skills';
 import { PlayingCard } from './playing-card';
@@ -26,10 +28,11 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
 // One seat at the round table, compact enough to sit on the table's rim.
 @Component({
   selector: 'app-seat-tile',
-  imports: [SeatAvatar, PlayingCard, SpriteEffect, MatIconModule, TPipe, TMsgPipe],
+  imports: [SeatAvatar, PlayingCard, SpriteEffect, MatIconModule, TPipe, TMsgPipe, TutorialAnchor],
   template: `
     <div
       class="tile"
+      [appTutorialAnchor]="anchor.seat(seat().id)"
       [class.turn-owner]="isTurnOwner()"
       [class.responding]="isResponding()"
       [class.eliminated]="seat().eliminated"
@@ -48,7 +51,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
         <img class="ambitionist-icon" [src]="ambitionistIcon" [alt]="'label.kingdom.Ambitionist' | t" />
       }
       <div class="sections">
-      <section class="panel general" [attr.aria-label]="'seat.generalAria' | t">
+      <section class="panel general" [appTutorialAnchor]="anchor.generals(seat().id)" [attr.aria-label]="'seat.generalAria' | t">
         <!-- Chained (Chains): a chain hangs from each top corner of the holder, with a text badge below. -->
         @if (seat().chained) {
           <img class="chain chain-left" [src]="chainLeft" alt="" aria-hidden="true" />
@@ -63,7 +66,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
             <span class="you">{{ 'seat.you' | t }}</span>
           }
         </div>
-        <div class="generals" [class.face-down]="seat().faceDown" [class.flip]="cue()?.reveal">
+        <div class="generals" [appTutorialAnchor]="anchor.generalInfo(seat().id)" [class.face-down]="seat().faceDown" [class.flip]="cue()?.reveal">
           @if (seat().generals; as generals) {
             <app-seat-avatar [generals]="generals" [skills]="skills()" (useSkill)="useSkill.emit($event)" />
           } @else {
@@ -106,7 +109,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
             <span class="silenced-badge">{{ (slot === 'main' ? 'seat.noSkillsMain' : 'seat.noSkillsDeputy') | t }}</span>
           }
         }
-        <div class="stats">
+        <div class="stats" [appTutorialAnchor]="anchor.hp(seat().id)">
           <span class="kingdom kingdom-{{ seat().allegiance === 'ambitionist' ? 'Ambitionist' : seat().kingdom }}">{{ kingdomName(seat()) }}</span>
           @if (hpIcons().length) {
             <span class="hp-icons">
@@ -293,6 +296,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
   `,
 })
 export class SeatTile {
+  protected readonly anchor = anchor;
   readonly seat = input.required<Seat>();
   readonly name = input.required<string>();
   readonly handCount = input.required<number>();

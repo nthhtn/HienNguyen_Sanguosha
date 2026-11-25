@@ -12,6 +12,7 @@ export const routes: Routes = [
   { path: 'setup', canActivate: [offlineOnly], loadComponent: () => import('./setup/setup').then((m) => m.Setup) },
   { path: 'game', canActivate: [offlineOnly], loadComponent: () => import('./game-board/game-board').then((m) => m.GameBoard) },
   // Never renders: the guard always redirects to /game or /setup.
+  { path: 'tutorial', canActivate: [offlineOnly], loadComponent: () => import('./tutorial/tutorial-page').then((m) => m.TutorialPage) },
   { path: 'play', canActivate: [offlineOnly, playRedirect], children: [] },
   { path: 'wiki', loadChildren: () => import('./wiki/wiki.routes').then((m) => m.WIKI_ROUTES) },
   { path: 'rooms', canActivate: [requireSignIn], loadComponent: () => import('./online/rooms-page').then((m) => m.RoomsPage) },

@@ -2,6 +2,8 @@ import { Component, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { TutorialAnchor } from '../tutorial/tutorial-anchor';
+import { anchor } from '../tutorial/anchors';
 import { CardArt } from './card-art';
 import { DecisionCountdown } from './decision-countdown';
 import { MinimizeButton } from './minimize-button';
@@ -26,7 +28,8 @@ export interface StartRevealDialogData {
 // first. The engine offers it as one ConfirmRevealsAction; at zero the clock confirms with none.
 @Component({
   selector: 'app-start-reveal-dialog',
-  imports: [MatDialogModule, MatButtonModule, MatIconModule, CardArt, DecisionCountdown, MinimizeButton, TPipe],
+  host: { 'data-tutorial': anchor.revealDialog() },
+  imports: [MatDialogModule, MatButtonModule, MatIconModule, CardArt, DecisionCountdown, MinimizeButton, TPipe, TutorialAnchor],
   template: `
     <div class="title-row">
       <h2 mat-dialog-title>{{ 'startReveal.title' | t }}</h2>
@@ -40,6 +43,7 @@ export interface StartRevealDialogData {
             <button
               type="button"
               class="general"
+              [appTutorialAnchor]="anchor.revealSlot(option.slot)"
               [class.checked]="chosen().has(option.slot)"
               [attr.aria-pressed]="chosen().has(option.slot)"
               [attr.data-slot]="option.slot"
@@ -56,10 +60,11 @@ export interface StartRevealDialogData {
     </mat-dialog-content>
     <app-decision-countdown class="timer" />
     <mat-dialog-actions align="end">
-      <button mat-flat-button type="button" class="confirm" (click)="confirm()">{{ 'ui.confirm' | t }}</button>
+      <button mat-flat-button type="button" class="confirm" [appTutorialAnchor]="anchor.revealConfirm()" (click)="confirm()">{{ 'ui.confirm' | t }}</button>
     </mat-dialog-actions>
   `,
   styles: `
+    :host { display: block; }
     .hint { margin: 0 0 12px; font: var(--mat-sys-body-medium); color: var(--mat-sys-on-surface-variant); }
     .generals { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
     .general {
@@ -75,6 +80,7 @@ export interface StartRevealDialogData {
   `,
 })
 export class StartRevealDialog {
+  protected readonly anchor = anchor;
   protected readonly data = inject<StartRevealDialogData>(MAT_DIALOG_DATA);
   private readonly dialogRef = inject<MatDialogRef<StartRevealDialog, Array<'main' | 'deputy'>>>(MatDialogRef);
 

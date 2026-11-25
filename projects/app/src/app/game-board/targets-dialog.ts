@@ -6,6 +6,8 @@ import { generalDisplayName, seatForce, seatName } from '../labels';
 import type { Force } from '../labels';
 import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
+import { TutorialAnchor } from '../tutorial/tutorial-anchor';
+import { anchor } from '../tutorial/anchors';
 import { SeatPortrait } from './seat-portrait';
 import { HpIcons } from '../hp-icons';
 
@@ -23,7 +25,7 @@ export interface TargetsDialogData {
 // Cancel. The engine checks the picks again when they are played.
 @Component({
   selector: 'app-targets-dialog',
-  imports: [MatButtonModule, MatDialogModule, SeatPortrait, HpIcons, TPipe],
+  imports: [MatButtonModule, MatDialogModule, SeatPortrait, HpIcons, TPipe, TutorialAnchor],
   template: `
     <h2 mat-dialog-title>{{ 'targets.title' | t }}</h2>
     <mat-dialog-content>
@@ -33,6 +35,7 @@ export interface TargetsDialogData {
           <button
             type="button"
             class="pk"
+            [appTutorialAnchor]="anchor.targetSeat(seat.id)"
             [attr.data-force]="seat.force"
             [class.picked]="picked().includes(seat.id)"
             [attr.aria-pressed]="picked().includes(seat.id)"
@@ -93,6 +96,7 @@ export interface TargetsDialogData {
   `,
 })
 export class TargetsDialog {
+  protected readonly anchor = anchor;
   protected readonly data = inject<TargetsDialogData>(MAT_DIALOG_DATA);
   protected readonly ref = inject<MatDialogRef<TargetsDialog, string[]>>(MatDialogRef);
   private readonly i18n = inject(I18n);

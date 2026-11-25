@@ -28,6 +28,11 @@
       <a mat-button class="nav-rules" routerLink="/wiki/rules" [class.active]="rulesActive()" [attr.aria-current]="rulesActive() ? 'page' : null" [attr.aria-label]="'nav.rules' | t">
         <mat-icon>menu_book</mat-icon><span class="label">{{ 'nav.rules' | t }}</span>
       </a>
+      @if (flags.playOffline) {
+        <a mat-button class="nav-tutorial" routerLink="/tutorial" [class.active]="tutorialActive()" [attr.aria-current]="tutorialActive() ? 'page' : null" [attr.aria-label]="'nav.tutorial' | t">
+          <mat-icon>school</mat-icon><span class="label">{{ 'nav.tutorial' | t }}</span>
+        </a>
+      }
     </nav>
     <span class="spacer"></span>
     @if (devPreview) {
@@ -132,6 +137,9 @@
       }
     }
     <a class="drawer-link" routerLink="/wiki/rules" [class.active]="rulesActive()" [attr.aria-current]="rulesActive() ? 'page' : null"><mat-icon>menu_book</mat-icon>{{ 'nav.rules' | t }}</a>
+    @if (flags.playOffline) {
+      <a class="drawer-link" routerLink="/tutorial" [class.active]="tutorialActive()" [attr.aria-current]="tutorialActive() ? 'page' : null"><mat-icon>school</mat-icon>{{ 'nav.tutorial' | t }}</a>
+    }
     @if (backgrounds.available()) {
       <div class="drawer-group drawer-battlefield">
         <div class="drawer-heading"><mat-icon>landscape</mat-icon>{{ 'nav.battlefield' | t }}</div>

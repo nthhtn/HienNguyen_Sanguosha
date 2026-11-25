@@ -20,6 +20,7 @@ projects/app/src/app/
   online/                    Rooms, Lobby, My Games, chat, SocketService, RemoteGameService, OnlineGame
   setup/                     the local Game Setup screen
   game-board/                the board, its dialogs and its view-model helpers
+  tutorial/                  the Tutorial: lessons as data, the spotlight overlay, anchors, progress
   wiki/                      per-deck Generals and card pages, and the Rules pages, built from content data
   i18n/                      the message catalogs, the I18n service, the t pipe, Vietnamese review status
 ```
@@ -34,6 +35,7 @@ the first bundle holds only the shell:
 | `/rooms`, `/rooms/:id`, `/my-games` | Open rooms, a room's lobby and online game, and finished games; all behind `requireSignIn` |
 | `/sign-in`, `/sign-up`, `/guest`, `/forgot-password`, `/reset-password` | Accounts |
 | `/wiki/...` | See "Wiki" below |
+| `/tutorial` | Five guided lessons on the real board; offline only (see "Tutorial") |
 
 The guard and the online pages import the engine and content code lazily, so
 those stay out of the initial bundle.
@@ -566,6 +568,42 @@ displays it.
 custom properties (`--force`, `--force-text`) and recolors the Material tokens,
 so a dialog needs no per-Force code. A decision dialog is themed by the
 deciding seat's Force; the Compete popup by the source General's.
+
+## Tutorial
+
+`/tutorial` teaches a beginner five short lessons on the real board, with a spotlight over the one control that matters. It lives in `projects/app/src/app/tutorial/`, is a lazy route behind `offlineOnly`, and imports no dev code.
+
+- **Lessons are data.** A `Lesson` (`tutorial-types.ts`) has an id, title and summary keys, a seat count, a `build(registry)` that returns the starting `GameState` (made with the scenario kit's recipe), and a list of `Step`s.
+  - The lessons are `generals`, `allegiance`, `turn`, `sha-shan` and `damage`, registered in `lessons/index.ts` and offered to the service through the `TUTORIAL_LESSONS` token.
+  - A `Step` has a text key, an optional spotlight `target`, an optional `phone` variant (its own target and wording), a completion rule and optional scripted bot moves.
+- **Completion rules.** Each step ends in one of three ways (`step-rules.ts`):
+  - **next:** The beginner presses Next.
+  - **action:** The beginner's own seat does one of the allowed `ActionPattern`s.
+  - **state:** The game reaches a state.
+- **Bots are scripted.** A `BotMove` picks from the legal actions the engine offers and never invents one. Each step has its own queue, and `nudgeBots()` asks the next bot to move.
+- **Two layers keep the rail tight.**
+  - **Rules layer:** `TutorialService` installs `TutorialHooks` on `GameService` (`allows`, `botMove`, `applied`), so the engine only ever receives actions the current step allows. Only seat 0's actions complete a step.
+  - **Overlay layer:** `TutorialOverlay` draws four blocker boxes and a ring, so a click outside the hole does nothing.
+  - **Above dialogs:** Dialogs open as popovers in the browser's top layer, where z-index ranks nothing. The overlay is a popover too (`TutorialTopLayer`) and goes to the top again whenever something is added to the CDK overlay container.
+- **Settling.** A short settle (`SETTLE_MS`) plus the playback gate (`PlaybackGate.idle`) hold the next step until the board has finished animating.
+- **Refusals reopen windows.** `GameService.refusals` counts actions the hooks refused. A board effect (`reopenOwedDialogs`) opens the Start, Discard or Response window again when the Tutorial refused what it closed on, so a wrong Confirm cannot leave a lesson stuck.
+- **Anchors.** The directive `[appTutorialAnchor]` sets `data-tutorial`. Ids come from the `anchor.*` builders in `anchors.ts` (seat, hp, generals, hand, hand card, play button, end phase, phase indicator, discard pile, action history, target seat, and the Start, Discard and Response windows). `isAnchorId` validates them.
+  - **Lists:** A `target` may list several ids (a card, then its Play button, then a seat in the menu); the ring goes to the first one on the page.
+  - **Missing anchors:** A step with no anchor on screen shows as a centred card. The medium layout has no Discard Pile or Action History anchor.
+  - **Zoom:** The viewer's own seat is shrunk with CSS `zoom`, and current browsers report such a rect in the element's own units. `anchor-rect.ts` probes the browser once and scales the rect back to screen units, so the ring sits on the seat.
+  - **Dialogs:** A dialog carries one whole-window anchor on its host element.
+- **Phone.** When `Layout.kind()` is `compact` the card and spotlight use each step's `phone` variant. The phone board has no Generals panel, so the Generals lesson uses phone wording. Its Discard Pile and Action History steps ring the History button (`anchor.historyButton()`), since both sit in the panel it opens.
+- **Progress.** `progress.ts` keeps the finished lesson ids in `localStorage` (`tutorial.completed`). The list marks them done, and the finished panel offers the next lesson.
+- **Page.** `TutorialPage` shows the lesson list, then the board and overlay while a lesson runs. Starting a lesson over a game in progress asks first (`TutorialReplaceDialog`), and leaving the page exits the Tutorial and discards its game.
+- **Text.** Every visible string is a `tutorial.*` or `nav.*` key in both catalogs. The Vietnamese is draft.
+
+### Adding a lesson
+
+1. Write the rules of what it teaches, then the lesson file in `lessons/` (a `Lesson` constant).
+2. Add the id to `LessonId` and the constant to `LESSONS`.
+3. Add the `tutorial.*` keys to `i18n/en.ts` and `i18n/vi.ts`.
+4. Add a spec that runs the lesson with `playLesson` (`lessons/play-lesson.testing.ts`). It fails with the step id when a scripted move or an allowed action is wrong.
+5. Register the id in the `REGISTERED` list of `lessons.spec.ts`.
 
 ## State: What the UI may keep
 

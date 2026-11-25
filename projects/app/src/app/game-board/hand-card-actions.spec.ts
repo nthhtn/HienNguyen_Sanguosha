@@ -36,3 +36,22 @@ describe('HandCardActions', () => {
     expect(open).toHaveBeenCalledWith(CardInfoDialog, expect.objectContaining({ data: expect.objectContaining({ card: peach }) }));
   });
 });
+
+describe('HandCardActions tutorial anchors', () => {
+  const state2 = { seats: [], players: [], zones: [] } as unknown as GameState;
+  const at = (seatId: string): Action => ({ kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'p1', targets: [{ kind: 'seat', seatId }] }) as Action;
+
+  afterEach(() => document.querySelector('.cdk-overlay-container')?.replaceChildren());
+
+  it('marks each target of the Play menu by its seat, so a step can spotlight the item to press', async () => {
+    const fixture = TestBed.createComponent(HandCardActions);
+    fixture.componentRef.setInput('vm', handCardViewModels([peach], [at('seat-1'), at('seat-3')], state2, registry, englishTranslator)[0]);
+    fixture.componentRef.setInput('state', state2);
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelector('button.play') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const items = [...document.querySelectorAll('.cdk-overlay-container button[mat-menu-item]')].map((b) => b.getAttribute('data-tutorial'));
+    expect(items).toEqual(['target-seat:seat-1', 'target-seat:seat-3']);
+  });
+});

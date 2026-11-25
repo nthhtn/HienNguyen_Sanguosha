@@ -351,3 +351,27 @@ From the Resolution Notice, picker and Judgment work (PR #62, 2026-11-09). The d
   - The repo's rule for new Vietnamese text (`npm run i18n:status`).
 - **Revisit when.**
   - A native speaker reviews the catalogs.
+
+### Tutorial: free play with hints
+
+- **What is missing.**
+  - The first Tutorial is a guided rail: The board is locked so only the highlighted control works.
+  - The alternative is free play: The beginner can click anywhere, the Tutorial shows hints, and it nudges them back when they wander.
+- **Why it waits.**
+  - The rail is predictable, and easier to build and test (decided 2026-11-25).
+  - Free play can reach situations a lesson never planned for.
+- **Revisit when.**
+  - The rail Tutorial is in use and beginners find it too restrictive.
+
+### Tutorial: not looked at by eye
+
+- **What is missing.**
+  - The Tutorial was checked in a browser by reading the DOM, not by looking at screenshots.
+  - The ring, the instruction card and the phone layouts (800 by 366) were measured, not seen.
+  - Mobile and tablet portrait sizes were not tried.
+  - On the phone, the History panel opens while the Discard Pile and Action History steps ring its button, and it has not been seen over the spotlight.
+  - Lessons 2 to 5 were walked only to their first action step; the full lessons are covered by the headless `playLesson` specs.
+- **Why it waits.**
+  - The browser pane available while building could not paint (screenshots timed out and animation frames ran about once a second).
+- **Revisit when.**
+  - Before the Tutorial is announced, or the next time `/tutorial` is opened in a visible browser.

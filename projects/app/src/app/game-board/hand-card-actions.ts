@@ -1,10 +1,12 @@
-import { Component, inject, input, output } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { Action, CardInstance, ContentRegistry, GameState, Target } from 'engine';
 import { actionLabel, targetLabel, targetingParts } from '../labels';
+import { TutorialAnchor } from '../tutorial/tutorial-anchor';
+import { anchor } from '../tutorial/anchors';
 import { TargetLabel } from './target-label';
 import { CardInfoDialog, CardInfoDialogData } from './card-info-dialog';
 import { TargetsDialog, TargetsDialogData } from './targets-dialog';
@@ -85,11 +87,11 @@ export function handCardViewModels(cards: CardInstance[], legal: Action[], state
 // Choose Targets window) and Info. On the card on tablets and computers; in the action column on the phone board.
 @Component({
   selector: 'app-hand-card-actions',
-  imports: [MatButtonModule, MatIconModule, MatMenuModule, TargetLabel, TPipe],
+  imports: [MatButtonModule, MatIconModule, MatMenuModule, TargetLabel, TPipe, TutorialAnchor],
   template: `
     @let v = vm();
       @if (v.template && v.besideTemplate.length > 0) {
-        <button mat-flat-button type="button" class="play" [matMenuTriggerFor]="withPick">
+        <button mat-flat-button type="button" class="play" [appTutorialAnchor]="playAnchor()" [matMenuTriggerFor]="withPick">
           <mat-icon>play_arrow</mat-icon> {{ 'hand.play' | t }}
         </button>
         <mat-menu #withPick="matMenu">
@@ -99,11 +101,11 @@ export function handCardViewModels(cards: CardInstance[], legal: Action[], state
           }
         </mat-menu>
       } @else if (v.template) {
-        <button mat-flat-button type="button" class="play" (click)="pickTargets(v)">
+        <button mat-flat-button type="button" class="play" [appTutorialAnchor]="playAnchor()" (click)="pickTargets(v)">
           <mat-icon>play_arrow</mat-icon> {{ 'hand.play' | t }}
         </button>
       } @else if (v.pairs) {
-        <button mat-flat-button type="button" class="play" [matMenuTriggerFor]="firsts">
+        <button mat-flat-button type="button" class="play" [appTutorialAnchor]="playAnchor()" [matMenuTriggerFor]="firsts">
           <mat-icon>play_arrow</mat-icon> {{ 'hand.play' | t }}
         </button>
         <mat-menu #firsts="matMenu">
@@ -119,19 +121,19 @@ export function handCardViewModels(cards: CardInstance[], legal: Action[], state
           </ng-template>
         </mat-menu>
       } @else if (v.confirmTargets || v.actions.length > 1) {
-        <button mat-flat-button type="button" class="play" [matMenuTriggerFor]="choices">
+        <button mat-flat-button type="button" class="play" [appTutorialAnchor]="playAnchor()" [matMenuTriggerFor]="choices">
           <mat-icon>play_arrow</mat-icon> {{ 'hand.play' | t }}
         </button>
         <mat-menu #choices="matMenu">
           @for (choice of v.actions; track choice.action) {
-            <button mat-menu-item type="button" (click)="played.emit(choice.action)"><app-target-label [label]="choice.label" [prefix]="choice.targeting?.prefix ?? null" [targets]="choice.targeting?.targets ?? []" [state]="state()" /></button>
+            <button mat-menu-item type="button" [appTutorialAnchor]="targetAnchor(choice.action)" (click)="played.emit(choice.action)"><app-target-label [label]="choice.label" [prefix]="choice.targeting?.prefix ?? null" [targets]="choice.targeting?.targets ?? []" [state]="state()" /></button>
           }
         </mat-menu>
       } @else if (v.actions.length > 0) {
         <button
           mat-flat-button
           type="button"
-          class="play"
+          class="play" [appTutorialAnchor]="playAnchor()"
           (click)="played.emit(v.actions[0].action)"
         >
           <mat-icon>play_arrow</mat-icon> {{ 'hand.play' | t }}
@@ -149,6 +151,15 @@ export class HandCardActions {
   readonly vm = input.required<HandCardViewModel>();
   readonly state = input.required<GameState>();
   readonly played = output<Action>();
+
+  // Every Play button of the card carries the same anchor, whichever way the card is played.
+  protected readonly playAnchor = computed(() => anchor.playButton(this.vm().card.definitionId));
+
+  // A menu item that plays the card on one seat, for a Tutorial step to spotlight once the menu has opened.
+  protected targetAnchor(action: Action): string | null {
+    const target = action.kind === 'PlayCardAction' && action.targets.length === 1 ? action.targets[0] : null;
+    return target?.kind === 'seat' ? anchor.targetSeat(target.seatId) : null;
+  }
 
   private readonly dialog = inject(MatDialog);
 
