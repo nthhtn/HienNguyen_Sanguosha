@@ -1269,6 +1269,19 @@ export const en = {
   'tutorial.turn.s4': 'Your hand limit equals your current HP. You hold more cards than that, so choose the extra ones to discard.',
   'tutorial.turn.s5': 'The cards you discarded go to the Discard Pile. Then your turn ends and the next seat begins its turn.',
   'tutorial.turn.s5p': 'The cards you discarded go to the Discard Pile, which you can open under History. Then your turn ends and the next seat begins its turn.',
+  'tutorial.shaShan.title': 'Sha and Shan',
+  'tutorial.shaShan.summary': 'Attack with Sha, answer with Shan and see how a response window works.',
+  // Condenses rules.response.sha1.
+  'tutorial.shaShan.s1': 'Cards in your hand do the work. Sha attacks a seat that is in range, and the seat next to you always is.',
+  'tutorial.shaShan.s2': 'Hover over Sha and press Play, then choose the seat next to you.',
+  'tutorial.shaShan.s2p': 'Tap Sha, press Play, then choose the seat next to you.',
+  // Condenses rules.response.sha2, rules.response.playsShan and rules.response.shaNoEffect.
+  'tutorial.shaShan.s3': 'A response window opens for the seat you attacked. It may play Shan or pass, and it plays Shan: the Sha has no effect and nothing is lost.',
+  'tutorial.shaShan.s4': 'The Action History records the Sha and the Shan, so you can always see what happened.',
+  'tutorial.shaShan.s5': 'Now end your Play Phase. The next seat takes its turn and will attack you.',
+  'tutorial.shaShan.s6': 'It is the next seat’s turn. Its Start, Judgment and Draw Phases pass by themselves, then it plays Sha on you.',
+  'tutorial.shaShan.s7': 'A response window opens for you. You may play Shan or pass: pick Shan, then press Confirm.',
+  'tutorial.shaShan.s8': 'Your Shan stopped the Sha, so nothing is lost. Any seat can answer a Sha this way.',
   'tutorial.next': 'Next',
   'tutorial.exit': 'Exit Tutorial',
 } satisfies Record<string, string>;
