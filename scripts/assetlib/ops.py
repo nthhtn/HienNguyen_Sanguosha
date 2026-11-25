@@ -1,4 +1,5 @@
 """What the build does to make one output. Pillow is imported inside the ops that need it, never here."""
+import json
 import shutil
 from pathlib import Path
 from typing import List, Optional
@@ -126,5 +127,8 @@ def _run(layout: Layout, output: Output) -> None:
         manifest = {effect: sheets.sheet_meta(frames_root / folder) for effect, folder in recipe['map'].items()}
         with open(dest, 'w', newline='\n') as handle:
             handle.write(sheets.sheets_json(manifest))
+    elif output.op == 'art-sets':
+        with open(dest, 'w', newline='\n') as handle:
+            handle.write(json.dumps(output.settings['index'], indent=2, ensure_ascii=False) + '\n')
     else:
         raise ValueError('unknown op {} for {}'.format(output.op, output.path))
