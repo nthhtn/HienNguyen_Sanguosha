@@ -172,7 +172,7 @@ describe('Kingdom Wars General art', () => {
     const fresh = kingdomWarsGeneralIds().filter((id) => !Object.prototype.hasOwnProperty.call(generalsData, id));
     expect(fresh).toHaveLength(9);
     for (const id of fresh) {
-      expect(generalSkinUrl(kingdomWarsGeneralId(id))).toMatch(/^\/images\/generals\/skins\/\w+\/\w+\.webp$/);
+      expect(generalSkinUrl(kingdomWarsGeneralId(id))).toMatch(/^\/images\/generals\/skins\/classic\/\w+\/\w+\.webp$/);
       const voice = generalDeathVoiceUrl(kingdomWarsGeneralId(id));
       expect(voice).toMatch(/^\/audio\/death\/generals\/\w+\/\w+\.ogg$/);
       expect(existsSync(join(__dirname, '../../assets', voice!.replace('/audio/', 'audio/')))).toBe(true);
@@ -263,7 +263,7 @@ describe('Starvation art', () => {
 describe('assetFile', () => {
   it('adds the extension its recipe ships to a reference without one', () => {
     expect(assetFile('effects/sheets/slash')).toBe('effects/sheets/slash.webp');
-    expect(assetFile('generals/skins/wei/caocao')).toBe('generals/skins/wei/caocao.webp');
+    expect(assetFile('generals/skins/classic/wei/caocao')).toBe('generals/skins/classic/wei/caocao.webp');
     expect(assetFile('generals/cards/wei/cao-cao')).toBe('generals/cards/wei/cao-cao.webp');
     expect(assetFile('playing-cards/full/tool/duel')).toBe('playing-cards/full/tool/duel.webp');
     expect(assetFile('playing-cards/cropped/tool/duel')).toBe('playing-cards/cropped/tool/duel.webp');
@@ -298,7 +298,7 @@ describe('shipped files', () => {
   });
 
   it('has a file for every skin', () => {
-    const missing = Object.entries(read('generals/skins/skins.json')).filter(([, skin]) => !existsSync(join(assets, assetFile(`generals/skins/${skin as string}`))));
+    const missing = Object.entries(read('generals/skins/skins.json')).filter(([, skin]) => !existsSync(join(assets, assetFile(`generals/skins/classic/${skin as string}`))));
     expect(missing.map(([id]) => id)).toEqual([]);
   });
 
@@ -314,7 +314,7 @@ describe('shipped files', () => {
 
 describe('generalFaceUrl', () => {
   it("gives the General's face crop, filed like its portrait", () => {
-    expect(generalFaceUrl('cao-cao')).toBe('/images/generals/faces/wei/caocao.webp');
+    expect(generalFaceUrl('cao-cao')).toBe('/images/generals/faces/classic/wei/caocao.webp');
   });
 
   it('maps a Kingdom Wars General through its base General', () => {
@@ -328,7 +328,7 @@ describe('generalFaceUrl', () => {
 
   it('has a built face crop for every portrait', () => {
     for (const skin of Object.values(skins as Record<string, string>)) {
-      expect(existsSync(join(__dirname, '../../assets/generals/faces', `${skin}.webp`))).toBe(true);
+      expect(existsSync(join(__dirname, '../../assets/generals/faces/classic', `${skin}.webp`))).toBe(true);
     }
   });
 });

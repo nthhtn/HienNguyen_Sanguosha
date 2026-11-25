@@ -39,6 +39,10 @@ export function croppedCardArtUrl(id: string): string | null {
 
 const GENERAL_SKINS: Record<string, string> = skins;
 
+// A portrait lives at generals/skins/<art set>/<force>/<pinyin>, a face at generals/faces/<art set>/....
+const skinFile = (set: string, skin: string): string => `generals/skins/${set}/${skin}`;
+const faceFile = (set: string, skin: string): string => `generals/faces/${set}/${skin}`;
+
 // A General's skin: the portrait used on the Play screen. A General with no
 // skin falls back to its crawled card art (the one the Wiki always shows).
 // A Kingdom Wars General uses its base General's art; one with none gets the placeholder.
@@ -48,14 +52,14 @@ export function generalSkinUrl(id: string): string | null {
     return generalSkinUrl(base) ?? GENERAL_PLACEHOLDER_ART_URL;
   }
   const skin = GENERAL_SKINS[id];
-  return skin ? `/images/${assetFile(`generals/skins/${skin}`)}` : cardArtUrl(id);
+  return skin ? `/images/${assetFile(skinFile('classic', skin))}` : cardArtUrl(id);
 }
 
 // A General's face, cut square from its portrait for the phone board's small tiles (asset-crops-faces.json), filed like
 // the portrait. Null for a General with no portrait, so the tile falls back to whatever art it has.
 export function generalFaceUrl(id: string): string | null {
   const skin = GENERAL_SKINS[isKingdomWarsGeneralId(id) ? baseGeneralId(id) : id];
-  return skin ? `/images/${assetFile(`generals/faces/${skin}`)}` : null;
+  return skin ? `/images/${assetFile(faceFile('classic', skin))}` : null;
 }
 
 // Generals whose skin has no death voice file yet.

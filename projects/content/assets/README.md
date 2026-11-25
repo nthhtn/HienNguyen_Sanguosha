@@ -36,7 +36,7 @@ One folder per kind of thing, kebab-case names throughout (the rules are in
 `docs/superpowers/specs/2026-11-06-assets-restructure-design.md`). The same paths appear
 under `../assets/`, except where noted.
 
-- `generals/` holds `skins/<force>/` (Play-screen portraits, mapped by `skins/skins.json`; the masters are PNG and ship as WebP, per `../asset-recipes.json`),
+- `generals/` holds `skins/<art set>/<force>/` (Play-screen portraits, in the art set `classic` for now, mapped by `skins/skins.json`, which stays set-less; the masters are PNG and ship as WebP, per `../asset-recipes.json`),
   `cards/<force>/` (full card art, shipped as WebP at most 320 px wide) and `special/` (face-down, placeholder and Ambitionist art).
 - `playing-cards/full/<card-type>/` holds the full card art, plus `back.jpg` beside it. There is
   no `cropped/` here: the Play-screen art in `../assets/playing-cards/cropped/` is cut from the
@@ -56,10 +56,11 @@ Run everything from the repository root. `npm run assets:build` rewrites only th
 whose master or recipe changed, so it is quick; commit the masters, the changed files in
 `assets/` and `assets/asset-lock.json` together.
 
-**Add a General.** Put the full-size skin at `generals/skins/<force>/<pinyin>.png` and the
+**Add a General.** Put the full-size skin at `generals/skins/classic/<force>/<pinyin>.png` (the classic portrait is required; other art sets are optional) and the
 death voice at `audio/death/generals/<force>/<pinyin>.ogg`, add the skin to
 `generals/skins/skins.json` (`"<general-id>": "<force>/<pinyin>"`) and a record to
-`manifest.json`, then build. The `add-general` skill does these steps.
+`manifest.json`, then build. The face crop on the phone board is optional: add
+`"classic/<force>/<pinyin>": [x, y, width, height]` to `../asset-crops-faces.json` to give the General one. The `add-general` skill does these steps.
 
 **Add a playing card.** Put the full art in `playing-cards/full/<card-type>/<id>.jpg`, add its
 crop box `"<card-type>/<id>": [x, y, width, height]` (pixels of the full image) to
