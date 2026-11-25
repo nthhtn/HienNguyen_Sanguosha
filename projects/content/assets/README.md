@@ -62,6 +62,15 @@ death voice at `audio/death/generals/<force>/<pinyin>.ogg`, add the skin to
 `manifest.json`, then build. The face crop on the phone board is optional: add
 `"classic/<force>/<pinyin>": [x, y, width, height]` to `../asset-crops-faces.json` to give the General one. The `add-general` skill does these steps.
 
+**Add an art set.** An art set is a named collection of alternate General portraits (the spec is
+`docs/superpowers/specs/2026-11-25-art-sets-design.md`).
+
+- **Masters:** Put the portraits at `generals/skins/<set>/<force>/<pinyin>.png`, using the same `<force>/<pinyin>` paths as `classic`. A set may cover only some Generals.
+- **Registry:** Add the set to `generals/skins/sets.json` with its English and Vietnamese names and its provenance. The order of the file is the order in the picker.
+- **Faces:** Optionally add `"<set>/<force>/<pinyin>": [x, y, width, height]` to `../asset-crops-faces.json` for each portrait that should have a face crop on the phone board. A portrait with no box simply has no face.
+- **Build:** Run `npm run assets:build`. It writes `assets/generals/skins/art-sets.json`, the coverage index the app reads, and stops if a folder and its registry entry disagree, a portrait is not in `skins.json`, or `classic` lacks a General.
+- **Commit:** The masters, the registry, the boxes, the changed files in `assets/` and `assets/asset-lock.json` go in together. The picker appears once a second set ships.
+
 **Add a playing card.** Put the full art in `playing-cards/full/<card-type>/<id>.jpg`, add its
 crop box `"<card-type>/<id>": [x, y, width, height]` (pixels of the full image) to
 `../asset-crops.json`, add the manifest record, then build. The build stops if a full card

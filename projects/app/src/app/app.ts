@@ -1,18 +1,15 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { CdkTrapFocus } from '@angular/cdk/a11y';
-import { Component, HostListener, computed, effect, inject, untracked } from '@angular/core';
+import { Component, HostListener, Injector, computed, effect, inject, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatDialog } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { DEV_PREVIEW } from './dev/dev-routes';
 import { BATTLEFIELD_BACKGROUNDS, BattlefieldBackgrounds } from './battlefield-background.service';
-import { ArtSets } from './art-sets.service';
-import { ArtSetsDialog } from './art-sets-dialog';
 import { AuthService } from './auth/auth.service';
 import { FEATURE_FLAGS } from './feature-flags';
 import { LanguageSwitcher } from './i18n/language-switcher';
@@ -63,8 +60,10 @@ export class App {
     },
   ];
 
-  protected readonly artSets = inject(ArtSets);
-  private readonly dialog = inject(MatDialog);
+  private readonly injector = inject(Injector);
+  // Whether more than one art set ships, so the picker is offered. Both it and the picker load after start-up: they need
+  // the content package, which would otherwise weigh on every first load.
+  protected readonly artSetsOffered = signal(false);
   protected readonly backgrounds = inject(BattlefieldBackgrounds);
   protected readonly backgroundOptions = BATTLEFIELD_BACKGROUNDS.map((value) => ({
     value,
@@ -85,9 +84,10 @@ export class App {
   protected readonly onlineActive = computed(() => /^\/(rooms|my-games)(\/|$|\?)/.test(this.url()));
 
   // The picker is offered from the bar, and from the drawer on a phone, which closes behind it.
-  protected openArtSets(): void {
+  protected async openArtSets(): Promise<void> {
     this.layout.closeNav();
-    this.dialog.open(ArtSetsDialog);
+    const { openArtSetsDialog } = await import('./art-sets-dialog');
+    openArtSetsDialog(this.injector);
   }
 
   protected deckActive(route: string): boolean {
@@ -115,6 +115,7 @@ export class App {
     });
     this.music.start();
     void this.auth.load();
+    void import('./art-sets.service').then(({ ArtSets }) => this.artSetsOffered.set(this.injector.get(ArtSets).multiple));
   }
 
   @HostListener('document:keydown.escape')

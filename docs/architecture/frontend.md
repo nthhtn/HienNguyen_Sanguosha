@@ -567,6 +567,16 @@ custom properties (`--force`, `--force-text`) and recolors the Material tokens,
 so a dialog needs no per-Force code. A decision dialog is themed by the
 deciding seat's Force; the Compete popup by the source General's.
 
+### Art sets
+
+A viewer chooses which art set the General portraits come from. Nothing about it reaches the engine, the server or other players.
+
+- **Service:** `ArtSets` (`art-sets.service.ts`) holds the global set and per-General overrides as signals and stores them in `localStorage` (`art-set`, `art-set-overrides`). Stored values the catalog no longer supports are dropped on read, and blocked storage only means the choice is not remembered.
+- **Choice:** `ArtSets.choice()` is an `ArtChoice`. Every portrait call site passes it to `generalSkinUrl` or `generalFaceUrl`: `SeatAvatar`, `SeatPortrait`, `CardArt` (with `skin`), `PhoneSeatTile`, `SeatDetailsDialog` and the Rules Wiki's `SceneSeat`.
+- **Fallback:** A set that lacks a General falls back to `classic`. A face comes only from the set that supplied the portrait, so a set with no face crop shows its portrait on the phone tile.
+- **Picker:** `ArtSetsDialog` (a global radio per set and a per General override list), opened from the toolbar button or the phone drawer. Both entries are hidden while only one set ships.
+- **Tests:** `ART_SET_CATALOG_TOKEN` replaces the catalog, and `provideFakeArtSets()` (`art-sets.testing.ts`) supplies a second, partial set.
+
 ## State: What the UI may keep
 
 | Kept by the UI | Kept only by the engine |

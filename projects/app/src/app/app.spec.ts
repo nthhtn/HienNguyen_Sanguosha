@@ -192,19 +192,26 @@ describe('App', () => {
   });
 
   describe('art sets', () => {
+    // The entry and the picker load after start-up (a dynamic import), so a test lets that settle first.
+    const settle = async (fixture: { detectChanges(): void }) => {
+      await new Promise((resolve) => setTimeout(resolve));
+      fixture.detectChanges();
+    };
+
     it('offers no Art Sets entry while only one set ships', async () => {
-      const { el } = await render();
+      const { el, fixture } = await render();
+      await settle(fixture);
       expect(el.querySelector('button.nav-art-sets')).toBeNull();
     });
 
     it('has an Art Sets button in the toolbar that opens the picker, when more than one set ships', async () => {
       TestBed.overrideProvider(ART_SET_CATALOG_TOKEN, { useValue: fakeCatalog() });
       const { el, fixture } = await render();
+      await settle(fixture);
       const button = el.querySelector('button.nav-art-sets') as HTMLButtonElement;
       expect(button.getAttribute('aria-label')).toBe('Art Sets');
       button.click();
-      fixture.detectChanges();
-      await fixture.whenStable();
+      await settle(fixture);
       expect(document.querySelector('app-art-sets-dialog')).not.toBeNull();
     });
   });
@@ -429,7 +436,10 @@ describe('App', () => {
     });
 
     it('lists Art Sets in the drawer only when more than one set ships, and closes the drawer when it opens the picker', async () => {
-      expect((await openDrawer()).drawer.querySelector('.drawer-art-sets')).toBeNull();
+      const single = await openDrawer();
+      await new Promise((resolve) => setTimeout(resolve));
+      single.fixture.detectChanges();
+      expect(single.drawer.querySelector('.drawer-art-sets')).toBeNull();
       TestBed.resetTestingModule();
       await TestBed.configureTestingModule({
         imports: [App],
@@ -440,12 +450,14 @@ describe('App', () => {
           provideRouter([{ path: 'setup', children: [] }]),
         ],
       }).compileComponents();
-      const { fixture, drawer } = await openDrawer();
-      const entry = drawer.querySelector('.drawer-art-sets button') as HTMLButtonElement;
+      const { fixture, el } = await openDrawer();
+      await new Promise((resolve) => setTimeout(resolve));
+      fixture.detectChanges();
+      const entry = el.querySelector('.nav-drawer .drawer-art-sets button') as HTMLButtonElement;
       expect(entry.textContent).toContain('Art Sets');
       entry.click();
+      await new Promise((resolve) => setTimeout(resolve));
       fixture.detectChanges();
-      await fixture.whenStable();
       expect(document.querySelector('app-art-sets-dialog')).not.toBeNull();
       expect(TestBed.inject(Layout).navOpen()).toBe(false);
     });

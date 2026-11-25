@@ -1,6 +1,6 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, Injector, computed, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { artSetName, DEFAULT_ART_SET, generalDisplayData, generalSkinUrl, setsCovering } from 'content';
 import { ArtSets } from './art-sets.service';
 import { I18n } from './i18n/i18n.service';
@@ -116,4 +116,9 @@ export class ArtSetsDialog {
         sets: setsCovering(id, catalog).map((set) => ({ id: set, name: artSetName(catalog.sets[set], locale) })),
       }));
   });
+}
+
+// Opens the picker. The app bar calls this through a dynamic import, so the dialog code and what it needs load only when asked for.
+export function openArtSetsDialog(injector: Injector): void {
+  injector.get(MatDialog).open(ArtSetsDialog);
 }

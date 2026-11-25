@@ -45,7 +45,7 @@
         }
       </mat-menu>
     }
-    @if (artSets.multiple) {
+    @if (artSetsOffered()) {
       <button mat-button type="button" class="nav-art-sets" (click)="openArtSets()" [attr.aria-label]="'nav.artSets' | t">
         <mat-icon>palette</mat-icon><span class="label">{{ 'nav.artSets' | t }}</span>
       </button>
@@ -145,7 +145,7 @@
         }
       </div>
     }
-    @if (artSets.multiple) {
+    @if (artSetsOffered()) {
       <div class="drawer-group drawer-art-sets">
         <button type="button" class="drawer-link" (click)="openArtSets()"><mat-icon>palette</mat-icon>{{ 'nav.artSets' | t }}</button>
       </div>
