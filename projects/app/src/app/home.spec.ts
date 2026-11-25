@@ -56,6 +56,14 @@ describe('Home', () => {
     expect(href(el, 'a.play-offline')).toBe('/setup');
   });
 
+  it('links the Tutorial only where offline play is on, since the lessons run on this device', () => {
+    expect(render().querySelector('a.tutorial')).toBeNull();
+    TestBed.resetTestingModule();
+    const el = render({ playOffline: true });
+    expect(href(el, 'a.tutorial')).toBe('/tutorial');
+    expect(el.querySelector('a.tutorial')!.textContent).toContain('Tutorial');
+  });
+
   it('shows the install card on a phone browser tab, and not on a computer', () => {
     expect(render().querySelector('.install')).toBeNull();
     TestBed.resetTestingModule();
