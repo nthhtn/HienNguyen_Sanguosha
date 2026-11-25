@@ -1243,4 +1243,6 @@ export const vi: Messages = {
   'tutorial.generals.s4': 'Đây là các lá bài trên tay bạn. Đến lượt mình, bạn đánh bài từ đây.',
   'tutorial.generals.s5': 'Bài đã dùng hoặc đã bỏ nằm trong Chồng bài bỏ.',
   'tutorial.generals.s6': 'Lịch sử hành động ghi lại mọi việc đã xảy ra, để bạn luôn theo kịp.',
+  'tutorial.next': 'Tiếp',
+  'tutorial.exit': 'Thoát hướng dẫn',
 };

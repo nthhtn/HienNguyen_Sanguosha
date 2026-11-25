@@ -1,0 +1,317 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { playableGame } from '../scenario-kit/recipe';
+import { DISPLAY_MODE_OVERRIDE } from '../display-mode-override';
+import { setWindowSize } from '../layout.testing';
+import { TutorialOverlay } from './tutorial-overlay';
+import { TUTORIAL_LESSONS, TutorialService } from './tutorial.service';
+import { Lesson, Step } from './tutorial-types';
+
+// Real catalog keys with known English text, standing in for lesson text: the overlay only shows what it is given.
+const step = (id: string, extra: Partial<Step> = {}): Step => ({ id, textKey: 'discard.pile', completes: { kind: 'next' }, ...extra });
+
+const STEPS: Step[] = [
+  step('hand', { target: 'hand' }),
+  step('plain'),
+  step('missing', { target: 'seat:seat-9' }),
+  step('phone', { target: 'hand', phone: { target: 'end-phase', textKey: 'history.title' } }),
+  step('end', { target: 'end-phase' }),
+];
+
+const lesson: Lesson = {
+  id: 'turn',
+  titleKey: 'discard.pile',
+  summaryKey: 'discard.pile',
+  seatCount: 2,
+  build: (registry) => playableGame(registry, 7, 2),
+  steps: STEPS,
+};
+
+// A lesson whose only step waits for the beginner to act, not for Next.
+const actionLesson: Lesson = {
+  ...lesson,
+  id: 'damage',
+  steps: [step('act', { target: 'end-phase', completes: { kind: 'action', allow: [{ kind: 'ConfirmRevealsAction' }] } })],
+};
+
+function rect(left: number, top: number, width: number, height: number): DOMRect {
+  return { left, top, width, height, right: left + width, bottom: top + height, x: left, y: top, toJSON: () => ({}) };
+}
+
+// A board element carrying an anchor, with a fixed box (jsdom does no layout).
+function anchored(id: string, box: DOMRect, parent: HTMLElement = document.body): HTMLElement {
+  const el = document.createElement('div');
+  el.setAttribute('data-tutorial', id);
+  el.getBoundingClientRect = () => box;
+  parent.appendChild(el);
+  return el;
+}
+
+describe('TutorialOverlay', () => {
+  let fixture: ComponentFixture<TutorialOverlay>;
+  let service: TutorialService;
+  let el: HTMLElement;
+
+  function create(): void {
+    TestBed.configureTestingModule({ providers: [{ provide: TUTORIAL_LESSONS, useValue: [lesson, actionLesson] }] });
+    service = TestBed.inject(TutorialService);
+    fixture = TestBed.createComponent(TutorialOverlay);
+    el = fixture.nativeElement as HTMLElement;
+  }
+  const show = (index = 0, id: 'turn' | 'damage' = 'turn') => {
+    service.start(id);
+    for (let i = 0; i < index; i++) service.next();
+    fixture.detectChanges();
+  };
+  const ring = () => el.querySelector<HTMLElement>('.ring');
+  const blockers = () => Array.from(el.querySelectorAll<HTMLElement>('.blocker'));
+  const text = () => el.querySelector('.card .text')!.textContent!.trim();
+  const nextFrame = () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+  beforeEach(() => {
+    setWindowSize(1000, 800);
+    document.body.replaceChildren();
+  });
+  afterEach(() => document.body.replaceChildren());
+
+  describe('with a target on screen', () => {
+    it('circles the target with a ring around its padded box and shows the step text', () => {
+      anchored('hand', rect(100, 100, 200, 50));
+      create();
+      show();
+      expect(text()).toBe('Discard Pile');
+      expect(ring()!.style.left).toBe('92px');
+      expect(ring()!.style.top).toBe('92px');
+      expect(ring()!.style.width).toBe('216px');
+      expect(ring()!.style.height).toBe('66px');
+    });
+
+    it('covers everything else with four blockers around the hole', () => {
+      anchored('hand', rect(100, 100, 200, 50));
+      create();
+      show();
+      expect(blockers().map((b) => [b.style.left, b.style.top, b.style.width, b.style.height])).toEqual([
+        ['0px', '0px', '1000px', '92px'],
+        ['0px', '158px', '1000px', '642px'],
+        ['0px', '92px', '92px', '66px'],
+        ['308px', '92px', '692px', '66px'],
+      ]);
+    });
+
+    it('finds a target inside a CDK overlay container as well as in the page', () => {
+      const container = document.createElement('div');
+      container.className = 'cdk-overlay-container';
+      document.body.appendChild(container);
+      anchored('end-phase', rect(400, 300, 100, 40), container);
+      create();
+      show(4);
+      expect(ring()!.style.left).toBe('392px');
+    });
+
+    it('ignores a click on a blocker: it does not reach the control underneath', () => {
+      const underneath = anchored('hand', rect(100, 100, 200, 50));
+      const clicked = jest.fn();
+      underneath.addEventListener('click', clicked);
+      create();
+      show();
+      blockers()[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      expect(clicked).not.toHaveBeenCalled();
+    });
+
+    it('catches pointer events with real boxes, not a pointer-events pass-through', () => {
+      anchored('hand', rect(100, 100, 200, 50));
+      create();
+      show();
+      for (const blocker of blockers()) expect(getComputedStyle(blocker).pointerEvents).not.toBe('none');
+      expect(getComputedStyle(ring()!).pointerEvents).toBe('none');
+      // The card is inside a layer that passes events through, so it must take them back for its buttons.
+      expect(getComputedStyle(el.querySelector('.card')!).pointerEvents).toBe('auto');
+    });
+
+    it('sits above the dialog layer', () => {
+      anchored('hand', rect(100, 100, 200, 50));
+      create();
+      show();
+      expect(Number(getComputedStyle(el.querySelector('.tutorial-overlay')!).zIndex)).toBeGreaterThan(2000);
+    });
+  });
+
+  describe('when the layout changes', () => {
+    it('moves the hole when the window is resized', () => {
+      const target = anchored('hand', rect(100, 100, 200, 50));
+      create();
+      show();
+      target.getBoundingClientRect = () => rect(300, 400, 200, 50);
+      window.dispatchEvent(new Event('resize'));
+      fixture.detectChanges();
+      expect(ring()!.style.left).toBe('292px');
+      expect(ring()!.style.top).toBe('392px');
+    });
+
+    it('moves the hole when the target moves with no resize (an animation, a scroll)', async () => {
+      const target = anchored('hand', rect(100, 100, 200, 50));
+      create();
+      show();
+      target.getBoundingClientRect = () => rect(500, 500, 200, 50);
+      await nextFrame();
+      await nextFrame();
+      fixture.detectChanges();
+      expect(ring()!.style.left).toBe('492px');
+    });
+
+    it('finds a target that appears after the step does', async () => {
+      create();
+      show();
+      expect(ring()).toBeNull();
+      anchored('hand', rect(100, 100, 200, 50));
+      await nextFrame();
+      await nextFrame();
+      fixture.detectChanges();
+      expect(ring()).not.toBeNull();
+    });
+
+    it('shows the step without a hole when the target leaves the screen', () => {
+      const target = anchored('hand', rect(100, 100, 200, 50));
+      create();
+      show();
+      target.getBoundingClientRect = () => rect(5000, 5000, 200, 50);
+      window.dispatchEvent(new Event('resize'));
+      fixture.detectChanges();
+      expect(ring()).toBeNull();
+      expect(blockers()).toHaveLength(1);
+      expect(el.querySelector('button.exit')).not.toBeNull();
+    });
+
+    it('scrolls a target that is off screen into view when its step starts', () => {
+      const target = anchored('hand', rect(100, 900, 200, 50));
+      const scrollIntoView = jest.fn();
+      target.scrollIntoView = scrollIntoView;
+      create();
+      show();
+      expect(scrollIntoView).toHaveBeenCalledWith({ block: 'nearest', inline: 'nearest' });
+    });
+
+    it('does not scroll a target that is already on screen', () => {
+      const target = anchored('hand', rect(100, 100, 200, 50));
+      const scrollIntoView = jest.fn();
+      target.scrollIntoView = scrollIntoView;
+      create();
+      show();
+      expect(scrollIntoView).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('without a target on this layout', () => {
+    it('shows a centred text card with one full blocker, and Exit works', () => {
+      create();
+      show(1);
+      expect(ring()).toBeNull();
+      expect(blockers().map((b) => [b.style.left, b.style.top, b.style.width, b.style.height])).toEqual([['0px', '0px', '1000px', '800px']]);
+      expect(el.querySelector('.card')!.getAttribute('data-side')).toBe('centre');
+      (el.querySelector('button.exit') as HTMLButtonElement).click();
+      expect(service.lesson()).toBeNull();
+    });
+
+    it('does the same for a target no element carries, and Next still works', () => {
+      create();
+      show(2);
+      expect(ring()).toBeNull();
+      expect(blockers()).toHaveLength(1);
+      const next = el.querySelector('button.next') as HTMLButtonElement;
+      expect(next.disabled).toBe(false);
+      next.click();
+      expect(service.step()!.id).toBe('phone');
+    });
+  });
+
+  describe('buttons', () => {
+    it('has Next and Exit Tutorial on a next step', () => {
+      anchored('hand', rect(100, 100, 200, 50));
+      create();
+      show();
+      expect(el.querySelector('button.next')!.textContent!.trim()).toBe('Next');
+      expect(el.querySelector('button.exit')!.textContent!.trim()).toBe('Exit Tutorial');
+    });
+
+    it('has only Exit Tutorial on a step that waits for the beginner to act', () => {
+      anchored('end-phase', rect(400, 300, 100, 40));
+      create();
+      show(0, 'damage');
+      expect(el.querySelector('button.next')).toBeNull();
+      expect(el.querySelector('button.exit')!.textContent!.trim()).toBe('Exit Tutorial');
+    });
+
+    it('Next moves to the next step', () => {
+      anchored('hand', rect(100, 100, 200, 50));
+      create();
+      show();
+      (el.querySelector('button.next') as HTMLButtonElement).click();
+      expect(service.step()!.id).toBe('plain');
+    });
+
+    it('Exit Tutorial leaves the lesson and the overlay disappears', () => {
+      anchored('hand', rect(100, 100, 200, 50));
+      create();
+      show();
+      (el.querySelector('button.exit') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      expect(service.lesson()).toBeNull();
+      expect(el.querySelector('.tutorial-overlay')).toBeNull();
+    });
+  });
+
+  it('shows nothing before a lesson starts and once it has finished', () => {
+    create();
+    fixture.detectChanges();
+    expect(el.querySelector('.tutorial-overlay')).toBeNull();
+    show(STEPS.length - 1);
+    expect(el.querySelector('.tutorial-overlay')).not.toBeNull();
+    service.next();
+    fixture.detectChanges();
+    expect(service.finished()).toBe(true);
+    expect(el.querySelector('.tutorial-overlay')).toBeNull();
+  });
+
+  describe('on the phone board', () => {
+    function createCompact(): void {
+      // The installed app held sideways, between the phone board's size and the medium layout's.
+      setWindowSize(800, 400);
+      TestBed.configureTestingModule({
+        providers: [
+          { provide: TUTORIAL_LESSONS, useValue: [lesson, actionLesson] },
+          { provide: DISPLAY_MODE_OVERRIDE, useValue: 'standalone' },
+        ],
+      });
+      service = TestBed.inject(TutorialService);
+      fixture = TestBed.createComponent(TutorialOverlay);
+      el = fixture.nativeElement as HTMLElement;
+    }
+
+    it('uses a step’s phone target and phone text', () => {
+      anchored('hand', rect(10, 10, 100, 40));
+      anchored('end-phase', rect(600, 300, 100, 40));
+      createCompact();
+      show(3);
+      expect(text()).toBe('Action History');
+      expect(ring()!.style.left).toBe('592px');
+    });
+
+    it('falls back to the step’s own target and text where it has no phone variant', () => {
+      anchored('hand', rect(10, 10, 100, 40));
+      createCompact();
+      show(0);
+      expect(text()).toBe('Discard Pile');
+      expect(ring()!.style.left).toBe('2px');
+    });
+  });
+
+  describe('on the wide board', () => {
+    it('ignores a step’s phone variant', () => {
+      anchored('hand', rect(10, 10, 100, 40));
+      anchored('end-phase', rect(600, 300, 100, 40));
+      create();
+      show(3);
+      expect(text()).toBe('Discard Pile');
+      expect(ring()!.style.left).toBe('2px');
+    });
+  });
+});

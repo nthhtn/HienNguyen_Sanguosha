@@ -1248,4 +1248,6 @@ export const en = {
   'tutorial.generals.s4': 'These are your cards, your hand. On your turn you play them from here.',
   'tutorial.generals.s5': 'Cards that were used or thrown away go to the Discard Pile.',
   'tutorial.generals.s6': 'The Action History lists everything that happens, so you can always catch up.',
+  'tutorial.next': 'Next',
+  'tutorial.exit': 'Exit Tutorial',
 } satisfies Record<string, string>;
