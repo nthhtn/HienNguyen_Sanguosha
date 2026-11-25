@@ -710,6 +710,24 @@ describe('GameService tutorial hooks', () => {
     expect(service.botThinkingSeatId()).toBeNull();
   });
 
+  it('nudgeBots sets a bot that was left waiting going again once botMove has a move for it', () => {
+    start();
+    service.submit(service.legalActions()[0]);
+    const before = service.state()!;
+    let script: Action | null = null;
+    const botMove = jest.fn(() => script);
+    service.setTutorialHooks({ allows: () => true, botMove, applied: jest.fn() });
+    service.startFromState(before, 'vs-bots');
+    jest.runOnlyPendingTimers();
+    expect(service.state()).toBe(before);
+
+    script = getLegalActions(before, 'seat-1', service.registry)[0];
+    service.nudgeBots();
+    jest.runOnlyPendingTimers();
+
+    expect(service.state()).not.toBe(before);
+  });
+
   it('discardGame empties the game and cancels a pending bot move', () => {
     start();
     service.submit(service.legalActions()[0]);

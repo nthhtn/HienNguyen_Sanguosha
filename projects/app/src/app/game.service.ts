@@ -227,6 +227,11 @@ export class GameService {
     this._tutorialActive.set(hooks !== null);
   }
 
+  // A bot left waiting (the Tutorial had no move scripted for it) tries again, as a new step may script one.
+  nudgeBots(): void {
+    this.scheduleBotIfDue();
+  }
+
   // The Tutorial leaves: no game stays behind, so nothing offers it as a game in progress.
   discardGame(): void {
     this.stop();
