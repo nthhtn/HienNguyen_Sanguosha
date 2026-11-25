@@ -226,14 +226,14 @@ describe('PhoneBoard', () => {
     });
 
     it('anchors each seat’s equipment and judgment boxes, and the chain mark of a chained seat', () => {
-      const seats = testSeats(4).map((s) => (s.id === 'seat-1' ? { ...s, chained: true } : s));
+      const seats = testSeats(4).map((s) => (s.id === 'seat-1' ? { ...s, chained: true as const } : s));
       const base = state(seats);
       const withCards: GameState = {
         ...base,
         zones: [
           ...base.zones,
-          { id: 'seat-1:equip', kind: 'equipment', ownerSeatId: 'seat-1', cards: [{ instanceId: 'w1', definitionId: 'crossbow', suit: 'club', rank: 1 }] } as CardZone,
-          { id: 'seat-1:judgment', kind: 'judgment', ownerSeatId: 'seat-1', cards: [{ instanceId: 'j1', definitionId: 'starvation', suit: 'spade', rank: 10 }] } as CardZone,
+          { id: 'seat-1:equip', kind: 'equip', ownerSeatId: 'seat-1', cards: [{ instanceId: 'w1', definitionId: 'crossbow', suit: 'club', rank: 1 }] },
+          { id: 'seat-1:judgment', kind: 'judgment', ownerSeatId: 'seat-1', cards: [{ instanceId: 'j1', definitionId: 'starvation', suit: 'spade', rank: 10 }] },
         ],
       };
       const fixture = TestBed.createComponent(PhoneBoard);
