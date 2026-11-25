@@ -316,6 +316,67 @@ describe('TutorialOverlay', () => {
     });
   });
 
+  describe('while the beginner has nothing to do', () => {
+    // A step the game completes by itself (a bot moves, a popup closes): the board is the thing to watch, so nothing is dimmed.
+    const waiting = (id: string, extra: Partial<Step> = {}): Lesson => ({
+      ...lesson,
+      id: 'sha-shan',
+      steps: [step(id, { completes: { kind: 'state', reached: () => false }, ...extra })],
+    });
+    const waitingAck = (): Lesson => ({
+      ...lesson,
+      id: 'sha-shan',
+      steps: [step('ack', { target: 'judgment-dialog', completes: { kind: 'action', allow: [{ kind: 'AcknowledgeJudgmentAction' }] } })],
+    });
+    function createWith(l: Lesson): void {
+      TestBed.configureTestingModule({ providers: [{ provide: TUTORIAL_LESSONS, useValue: [l] }] });
+      service = TestBed.inject(TutorialService);
+      fixture = TestBed.createComponent(TutorialOverlay);
+      el = fixture.nativeElement as HTMLElement;
+      service.start('sha-shan');
+      fixture.detectChanges();
+    }
+
+    it('rings the target but dims nothing, and still shows the text and Exit', () => {
+      anchored('hand', rect(100, 100, 200, 50));
+      createWith(waiting('wait', { target: 'hand' }));
+      expect(ring()).not.toBeNull();
+      expect(blockers()).toHaveLength(0);
+      expect(text()).toBe('Discard Pile');
+      expect(el.querySelector('button.exit')).not.toBeNull();
+      expect(el.querySelector('button.next')).toBeNull();
+    });
+
+    it('dims nothing when there is no target either', () => {
+      createWith(waiting('wait'));
+      expect(ring()).toBeNull();
+      expect(blockers()).toHaveLength(0);
+      expect(el.querySelector('.card')).not.toBeNull();
+    });
+
+    it('dims nothing while the judgment popup closes by itself', () => {
+      anchored('judgment-dialog', rect(300, 200, 400, 300));
+      createWith(waitingAck());
+      expect(ring()).not.toBeNull();
+      expect(blockers()).toHaveLength(0);
+    });
+
+    it('lets a click through to the board: the overlay layer itself catches nothing', () => {
+      anchored('hand', rect(100, 100, 200, 50));
+      createWith(waiting('wait', { target: 'hand' }));
+      const layer = el.querySelector<HTMLElement>('.tutorial-overlay')!;
+      expect(layer.style.pointerEvents).toBe('none');
+      expect(el.querySelectorAll('.blocker')).toHaveLength(0);
+    });
+
+    it('still dims on a step that waits for the beginner to act', () => {
+      anchored('end-phase', rect(400, 300, 100, 40));
+      create();
+      show(0, 'damage');
+      expect(blockers()).toHaveLength(4);
+    });
+  });
+
   describe('buttons', () => {
     it('has Next and Exit Tutorial on a next step', () => {
       anchored('hand', rect(100, 100, 200, 50));

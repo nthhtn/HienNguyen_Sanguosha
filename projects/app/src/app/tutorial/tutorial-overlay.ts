@@ -5,6 +5,7 @@ import { TPipe } from '../i18n/t.pipe';
 import type { MessageKey } from '../i18n/messages';
 import { Layout } from '../layout.service';
 import { anchorBox } from './anchor-rect';
+import { isWaiting } from './step-rules';
 import { Box, Size, cardPlacement, holeBlockers, holeBox } from './spotlight-geometry';
 import { TutorialService } from './tutorial.service';
 
@@ -122,7 +123,13 @@ export class TutorialOverlay {
   private readonly box = signal<Box | null>(null, { equal: sameBox });
   private readonly cardSize = signal<Size>(CARD_GUESS, { equal: (a, b) => a.width === b.width && a.height === b.height });
 
+  // Nothing to click while a bot moves or a popup closes by itself, so nothing is dimmed and the board can be watched.
+  private readonly waiting = computed(() => {
+    const step = this.active();
+    return !!step && isWaiting(step);
+  });
   protected readonly blockers = computed<Box[]>(() => {
+    if (this.waiting()) return [];
     const viewport = this.viewport();
     const box = this.box();
     return box ? holeBlockers(box, viewport, PADDING) : [{ left: 0, top: 0, width: viewport.width, height: viewport.height }];

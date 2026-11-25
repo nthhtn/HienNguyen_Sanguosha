@@ -1,7 +1,7 @@
 import { buildContentRegistry } from 'content';
 import { Action, GameState } from 'engine';
 import { playableGame } from '../scenario-kit/recipe';
-import { allows, completedBy, reachedState } from './step-rules';
+import { allows, completedBy, isWaiting, reachedState } from './step-rules';
 import { Step } from './tutorial-types';
 
 const registry = buildContentRegistry();
@@ -103,5 +103,28 @@ describe('reachedState', () => {
     const act: Step = { ...base, completes: { kind: 'action', allow: [{ kind: 'EndPhaseAction' }] } };
     expect(reachedState(next, state)).toBe(false);
     expect(reachedState(act, state)).toBe(false);
+  });
+});
+
+describe('isWaiting', () => {
+  const state: Step = { ...base, completes: { kind: 'state', reached: () => true } };
+  const next: Step = { ...base, completes: { kind: 'next' } };
+  const ack: Step = { ...base, completes: { kind: 'action', allow: [{ kind: 'AcknowledgeJudgmentAction' }] } };
+
+  it('is true for a step the game completes by itself (a state step)', () => {
+    expect(isWaiting(state)).toBe(true);
+  });
+
+  it('is true for a step whose only move is the judgment popup closing by itself', () => {
+    expect(isWaiting(ack)).toBe(true);
+  });
+
+  it('is false for a step that waits for Next', () => {
+    expect(isWaiting(next)).toBe(false);
+  });
+
+  it('is false for a step that waits for the beginner to act', () => {
+    expect(isWaiting(playSha)).toBe(false);
+    expect(isWaiting({ ...ack, completes: { kind: 'action', allow: [{ kind: 'AcknowledgeJudgmentAction' }, { kind: 'EndPhaseAction' }] } })).toBe(false);
   });
 });
