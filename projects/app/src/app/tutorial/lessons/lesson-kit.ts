@@ -1,4 +1,5 @@
 import { Action, GameState } from 'engine';
+import type { ActionPattern } from '../tutorial-types';
 
 // Small readers and scripted-bot pickers the lessons share. A picker only chooses among the legal actions it is given.
 
@@ -33,3 +34,19 @@ export const isRespondWith =
   (definitionId: string) =>
   (action: Action, state: GameState): boolean =>
     action.kind === 'RespondAction' && definitionOf(state, action.cardInstanceId) === definitionId;
+
+// A bot's scripted pick: pass on its response window (it holds nothing that could answer).
+export const passes = (legal: Action[]): Action | undefined => legal.find((a) => a.kind === 'PassAction');
+
+// What a step lets `seatId` do: play the `definitionId` card from the hand, aimed at `targetSeatId` when it has a target.
+export const playsCard = (seatId: string, definitionId: string, targetSeatId?: string): ActionPattern => ({
+  kind: 'PlayCardAction',
+  match: (a, s) =>
+    a.kind === 'PlayCardAction' &&
+    a.seatId === seatId &&
+    definitionOf(s, a.cardInstanceId) === definitionId &&
+    (targetSeatId === undefined || (a.targets.length === 1 && a.targets[0].kind === 'seat' && a.targets[0].seatId === targetSeatId)),
+});
+
+// What a step lets `seatId` do: pick an option of the pick window it is facing (Steal, Break and the like).
+export const picksOption = (seatId: string): ActionPattern => ({ kind: 'ChooseOptionAction', match: (a) => a.seatId === seatId });

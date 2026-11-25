@@ -1,10 +1,12 @@
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { Component, DestroyRef, Directive, ElementRef, Injector, afterNextRender, computed, effect, inject, signal, untracked } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { PlaybackGate } from '../playback-gate.service';
 import { TPipe } from '../i18n/t.pipe';
 import type { MessageKey } from '../i18n/messages';
 import { Layout } from '../layout.service';
 import { anchorBox } from './anchor-rect';
+import { isWaiting } from './step-rules';
 import { Box, Size, cardPlacement, holeBlockers, holeBox } from './spotlight-geometry';
 import { TutorialService } from './tutorial.service';
 
@@ -64,15 +66,26 @@ export class TutorialTopLayer {
         @if (ring(); as r) {
           <div class="ring" style="pointer-events: none" [style.left.px]="r.left" [style.top.px]="r.top" [style.width.px]="r.width" [style.height.px]="r.height"></div>
         }
-        <section class="card" style="pointer-events: auto" role="status" aria-live="polite" [attr.data-side]="placement().side" [style.left.px]="placement().left" [style.top.px]="placement().top">
-          <p class="text">{{ textKey()! | t }}</p>
-          <div class="buttons">
+        @if (minimized()) {
+          <div class="minimized" style="pointer-events: auto" role="status">
+            <button mat-flat-button type="button" class="restore" (click)="minimized.set(false)">{{ 'tutorial.restore' | t }}</button>
             <button mat-button type="button" class="exit" (click)="tutorial.exit()">{{ 'tutorial.exit' | t }}</button>
             @if (active()!.completes.kind === 'next') {
-              <button mat-flat-button type="button" class="next" (click)="tutorial.next()">{{ 'tutorial.next' | t }}</button>
+              <button mat-button type="button" class="next" (click)="tutorial.next()">{{ 'tutorial.next' | t }}</button>
             }
           </div>
-        </section>
+        } @else {
+          <section class="card" [class.compact]="waiting()" style="pointer-events: auto" role="status" aria-live="polite" [attr.data-side]="placement().side" [style.left.px]="placement().left" [style.top.px]="placement().top">
+            <p class="text">{{ textKey()! | t }}</p>
+            <div class="buttons">
+              <button mat-button type="button" class="minimize" (click)="minimized.set(true)">{{ 'tutorial.minimize' | t }}</button>
+              <button mat-button type="button" class="exit" (click)="tutorial.exit()">{{ 'tutorial.exit' | t }}</button>
+              @if (active()!.completes.kind === 'next') {
+                <button mat-flat-button type="button" class="next" (click)="tutorial.next()">{{ 'tutorial.next' | t }}</button>
+              }
+            </div>
+          </section>
+        }
       </div>
     }
   `,
@@ -90,6 +103,14 @@ export class TutorialTopLayer {
       background: var(--mat-sys-surface-container-high, #fff); color: var(--mat-sys-on-surface, #000);
       box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
     }
+    /* A waiting step shrinks to a small, see-through note, so the board behind it stays in view. */
+    .card.compact { width: 240px; padding: 8px 12px; gap: 4px; border-radius: 12px; opacity: 0.85; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35); }
+    .compact .text { font-size: 0.85rem; line-height: 1.35; }
+    /* The card put away: two small buttons in the bottom-left corner, so the board is in full view. */
+    .minimized {
+      position: absolute; left: 8px; bottom: 8px; display: flex; gap: 4px; align-items: center; padding: 4px 6px; border-radius: 999px;
+      background: var(--mat-sys-surface-container-high, #fff); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35); opacity: 0.9;
+    }
     .text { margin: 0; font-size: 1rem; line-height: 1.45; }
     .buttons { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
   `,
@@ -98,6 +119,7 @@ export class TutorialOverlay {
   protected readonly zIndex = OVERLAY_Z_INDEX;
   protected readonly tutorial = inject(TutorialService);
   private readonly layout = inject(Layout);
+  private readonly gate = inject(PlaybackGate);
   private readonly host: ElementRef<HTMLElement> = inject(ElementRef);
 
   // The step on show: none before a lesson starts or once it has finished (the page then shows what comes next).
@@ -122,12 +144,23 @@ export class TutorialOverlay {
   private readonly box = signal<Box | null>(null, { equal: sameBox });
   private readonly cardSize = signal<Size>(CARD_GUESS, { equal: (a, b) => a.width === b.width && a.height === b.height });
 
+  // Nothing to click while a bot moves, the board plays an animation or a popup closes by itself, so nothing is dimmed, the note shrinks, and the board can be watched.
+  protected readonly waiting = computed(() => {
+    const step = this.active();
+    // Also while the board plays something out, whatever the step: the beginner is only watching then.
+    return !!step && (isWaiting(step) || !this.gate.idle());
+  });
+  // The beginner has put the card away to see the board; it stays away until they bring it back or another lesson starts.
+  protected readonly minimized = signal(false);
   protected readonly blockers = computed<Box[]>(() => {
+    if (this.waiting() || this.minimized()) return [];
     const viewport = this.viewport();
     const box = this.box();
     return box ? holeBlockers(box, viewport, PADDING) : [{ left: 0, top: 0, width: viewport.width, height: viewport.height }];
   });
+  // The ring stays on a waiting step: its target is what to watch (a judgment's result). Only a minimized card drops it.
   protected readonly ring = computed(() => {
+    if (this.minimized()) return null;
     const box = this.box();
     return box ? holeBox(box, this.viewport(), PADDING) : null;
   });
@@ -142,6 +175,11 @@ export class TutorialOverlay {
     effect(() => {
       const ids = this.targetIds();
       untracked(() => this.follow(ids));
+    });
+    // A new lesson starts with the card open; within a lesson it stays as the beginner left it.
+    effect(() => {
+      this.tutorial.lesson();
+      untracked(() => this.minimized.set(false));
     });
     window.addEventListener('resize', this.onChange);
     window.addEventListener('scroll', this.onChange, true);

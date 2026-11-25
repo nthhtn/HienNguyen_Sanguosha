@@ -25,6 +25,8 @@ export interface TargetsDialogData {
 // Cancel. The engine checks the picks again when they are played.
 @Component({
   selector: 'app-targets-dialog',
+  // A block, so the host has a box the Tutorial's spotlight can cut a hole around (an inline host has none).
+  host: { 'data-tutorial': anchor.targetsDialog(), style: 'display: block' },
   imports: [MatButtonModule, MatDialogModule, SeatPortrait, HpIcons, TPipe, TutorialAnchor],
   template: `
     <h2 mat-dialog-title>{{ 'targets.title' | t }}</h2>

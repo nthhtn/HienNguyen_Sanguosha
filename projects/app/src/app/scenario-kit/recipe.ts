@@ -89,6 +89,27 @@ export function give(state: GameState, seatId: string, definitionIds: string[]):
   return definitionIds.reduce((s, id) => moveByDefinition(s, id, zoneId), state);
 }
 
+// Gives the seat `count` cards of `definitionId`. A real card is moved when one is left in the draw or discard pile (never one
+// another seat holds); when there are fewer (a lesson that needs three Wuxie from a deck with one), a copy of a card of that kind is made.
+export function giveCopies(state: GameState, seatId: string, definitionId: string, count: number): GameState {
+  const zoneId = seatOf(state, seatId).hand.zoneId;
+  let current = state;
+  for (let i = 0; i < count; i++) {
+    if (current.zones.some((z) => (z.kind === 'drawPile' || z.kind === 'discardPile') && z.cards.some((c) => c.definitionId === definitionId))) {
+      current = moveByDefinition(current, definitionId, zoneId);
+      continue;
+    }
+    const template = current.zones.flatMap((z) => z.cards).find((c) => c.definitionId === definitionId);
+    if (!template) throw new Error(`No ${definitionId} card to copy`);
+    const taken = new Set(current.zones.flatMap((z) => z.cards.map((c) => c.instanceId)));
+    let n = 1;
+    while (taken.has(`${template.instanceId}-copy-${n}`)) n++;
+    const copy = { ...template, instanceId: `${template.instanceId}-copy-${n}` };
+    current = { ...current, zones: current.zones.map((z) => (z.id === zoneId ? { ...z, cards: [...z.cards, copy] } : z)) };
+  }
+  return current;
+}
+
 // Moves every card in the seat's hand to the discard pile, so the seat holds nothing that could answer a window.
 export function emptyHand(state: GameState, seatId: string): GameState {
   const hand = state.zones.find((z) => z.id === seatOf(state, seatId).hand.zoneId);

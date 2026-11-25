@@ -5,6 +5,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { I18n } from '../i18n/i18n.service';
 import type { MessageKey } from '../i18n/messages';
 import { TPipe } from '../i18n/t.pipe';
+import { anchor } from '../tutorial/anchors';
+import { TutorialAnchor } from '../tutorial/tutorial-anchor';
 import { Beat, BeatPlayback, playBeats, prefersReducedMotion } from './beat-player';
 import { AskPanel } from './ask-panel';
 import { CardArt } from './card-art';
@@ -36,7 +38,7 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
 // it on, and a language switch only changes the words.
 @Component({
   selector: 'app-judgment-stage',
-  imports: [MatButtonModule, NgTemplateOutlet, AskPanel, CardArt, DecisionCountdown, HpIcons, PlayingCard, SelectionPanel, TPipe],
+  imports: [MatButtonModule, NgTemplateOutlet, AskPanel, CardArt, DecisionCountdown, HpIcons, PlayingCard, SelectionPanel, TPipe, TutorialAnchor],
   template: `
     @let d = description();
     <div class="stage" [style.--verdict]="verdictColour()">
@@ -62,6 +64,7 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
         <p class="rule rise" [class.in]="ruleIn()">{{ rule }}</p>
       }
 
+      <div class="result" [appTutorialAnchor]="anchor.judgmentResult()">
       <div class="arena" [attr.aria-label]="'judgment.card' | t">
         <div class="slot">
           @for (c of cards(); track c.card.instanceId; let i = $index; let last = $last) {
@@ -164,6 +167,7 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
           }
         }
       </section>
+      </div>
     </div>
 
     <ng-template #decideArea let-dec>
@@ -202,6 +206,7 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
     .changes { position: absolute; width: 1px; height: 1px; margin: 0; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; list-style: none; }
     .rule { margin: 0; text-align: center; font: var(--mat-sys-body-medium); color: var(--mat-sys-on-surface-variant); }
 
+    .result { display: flex; flex-direction: column; gap: 14px; }
     .arena { display: flex; justify-content: center; align-items: center; gap: 34px; min-height: 120px; padding: 6px 0; }
     .slot { position: relative; width: 70px; height: 96px; flex: none; }
     .pc { position: absolute; inset: 0; perspective: 600px; opacity: 0; transform: translateY(-14px); transition: opacity 0.3s, transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
@@ -251,7 +256,7 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
     .line { margin: 0; font: var(--mat-sys-title-small); text-align: center; opacity: 0; transform: translateY(6px); transition: opacity 0.3s, transform 0.3s; }
     .line.in { opacity: 1; transform: none; }
     /* The phone board (spec 3g): the outcome box is only as tall as its contents, and the stage is tighter. */
-    :host-context([data-layout='compact']) .stage { gap: 8px; }
+    :host-context([data-layout='compact']) .stage, :host-context([data-layout='compact']) .result { gap: 8px; }
     :host-context([data-layout='compact']) .source { padding: 6px 12px; }
     :host-context([data-layout='compact']) .arena { min-height: 0; padding: 0; }
     :host-context([data-layout='compact']) .cons { min-height: 0; padding: 6px 12px; gap: 4px; }
@@ -263,6 +268,7 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
   `,
 })
 export class JudgmentStage implements OnInit {
+  protected readonly anchor = anchor;
   readonly description = input.required<JudgmentDescription>();
   // The skill decision the judgment is waiting on, as this viewer sees it, if any.
   readonly decision = input<JudgmentDecisionView | null>(null);

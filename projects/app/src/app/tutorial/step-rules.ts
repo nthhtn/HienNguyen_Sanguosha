@@ -17,3 +17,11 @@ export function completedBy(step: Step, action: Action, after: GameState): boole
 export function reachedState(step: Step, state: GameState): boolean {
   return step.completes.kind === 'state' && step.completes.reached(state);
 }
+
+// Whether the beginner has nothing to do on this step: the game completes it by itself (a scripted bot moves) or the only move
+// it allows is the judgment popup closing by itself. The overlay does not dim the board then, so it can be watched.
+export function isWaiting(step: Step): boolean {
+  const completes = step.completes;
+  if (completes.kind === 'state') return true;
+  return completes.kind === 'action' && completes.allow.length > 0 && completes.allow.every((p) => p.kind === 'AcknowledgeJudgmentAction');
+}

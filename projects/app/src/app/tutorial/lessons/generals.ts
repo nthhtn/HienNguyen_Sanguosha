@@ -11,6 +11,7 @@ const BEGINNER = 'seat-0';
 // Guo Jia face up (the Rules page's HP example: 4 + 3 = 7, half rounded down is 3).
 export const GENERALS_LESSON: Lesson = {
   id: 'generals',
+  group: 'basics',
   titleKey: 'tutorial.generals.title',
   summaryKey: 'tutorial.generals.summary',
   seatCount: 4,

@@ -111,14 +111,20 @@ describe('App', () => {
   });
 
   describe('with test-only features off', () => {
-    beforeEach(() => TestBed.overrideProvider(FEATURE_FLAGS, { useValue: { playOffline: false, playbackSettings: false, phoneBoard: false } }));
+    beforeEach(() => TestBed.overrideProvider(FEATURE_FLAGS, { useValue: { playOffline: false, playbackSettings: false, phoneBoard: false, tutorial: true } }));
 
     it('hides the playback speed setting', async () => {
       const { el } = await render('/rooms');
       expect(el.querySelector('button.playback-speed')).toBeNull();
     });
 
-    it('hides the Tutorial link, which needs offline play', async () => {
+    it('keeps the Tutorial link, which runs on this device whether or not offline play is on', async () => {
+      const { el } = await render('/rooms');
+      expect(el.querySelector('a.nav-tutorial')).not.toBeNull();
+    });
+
+    it('hides the Tutorial link when the Tutorial is off', async () => {
+      TestBed.overrideProvider(FEATURE_FLAGS, { useValue: { playOffline: false, playbackSettings: false, phoneBoard: false, tutorial: false } });
       const { el } = await render('/rooms');
       expect(el.querySelector('a.nav-tutorial')).toBeNull();
     });
@@ -366,7 +372,7 @@ describe('App', () => {
   });
 
   it('has no toolbar while the phone board is open, and the drawer still opens', async () => {
-    TestBed.overrideProvider(FEATURE_FLAGS, { useValue: { playOffline: true, playbackSettings: true, phoneBoard: true } });
+    TestBed.overrideProvider(FEATURE_FLAGS, { useValue: { playOffline: true, playbackSettings: true, phoneBoard: true, tutorial: true } });
     TestBed.overrideProvider(DISPLAY_MODE_OVERRIDE, { useValue: 'fullscreen' });
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 915 });
     Object.defineProperty(window, 'innerHeight', { configurable: true, value: 412 });

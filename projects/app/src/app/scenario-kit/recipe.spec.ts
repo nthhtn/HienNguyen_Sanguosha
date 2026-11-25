@@ -1,7 +1,7 @@
 import { buildContentRegistry } from 'content';
 import { GameState, getActiveSeatId } from 'engine';
 import { botNameDisplay } from 'content';
-import { emptyHand, freshGame, give, setGenerals, playCard, playableGame, setHp, setTurn, stepUntil, windowOf } from './recipe';
+import { emptyHand, freshGame, give, giveCopies, setGenerals, playCard, playableGame, setHp, setTurn, stepUntil, windowOf } from './recipe';
 
 const registry = buildContentRegistry();
 const game = () => playableGame(registry, 7, 4);
@@ -99,5 +99,37 @@ describe('dev recipe bot names', () => {
         expect(botNameDisplay(bot.botNameId!, 'vi')).not.toBe(botNameDisplay(bot.botNameId!, 'en'));
       }
     }
+  });
+});
+
+describe('dev recipe helper giveCopies', () => {
+  const registry = buildContentRegistry();
+  const handOf = (state: GameState, seatId: string) => state.zones.find((z) => z.id === `${seatId}:hand`)!.cards.map((c) => c.definitionId);
+  const allIds = (state: GameState) => state.zones.flatMap((z) => z.cards.map((c) => c.instanceId));
+
+  it('gives as many copies as asked, even when the deck holds fewer', () => {
+    const state = giveCopies(emptyHand(playableGame(registry, 7, 2), 'seat-0'), 'seat-0', 'wuxie', 3);
+    expect(handOf(state, 'seat-0')).toEqual(['wuxie', 'wuxie', 'wuxie']);
+  });
+
+  it('keeps every card instance id unique', () => {
+    const state = giveCopies(playableGame(registry, 7, 2), 'seat-0', 'wuxie', 3);
+    const ids = allIds(state);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('never takes a card another seat holds', () => {
+    let state = emptyHand(emptyHand(playableGame(registry, 7, 2), 'seat-0'), 'seat-1');
+    state = giveCopies(state, 'seat-0', 'wuxie', 1);
+    state = giveCopies(state, 'seat-1', 'wuxie', 1);
+    expect(handOf(state, 'seat-0')).toEqual(['wuxie']);
+    expect(handOf(state, 'seat-1')).toEqual(['wuxie']);
+  });
+
+  it('adds no card when the deck holds enough: it moves the real ones', () => {
+    const before = playableGame(registry, 7, 2);
+    const after = giveCopies(before, 'seat-1', 'sha', 1);
+    expect(allIds(after).length).toBe(allIds(before).length);
+    expect(handOf(after, 'seat-1')).toContain('sha');
   });
 });

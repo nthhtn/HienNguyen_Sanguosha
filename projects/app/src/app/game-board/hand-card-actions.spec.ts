@@ -54,4 +54,18 @@ describe('HandCardActions tutorial anchors', () => {
     const items = [...document.querySelectorAll('.cdk-overlay-container button[mat-menu-item]')].map((b) => b.getAttribute('data-tutorial'));
     expect(items).toEqual(['target-seat:seat-1', 'target-seat:seat-3']);
   });
+
+  it('marks the Choose Targets item of a card played through that window, beside its other plays (Chains and its Recast)', async () => {
+    const template = { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'p1', targets: [], pickTargets: { eligibleIds: ['seat-1', 'seat-3'], min: 1, max: 2 } } as unknown as Action;
+    const recast = { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 'p1', targets: [] } as Action;
+    const fixture = TestBed.createComponent(HandCardActions);
+    fixture.componentRef.setInput('vm', handCardViewModels([peach], [template, recast], state2, registry, englishTranslator)[0]);
+    fixture.componentRef.setInput('state', state2);
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelector('button.play') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const items = [...document.querySelectorAll('.cdk-overlay-container button[mat-menu-item]')].map((b) => b.getAttribute('data-tutorial'));
+    expect(items).toEqual(['pick-targets', null]);
+  });
 });

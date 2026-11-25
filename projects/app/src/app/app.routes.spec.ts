@@ -1,4 +1,4 @@
-import { offlineOnly } from './feature-flags';
+import { offlineOnly, tutorialEnabled } from './feature-flags';
 import { routes } from './app.routes';
 import { TutorialPage } from './tutorial/tutorial-page';
 
@@ -11,8 +11,8 @@ describe('routes', () => {
     expect(await (tutorial!.loadComponent as () => Promise<unknown>)()).toBe(TutorialPage);
   });
 
-  it('keeps the Tutorial offline-only, like Setup and Game, since a lesson runs the local game', () => {
-    expect(tutorial!.canActivate).toEqual([offlineOnly]);
+  it('guards the Tutorial with its own switch, so it is on in production where Setup and Game are not', () => {
+    expect(tutorial!.canActivate).toEqual([tutorialEnabled]);
     expect(routes.find((r) => r.path === 'setup')!.canActivate).toEqual([offlineOnly]);
   });
 });

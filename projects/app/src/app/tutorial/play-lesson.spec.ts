@@ -1,12 +1,13 @@
 import { buildContentRegistry } from 'content';
-import { playableGame, setTurn } from '../scenario-kit/recipe';
+import { give, playableGame, setTurn } from '../scenario-kit/recipe';
+import { definitionOf } from './lessons/lesson-kit';
 import { playLesson } from './lessons/play-lesson.testing';
 import { Lesson, Step } from './tutorial-types';
 
 const registry = buildContentRegistry();
 const text = 'nav.menu' as const;
 const next = (id: string): Step => ({ id, textKey: text, completes: { kind: 'next' } });
-const lesson = (steps: Step[]): Lesson => ({ id: 'turn', titleKey: text, summaryKey: text, seatCount: 2, build: (r) => playableGame(r, 7, 2), steps });
+const lesson = (steps: Step[]): Lesson => ({ id: 'turn', group: 'basics', titleKey: text, summaryKey: text, seatCount: 2, build: (r) => playableGame(r, 7, 2), steps });
 
 // seat-0 starts in its Start window, where the only legal move is ConfirmRevealsAction.
 describe('playLesson', () => {
@@ -62,5 +63,23 @@ describe('playLesson', () => {
     };
     const mainUp: Step = { id: 'main-up', textKey: text, completes: { kind: 'state', reached: (s) => s.phase === 'Play' && !!s.seats[0].generals?.main.revealed } };
     expect(playLesson(lesson([revealsMain, mainUp]), registry).map((s) => s.ok)).toEqual([true, true]);
+  });
+
+  it('fills a target pick (Chains on two seats) with the seats the step allows', () => {
+    const chainsOnOneAndTwo: Step = {
+      id: 'chains',
+      textKey: text,
+      completes: {
+        kind: 'action',
+        allow: [
+          {
+            kind: 'PlayCardAction',
+            match: (a, s) => a.kind === 'PlayCardAction' && definitionOf(s, a.cardInstanceId) === 'chains' && a.targets.map((t) => (t.kind === 'seat' ? t.seatId : '')).sort().join() === 'seat-1,seat-2',
+          },
+        ],
+      },
+    };
+    const withChains: Lesson = { ...lesson([chainsOnOneAndTwo]), seatCount: 3, build: (r) => give(setTurn(playableGame(r, 7, 3), 'seat-0', 'Play'), 'seat-0', ['chains']) };
+    expect(playLesson(withChains, registry)).toEqual([{ stepId: 'chains', ok: true }]);
   });
 });

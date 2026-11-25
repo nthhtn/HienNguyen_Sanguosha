@@ -1,3 +1,4 @@
+import { PlaybackGate } from '../playback-gate.service';
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { playableGame } from '../scenario-kit/recipe';
@@ -22,6 +23,7 @@ const STEPS: Step[] = [
 
 const lesson: Lesson = {
   id: 'turn',
+  group: 'basics',
   titleKey: 'discard.pile',
   summaryKey: 'discard.pile',
   seatCount: 2,
@@ -312,6 +314,182 @@ describe('TutorialOverlay', () => {
       expect(next.disabled).toBe(false);
       next.click();
       expect(service.step()!.id).toBe('phone');
+    });
+  });
+
+  describe('while the beginner has nothing to do', () => {
+    // A step the game completes by itself (a bot moves, a popup closes): the board is the thing to watch, so nothing is dimmed.
+    const waiting = (id: string, extra: Partial<Step> = {}): Lesson => ({
+      ...lesson,
+      id: 'sha-shan',
+      steps: [step(id, { completes: { kind: 'state', reached: () => false }, ...extra })],
+    });
+    const waitingAck = (): Lesson => ({
+      ...lesson,
+      id: 'sha-shan',
+      steps: [step('ack', { target: 'judgment-dialog', completes: { kind: 'action', allow: [{ kind: 'AcknowledgeJudgmentAction' }] } })],
+    });
+    function createWith(l: Lesson): void {
+      TestBed.configureTestingModule({ providers: [{ provide: TUTORIAL_LESSONS, useValue: [l] }] });
+      service = TestBed.inject(TutorialService);
+      fixture = TestBed.createComponent(TutorialOverlay);
+      el = fixture.nativeElement as HTMLElement;
+      service.start('sha-shan');
+      fixture.detectChanges();
+    }
+
+    it('shows a small note with Exit and a ring on what to watch, but no dimming', () => {
+      anchored('hand', rect(100, 100, 200, 50));
+      createWith(waiting('wait', { target: 'hand' }));
+      expect(ring()).not.toBeNull();
+      expect(blockers()).toHaveLength(0);
+      expect(el.querySelector('.card.compact')).not.toBeNull();
+      expect(text()).toBe('Discard Pile');
+      expect(el.querySelector('button.exit')).not.toBeNull();
+      expect(el.querySelector('button.next')).toBeNull();
+    });
+
+    it('dims nothing when there is no target either', () => {
+      createWith(waiting('wait'));
+      expect(ring()).toBeNull();
+      expect(blockers()).toHaveLength(0);
+      expect(el.querySelector('.card')).not.toBeNull();
+    });
+
+    it('dims nothing while the judgment popup closes by itself', () => {
+      anchored('judgment-dialog', rect(300, 200, 400, 300));
+      createWith(waitingAck());
+      expect(ring()).not.toBeNull();
+      expect(blockers()).toHaveLength(0);
+    });
+
+    it('lets a click through to the board: the overlay layer itself catches nothing', () => {
+      anchored('hand', rect(100, 100, 200, 50));
+      createWith(waiting('wait', { target: 'hand' }));
+      const layer = el.querySelector<HTMLElement>('.tutorial-overlay')!;
+      expect(layer.style.pointerEvents).toBe('none');
+      expect(el.querySelectorAll('.blocker')).toHaveLength(0);
+    });
+
+    it('dims nothing while the board plays an animation, whatever the step, and dims again once it is idle', () => {
+      anchored('end-phase', rect(400, 300, 100, 40));
+      create();
+      show(0, 'damage');
+      expect(blockers()).toHaveLength(4);
+      TestBed.inject(PlaybackGate).idle.set(false);
+      fixture.detectChanges();
+      expect(blockers()).toHaveLength(0);
+      TestBed.inject(PlaybackGate).idle.set(true);
+      fixture.detectChanges();
+      expect(blockers()).toHaveLength(4);
+    });
+
+    it('still dims on a step that waits for the beginner to act', () => {
+      anchored('end-phase', rect(400, 300, 100, 40));
+      create();
+      show(0, 'damage');
+      expect(blockers()).toHaveLength(4);
+      expect(ring()).not.toBeNull();
+      expect(el.querySelector('.card.compact')).toBeNull();
+    });
+  });
+
+  describe('minimizing the instructions', () => {
+    const minimize = () => (el.querySelector('button.minimize') as HTMLButtonElement).click();
+    const restore = () => (el.querySelector('button.restore') as HTMLButtonElement).click();
+
+    it('shrinks the card to one small button and drops the dim and the ring', () => {
+      anchored('end-phase', rect(400, 300, 100, 40));
+      create();
+      show(0, 'damage');
+      expect(blockers()).toHaveLength(4);
+      expect(el.querySelector('button.minimize')!.textContent!.trim()).toBe('Minimize');
+      minimize();
+      fixture.detectChanges();
+      expect(el.querySelector('.card')).toBeNull();
+      expect(blockers()).toHaveLength(0);
+      expect(ring()).toBeNull();
+      expect(el.querySelector('button.restore')!.textContent!.trim()).toBe('Show Instructions');
+    });
+
+    it('brings the card, the ring and the dim back on Show Instructions', () => {
+      anchored('end-phase', rect(400, 300, 100, 40));
+      create();
+      show(0, 'damage');
+      minimize();
+      fixture.detectChanges();
+      restore();
+      fixture.detectChanges();
+      expect(el.querySelector('.card')).not.toBeNull();
+      expect(el.querySelector('button.restore')).toBeNull();
+      expect(blockers()).toHaveLength(4);
+      expect(ring()).not.toBeNull();
+    });
+
+    it('can be minimized on a waiting step too', () => {
+      anchored('hand', rect(100, 100, 200, 50));
+      create();
+      show();
+      minimize();
+      fixture.detectChanges();
+      expect(el.querySelector('.card')).toBeNull();
+      expect(el.querySelector('button.restore')).not.toBeNull();
+    });
+
+    it('stays minimized through the next steps of the lesson, until it is shown again', () => {
+      anchored('hand', rect(100, 100, 200, 50));
+      create();
+      show();
+      minimize();
+      fixture.detectChanges();
+      service.next();
+      fixture.detectChanges();
+      expect(service.step()!.id).toBe('plain');
+      expect(el.querySelector('.card')).toBeNull();
+      expect(el.querySelector('button.restore')).not.toBeNull();
+      expect(blockers()).toHaveLength(0);
+    });
+
+    it('stays minimized while the board plays and a waiting step comes', () => {
+      anchored('hand', rect(100, 100, 200, 50));
+      create();
+      show();
+      minimize();
+      TestBed.inject(PlaybackGate).idle.set(false);
+      fixture.detectChanges();
+      TestBed.inject(PlaybackGate).idle.set(true);
+      fixture.detectChanges();
+      expect(el.querySelector('.card')).toBeNull();
+    });
+
+    it('opens the card again when another lesson starts', () => {
+      anchored('hand', rect(100, 100, 200, 50));
+      create();
+      show();
+      minimize();
+      fixture.detectChanges();
+      service.start('damage');
+      fixture.detectChanges();
+      expect(el.querySelector('.card')).not.toBeNull();
+    });
+
+    it('has Next on the minimized note while the step waits for it', () => {
+      anchored('hand', rect(100, 100, 200, 50));
+      create();
+      show();
+      minimize();
+      fixture.detectChanges();
+      (el.querySelector('.minimized button.next') as HTMLButtonElement).click();
+      expect(service.step()!.id).toBe('plain');
+    });
+
+    it('keeps the Exit reachable: it is on the minimized state too', () => {
+      anchored('hand', rect(100, 100, 200, 50));
+      create();
+      show();
+      minimize();
+      fixture.detectChanges();
+      expect(el.querySelector('.minimized button.exit')).not.toBeNull();
     });
   });
 

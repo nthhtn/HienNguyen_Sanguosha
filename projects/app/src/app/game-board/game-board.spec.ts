@@ -29,6 +29,7 @@ import { HandView } from './hand-view';
 import { cardDefinitionId } from '../labels';
 import { EFFECT_URLS, MUSIC_PLAYER_FACTORY } from '../music.service';
 import { PLAY_BOARD_SCENARIOS } from '../dev/scenarios/play-board';
+import { equip, placeJudgment } from '../scenario-kit/recipe';
 import { setWindowSize } from '../layout.testing';
 
 @Component({ template: 'info' })
@@ -1649,6 +1650,26 @@ describe('GameBoard battle playback', () => {
       // The medium board folds the two history tiles into a panel, so these have nothing to point at there.
       expect(marked(el, 'discard-pile')).toHaveLength(0);
       expect(marked(el, 'action-history')).toHaveLength(0);
+    });
+
+    it('anchors each seat’s equipment area and judgment area, and the chain badge of a chained seat', () => {
+      setWindowSize(1400, 900);
+      const scenario = PLAY_BOARD_SCENARIOS.find((s) => s.id === 'play-own-turn')!;
+      let state = scenario.build(gameService.registry);
+      state = equip(state, 'seat-1', 'crossbow');
+      state = placeJudgment(state, 'seat-1', 'starvation');
+      state = { ...state, seats: state.seats.map((s) => (s.id === 'seat-1' ? { ...s, chained: true } : s)) };
+      gameService.startFromState(state, 'vs-bots');
+      const fixture = TestBed.createComponent(GameBoard);
+      fixture.detectChanges();
+      const el = fixture.nativeElement as HTMLElement;
+      for (const id of ['equipment:seat-1', 'judgment-area:seat-1', 'chain-badge:seat-1', 'equipment:seat-0', 'judgment-area:seat-0']) {
+        expect({ id, count: marked(el, id).length }).toEqual({ id, count: 1 });
+      }
+      // Only a chained seat has a badge.
+      expect(marked(el, 'chain-badge:seat-0')).toHaveLength(0);
+      expect(marked(el, 'equipment:seat-1')[0].querySelector('app-playing-card')).not.toBeNull();
+      expect(marked(el, 'judgment-area:seat-1')[0].querySelector('app-playing-card')).not.toBeNull();
     });
 
     it('anchors the End Phase button and nothing else in the action list', () => {

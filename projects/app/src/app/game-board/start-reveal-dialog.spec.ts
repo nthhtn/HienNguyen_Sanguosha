@@ -45,6 +45,8 @@ describe('StartRevealDialog tutorial anchors', () => {
   it('marks the whole window, which a step with several clicks spotlights as one', () => {
     const { el } = render();
     expect(el.getAttribute('data-tutorial')).toBe('reveal-dialog');
+    // A block, so the host has a box the spotlight can cut a hole around.
+    expect(el.style.display).toBe('block');
   });
 
   it('marks each General slot and the confirm button', () => {

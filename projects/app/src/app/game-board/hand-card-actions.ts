@@ -95,7 +95,7 @@ export function handCardViewModels(cards: CardInstance[], legal: Action[], state
           <mat-icon>play_arrow</mat-icon> {{ 'hand.play' | t }}
         </button>
         <mat-menu #withPick="matMenu">
-          <button mat-menu-item type="button" (click)="pickTargets(v)">{{ v.templateLabel }}</button>
+          <button mat-menu-item type="button" [appTutorialAnchor]="anchor.pickTargets()" (click)="pickTargets(v)">{{ v.templateLabel }}</button>
           @for (choice of v.besideTemplate; track choice.action) {
             <button mat-menu-item type="button" (click)="played.emit(choice.action)"><app-target-label [label]="choice.label" [prefix]="choice.targeting?.prefix ?? null" [targets]="choice.targeting?.targets ?? []" [state]="state()" /></button>
           }
@@ -148,6 +148,7 @@ export function handCardViewModels(cards: CardInstance[], legal: Action[], state
   `,
 })
 export class HandCardActions {
+  protected readonly anchor = anchor;
   readonly vm = input.required<HandCardViewModel>();
   readonly state = input.required<GameState>();
   readonly played = output<Action>();
