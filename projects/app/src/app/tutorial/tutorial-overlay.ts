@@ -1,4 +1,5 @@
-import { Component, DestroyRef, ElementRef, computed, effect, inject, signal, untracked } from '@angular/core';
+import { OverlayContainer } from '@angular/cdk/overlay';
+import { Component, DestroyRef, Directive, ElementRef, Injector, afterNextRender, computed, effect, inject, signal, untracked } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { TPipe } from '../i18n/t.pipe';
 import type { MessageKey } from '../i18n/messages';
@@ -7,8 +8,8 @@ import { anchorBox } from './anchor-rect';
 import { Box, Size, cardPlacement, holeBlockers, holeBox } from './spotlight-geometry';
 import { TutorialService } from './tutorial.service';
 
-// Above Material's dialog layer, so the spotlight covers a dialog that holds the target. Set as inline styles with
-// the pointer rules below: they are what makes the rail work, so a spec checks them.
+// Ranks the spotlight above the page. Dialogs are not ranked by it: they open in the browser's top layer (see TopLayer).
+// Set as inline styles with the pointer rules below: they are what makes the rail work, so a spec checks them.
 export const OVERLAY_Z_INDEX = 2100;
 
 // Room left around the target inside the ring.
@@ -18,15 +19,45 @@ const CARD_GUESS: Size = { width: 340, height: 170 };
 
 const sameBox = (a: Box | null, b: Box | null) => (a === null || b === null ? a === b : a.left === b.left && a.top === b.top && a.width === b.width && a.height === b.height);
 
+// Puts its element in the browser's top layer, above every dialog. Material opens a dialog as a popover, and in the top
+// layer a later popover always sits over an earlier one whatever their z-index. So the spotlight is a popover too, and
+// goes to the top again each time something is added to the overlay container (a dialog opening, a menu).
+@Directive({ selector: '[appTutorialTopLayer]', host: { popover: 'manual' } })
+export class TutorialTopLayer {
+  constructor() {
+    const el: HTMLElement = inject(ElementRef).nativeElement;
+    // Without the Popover API the z-index is all there is.
+    if (typeof el.showPopover !== 'function') return;
+    const container = inject(OverlayContainer).getContainerElement();
+    const raise = () => {
+      try {
+        // Hidden first: showing a popover that is already open leaves it where it is in the stack.
+        el.hidePopover();
+      } catch {
+        // Not open yet.
+      }
+      try {
+        el.showPopover();
+      } catch {
+        // Not in the page yet, or already open.
+      }
+    };
+    afterNextRender(raise, { injector: inject(Injector) });
+    const observer = new MutationObserver(raise);
+    observer.observe(container, { childList: true });
+    inject(DestroyRef).onDestroy(() => observer.disconnect());
+  }
+}
+
 // The Tutorial's spotlight: it dims the screen except for a hole over the step's target, rings the target and shows the
 // instruction beside it. The dim layer is four boxes around the hole, so a click anywhere else lands on a box and a click
 // in the hole reaches the real control. It rules nothing: what the beginner may do is the action filter's job.
 @Component({
   selector: 'app-tutorial-overlay',
-  imports: [MatButtonModule, TPipe],
+  imports: [MatButtonModule, TPipe, TutorialTopLayer],
   template: `
     @if (active()) {
-      <div class="tutorial-overlay" [style.z-index]="zIndex" style="position: fixed; inset: 0; pointer-events: none">
+      <div class="tutorial-overlay" appTutorialTopLayer [style.z-index]="zIndex" style="position: fixed; inset: 0; width: 100vw; height: 100vh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: transparent; overflow: visible; pointer-events: none">
         @for (box of blockers(); track $index) {
           <div class="blocker" style="pointer-events: auto" [style.left.px]="box.left" [style.top.px]="box.top" [style.width.px]="box.width" [style.height.px]="box.height"></div>
         }

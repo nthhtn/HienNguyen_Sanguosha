@@ -1,3 +1,4 @@
+import { OverlayContainer } from '@angular/cdk/overlay';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { playableGame } from '../scenario-kit/recipe';
 import { DISPLAY_MODE_OVERRIDE } from '../display-mode-override';
@@ -158,12 +159,71 @@ describe('TutorialOverlay', () => {
       // The card is inside a layer that passes events through, so it must take them back for its buttons.
       expect(getComputedStyle(el.querySelector('.card')!).pointerEvents).toBe('auto');
     });
+  });
 
-    it('sits above the dialog layer', () => {
+  // A dialog opens as a popover, in the browser's top layer, where z-index no longer ranks anything: a later popover
+  // always sits over an earlier one. So the spotlight is a popover too, and goes to the top again when a dialog opens.
+  describe('in the top layer, above every dialog', () => {
+    let calls: string[];
+    const popover = (name: 'showPopover' | 'hidePopover') =>
+      Object.defineProperty(HTMLElement.prototype, name, {
+        configurable: true,
+        value(this: HTMLElement) {
+          if (this.classList.contains('tutorial-overlay')) calls.push(name === 'showPopover' ? 'show' : 'hide');
+        },
+      });
+    beforeEach(() => {
+      calls = [];
+      popover('showPopover');
+      popover('hidePopover');
+    });
+    afterEach(() => {
+      delete (HTMLElement.prototype as Partial<HTMLElement>).showPopover;
+      delete (HTMLElement.prototype as Partial<HTMLElement>).hidePopover;
+    });
+    const settle = () => new Promise<void>((resolve) => setTimeout(resolve));
+
+    it('is a manual popover that is shown with the step', () => {
       anchored('hand', rect(100, 100, 200, 50));
       create();
       show();
-      expect(Number(getComputedStyle(el.querySelector('.tutorial-overlay')!).zIndex)).toBeGreaterThan(2000);
+      expect(el.querySelector('.tutorial-overlay')!.getAttribute('popover')).toBe('manual');
+      expect(calls).toContain('show');
+    });
+
+    it('rises above a dialog that opens afterwards, so a dialog never covers the card', async () => {
+      anchored('hand', rect(100, 100, 200, 50));
+      create();
+      show();
+      await settle();
+      calls.length = 0;
+      TestBed.inject(OverlayContainer).getContainerElement().appendChild(document.createElement('div'));
+      await settle();
+      // Hidden and shown again: showing a popover that is already open would leave it where it is.
+      expect(calls).toEqual(['hide', 'show']);
+    });
+
+    it('ignores the dialogs once the step is gone', async () => {
+      anchored('hand', rect(100, 100, 200, 50));
+      create();
+      show();
+      await settle();
+      service.exit();
+      fixture.detectChanges();
+      await settle();
+      calls.length = 0;
+      TestBed.inject(OverlayContainer).getContainerElement().appendChild(document.createElement('div'));
+      await settle();
+      expect(calls).toEqual([]);
+    });
+
+    it('still works where the browser has no popover support', () => {
+      delete (HTMLElement.prototype as Partial<HTMLElement>).showPopover;
+      delete (HTMLElement.prototype as Partial<HTMLElement>).hidePopover;
+      anchored('hand', rect(100, 100, 200, 50));
+      create();
+      expect(() => show()).not.toThrow();
+      expect(text()).toBe('Discard Pile');
     });
   });
 

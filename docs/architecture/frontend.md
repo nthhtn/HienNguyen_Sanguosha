@@ -583,7 +583,8 @@ deciding seat's Force; the Compete popup by the source General's.
 - **Bots are scripted.** A `BotMove` picks from the legal actions the engine offers and never invents one. Each step has its own queue, and `nudgeBots()` asks the next bot to move.
 - **Two layers keep the rail tight.**
   - **Rules layer:** `TutorialService` installs `TutorialHooks` on `GameService` (`allows`, `botMove`, `applied`), so the engine only ever receives actions the current step allows. Only seat 0's actions complete a step.
-  - **Overlay layer:** `TutorialOverlay` draws four blocker boxes and a ring (z-index 2100, above dialogs), so a click outside the hole does nothing.
+  - **Overlay layer:** `TutorialOverlay` draws four blocker boxes and a ring, so a click outside the hole does nothing.
+  - **Above dialogs:** Dialogs open as popovers in the browser's top layer, where z-index ranks nothing. The overlay is a popover too (`TutorialTopLayer`) and goes to the top again whenever something is added to the CDK overlay container.
 - **Settling.** A short settle (`SETTLE_MS`) plus the playback gate (`PlaybackGate.idle`) hold the next step until the board has finished animating.
 - **Refusals reopen windows.** `GameService.refusals` counts actions the hooks refused. A board effect (`reopenOwedDialogs`) opens the Start, Discard or Response window again when the Tutorial refused what it closed on, so a wrong Confirm cannot leave a lesson stuck.
 - **Anchors.** The directive `[appTutorialAnchor]` sets `data-tutorial`. Ids come from the `anchor.*` builders in `anchors.ts` (seat, hp, generals, hand, hand card, play button, end phase, phase indicator, discard pile, action history, target seat, and the Start, Discard and Response windows). `isAnchorId` validates them.
