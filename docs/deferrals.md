@@ -360,6 +360,8 @@ From the art sets work (spec `docs/superpowers/specs/2026-11-25-art-sets-design.
   - **First real set:** Only `classic` ships, so the picker is hidden. The artwork and its provenance are still to be made.
   - **Account sync:** The choice lives in the browser only. It is not shared across devices.
   - **Wiki card art:** The Rules Wiki's card pictures (`cardArtUrl`) stay outside art sets.
+  - **Bigger previews:** The Art Sets page and popup show tiles at the game's portrait size, with no zoom.
+  - **Translated provenance:** A set's provenance is one English string in the catalog and shows as it is in Vietnamese.
 - **Why it waits.**
   - The developer scoped the first version to portraits and faces, with the choice stored per browser.
 - **Revisit when.**
