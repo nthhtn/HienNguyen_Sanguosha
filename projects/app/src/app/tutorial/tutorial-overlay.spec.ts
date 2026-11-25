@@ -337,11 +337,12 @@ describe('TutorialOverlay', () => {
       fixture.detectChanges();
     }
 
-    it('rings the target but dims nothing, and still shows the text and Exit', () => {
+    it('shows a small note with Exit, with no ring and no dimming', () => {
       anchored('hand', rect(100, 100, 200, 50));
       createWith(waiting('wait', { target: 'hand' }));
-      expect(ring()).not.toBeNull();
+      expect(ring()).toBeNull();
       expect(blockers()).toHaveLength(0);
+      expect(el.querySelector('.card.compact')).not.toBeNull();
       expect(text()).toBe('Discard Pile');
       expect(el.querySelector('button.exit')).not.toBeNull();
       expect(el.querySelector('button.next')).toBeNull();
@@ -357,7 +358,7 @@ describe('TutorialOverlay', () => {
     it('dims nothing while the judgment popup closes by itself', () => {
       anchored('judgment-dialog', rect(300, 200, 400, 300));
       createWith(waitingAck());
-      expect(ring()).not.toBeNull();
+      expect(ring()).toBeNull();
       expect(blockers()).toHaveLength(0);
     });
 
@@ -374,6 +375,8 @@ describe('TutorialOverlay', () => {
       create();
       show(0, 'damage');
       expect(blockers()).toHaveLength(4);
+      expect(ring()).not.toBeNull();
+      expect(el.querySelector('.card.compact')).toBeNull();
     });
   });
 

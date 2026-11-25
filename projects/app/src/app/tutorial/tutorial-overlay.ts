@@ -65,7 +65,7 @@ export class TutorialTopLayer {
         @if (ring(); as r) {
           <div class="ring" style="pointer-events: none" [style.left.px]="r.left" [style.top.px]="r.top" [style.width.px]="r.width" [style.height.px]="r.height"></div>
         }
-        <section class="card" style="pointer-events: auto" role="status" aria-live="polite" [attr.data-side]="placement().side" [style.left.px]="placement().left" [style.top.px]="placement().top">
+        <section class="card" [class.compact]="waiting()" style="pointer-events: auto" role="status" aria-live="polite" [attr.data-side]="placement().side" [style.left.px]="placement().left" [style.top.px]="placement().top">
           <p class="text">{{ textKey()! | t }}</p>
           <div class="buttons">
             <button mat-button type="button" class="exit" (click)="tutorial.exit()">{{ 'tutorial.exit' | t }}</button>
@@ -91,6 +91,9 @@ export class TutorialTopLayer {
       background: var(--mat-sys-surface-container-high, #fff); color: var(--mat-sys-on-surface, #000);
       box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
     }
+    // A waiting step shrinks to a small, see-through note, so the board behind it stays in view.
+    .card.compact { width: 240px; padding: 8px 12px; gap: 4px; border-radius: 12px; opacity: 0.85; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35); }
+    .compact .text { font-size: 0.85rem; line-height: 1.35; }
     .text { margin: 0; font-size: 1rem; line-height: 1.45; }
     .buttons { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
   `,
@@ -123,8 +126,8 @@ export class TutorialOverlay {
   private readonly box = signal<Box | null>(null, { equal: sameBox });
   private readonly cardSize = signal<Size>(CARD_GUESS, { equal: (a, b) => a.width === b.width && a.height === b.height });
 
-  // Nothing to click while a bot moves or a popup closes by itself, so nothing is dimmed and the board can be watched.
-  private readonly waiting = computed(() => {
+  // Nothing to click while a bot moves or a popup closes by itself, so nothing is dimmed or ringed, the note shrinks, and the board can be watched.
+  protected readonly waiting = computed(() => {
     const step = this.active();
     return !!step && isWaiting(step);
   });
@@ -134,7 +137,9 @@ export class TutorialOverlay {
     const box = this.box();
     return box ? holeBlockers(box, viewport, PADDING) : [{ left: 0, top: 0, width: viewport.width, height: viewport.height }];
   });
+  // No ring while waiting: it would draw the eye to a control the beginner cannot use yet.
   protected readonly ring = computed(() => {
+    if (this.waiting()) return null;
     const box = this.box();
     return box ? holeBox(box, this.viewport(), PADDING) : null;
   });
