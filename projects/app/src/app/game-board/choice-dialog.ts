@@ -10,6 +10,7 @@ import { DecisionCountdown } from './decision-countdown';
 import { MinimizeButton } from './minimize-button';
 import { ChoiceDescription } from './choice-description';
 import { Force } from '../labels';
+import { anchor } from '../tutorial/anchors';
 
 export interface ChoiceDialogOption {
   id: string;
@@ -42,6 +43,7 @@ export interface ChoiceDialogData {
 // Closes only through that button, with the engine's own ChooseOptionAction.
 @Component({
   selector: 'app-choice-dialog',
+  host: { 'data-tutorial': anchor.choiceDialog() },
   imports: [MatDialogModule, MatButtonModule, PlayingCard, CardArt, SeatPortrait, DecisionCountdown, MinimizeButton],
   template: `
     <div class="title-row">

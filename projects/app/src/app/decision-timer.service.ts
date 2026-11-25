@@ -46,8 +46,11 @@ export class DecisionTimer {
 
   // What a person must decide now, or null.
   private readonly decision = computed<Decision | null>(() => {
-    // A Tutorial lesson is never timed, so a timeout cannot submit an action for the beginner.
-    if (this.boards() === 0 || this.game.stopped() || this.game.tutorialActive()) return null;
+    // A Tutorial lesson is never timed, so a timeout cannot submit an action for the beginner. The one exception is a
+    // settled judgment: its popup has no button, only the countdown closes it, and closing it only acknowledges what
+    // was shown. The lesson still gates it, since a timeout is refused unless the step allows the acknowledgement.
+    const tutorialJudgment = this.game.tutorialActive() && awaitsAcknowledgement(this.game.state()?.judgmentView);
+    if (this.boards() === 0 || this.game.stopped() || (this.game.tutorialActive() && !tutorialJudgment)) return null;
     // The board is still playing what happened; the clock starts when it has caught up. A clock already running pauses
     // with its time left while playback runs (switchClock to null) and resumes with it once playback is idle.
     if (!this.gate.idle()) return null;

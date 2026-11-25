@@ -25,6 +25,7 @@ export interface TargetsDialogData {
 // Cancel. The engine checks the picks again when they are played.
 @Component({
   selector: 'app-targets-dialog',
+  host: { 'data-tutorial': anchor.targetsDialog() },
   imports: [MatButtonModule, MatDialogModule, SeatPortrait, HpIcons, TPipe, TutorialAnchor],
   template: `
     <h2 mat-dialog-title>{{ 'targets.title' | t }}</h2>

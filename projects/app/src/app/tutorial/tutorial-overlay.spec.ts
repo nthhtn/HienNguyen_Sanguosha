@@ -22,6 +22,7 @@ const STEPS: Step[] = [
 
 const lesson: Lesson = {
   id: 'turn',
+  group: 'basics',
   titleKey: 'discard.pile',
   summaryKey: 'discard.pile',
   seatCount: 2,
