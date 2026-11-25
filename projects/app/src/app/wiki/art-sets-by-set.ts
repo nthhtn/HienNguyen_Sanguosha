@@ -1,11 +1,11 @@
 import { Component, computed, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { artSetName, DEFAULT_ART_SET, generalDisplayData, generalSkinForce, generalSkinUrl, type GeneralForce } from 'content';
+import { artSetName, DEFAULT_ART_SET, generalSkinForce, generalSkinUrl, type GeneralForce } from 'content';
+import { artGeneralName } from '../art-general-name';
 import { ArtSets } from '../art-sets.service';
 import { I18n } from '../i18n/i18n.service';
 import type { MessageKey } from '../i18n/messages';
 import { TPipe } from '../i18n/t.pipe';
-import { generalDisplayName } from '../labels';
 
 const FORCES: readonly GeneralForce[] = ['Wei', 'Shu', 'Wu', 'Qun'];
 
@@ -27,7 +27,7 @@ const FORCES: readonly GeneralForce[] = ['Wei', 'Shu', 'Wu', 'Qun'];
           </button>
         </header>
         @if (set.missing > 0) {
-          <p class="fallback-note">{{ 'artSetsPage.fallbackNote' | t: { count: set.missing } }}</p>
+          <p class="fallback-note">{{ noteKey(set.missing) | t: { count: set.missing } }}</p>
         }
         @for (group of set.groups; track group.force) {
           <section class="force" [attr.data-force]="group.force">
@@ -64,6 +64,10 @@ export class ArtSetsBySet {
   protected readonly artSets = inject(ArtSets);
   private readonly i18n = inject(I18n);
 
+  protected noteKey(missing: number): MessageKey {
+    return missing === 1 ? 'artSetsPage.fallbackNote.one' : 'artSetsPage.fallbackNote';
+  }
+
   protected forceKey(force: GeneralForce): MessageKey {
     return `label.kingdom.${force}`;
   }
@@ -81,7 +85,7 @@ export class ArtSetsBySet {
           .filter((general) => generalSkinForce(general) === force)
           .map((general) => ({
             id: general,
-            name: generalDisplayData(general, locale)?.name ?? generalDisplayName(general, this.i18n.translator),
+            name: artGeneralName(general, this.i18n),
             url: generalSkinUrl(general, { global: id, overrides: {}, catalog }) ?? '',
           })),
       })).filter((group) => group.generals.length > 0);

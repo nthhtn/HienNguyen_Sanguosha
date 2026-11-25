@@ -1,10 +1,10 @@
 import { Component, computed, inject } from '@angular/core';
-import { DEFAULT_ART_SET, generalDisplayData, generalSkinForce, setsCovering } from 'content';
+import { DEFAULT_ART_SET, generalSkinForce, setsCovering } from 'content';
+import { artGeneralName } from '../art-general-name';
 import { ArtSets } from '../art-sets.service';
 import { I18n } from '../i18n/i18n.service';
 import type { MessageKey } from '../i18n/messages';
 import { TPipe } from '../i18n/t.pipe';
-import { generalDisplayName } from '../labels';
 import { GeneralArtChoices } from './general-art-choices';
 
 // The Art Sets page, By General: one row for each General that more than one art set covers, with all of its artwork to choose from.
@@ -45,14 +45,13 @@ export class ArtSetsByGeneral {
 
   protected readonly rows = computed(() => {
     const catalog = this.artSets.catalog;
-    const locale = this.i18n.locale();
     return catalog.sets[DEFAULT_ART_SET].portraits
       .filter((id) => setsCovering(id, catalog).length > 1)
       .map((id) => {
         const force = generalSkinForce(id);
         return {
           id,
-          name: generalDisplayData(id, locale)?.name ?? generalDisplayName(id, this.i18n.translator),
+          name: artGeneralName(id, this.i18n),
           forceKey: force ? (`label.kingdom.${force}` as MessageKey) : null,
         };
       });

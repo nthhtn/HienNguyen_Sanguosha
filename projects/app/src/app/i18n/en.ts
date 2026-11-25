@@ -569,6 +569,7 @@ export const en = {
   'artSetsPage.tab.generals': 'By General',
   'artSetsPage.use': 'Use This Set',
   'artSetsPage.fallbackNote': '{count} Generals show their Classic portrait in this set.',
+  'artSetsPage.fallbackNote.one': '1 General shows its Classic portrait in this set.',
   'artSetsPage.noChoices': 'No General has more than one art set yet.',
   'artSets.alternates': 'Pick the artwork this General shows. It follows the global set unless you pick one here.',
   'nav.play': 'Play Offline',

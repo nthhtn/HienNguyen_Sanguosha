@@ -568,6 +568,7 @@ export const vi: Messages = {
   'artSetsPage.tab.generals': 'Theo Tướng',
   'artSetsPage.use': 'Dùng bộ này',
   'artSetsPage.fallbackNote': '{count} Tướng dùng hình Cổ điển trong bộ này.',
+  'artSetsPage.fallbackNote.one': '1 Tướng dùng hình Cổ điển trong bộ này.',
   'artSetsPage.noChoices': 'Chưa có Tướng nào có nhiều hơn một bộ tranh.',
   'artSets.alternates': 'Chọn hình mà Tướng này hiển thị. Mặc định theo bộ tranh chung, trừ khi bạn chọn riêng ở đây.',
   'nav.play': 'Chơi ngoại tuyến',

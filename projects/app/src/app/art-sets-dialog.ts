@@ -4,11 +4,11 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { RouterLink } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
-import { artSetName, DEFAULT_ART_SET, generalDisplayData, generalSkinUrl, resolveArtSet, setsCovering } from 'content';
+import { artSetName, DEFAULT_ART_SET, generalSkinUrl, resolveArtSet, setsCovering } from 'content';
+import { artGeneralName } from './art-general-name';
 import { ArtSets } from './art-sets.service';
 import { I18n } from './i18n/i18n.service';
 import { TPipe } from './i18n/t.pipe';
-import { generalDisplayName } from './labels';
 
 // The art set picker: one global set, and an override per General that some other set covers. The choice lives in ArtSets.
 @Component({
@@ -122,7 +122,7 @@ export class ArtSetsDialog {
       .filter((id) => setsCovering(id, catalog).length > 1)
       .map((id) => ({
         id,
-        name: generalDisplayData(id, locale)?.name ?? generalDisplayName(id, this.i18n.translator),
+        name: artGeneralName(id, this.i18n),
         url: generalSkinUrl(id, choice) ?? '',
         override: overrides[id],
         // The set that shows when this General follows the global set: Classic where the global set lacks it.

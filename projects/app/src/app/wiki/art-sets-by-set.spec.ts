@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { generalSkinUrl } from 'content';
-import { ArtSets } from '../art-sets.service';
+import { ART_SET_CATALOG_TOKEN, ArtSets } from '../art-sets.service';
 import { fakeCatalog, provideFakeArtSets } from '../art-sets.testing';
 import { ArtSetsBySet } from './art-sets-by-set';
 
@@ -35,7 +35,7 @@ describe('ArtSetsBySet', () => {
     expect(ids(section(el, 'ink'))).toEqual(['cao-cao', 'guan-yu']);
   });
 
-  it("shows each Generals's picture from that set, as the board does", () => {
+  it("shows each General's picture from that set, as the board does", () => {
     const { el } = render();
     const tile = section(el, 'ink').querySelector('figure.tile[data-general="guan-yu"]')!;
     expect(tile.querySelector('img')!.getAttribute('src')).toBe(generalSkinUrl('guan-yu', { global: 'ink', overrides: {}, catalog: fakeCatalog() }));
@@ -46,6 +46,15 @@ describe('ArtSetsBySet', () => {
     const { el } = render();
     expect(text(section(el, 'ink').querySelector('.fallback-note'))).toBe('2 Generals show their Classic portrait in this set.');
     expect(section(el, 'classic').querySelector('.fallback-note')).toBeNull();
+  });
+
+  it('says "1 General shows" when a set lacks exactly one General', () => {
+    const base = fakeCatalog();
+    const catalog = { ...base, sets: { ...base.sets, ink: { ...base.sets['ink'], portraits: ['cao-cao', 'guan-yu', 'zhang-fei'] } } };
+    TestBed.configureTestingModule({ imports: [ArtSetsBySet], providers: [{ provide: ART_SET_CATALOG_TOKEN, useValue: catalog }] });
+    const fixture = TestBed.createComponent(ArtSetsBySet);
+    fixture.detectChanges();
+    expect(text((fixture.nativeElement as HTMLElement).querySelector('section.set[data-set="ink"] .fallback-note'))).toBe('1 General shows its Classic portrait in this set.');
   });
 
   it('sets the global set from Use This Set, then shows In Use on it', () => {

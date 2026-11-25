@@ -1,10 +1,10 @@
 import { Component, Injector, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { generalDisplayData } from 'content';
+import { artSetGeneralId } from 'content';
+import { artGeneralName } from '../art-general-name';
 import { I18n } from '../i18n/i18n.service';
 import { TPipe } from '../i18n/t.pipe';
-import { generalDisplayName } from '../labels';
 import { GeneralArtChoices } from './general-art-choices';
 
 export interface GeneralArtDialogData {
@@ -32,7 +32,7 @@ export interface GeneralArtDialogData {
 export class GeneralArtDialog {
   protected readonly data = inject<GeneralArtDialogData>(MAT_DIALOG_DATA);
   private readonly i18n = inject(I18n);
-  protected readonly name = generalDisplayData(this.data.generalId, this.i18n.locale())?.name ?? generalDisplayName(this.data.generalId, this.i18n.translator);
+  protected readonly name = artGeneralName(artSetGeneralId(this.data.generalId), this.i18n);
 }
 
 // Opens the popup. The Wiki entries call this through a dynamic import, so the dialog loads only when asked for.
