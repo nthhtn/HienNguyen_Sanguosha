@@ -18,8 +18,9 @@ class BoardStub {}
 class OverlayStub {}
 
 // Two short lessons of one Next step each, so a spec can finish one without playing a game.
-const shortLesson = (id: Lesson['id']): Lesson => ({
+const shortLesson = (id: Lesson['id'], group: Lesson['group'] = 'basics'): Lesson => ({
   id,
+  group,
   titleKey: 'discard.pile',
   summaryKey: 'history.title',
   seatCount: 2,
@@ -78,6 +79,85 @@ describe('TutorialPage', () => {
       fixture.detectChanges();
       expect(text(el.querySelector('.lesson button.start'))).toBe('Bắt đầu bài học');
       expect(text(el.querySelector('.lesson[data-lesson="generals"] h3'))).toBe('Tướng của bạn');
+    });
+  });
+
+  describe('the tabs', () => {
+    // One lesson per group, so each tab holds one.
+    const threeGroups = () => [shortLesson('generals', 'basics'), shortLesson('equipment', 'cards'), shortLesson('chains', 'effects')];
+    const tabs = (el: HTMLElement) => [...el.querySelectorAll('[role="tab"]')] as HTMLElement[];
+    const selected = (el: HTMLElement) => text(el.querySelector('[role="tab"][aria-selected="true"]'));
+    const lessonIds = (el: HTMLElement) => [...el.querySelectorAll('.lesson')].map((i) => i.getAttribute('data-lesson'));
+
+    it('has one tab for each group, with how many of its lessons are done', () => {
+      const { el } = create(threeGroups());
+      expect(tabs(el).map(text)).toEqual(['Basics (0 of 1)', 'Cards (0 of 1)', 'Special Effects (0 of 1)']);
+    });
+
+    it('counts the real lessons: Basics holds five', () => {
+      const { el } = create();
+      expect(text(tabs(el)[0])).toBe('Basics (0 of 5)');
+    });
+
+    it('follows the lessons completed', () => {
+      localStorage.setItem('tutorial.completed', JSON.stringify(['generals']));
+      const { el } = create(threeGroups());
+      expect(tabs(el).map(text)).toEqual(['Basics (1 of 1)', 'Cards (0 of 1)', 'Special Effects (0 of 1)']);
+    });
+
+    it('does not count a stored id that is no lesson', () => {
+      localStorage.setItem('tutorial.completed', JSON.stringify(['gone', 'generals']));
+      const { el } = create(threeGroups());
+      expect(text(tabs(el)[0])).toBe('Basics (1 of 1)');
+    });
+
+    it('opens on the first tab with a lesson left', () => {
+      localStorage.setItem('tutorial.completed', JSON.stringify(['generals']));
+      const { el } = create(threeGroups());
+      expect(selected(el)).toContain('Cards');
+      expect(lessonIds(el)).toEqual(['equipment']);
+    });
+
+    it('opens on Basics when every lesson is done', () => {
+      localStorage.setItem('tutorial.completed', JSON.stringify(['generals', 'equipment', 'chains']));
+      const { el } = create(threeGroups());
+      expect(selected(el)).toContain('Basics');
+    });
+
+    it('shows only the lessons of the tab chosen', async () => {
+      const { fixture, el } = create(threeGroups());
+      tabs(el)[2].click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(lessonIds(el)).toEqual(['chains']);
+    });
+
+    it('keeps every tab reachable on a narrow screen: the row pages instead of squeezing', () => {
+      const { el } = create(threeGroups());
+      expect(el.querySelector('.mat-mdc-tab-header-pagination')).not.toBeNull();
+    });
+
+    it('goes back to the tab of the lesson that was played, not the first', () => {
+      const { fixture, el, service } = create(threeGroups());
+      service.start('chains');
+      fixture.detectChanges();
+      service.next();
+      fixture.detectChanges();
+      (el.querySelector('button.back') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      expect(selected(el)).toContain('Special Effects');
+      expect(lessonIds(el)).toEqual(['chains']);
+    });
+
+    it('goes on to the next lesson in list order, across tabs', () => {
+      const { fixture, el, service } = create(threeGroups());
+      service.start('generals');
+      fixture.detectChanges();
+      service.next();
+      fixture.detectChanges();
+      (el.querySelector('button.next-lesson') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      expect(service.lesson()?.id).toBe('equipment');
     });
   });
 

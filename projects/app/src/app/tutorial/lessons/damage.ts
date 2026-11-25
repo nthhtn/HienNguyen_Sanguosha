@@ -15,6 +15,7 @@ const ATTACKER = 'seat-3';
 // the beginner's response window. Its turn follows the attacker's, so the Peach can be played.
 export const DAMAGE_LESSON: Lesson = {
   id: 'damage',
+  group: 'basics',
   titleKey: 'tutorial.damage.title',
   summaryKey: 'tutorial.damage.summary',
   seatCount: 4,

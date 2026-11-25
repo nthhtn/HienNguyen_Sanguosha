@@ -6,7 +6,7 @@ import { Lesson, Step } from './tutorial-types';
 const registry = buildContentRegistry();
 const text = 'nav.menu' as const;
 const next = (id: string): Step => ({ id, textKey: text, completes: { kind: 'next' } });
-const lesson = (steps: Step[]): Lesson => ({ id: 'turn', titleKey: text, summaryKey: text, seatCount: 2, build: (r) => playableGame(r, 7, 2), steps });
+const lesson = (steps: Step[]): Lesson => ({ id: 'turn', group: 'basics', titleKey: text, summaryKey: text, seatCount: 2, build: (r) => playableGame(r, 7, 2), steps });
 
 // seat-0 starts in its Start window, where the only legal move is ConfirmRevealsAction.
 describe('playLesson', () => {

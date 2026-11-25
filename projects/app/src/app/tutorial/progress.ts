@@ -1,7 +1,7 @@
 import type { LessonId } from './tutorial-types';
 
 const KEY = 'tutorial.completed';
-const LESSON_IDS: ReadonlySet<string> = new Set<LessonId>(['generals', 'allegiance', 'turn', 'sha-shan', 'damage']);
+const LESSON_IDS: ReadonlySet<string> = new Set<LessonId>(['generals', 'allegiance', 'turn', 'sha-shan', 'damage', 'equipment', 'tools', 'wuxie', 'judgment', 'chains']);
 
 // Which lessons the beginner has finished, remembered in the browser. It only marks lessons done in the list, so a
 // private window, a full disk or junk in storage means no marks and nothing else.

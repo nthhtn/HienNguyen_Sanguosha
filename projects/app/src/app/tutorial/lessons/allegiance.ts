@@ -11,6 +11,7 @@ const BEGINNER = 'seat-0';
 // Phase. The Start window shows from the first step, so the first two steps spotlight it whole.
 export const ALLEGIANCE_LESSON: Lesson = {
   id: 'allegiance',
+  group: 'basics',
   titleKey: 'tutorial.allegiance.title',
   summaryKey: 'tutorial.allegiance.summary',
   seatCount: 4,
