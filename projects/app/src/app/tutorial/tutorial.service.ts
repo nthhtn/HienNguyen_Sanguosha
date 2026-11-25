@@ -84,11 +84,13 @@ export class TutorialService {
     if (this.step()?.completes.kind === 'next') this.advance();
   }
 
+  // The page calls this when it closes, lesson or not: a game the beginner had on this device is not the Tutorial's to discard.
   exit(): void {
+    const running = this._lesson() !== null;
     this.clearSettle();
     this.due.set(false);
     this.game.setTutorialHooks(null);
-    this.game.discardGame();
+    if (running) this.game.discardGame();
     this._lesson.set(null);
     this._stepIndex.set(0);
     this._finished.set(false);

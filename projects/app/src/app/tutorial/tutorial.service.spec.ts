@@ -335,6 +335,16 @@ describe('TutorialService', () => {
       expect(service.completed().has('turn')).toBe(true);
     });
 
+    it('leaves a game that is not the Tutorial’s alone when no lesson is running', () => {
+      setup([lesson('turn', [next('a')])]);
+      game.startFromState(playableGame(game.registry, 7, 2), 'vs-bots');
+      expect(game.state()).not.toBeNull();
+
+      service.exit();
+
+      expect(game.state()).not.toBeNull();
+    });
+
     it('stops a late playback from advancing a lesson that was left', () => {
       setup([lesson('turn', [confirm('a'), next('b')])]);
       service.start('turn');

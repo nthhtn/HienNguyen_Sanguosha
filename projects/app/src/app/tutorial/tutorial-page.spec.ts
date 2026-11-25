@@ -135,6 +135,13 @@ describe('TutorialPage', () => {
         expect(game.state()).toBe(before);
         expect(el.querySelectorAll('.lesson')).toHaveLength(5);
       });
+
+      it('keeps the game when the beginner leaves the page without starting a lesson', () => {
+        const { fixture, game } = createWithGame();
+        const before = game.state();
+        fixture.destroy();
+        expect(game.state()).toBe(before);
+      });
     });
   });
 
