@@ -23,6 +23,11 @@ describe('JudgmentDialog', () => {
     jest.useRealTimers();
   });
 
+  it('carries the tutorial anchor of the judgment popup on its root', () => {
+    const { el } = render(skillDescription());
+    expect(el.getAttribute('data-tutorial')).toBe('judgment-dialog');
+  });
+
   it('names the source: the General, the skill and its text', () => {
     const { el } = render(skillDescription());
     expect(el.querySelector('h2')!.textContent).toContain('Judgment');

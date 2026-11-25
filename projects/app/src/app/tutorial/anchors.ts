@@ -25,6 +25,13 @@ export const anchor = {
   revealConfirm: () => 'reveal-confirm',
   revealDialog: () => 'reveal-dialog',
   discardDialog: () => 'discard-dialog',
+  // A seat's Equipment area (Weapon, Armor, Mounts) and its Judgment area (Delayed Tools waiting to be judged).
+  equipment: (seatId: string) => `equipment:${seatId}`,
+  judgmentArea: (seatId: string) => `judgment-area:${seatId}`,
+  // The sign that a seat is chained; it is on the page only while the seat is.
+  chainBadge: (seatId: string) => `chain-badge:${seatId}`,
+  // The popup that shows a judgment.
+  judgmentDialog: () => 'judgment-dialog',
 } as const;
 
 // Whether `id` is one a builder above makes: the board and the lessons agree on the ids through the builders alone.

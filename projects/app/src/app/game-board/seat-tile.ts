@@ -96,7 +96,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
         }
         @if (seat().chained) {
           <!-- Fire or thunder damage to this seat passes along the chain. -->
-          <span class="chain-badge" [attr.title]="'seat.chainedTitle' | t">{{ 'seat.chained' | t }}</span>
+          <span class="chain-badge" [appTutorialAnchor]="anchor.chainBadge(seat().id)" [attr.title]="'seat.chainedTitle' | t">{{ 'seat.chained' | t }}</span>
         }
         @if (formName(); as form) {
           <span class="form-badge">{{ 'seat.form' | t: { form: form } }}</span>
@@ -124,7 +124,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
           </span>
         </div>
       </section>
-        <section class="panel equipment" [attr.aria-label]="'seat.equipment' | t">
+        <section class="panel equipment" [appTutorialAnchor]="anchor.equipment(seat().id)" [attr.aria-label]="'seat.equipment' | t">
           <!-- Weapon, Armor on top; Defensive Mount, Offensive Mount below. -->
           <div class="equip">
             @for (s of slots(); track s.slot) {
@@ -146,7 +146,7 @@ const SLOT_LABELS: Record<EquipSlot, { label: MessageKey; icon: string }> = {
             }
           </div>
         </section>
-        <section class="panel judgment-section" [attr.aria-label]="'seat.judgment' | t">
+        <section class="panel judgment-section" [appTutorialAnchor]="anchor.judgmentArea(seat().id)" [attr.aria-label]="'seat.judgment' | t">
           <div class="judgment" [attr.aria-label]="'seat.judgmentArea' | t">
             @for (card of judgment(); track card.instanceId) {
               @let countsAs = judgmentCountsAs()[card.instanceId];

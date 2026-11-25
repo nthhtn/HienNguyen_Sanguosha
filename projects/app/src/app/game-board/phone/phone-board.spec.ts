@@ -225,6 +225,30 @@ describe('PhoneBoard', () => {
       for (const id of ['hand', 'hand-card:sha', 'end-phase', 'phase-indicator']) expect([id, count(el, id)]).toEqual([id, 1]);
     });
 
+    it('anchors each seat’s equipment and judgment boxes, and the chain mark of a chained seat', () => {
+      const seats = testSeats(4).map((s) => (s.id === 'seat-1' ? { ...s, chained: true } : s));
+      const base = state(seats);
+      const withCards: GameState = {
+        ...base,
+        zones: [
+          ...base.zones,
+          { id: 'seat-1:equip', kind: 'equipment', ownerSeatId: 'seat-1', cards: [{ instanceId: 'w1', definitionId: 'crossbow', suit: 'club', rank: 1 }] } as CardZone,
+          { id: 'seat-1:judgment', kind: 'judgment', ownerSeatId: 'seat-1', cards: [{ instanceId: 'j1', definitionId: 'starvation', suit: 'spade', rank: 10 }] } as CardZone,
+        ],
+      };
+      const fixture = TestBed.createComponent(PhoneBoard);
+      fixture.componentRef.setInput('state', withCards);
+      fixture.componentRef.setInput('viewerSeatId', 'seat-0');
+      fixture.componentRef.setInput('registry', buildContentRegistry());
+      fixture.componentRef.setInput('skills', []);
+      fixture.detectChanges();
+      const el = fixture.nativeElement as HTMLElement;
+      for (const id of ['equipment:seat-1', 'judgment-area:seat-1', 'chain-badge:seat-1', 'equipment:seat-0', 'judgment-area:seat-0']) expect([id, count(el, id)]).toEqual([id, 1]);
+      expect(count(el, 'chain-badge:seat-0')).toBe(0);
+      expect(el.querySelector('[data-tutorial="equipment:seat-1"] .equip-box.filled')).not.toBeNull();
+      expect(el.querySelector('[data-tutorial="judgment-area:seat-1"] .judgment-box.filled')).not.toBeNull();
+    });
+
     it('anchors Play in the action column only once a card is picked', () => {
       const { fixture, el } = renderPlayPhase();
       expect(count(el, 'play-button:sha')).toBe(0);
