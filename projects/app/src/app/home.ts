@@ -26,6 +26,8 @@ import { Layout } from './layout.service';
             <a mat-stroked-button class="play-guest" routerLink="/guest" [queryParams]="back">{{ 'auth.playAsGuest' | t }}</a>
             @if (flags.playOffline) {
               <a mat-stroked-button class="play-offline" routerLink="/setup">{{ 'nav.play' | t }}</a>
+            }
+            @if (flags.tutorial) {
               <a mat-stroked-button class="tutorial" routerLink="/tutorial"><mat-icon>school</mat-icon>{{ 'nav.tutorial' | t }}</a>
             }
           </div>

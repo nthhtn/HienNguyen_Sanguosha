@@ -14,11 +14,11 @@ describe('Home', () => {
     setWindowSize(1024, 768);
   });
 
-  function render(options: { playOffline?: boolean; width?: number; height?: number } = {}): HTMLElement {
+  function render(options: { playOffline?: boolean; tutorial?: boolean; width?: number; height?: number } = {}): HTMLElement {
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
-        { provide: FEATURE_FLAGS, useValue: { playOffline: options.playOffline ?? false, playbackSettings: false, phoneBoard: true } },
+        { provide: FEATURE_FLAGS, useValue: { playOffline: options.playOffline ?? false, playbackSettings: false, phoneBoard: true, tutorial: options.tutorial ?? true } },
       ],
     });
     stubDisplayMode('browser');
@@ -56,12 +56,16 @@ describe('Home', () => {
     expect(href(el, 'a.play-offline')).toBe('/setup');
   });
 
-  it('links the Tutorial only where offline play is on, since the lessons run on this device', () => {
-    expect(render().querySelector('a.tutorial')).toBeNull();
-    TestBed.resetTestingModule();
-    const el = render({ playOffline: true });
+  it('links the Tutorial whether or not offline play is on, since the lessons run on this device', () => {
+    const el = render();
     expect(href(el, 'a.tutorial')).toBe('/tutorial');
     expect(el.querySelector('a.tutorial')!.textContent).toContain('Tutorial');
+    TestBed.resetTestingModule();
+    expect(href(render({ playOffline: true }), 'a.tutorial')).toBe('/tutorial');
+  });
+
+  it('hides the Tutorial link when the Tutorial is off', () => {
+    expect(render({ tutorial: false }).querySelector('a.tutorial')).toBeNull();
   });
 
   it('shows the install card on a phone browser tab, and not on a computer', () => {

@@ -108,7 +108,7 @@ A guided Tutorial for beginners: Short lessons on the real game board, with a sp
 
 ### Entry, exit and progress
 
-- **Entry.** A "Tutorial" link in the toolbar and on Home, and a `/tutorial` route (lazy, behind `offlineOnly`). It lists the five lessons and a Start button for each.
+- **Entry.** A "Tutorial" link in the toolbar and on Home, and a `/tutorial` route (lazy, behind its own `tutorial` feature flag, which is on in production: The Tutorial runs on this device but is not offline play). It lists the five lessons and a Start button for each.
 - **Order.** Lessons can be played in any order. "Next Lesson" is offered at the end of each.
 - **Exit.** An "Exit Tutorial" button is on screen at every step and never asks for confirmation. Leaving discards the Tutorial game.
 - **Progress.** Which lessons were completed is remembered in the browser (`localStorage`, in `try/catch`, and the page works without it). It only marks lessons done in the list.

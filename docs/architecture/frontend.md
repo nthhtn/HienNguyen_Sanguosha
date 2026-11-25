@@ -571,7 +571,7 @@ deciding seat's Force; the Compete popup by the source General's.
 
 ## Tutorial
 
-`/tutorial` teaches a beginner five short lessons on the real board, with a spotlight over the one control that matters. It lives in `projects/app/src/app/tutorial/`, is a lazy route behind `offlineOnly`, and imports no dev code.
+`/tutorial` teaches a beginner five short lessons on the real board, with a spotlight over the one control that matters. It lives in `projects/app/src/app/tutorial/`, is a lazy route behind its own `tutorial` feature flag (on in production, unlike offline play), and imports no dev code.
 
 - **Lessons are data.** A `Lesson` (`tutorial-types.ts`) has an id, title and summary keys, a seat count, a `build(registry)` that returns the starting `GameState` (made with the scenario kit's recipe), and a list of `Step`s.
   - The lessons are `generals`, `allegiance`, `turn`, `sha-shan` and `damage`, registered in `lessons/index.ts` and offered to the service through the `TUTORIAL_LESSONS` token.
