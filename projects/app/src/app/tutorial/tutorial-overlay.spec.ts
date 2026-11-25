@@ -338,10 +338,10 @@ describe('TutorialOverlay', () => {
       fixture.detectChanges();
     }
 
-    it('shows a small note with Exit, with no ring and no dimming', () => {
+    it('shows a small note with Exit and a ring on what to watch, but no dimming', () => {
       anchored('hand', rect(100, 100, 200, 50));
       createWith(waiting('wait', { target: 'hand' }));
-      expect(ring()).toBeNull();
+      expect(ring()).not.toBeNull();
       expect(blockers()).toHaveLength(0);
       expect(el.querySelector('.card.compact')).not.toBeNull();
       expect(text()).toBe('Discard Pile');
@@ -359,7 +359,7 @@ describe('TutorialOverlay', () => {
     it('dims nothing while the judgment popup closes by itself', () => {
       anchored('judgment-dialog', rect(300, 200, 400, 300));
       createWith(waitingAck());
-      expect(ring()).toBeNull();
+      expect(ring()).not.toBeNull();
       expect(blockers()).toHaveLength(0);
     });
 
@@ -379,7 +379,6 @@ describe('TutorialOverlay', () => {
       TestBed.inject(PlaybackGate).idle.set(false);
       fixture.detectChanges();
       expect(blockers()).toHaveLength(0);
-      expect(ring()).toBeNull();
       TestBed.inject(PlaybackGate).idle.set(true);
       fixture.detectChanges();
       expect(blockers()).toHaveLength(4);
@@ -437,7 +436,7 @@ describe('TutorialOverlay', () => {
       expect(el.querySelector('button.restore')).not.toBeNull();
     });
 
-    it('opens the card again when the next step comes', () => {
+    it('stays minimized through the next steps of the lesson, until it is shown again', () => {
       anchored('hand', rect(100, 100, 200, 50));
       create();
       show();
@@ -445,8 +444,43 @@ describe('TutorialOverlay', () => {
       fixture.detectChanges();
       service.next();
       fixture.detectChanges();
+      expect(service.step()!.id).toBe('plain');
+      expect(el.querySelector('.card')).toBeNull();
+      expect(el.querySelector('button.restore')).not.toBeNull();
+      expect(blockers()).toHaveLength(0);
+    });
+
+    it('stays minimized while the board plays and a waiting step comes', () => {
+      anchored('hand', rect(100, 100, 200, 50));
+      create();
+      show();
+      minimize();
+      TestBed.inject(PlaybackGate).idle.set(false);
+      fixture.detectChanges();
+      TestBed.inject(PlaybackGate).idle.set(true);
+      fixture.detectChanges();
+      expect(el.querySelector('.card')).toBeNull();
+    });
+
+    it('opens the card again when another lesson starts', () => {
+      anchored('hand', rect(100, 100, 200, 50));
+      create();
+      show();
+      minimize();
+      fixture.detectChanges();
+      service.start('damage');
+      fixture.detectChanges();
       expect(el.querySelector('.card')).not.toBeNull();
-      expect(el.querySelector('button.restore')).toBeNull();
+    });
+
+    it('has Next on the minimized note while the step waits for it', () => {
+      anchored('hand', rect(100, 100, 200, 50));
+      create();
+      show();
+      minimize();
+      fixture.detectChanges();
+      (el.querySelector('.minimized button.next') as HTMLButtonElement).click();
+      expect(service.step()!.id).toBe('plain');
     });
 
     it('keeps the Exit reachable: it is on the minimized state too', () => {

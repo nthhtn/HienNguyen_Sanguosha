@@ -47,7 +47,7 @@ export const JUDGMENT_LESSON: Lesson = {
       // countdown, which acknowledges the judgment, so the step lets that acknowledgement through.
       id: 'judged',
       textKey: 'tutorial.judgment.s5',
-      target: anchor.judgmentDialog(),
+      target: anchor.judgmentResult(),
       completes: { kind: 'action', allow: [{ kind: 'AcknowledgeJudgmentAction' }] },
     },
     // Condenses rules.judgment.skipDraw and rules.judgment.step4.

@@ -144,13 +144,13 @@ export class TutorialOverlay {
   private readonly box = signal<Box | null>(null, { equal: sameBox });
   private readonly cardSize = signal<Size>(CARD_GUESS, { equal: (a, b) => a.width === b.width && a.height === b.height });
 
-  // Nothing to click while a bot moves, the board plays an animation or a popup closes by itself, so nothing is dimmed or ringed, the note shrinks, and the board can be watched.
+  // Nothing to click while a bot moves, the board plays an animation or a popup closes by itself, so nothing is dimmed, the note shrinks, and the board can be watched.
   protected readonly waiting = computed(() => {
     const step = this.active();
     // Also while the board plays something out, whatever the step: the beginner is only watching then.
     return !!step && (isWaiting(step) || !this.gate.idle());
   });
-  // The beginner has put the card away to see the board; it comes back with the next step.
+  // The beginner has put the card away to see the board; it stays away until they bring it back or another lesson starts.
   protected readonly minimized = signal(false);
   protected readonly blockers = computed<Box[]>(() => {
     if (this.waiting() || this.minimized()) return [];
@@ -158,9 +158,9 @@ export class TutorialOverlay {
     const box = this.box();
     return box ? holeBlockers(box, viewport, PADDING) : [{ left: 0, top: 0, width: viewport.width, height: viewport.height }];
   });
-  // No ring while waiting: it would draw the eye to a control the beginner cannot use yet.
+  // The ring stays on a waiting step: its target is what to watch (a judgment's result). Only a minimized card drops it.
   protected readonly ring = computed(() => {
-    if (this.waiting() || this.minimized()) return null;
+    if (this.minimized()) return null;
     const box = this.box();
     return box ? holeBox(box, this.viewport(), PADDING) : null;
   });
@@ -176,8 +176,9 @@ export class TutorialOverlay {
       const ids = this.targetIds();
       untracked(() => this.follow(ids));
     });
+    // A new lesson starts with the card open; within a lesson it stays as the beginner left it.
     effect(() => {
-      this.active();
+      this.tutorial.lesson();
       untracked(() => this.minimized.set(false));
     });
     window.addEventListener('resize', this.onChange);

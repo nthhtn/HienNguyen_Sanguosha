@@ -32,6 +32,8 @@ export const anchor = {
   chainBadge: (seatId: string) => `chain-badge:${seatId}`,
   // The popup that shows a judgment.
   judgmentDialog: () => 'judgment-dialog',
+  // Inside it, the part that matters once the card is turned: the card, its verdict and what it does.
+  judgmentResult: () => 'judgment-result',
   // The pick window of Steal, Break and the like: a card, a seat or a label, then Confirm.
   choiceDialog: () => 'choice-dialog',
   // The window that picks several seats for one card (Chains): tick the seats, then Confirm.

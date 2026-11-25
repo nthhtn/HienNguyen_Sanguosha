@@ -84,7 +84,7 @@ describe('the Delayed Tools and Judgment lesson steps', () => {
   it('spotlights the seat’s judgment area, the End Phase button and the judgment popup', () => {
     expect(step('placed').target).toBe('judgment-area:seat-1');
     expect(step('end-phase').target).toBe('end-phase');
-    expect(step('judged').target).toBe('judgment-dialog');
+    expect(step('judged').target).toBe('judgment-result');
     expect(step('play-starvation').target).toEqual(['target-seat:seat-1', 'hand-card:starvation']);
   });
 

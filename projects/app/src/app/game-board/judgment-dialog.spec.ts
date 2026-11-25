@@ -28,6 +28,17 @@ describe('JudgmentDialog', () => {
     expect(el.getAttribute('data-tutorial')).toBe('judgment-dialog');
   });
 
+  it('marks the result for the tutorial: the card, its verdict and what it does, but not the source or the rule', () => {
+    const { fixture, el } = render(skillDescription());
+    jest.advanceTimersByTime(3000);
+    fixture.detectChanges();
+    const result = el.querySelector('[data-tutorial="judgment-result"]')!;
+    expect(result).not.toBeNull();
+    expect(result.querySelector('.arena app-playing-card')).not.toBeNull();
+    expect(result.querySelector('.cons')).not.toBeNull();
+    expect(result.querySelector('.source')).toBeNull();
+  });
+
   it('names the source: the General, the skill and its text', () => {
     const { el } = render(skillDescription());
     expect(el.querySelector('h2')!.textContent).toContain('Judgment');
