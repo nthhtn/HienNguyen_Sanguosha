@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Action, CardInstance, ContentRegistry, GameState, Seat, isSeatDying } from 'engine';
+import { BattlefieldBackgrounds, battlefieldBackgroundCss } from '../../battlefield-background.service';
 import { I18n } from '../../i18n/i18n.service';
 import { Layout } from '../../layout.service';
 import { seatName } from '../../labels';
@@ -21,6 +22,7 @@ import { SeatDetailsDialog, SeatDetailsData } from './seat-details-dialog';
 
 // The board's padding (styles below), which phoneSizes counts in.
 const BOARD_PADDING = 8;
+const OWN_TILE_WIDTH = 150;
 
 // The board on the phone layout (spec, "The phone board"): opponents along the top and down the sides, the centre band
 // between them, and a bottom row with the viewer's seat, the hand and the action column. Drawn at real sizes; it reads
@@ -29,7 +31,7 @@ const BOARD_PADDING = 8;
   selector: 'app-phone-board',
   imports: [NgTemplateOutlet, MatButtonModule, MatTooltipModule, ActionList, HandCardActions, HandView, PhoneCentreBand, PhoneSeatTile, PlaybackLayer],
   template: `
-    <ng-template #tile let-seat let-slim="slim">
+    <ng-template #tile let-seat let-slim="slim" let-tileWidth="tileWidth" let-tileHeight="tileHeight">
       <app-phone-seat-tile
         [seat]="seat"
         [name]="nameOf(seat.id)"
@@ -45,6 +47,8 @@ const BOARD_PADDING = 8;
         [damageEffect]="damageEffects()[seat.id] ?? null"
         [dimmed]="resolving() && !cues()[seat.id]?.involved"
         [slim]="slim"
+        [tileWidth]="tileWidth"
+        [tileHeight]="tileHeight"
         (opened)="openDetails(seat.id)"
       />
     </ng-template>
@@ -52,6 +56,7 @@ const BOARD_PADDING = 8;
       #board
       class="phone-board"
       [class.sides]="hasSides()"
+      [style.background]="background()"
       [style.--side-width.px]="sizes().sideWidth"
       [style.--tile-height.px]="sizes().tileHeight"
       [style.--top-width.px]="sizes().topTileWidth"
@@ -59,24 +64,24 @@ const BOARD_PADDING = 8;
     >
       <div class="left">
         @for (seat of seats().left; track seat.id) {
-          <div class="seat" [attr.data-seat-id]="seat.id"><ng-container *ngTemplateOutlet="tile; context: { $implicit: seat, slim: sizes().slim }" /></div>
+          <div class="seat" [attr.data-seat-id]="seat.id"><ng-container *ngTemplateOutlet="tile; context: { $implicit: seat, slim: sizes().slim, tileWidth: sizes().sideWidth, tileHeight: sizes().tileHeight }" /></div>
         }
       </div>
       <div class="top">
         @for (seat of seats().top; track seat.id) {
-          <div class="seat" [attr.data-seat-id]="seat.id"><ng-container *ngTemplateOutlet="tile; context: { $implicit: seat, slim: sizes().slim }" /></div>
+          <div class="seat" [attr.data-seat-id]="seat.id"><ng-container *ngTemplateOutlet="tile; context: { $implicit: seat, slim: sizes().slim, tileWidth: sizes().topTileWidth, tileHeight: sizes().tileHeight }" /></div>
         }
       </div>
       <div class="right">
         @for (seat of seats().right; track seat.id) {
-          <div class="seat" [attr.data-seat-id]="seat.id"><ng-container *ngTemplateOutlet="tile; context: { $implicit: seat, slim: sizes().slim }" /></div>
+          <div class="seat" [attr.data-seat-id]="seat.id"><ng-container *ngTemplateOutlet="tile; context: { $implicit: seat, slim: sizes().slim, tileWidth: sizes().sideWidth, tileHeight: sizes().tileHeight }" /></div>
         }
       </div>
       <app-phone-centre-band class="centre" [state]="state()" [viewerSeatId]="viewerSeatId()" />
       <div class="bottom">
         <div class="own">
           @if (viewerSeat(); as seat) {
-            <div class="seat" [attr.data-seat-id]="seat.id"><ng-container *ngTemplateOutlet="tile; context: { $implicit: seat, slim: false }" /></div>
+            <div class="seat" [attr.data-seat-id]="seat.id"><ng-container *ngTemplateOutlet="tile; context: { $implicit: seat, slim: false, tileWidth: ownTileWidth, tileHeight: sizes().bottomHeight }" /></div>
           }
         </div>
         <app-hand-view
@@ -118,7 +123,10 @@ const BOARD_PADDING = 8;
       grid-template-columns: 1fr;
       grid-template-rows: var(--tile-height) 1fr var(--bottom-height);
       grid-template-areas: 'top' 'centre' 'bottom';
-      background: #2a2622; font-size: 14px;
+      /* Default look: the same brown table as the web board (round-table.ts); a Battlefield menu picture replaces it. */
+      background: radial-gradient(ellipse at center, #8b7559 0%, #6d5a43 55%, #4b3e2f 100%);
+      box-shadow: inset 0 0 40px rgb(0 0 0 / 45%);
+      font-size: 14px;
     }
     .phone-board.sides {
       grid-template-columns: var(--side-width) 1fr var(--side-width);
@@ -153,6 +161,7 @@ const BOARD_PADDING = 8;
   `,
 })
 export class PhoneBoard {
+  protected readonly ownTileWidth = OWN_TILE_WIDTH;
   readonly state = input.required<GameState>();
   readonly viewerSeatId = input<string | null>(null);
   readonly botSeatIds = input<string[]>([]);
@@ -170,6 +179,9 @@ export class PhoneBoard {
   private readonly layout = inject(Layout);
   private readonly i18n = inject(I18n);
   private readonly dialog = inject(MatDialog);
+  private readonly battlefieldBackgrounds = inject(BattlefieldBackgrounds);
+
+  protected readonly background = computed(() => battlefieldBackgroundCss(this.battlefieldBackgrounds.choice()));
 
   // The Seat Details window this board opened, closed with the board (turning the phone, the game ending).
   private details: MatDialogRef<SeatDetailsDialog> | null = null;
@@ -217,9 +229,11 @@ export class PhoneBoard {
 
   constructor() {
     this.layout.setBoardOpen(true);
+    this.battlefieldBackgrounds.available.set(true);
     const destroyRef = inject(DestroyRef);
     destroyRef.onDestroy(() => {
       this.layout.setBoardOpen(false);
+      this.battlefieldBackgrounds.available.set(false);
       this.details?.close();
     });
     // A camera cut-out or rounded corner (env(safe-area-inset-*)) leaves the board less room than the window.

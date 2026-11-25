@@ -1,4 +1,5 @@
-import { InjectionToken, isDevMode } from '@angular/core';
+import { InjectionToken } from '@angular/core';
+import { DEV_FEATURES } from './dev/dev-routes';
 import type { DisplayMode } from './layout.service';
 
 const KEY = 'sgs.display';
@@ -40,5 +41,5 @@ function sessionStorageOrNull(): Storage | null {
 
 export const DISPLAY_MODE_OVERRIDE = new InjectionToken<DisplayMode | null>('DISPLAY_MODE_OVERRIDE', {
   providedIn: 'root',
-  factory: () => readDisplayModeOverride(window.location.search, sessionStorageOrNull(), isDevMode()),
+  factory: () => readDisplayModeOverride(window.location.search, sessionStorageOrNull(), DEV_FEATURES),
 });

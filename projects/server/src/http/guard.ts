@@ -3,12 +3,30 @@ import { errorBody } from './errors';
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
+// Whether a request Origin is allowed for CSRF. In production only PUBLIC_ORIGIN
+// matches. In development, local hosts and a phone-testing tunnel are accepted too
+// (the Angular dev server proxies /api and keeps the browser Origin as the tunnel).
+export function originAllowed(origin: string | undefined, publicOrigin: string, production: boolean): boolean {
+  if (!origin) return false;
+  if (origin === publicOrigin) return true;
+  if (production) return false;
+  try {
+    const url = new URL(origin);
+    const host = url.hostname;
+    if (host === 'localhost' || host === '127.0.0.1') return true;
+    if (host.endsWith('.trycloudflare.com')) return url.protocol === 'https:';
+  } catch {
+    return false;
+  }
+  return false;
+}
+
 // CSRF guard: a state-changing request must come from our own origin and be
 // JSON (which a plain cross-site form can't send).
-export function requestGuard(publicOrigin: string) {
+export function requestGuard(publicOrigin: string, production = true) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     if (SAFE_METHODS.has(request.method)) return;
-    if (request.headers.origin !== publicOrigin) return reply.code(403).send(errorBody('bad_origin'));
+    if (!originAllowed(request.headers.origin, publicOrigin, production)) return reply.code(403).send(errorBody('bad_origin'));
     if (!/^application\/json\s*(;|$)/i.test(request.headers['content-type'] ?? '')) return reply.code(415).send(errorBody('unsupported_media_type'));
   };
 }

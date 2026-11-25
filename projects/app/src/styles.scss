@@ -179,7 +179,14 @@ html[data-layout='compact'] .cdk-overlay-container {
   button {
     min-height: 44px;
   }
-  app-playing-card .name {
+  // Seat and card picker tiles bring their own height (General portraits); the 44 px rule is for text buttons.
+  button.option,
+  button.item,
+  button.pk {
+    min-height: unset;
+  }
+  // Typography on `.name-text` only: `-webkit-box` on the absolutely positioned `.name` shell misaligns badges in WebKit.
+  app-playing-card .name-text {
     font-size: 14px;
     line-height: 1.1;
     white-space: normal;
@@ -187,15 +194,21 @@ html[data-layout='compact'] .cdk-overlay-container {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   // A small card (44 px wide, the resolution notice) cannot hold 14 px names: 12 px, the floor. These selectors outrank
-  // the card's own `.small .name` sizes.
-  app-playing-card .small .name,
+  // the card's own `.small .name-text` sizes.
+  app-playing-card .small .name-text {
+    font-size: 12px;
+  }
   app-playing-card .small .face,
   app-playing-card .small .stat {
     font-size: 12px;
+    line-height: 1;
+    padding: 0 2px;
   }
 }
+
 
 // The phone board hides the app toolbar during a game (layout.service.ts): no height to leave room for.
 html[data-board='open'] {
