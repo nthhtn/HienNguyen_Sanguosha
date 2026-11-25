@@ -1,6 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { artSetName, DEFAULT_ART_SET, generalSkinForce, generalSkinUrl, type GeneralForce } from 'content';
+import { artSetName, artSetProvenance, DEFAULT_ART_SET, generalSkinForce, generalSkinUrl, type GeneralForce } from 'content';
 import { artGeneralName } from '../art-general-name';
 import { ArtSets } from '../art-sets.service';
 import { I18n } from '../i18n/i18n.service';
@@ -89,7 +89,7 @@ export class ArtSetsBySet {
             url: generalSkinUrl(general, { global: id, overrides: {}, catalog }) ?? '',
           })),
       })).filter((group) => group.generals.length > 0);
-      return { id, name: artSetName(entry, locale), count: entry.portraits.length, total, missing: total - entry.portraits.length, provenance: entry.provenance, inUse: id === global, groups };
+      return { id, name: artSetName(entry, locale), count: entry.portraits.length, total, missing: total - entry.portraits.length, provenance: artSetProvenance(entry, locale), inUse: id === global, groups };
     });
   });
 }

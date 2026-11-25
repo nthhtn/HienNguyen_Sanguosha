@@ -10,7 +10,7 @@ export const DEFAULT_ART_SET: ArtSetId = 'classic';
 
 export interface ArtSetEntry {
   names: { en: string; vi: string };
-  provenance: string;
+  provenance: { en: string; vi: string };
   // Base General ids this set has a portrait for, and the subset that also has a face crop.
   portraits: readonly string[];
   faces: readonly string[];
@@ -55,4 +55,9 @@ export function artSetGeneralId(id: string): string {
 
 export function artSetName(entry: ArtSetEntry, locale: string): string {
   return locale === 'vi' ? entry.names.vi : entry.names.en;
+}
+
+// The set's description (where its artwork came from), in the language asked for, else English.
+export function artSetProvenance(entry: ArtSetEntry, locale: string): string {
+  return locale === 'vi' ? entry.provenance.vi : entry.provenance.en;
 }

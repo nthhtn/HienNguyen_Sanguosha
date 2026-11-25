@@ -7,8 +7,8 @@ export function fakeCatalog(): ArtSetCatalog {
   return {
     order: ['classic', 'ink'],
     sets: {
-      classic: { names: { en: 'Classic', vi: 'Cổ điển' }, provenance: 'test', portraits: ['cao-cao', 'guan-yu', 'zhang-fei', 'zhao-yun'], faces: ['cao-cao', 'guan-yu', 'zhang-fei', 'zhao-yun'] },
-      ink: { names: { en: 'Ink Wash', vi: 'Thủy mặc' }, provenance: 'test', portraits: ['cao-cao', 'guan-yu'], faces: ['cao-cao'] },
+      classic: { names: { en: 'Classic', vi: 'Cổ điển' }, provenance: { en: 'test', vi: 'thử' }, portraits: ['cao-cao', 'guan-yu', 'zhang-fei', 'zhao-yun'], faces: ['cao-cao', 'guan-yu', 'zhang-fei', 'zhao-yun'] },
+      ink: { names: { en: 'Ink Wash', vi: 'Thủy mặc' }, provenance: { en: 'test', vi: 'thử' }, portraits: ['cao-cao', 'guan-yu'], faces: ['cao-cao'] },
     },
   };
 }

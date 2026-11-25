@@ -88,7 +88,7 @@ describe('ArtSetsDialog', () => {
     const base = fakeCatalog();
     const catalog: ArtSetCatalog = {
       order: [...base.order, 'studio'],
-      sets: { ...base.sets, studio: { names: { en: 'Studio', vi: 'Studio' }, provenance: 'test', portraits: ['zhao-yun'], faces: [] } },
+      sets: { ...base.sets, studio: { names: { en: 'Studio', vi: 'Studio' }, provenance: { en: 'test', vi: 'thử' }, portraits: ['zhao-yun'], faces: [] } },
     };
     localStorage.setItem('art-set', 'ink');
     TestBed.configureTestingModule({ imports: [ArtSetsDialog], providers: [{ provide: ART_SET_CATALOG_TOKEN, useValue: catalog }, provideRouter([])] });

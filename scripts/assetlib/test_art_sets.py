@@ -12,8 +12,8 @@ from assetlib.testutil import make_layout
 INDEX_PATH = 'generals/skins/art-sets.json'
 SKINS = {'cao-cao': 'wei/caocao', 'guan-yu': 'shu/guanyu'}
 REGISTRY = {
-    'classic': {'names': {'en': 'Classic', 'vi': 'Cổ điển'}, 'provenance': 'Original portraits'},
-    'ink': {'names': {'en': 'Ink Wash', 'vi': 'Thủy mặc'}, 'provenance': 'Example set'},
+    'classic': {'names': {'en': 'Classic', 'vi': 'Cổ điển'}, 'provenance': {'en': 'Original portraits', 'vi': 'Chân dung gốc'}},
+    'ink': {'names': {'en': 'Ink Wash', 'vi': 'Thủy mặc'}, 'provenance': {'en': 'Example set', 'vi': 'Bộ ví dụ'}},
 }
 BOXES = {'classic/wei/caocao': [2, 3, 4, 4], 'classic/shu/guanyu': [2, 3, 4, 4], 'ink/wei/caocao': [2, 3, 4, 4]}
 
@@ -79,7 +79,7 @@ class ArtSetsIndex(unittest.TestCase):
         index = index_of(make())
         self.assertEqual(index['order'], ['classic', 'ink'])
         self.assertEqual(index['sets']['ink']['names'], {'en': 'Ink Wash', 'vi': 'Thủy mặc'})
-        self.assertEqual(index['sets']['ink']['provenance'], 'Example set')
+        self.assertEqual(index['sets']['ink']['provenance'], {'en': 'Example set', 'vi': 'Bộ ví dụ'})
 
     def test_a_set_folder_without_a_registry_entry_fails(self):
         layout = make(extra={'generals/skins/studio/wei/caocao.png': b'x'}, boxes=dict(BOXES, **{'studio/wei/caocao': [2, 3, 4, 4]}))
@@ -88,10 +88,18 @@ class ArtSetsIndex(unittest.TestCase):
         self.assertIn('studio', str(ctx.exception))
 
     def test_a_registry_entry_without_a_folder_fails(self):
-        registry = dict(REGISTRY, ghost={'names': {'en': 'Ghost', 'vi': 'Ma'}, 'provenance': 'none'})
+        registry = dict(REGISTRY, ghost={'names': {'en': 'Ghost', 'vi': 'Ma'}, 'provenance': {'en': 'none', 'vi': 'không'}})
         with self.assertRaises(PlanError) as ctx:
             plan_outputs(make(registry=registry))
         self.assertIn('ghost', str(ctx.exception))
+
+    def test_a_registry_entry_needs_names_and_provenance_in_both_languages(self):
+        for field, broken in (('names', {'en': 'Ink Wash'}), ('provenance', {'en': 'Example set', 'vi': ''}), ('provenance', 'Example set')):
+            registry = {**REGISTRY, 'ink': {**REGISTRY['ink'], field: broken}}
+            with self.assertRaises(PlanError) as ctx:
+                plan_outputs(make(registry=registry))
+            self.assertIn('ink', str(ctx.exception))
+            self.assertIn(field, str(ctx.exception))
 
     def test_a_skin_not_in_skins_json_fails(self):
         layout = make(extra={'generals/skins/ink/wu/sunquan.png': b'x'}, boxes=dict(BOXES, **{'ink/wu/sunquan': [2, 3, 4, 4]}))

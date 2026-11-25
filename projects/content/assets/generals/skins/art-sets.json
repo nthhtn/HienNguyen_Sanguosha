@@ -8,7 +8,10 @@
         "en": "Classic",
         "vi": "Cổ điển"
       },
-      "provenance": "The original portraits, from open-source references (see the README for provenance and use).",
+      "provenance": {
+        "en": "The original portraits, from open-source references.",
+        "vi": "Các chân dung gốc, lấy từ những nguồn tham khảo mã nguồn mở."
+      },
       "portraits": [
         "cai-wenji",
         "cao-cao",

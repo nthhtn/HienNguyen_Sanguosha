@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { generalSkinUrl } from 'content';
 import { ART_SET_CATALOG_TOKEN, ArtSets } from '../art-sets.service';
 import { fakeCatalog, provideFakeArtSets } from '../art-sets.testing';
+import { I18n } from '../i18n/i18n.service';
 import { ArtSetsBySet } from './art-sets-by-set';
 
 function render() {
@@ -25,6 +26,13 @@ describe('ArtSetsBySet', () => {
     expect(text(section(el, 'classic').querySelector('.coverage'))).toBe('4 of 4 Generals');
     expect(text(section(el, 'ink').querySelector('.coverage'))).toBe('2 of 4 Generals');
     expect(text(section(el, 'ink').querySelector('.provenance'))).toBe('test');
+  });
+
+  it('shows the description in Vietnamese in Vietnamese', async () => {
+    const { fixture, el } = render();
+    await TestBed.inject(I18n).setLocale('vi');
+    fixture.detectChanges();
+    expect(text(section(el, 'ink').querySelector('.provenance'))).toBe('thử');
   });
 
   it('groups the Generals a set covers by Force in the order Wei, Shu, Wu, Qun, leaving empty Forces out', () => {

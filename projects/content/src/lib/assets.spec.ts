@@ -330,7 +330,7 @@ describe('generalFaceUrl', () => {
 
 
 describe('portraits and faces by art set', () => {
-  const entry = (portraits: string[], faces: string[]) => ({ names: { en: 'x', vi: 'x' }, provenance: 'test', portraits, faces });
+  const entry = (portraits: string[], faces: string[]) => ({ names: { en: 'x', vi: 'x' }, provenance: { en: 'test', vi: 'thử' }, portraits, faces });
   const catalog: ArtSetCatalog = {
     order: ['classic', 'ink'],
     sets: { classic: entry(['cao-cao', 'guan-yu', 'zhang-fei'], ['cao-cao', 'guan-yu', 'zhang-fei']), ink: entry(['cao-cao', 'guan-yu'], ['cao-cao']) },
@@ -377,6 +377,15 @@ describe('the shipped art set catalog', () => {
       }
     }
     expect(missing).toEqual([]);
+  });
+
+  it('describes every set in English and Vietnamese, without a pointer to the README', () => {
+    for (const entry of Object.values(ART_SET_CATALOG.sets)) {
+      for (const text of [entry.provenance.en, entry.provenance.vi, entry.names.en, entry.names.vi]) {
+        expect(text.trim()).not.toBe('');
+        expect(text).not.toMatch(/README/);
+      }
+    }
   });
 
   it('gives classic a portrait for every General with a skin; a face crop is optional', () => {

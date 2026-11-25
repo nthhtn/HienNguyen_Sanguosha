@@ -1,9 +1,9 @@
 {
   "README.md": {
-    "output": "f8713a4ded5cf70de4dd79d2093707ce2850a98a4cb16599df36f5d9b97b0f16",
+    "output": "f64b44e095776cf63a4728d879aaaf7c6d982d2ed9bb05342198bc497977f0dd",
     "settings": "e79dd7d8df4fca4ecb05dbaa1d90e5741855cd88176b96d6cb30fca52f58c714",
     "sources": {
-      "README.md": "f8713a4ded5cf70de4dd79d2093707ce2850a98a4cb16599df36f5d9b97b0f16"
+      "README.md": "f64b44e095776cf63a4728d879aaaf7c6d982d2ed9bb05342198bc497977f0dd"
     }
   },
   "audio/death/forces/qun.ogg": {
@@ -2247,8 +2247,8 @@
     }
   },
   "generals/skins/art-sets.json": {
-    "output": "bf3f8fc2741bfc159a14a0512edb9e4fdffbcf8fa25e57b7e97f1f03af8459df",
-    "settings": "eea45699a4c353badd466f9fe874901c8a3ed80eadec8eda1c37323534692bb3",
+    "output": "d8e457abb1f635a97d2b11ab41cfc15ea06c86b94bfe31fa39551679a72821a2",
+    "settings": "9f65a6c12e4692aa9eca9fbf355d9ee1d8b6d305e76ba780f55ebd0e27020f74",
     "sources": {
       "generals/skins/classic/qun/caiwenji.png": "01cd16ace6c354a120336e5d72a50abbb03bf0fb0939a0060053103bc62fc08a",
       "generals/skins/classic/qun/diaochan.png": "33e79257697749c0eabb9ddf08f323ff591fecde0aec54197bc6d631ee8fa0e5",
@@ -2316,7 +2316,7 @@
       "generals/skins/classic/wu/xiaoqiao.png": "082931fbc552425496b92b04139ec7a08bdef427e1d3b0f606380162fd149f95",
       "generals/skins/classic/wu/zhoutai.png": "67e1695a5d185eb7f7be83c55072360993349c3b42a3978013482a6e7771a8a6",
       "generals/skins/classic/wu/zhouyu.png": "ebde845fefc6ef82591e58c74ca6c2ef3ebaca4323fcca032c17d72ba39524aa",
-      "generals/skins/sets.json": "25bbaec9ebe5095b1313a837ac7f68ba303c586b221876146fbd84b7e57ff067",
+      "generals/skins/sets.json": "6da0fc3cc366d024697d14f6e57002bba039e7df5a65ad1759a7f95f50dd6fd1",
       "generals/skins/skins.json": "77c6cbcabc811ec7dae20d63efeae9607b4d7ad5528cdfdcc01a5019e70c7562"
     }
   },

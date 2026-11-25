@@ -1,6 +1,6 @@
-import { ArtChoice, ArtSetCatalog, ArtSetEntry, DEFAULT_ART_CHOICE, DEFAULT_ART_SET, artSetGeneralId, artSetName, resolveArtSet, setsCovering } from './artSets';
+import { ArtChoice, ArtSetCatalog, ArtSetEntry, DEFAULT_ART_CHOICE, DEFAULT_ART_SET, artSetGeneralId, artSetName, artSetProvenance, resolveArtSet, setsCovering } from './artSets';
 
-const entry = (names: { en: string; vi: string }, portraits: string[], faces: string[]): ArtSetEntry => ({ names, provenance: 'test', portraits, faces });
+const entry = (names: { en: string; vi: string }, portraits: string[], faces: string[]): ArtSetEntry => ({ names, provenance: { en: 'test', vi: 'thử' }, portraits, faces });
 
 const catalog: ArtSetCatalog = {
   order: ['classic', 'ink'],
@@ -53,6 +53,14 @@ describe('artSetName', () => {
     expect(artSetName(catalog.sets['ink'], 'vi')).toBe('Thủy mặc');
     expect(artSetName(catalog.sets['ink'], 'en')).toBe('Ink Wash');
     expect(artSetName(catalog.sets['ink'], 'fr')).toBe('Ink Wash');
+  });
+});
+
+describe('artSetProvenance', () => {
+  it('gives the Vietnamese description for vi and English for anything else', () => {
+    expect(artSetProvenance(catalog.sets['ink'], 'vi')).toBe('thử');
+    expect(artSetProvenance(catalog.sets['ink'], 'en')).toBe('test');
+    expect(artSetProvenance(catalog.sets['ink'], 'fr')).toBe('test');
   });
 });
 

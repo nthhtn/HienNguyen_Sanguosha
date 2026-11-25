@@ -142,6 +142,11 @@ def _art_sets_outputs(layout: Layout, key: str, recipe: dict, planned: List[Outp
     skins_rel = '{}/skins.json'.format(skins_dir)
     registry = _read_json(layout.src / registry_rel, 'the art set registry')
     skins = _read_json(layout.src / skins_rel, 'skins.json')
+    for set_id, entry in registry.items():
+        for field in ('names', 'provenance'):
+            text = entry.get(field) if isinstance(entry, dict) else None
+            if not isinstance(text, dict) or not all(isinstance(text.get(lang), str) and text[lang].strip() for lang in ('en', 'vi')):
+                raise PlanError('art set {} needs {} in English and Vietnamese ({{"en": ..., "vi": ...}}) in {}'.format(set_id, field, Path(registry_rel).name))
     base = layout.src / skins_dir
     folders = sorted(p.name for p in base.iterdir() if p.is_dir()) if base.is_dir() else []
     for folder in folders:

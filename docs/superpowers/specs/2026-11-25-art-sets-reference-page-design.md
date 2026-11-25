@@ -122,7 +122,7 @@ Give players a reference page where they can look at every art set, then choose 
 
 - **Pressing a tile** always stores an override (see By General above); "Pinned" and "Follow Global Set" keep that visible.
 - **Browse from the picker** navigates away like the Rules link; no guard exists in the app.
-- **Provenance** is one English string in the catalog and is shown as it is in Vietnamese too. Translating it would need a catalog change, which is out of scope.
+- **Provenance** (the set's description) was first one English string. It is now `{ en, vi }` in the registry and the catalog, shown in the language in use, and the build refuses a registry entry missing either language.
 
 ## What is left to the builder
 
