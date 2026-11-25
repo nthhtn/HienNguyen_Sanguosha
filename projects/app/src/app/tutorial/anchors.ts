@@ -32,6 +32,8 @@ export const anchor = {
   chainBadge: (seatId: string) => `chain-badge:${seatId}`,
   // The popup that shows a judgment.
   judgmentDialog: () => 'judgment-dialog',
+  // The pick window of Steal, Break and the like: a card, a seat or a label, then Confirm.
+  choiceDialog: () => 'choice-dialog',
 } as const;
 
 // Whether `id` is one a builder above makes: the board and the lessons agree on the ids through the builders alone.

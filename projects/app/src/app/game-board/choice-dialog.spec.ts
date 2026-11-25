@@ -27,6 +27,11 @@ function render() {
 }
 
 describe('ChoiceDialog', () => {
+  it('marks the whole window for the Tutorial, which spotlights it while the beginner picks', () => {
+    const { el } = render();
+    expect(el.getAttribute('data-tutorial')).toBe('choice-dialog');
+  });
+
   it('has a View Board button to minimize it', () => {
     const { el } = render();
     expect(el.querySelector('app-minimize-button')).not.toBeNull();
