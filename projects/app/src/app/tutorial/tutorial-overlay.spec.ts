@@ -395,6 +395,70 @@ describe('TutorialOverlay', () => {
     });
   });
 
+  describe('minimizing the instructions', () => {
+    const minimize = () => (el.querySelector('button.minimize') as HTMLButtonElement).click();
+    const restore = () => (el.querySelector('button.restore') as HTMLButtonElement).click();
+
+    it('shrinks the card to one small button and drops the dim and the ring', () => {
+      anchored('end-phase', rect(400, 300, 100, 40));
+      create();
+      show(0, 'damage');
+      expect(blockers()).toHaveLength(4);
+      expect(el.querySelector('button.minimize')!.textContent!.trim()).toBe('Minimize');
+      minimize();
+      fixture.detectChanges();
+      expect(el.querySelector('.card')).toBeNull();
+      expect(blockers()).toHaveLength(0);
+      expect(ring()).toBeNull();
+      expect(el.querySelector('button.restore')!.textContent!.trim()).toBe('Show Instructions');
+    });
+
+    it('brings the card, the ring and the dim back on Show Instructions', () => {
+      anchored('end-phase', rect(400, 300, 100, 40));
+      create();
+      show(0, 'damage');
+      minimize();
+      fixture.detectChanges();
+      restore();
+      fixture.detectChanges();
+      expect(el.querySelector('.card')).not.toBeNull();
+      expect(el.querySelector('button.restore')).toBeNull();
+      expect(blockers()).toHaveLength(4);
+      expect(ring()).not.toBeNull();
+    });
+
+    it('can be minimized on a waiting step too', () => {
+      anchored('hand', rect(100, 100, 200, 50));
+      create();
+      show();
+      minimize();
+      fixture.detectChanges();
+      expect(el.querySelector('.card')).toBeNull();
+      expect(el.querySelector('button.restore')).not.toBeNull();
+    });
+
+    it('opens the card again when the next step comes', () => {
+      anchored('hand', rect(100, 100, 200, 50));
+      create();
+      show();
+      minimize();
+      fixture.detectChanges();
+      service.next();
+      fixture.detectChanges();
+      expect(el.querySelector('.card')).not.toBeNull();
+      expect(el.querySelector('button.restore')).toBeNull();
+    });
+
+    it('keeps the Exit reachable: it is on the minimized state too', () => {
+      anchored('hand', rect(100, 100, 200, 50));
+      create();
+      show();
+      minimize();
+      fixture.detectChanges();
+      expect(el.querySelector('.minimized button.exit')).not.toBeNull();
+    });
+  });
+
   describe('buttons', () => {
     it('has Next and Exit Tutorial on a next step', () => {
       anchored('hand', rect(100, 100, 200, 50));

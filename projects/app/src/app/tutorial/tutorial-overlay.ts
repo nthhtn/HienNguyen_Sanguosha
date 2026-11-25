@@ -66,15 +66,26 @@ export class TutorialTopLayer {
         @if (ring(); as r) {
           <div class="ring" style="pointer-events: none" [style.left.px]="r.left" [style.top.px]="r.top" [style.width.px]="r.width" [style.height.px]="r.height"></div>
         }
-        <section class="card" [class.compact]="waiting()" style="pointer-events: auto" role="status" aria-live="polite" [attr.data-side]="placement().side" [style.left.px]="placement().left" [style.top.px]="placement().top">
-          <p class="text">{{ textKey()! | t }}</p>
-          <div class="buttons">
+        @if (minimized()) {
+          <div class="minimized" style="pointer-events: auto" role="status">
+            <button mat-flat-button type="button" class="restore" (click)="minimized.set(false)">{{ 'tutorial.restore' | t }}</button>
             <button mat-button type="button" class="exit" (click)="tutorial.exit()">{{ 'tutorial.exit' | t }}</button>
             @if (active()!.completes.kind === 'next') {
-              <button mat-flat-button type="button" class="next" (click)="tutorial.next()">{{ 'tutorial.next' | t }}</button>
+              <button mat-button type="button" class="next" (click)="tutorial.next()">{{ 'tutorial.next' | t }}</button>
             }
           </div>
-        </section>
+        } @else {
+          <section class="card" [class.compact]="waiting()" style="pointer-events: auto" role="status" aria-live="polite" [attr.data-side]="placement().side" [style.left.px]="placement().left" [style.top.px]="placement().top">
+            <p class="text">{{ textKey()! | t }}</p>
+            <div class="buttons">
+              <button mat-button type="button" class="minimize" (click)="minimized.set(true)">{{ 'tutorial.minimize' | t }}</button>
+              <button mat-button type="button" class="exit" (click)="tutorial.exit()">{{ 'tutorial.exit' | t }}</button>
+              @if (active()!.completes.kind === 'next') {
+                <button mat-flat-button type="button" class="next" (click)="tutorial.next()">{{ 'tutorial.next' | t }}</button>
+              }
+            </div>
+          </section>
+        }
       </div>
     }
   `,
@@ -95,6 +106,11 @@ export class TutorialTopLayer {
     /* A waiting step shrinks to a small, see-through note, so the board behind it stays in view. */
     .card.compact { width: 240px; padding: 8px 12px; gap: 4px; border-radius: 12px; opacity: 0.85; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35); }
     .compact .text { font-size: 0.85rem; line-height: 1.35; }
+    /* The card put away: two small buttons in the bottom-left corner, so the board is in full view. */
+    .minimized {
+      position: absolute; left: 8px; bottom: 8px; display: flex; gap: 4px; align-items: center; padding: 4px 6px; border-radius: 999px;
+      background: var(--mat-sys-surface-container-high, #fff); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35); opacity: 0.9;
+    }
     .text { margin: 0; font-size: 1rem; line-height: 1.45; }
     .buttons { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
   `,
@@ -134,15 +150,17 @@ export class TutorialOverlay {
     // Also while the board plays something out, whatever the step: the beginner is only watching then.
     return !!step && (isWaiting(step) || !this.gate.idle());
   });
+  // The beginner has put the card away to see the board; it comes back with the next step.
+  protected readonly minimized = signal(false);
   protected readonly blockers = computed<Box[]>(() => {
-    if (this.waiting()) return [];
+    if (this.waiting() || this.minimized()) return [];
     const viewport = this.viewport();
     const box = this.box();
     return box ? holeBlockers(box, viewport, PADDING) : [{ left: 0, top: 0, width: viewport.width, height: viewport.height }];
   });
   // No ring while waiting: it would draw the eye to a control the beginner cannot use yet.
   protected readonly ring = computed(() => {
-    if (this.waiting()) return null;
+    if (this.waiting() || this.minimized()) return null;
     const box = this.box();
     return box ? holeBox(box, this.viewport(), PADDING) : null;
   });
@@ -157,6 +175,10 @@ export class TutorialOverlay {
     effect(() => {
       const ids = this.targetIds();
       untracked(() => this.follow(ids));
+    });
+    effect(() => {
+      this.active();
+      untracked(() => this.minimized.set(false));
     });
     window.addEventListener('resize', this.onChange);
     window.addEventListener('scroll', this.onChange, true);

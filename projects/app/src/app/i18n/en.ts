@@ -1388,4 +1388,6 @@ export const en = {
   'tutorial.replaceWarning': 'A lesson replaces the game in progress on this device. That game will be lost.',
   'tutorial.next': 'Next',
   'tutorial.exit': 'Exit Tutorial',
+  'tutorial.minimize': 'Minimize',
+  'tutorial.restore': 'Show Instructions',
 } satisfies Record<string, string>;

@@ -1356,4 +1356,6 @@ export const vi: Messages = {
   'tutorial.replaceWarning': 'Bài học sẽ thay ván đang chơi trên thiết bị này. Ván đó sẽ mất.',
   'tutorial.next': 'Tiếp',
   'tutorial.exit': 'Thoát hướng dẫn',
+  'tutorial.minimize': 'Thu nhỏ',
+  'tutorial.restore': 'Hiện hướng dẫn',
 };
