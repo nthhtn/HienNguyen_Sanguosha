@@ -1332,6 +1332,19 @@ export const en = {
   'tutorial.tools.s7': 'The Weapon went to the Discard Pile, and the Action History shows both Tools.',
   'tutorial.tools.s7p': 'The Weapon went to the Discard Pile. Open History to see it and both Tools.',
   'tutorial.tools.s8': 'Before a Tool takes effect, another seat may cancel it with Wuxie. Nobody held one here, so both worked. The next lesson shows how it is cancelled.',
+  'tutorial.wuxie.title': 'Wuxie',
+  'tutorial.wuxie.summary': 'Cancel a Tool with Wuxie, then see a Wuxie cancelled and cancelled again.',
+  // Condenses rules.response.wuxieIntro.
+  'tutorial.wuxie.s1': 'The seat before you played Break on you. Before a Tool takes effect, the game asks each seat that holds a Wuxie, in seat order. You hold two, and this window is that check.',
+  // Condenses rules.response.chain2.
+  'tutorial.wuxie.s2': 'Pick Wuxie and press Confirm. Break is cancelled, unless someone answers your Wuxie.',
+  // Condenses rules.response.chain3.
+  'tutorial.wuxie.s3': 'The seat after you holds a Wuxie too, and plays it on yours. Your Wuxie is cancelled, so Break is about to take effect again.',
+  'tutorial.wuxie.s3p': 'The seat after you holds a Wuxie too, and plays it on yours. Your Wuxie is cancelled, so Break is about to take effect again. Open History to follow it.',
+  'tutorial.wuxie.s4': 'You hold a second Wuxie. Pick it and press Confirm to cancel theirs: a seat may answer any Wuxie, including one played against its own.',
+  // Condenses rules.response.chain4 and rules.response.breakCancelled.
+  'tutorial.wuxie.s5': 'Nobody holds another Wuxie, so Break is cancelled and you keep your cards. Any length of chain works the same way: the last Wuxie decides.',
+  'tutorial.wuxie.s5p': 'Nobody holds another Wuxie, so Break is cancelled and you keep your cards. The last Wuxie decides, however long the chain. Open History to read it.',
   'tutorial.page.title': 'Tutorial',
   'tutorial.page.intro': 'Short lessons on the real board. A spotlight shows you what to do, one step at a time.',
   'tutorial.group.basics': 'Basics',
