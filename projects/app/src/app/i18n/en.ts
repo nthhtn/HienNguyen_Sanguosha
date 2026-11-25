@@ -1282,6 +1282,18 @@ export const en = {
   'tutorial.shaShan.s6': 'It is the next seat’s turn. Its Start, Judgment and Draw Phases pass by themselves, then it plays Sha on you.',
   'tutorial.shaShan.s7': 'A response window opens for you. You may play Shan or pass: pick Shan, then press Confirm.',
   'tutorial.shaShan.s8': 'Your Shan stopped the Sha, so nothing is lost. Any seat can answer a Sha this way.',
+  'tutorial.damage.title': 'Damage and Recovery',
+  'tutorial.damage.summary': 'Take damage from a Sha you cannot answer, then recover HP with Peach.',
+  // Condenses rules.response.sha2.
+  'tutorial.damage.s1': 'The seat next to you played Sha on you, and a response window opened. You hold no Shan, so you can only pass.',
+  'tutorial.damage.s2': 'Choose to play nothing, then press Confirm.',
+  // Condenses rules.damage.hpText and rules.damage.hpEx.
+  'tutorial.damage.s3': 'The Sha has no answer, so it deals 1 damage. Each point of damage removes 1 HP.',
+  'tutorial.damage.s3b': 'The attacker ends its turn and yours begins. Start, Judgment and Draw pass by themselves, then the Play Phase waits for you.',
+  'tutorial.damage.s4': 'Peach recovers 1 HP. Hover over it and press Play.',
+  'tutorial.damage.s4p': 'Peach recovers 1 HP. Tap it and press Play.',
+  'tutorial.damage.s5': 'Your Peach recovered 1 HP.',
+  'tutorial.damage.s6': 'Recovery can never take you above your maximum HP, so a Peach at full HP would be wasted.',
   'tutorial.next': 'Next',
   'tutorial.exit': 'Exit Tutorial',
 } satisfies Record<string, string>;
