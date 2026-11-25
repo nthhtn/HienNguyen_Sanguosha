@@ -1359,6 +1359,20 @@ export const en = {
   // Condenses rules.judgment.skipDraw and rules.judgment.step4.
   'tutorial.judgment.s6': 'That seat skipped its Draw Phase and went straight from Judgment to Play with no new cards. Starvation went to the Discard Pile.',
   'tutorial.judgment.s7': 'Had the card been a club, the seat would have drawn as usual. A Delayed Tool is judged in its holder’s Judgment Phase, and Wuxie can cancel it when it is judged.',
+  'tutorial.chains.title': 'Chains',
+  'tutorial.chains.summary': 'Chain two seats, then hit one with fire and watch the damage pass along the chain.',
+  // Condenses rules.chains.lead.
+  'tutorial.chains.s1': 'Chains links seats together. A chained seat passes fire and thunder damage on to every other chained seat.',
+  // Condenses rules.chains.chainText.
+  'tutorial.chains.s2': 'Hover over Chains and press Play. Tick the seat on each side of you, then press Confirm. Chains works on 1 or 2 seats at any distance.',
+  'tutorial.chains.s2p': 'Tap Chains and press Play. Tick the seat on each side of you, then press Confirm. Chains works on 1 or 2 seats at any distance.',
+  'tutorial.chains.s3': 'Both seats are chained now, and the badge shows it. Playing Chains on a chained seat would free it again.',
+  'tutorial.chains.s4': 'Hover over Fire Attack and press Play, then choose one of the chained seats. Fire Attack deals fire damage if it is not answered.',
+  'tutorial.chains.s4p': 'Tap Fire Attack, press Play, then choose one of the chained seats. Fire Attack deals fire damage if it is not answered.',
+  // Condenses rules.chains.waveText.
+  'tutorial.chains.s5': 'That seat holds no Shan, so it takes 1 fire damage and is unchained. Then the other chained seat takes the same damage and is unchained too.',
+  'tutorial.chains.s5p': 'That seat holds no Shan, so it takes 1 fire damage and is unchained. Then the other chained seat takes the same damage and is unchained too. Open History to follow it.',
+  'tutorial.chains.s6': 'Both seats lost 1 HP and neither is chained now. Only fire and thunder damage travels along a chain: plain damage never does.',
   'tutorial.page.title': 'Tutorial',
   'tutorial.page.intro': 'Short lessons on the real board. A spotlight shows you what to do, one step at a time.',
   'tutorial.group.basics': 'Basics',
