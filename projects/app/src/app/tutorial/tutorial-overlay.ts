@@ -1,6 +1,7 @@
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { Component, DestroyRef, Directive, ElementRef, Injector, afterNextRender, computed, effect, inject, signal, untracked } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { PlaybackGate } from '../playback-gate.service';
 import { TPipe } from '../i18n/t.pipe';
 import type { MessageKey } from '../i18n/messages';
 import { Layout } from '../layout.service';
@@ -91,7 +92,7 @@ export class TutorialTopLayer {
       background: var(--mat-sys-surface-container-high, #fff); color: var(--mat-sys-on-surface, #000);
       box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
     }
-    // A waiting step shrinks to a small, see-through note, so the board behind it stays in view.
+    /* A waiting step shrinks to a small, see-through note, so the board behind it stays in view. */
     .card.compact { width: 240px; padding: 8px 12px; gap: 4px; border-radius: 12px; opacity: 0.85; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35); }
     .compact .text { font-size: 0.85rem; line-height: 1.35; }
     .text { margin: 0; font-size: 1rem; line-height: 1.45; }
@@ -102,6 +103,7 @@ export class TutorialOverlay {
   protected readonly zIndex = OVERLAY_Z_INDEX;
   protected readonly tutorial = inject(TutorialService);
   private readonly layout = inject(Layout);
+  private readonly gate = inject(PlaybackGate);
   private readonly host: ElementRef<HTMLElement> = inject(ElementRef);
 
   // The step on show: none before a lesson starts or once it has finished (the page then shows what comes next).
@@ -126,10 +128,11 @@ export class TutorialOverlay {
   private readonly box = signal<Box | null>(null, { equal: sameBox });
   private readonly cardSize = signal<Size>(CARD_GUESS, { equal: (a, b) => a.width === b.width && a.height === b.height });
 
-  // Nothing to click while a bot moves or a popup closes by itself, so nothing is dimmed or ringed, the note shrinks, and the board can be watched.
+  // Nothing to click while a bot moves, the board plays an animation or a popup closes by itself, so nothing is dimmed or ringed, the note shrinks, and the board can be watched.
   protected readonly waiting = computed(() => {
     const step = this.active();
-    return !!step && isWaiting(step);
+    // Also while the board plays something out, whatever the step: the beginner is only watching then.
+    return !!step && (isWaiting(step) || !this.gate.idle());
   });
   protected readonly blockers = computed<Box[]>(() => {
     if (this.waiting()) return [];

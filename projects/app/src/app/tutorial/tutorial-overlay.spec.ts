@@ -1,3 +1,4 @@
+import { PlaybackGate } from '../playback-gate.service';
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { playableGame } from '../scenario-kit/recipe';
@@ -368,6 +369,20 @@ describe('TutorialOverlay', () => {
       const layer = el.querySelector<HTMLElement>('.tutorial-overlay')!;
       expect(layer.style.pointerEvents).toBe('none');
       expect(el.querySelectorAll('.blocker')).toHaveLength(0);
+    });
+
+    it('dims nothing while the board plays an animation, whatever the step, and dims again once it is idle', () => {
+      anchored('end-phase', rect(400, 300, 100, 40));
+      create();
+      show(0, 'damage');
+      expect(blockers()).toHaveLength(4);
+      TestBed.inject(PlaybackGate).idle.set(false);
+      fixture.detectChanges();
+      expect(blockers()).toHaveLength(0);
+      expect(ring()).toBeNull();
+      TestBed.inject(PlaybackGate).idle.set(true);
+      fixture.detectChanges();
+      expect(blockers()).toHaveLength(4);
     });
 
     it('still dims on a step that waits for the beginner to act', () => {
