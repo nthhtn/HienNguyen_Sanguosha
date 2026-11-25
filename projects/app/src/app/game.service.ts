@@ -31,6 +31,17 @@ export interface SelectionRosterEntry {
   isYou: boolean;
 }
 
+// The Tutorial's seam into a running game; off unless TutorialService sets it. It only refuses and chooses among
+// what the engine offers: it never decides what is legal.
+export interface TutorialHooks {
+  // Whether the human may submit this action now. A refused action changes nothing and shows no error.
+  allows(action: Action, state: GameState): boolean;
+  // The scripted move of a due bot, picked from its legal actions, or null to leave it waiting.
+  botMove(seatId: string, legal: Action[], state: GameState): Action | null;
+  // Called once for every human or bot action that was applied, with the state after it.
+  applied(action: Action, after: GameState): void;
+}
+
 // In vs-bots mode the one human always plays this seat.
 export const HUMAN_SEAT_ID = 'seat-0';
 
@@ -92,6 +103,10 @@ export class GameService {
   private readonly _stopped = signal(false);
   readonly stopped: Signal<boolean> = this._stopped.asReadonly();
   private readonly botMemories = new Map<string, BotTurnMemory>();
+  private hooks: TutorialHooks | null = null;
+  private readonly _tutorialActive = signal(false);
+  // A Tutorial lesson is running: the decision clocks are off and the hooks filter the moves.
+  readonly tutorialActive: Signal<boolean> = this._tutorialActive.asReadonly();
 
   readonly state: Signal<GameState | null> = this._state.asReadonly();
   readonly revealedSeatId: Signal<string | null> = this._revealedSeatId.asReadonly();
@@ -207,6 +222,19 @@ export class GameService {
     this._botThinkingSeatId.set(null);
   }
 
+  setTutorialHooks(hooks: TutorialHooks | null): void {
+    this.hooks = hooks;
+    this._tutorialActive.set(hooks !== null);
+  }
+
+  // The Tutorial leaves: no game stays behind, so nothing offers it as a game in progress.
+  discardGame(): void {
+    this.stop();
+    this._state.set(null);
+    this._revealedSeatId.set(null);
+    this._lastError.set(null);
+  }
+
   private reset(mode: GameMode): void {
     this._stopped.set(false);
     this.cancelBotTimer();
@@ -230,6 +258,7 @@ export class GameService {
     // A bot seat's moves come only from its own timer, never from the UI.
     const activeSeatId = this.activeSeatId();
     if (activeSeatId && this.botSeatIds().includes(activeSeatId)) return;
+    if (!this.permitted(action)) return;
     if (this.apply(action)) this.scheduleBotIfDue();
   }
 
@@ -239,7 +268,9 @@ export class GameService {
   closeJudgment(bySeatId: string | null): void {
     const seatId = this.activeSeatId();
     if (!this.judgmentSettled() || !seatId || this.botSeatIds().includes(seatId)) return;
-    if (this.apply({ kind: 'AcknowledgeJudgmentAction', seatId, ...(bySeatId ? { by: bySeatId } : {}) })) this.scheduleBotIfDue();
+    const action: Action = { kind: 'AcknowledgeJudgmentAction', seatId, ...(bySeatId ? { by: bySeatId } : {}) };
+    if (!this.permitted(action)) return;
+    if (this.apply(action)) this.scheduleBotIfDue();
   }
 
   // Resolves several actions as one move (e.g. a whole Discard phase): the
@@ -249,7 +280,7 @@ export class GameService {
     if (activeSeatId && this.botSeatIds().includes(activeSeatId)) return;
     const before = this._state();
     for (const action of actions) {
-      if (!this.apply(action, false)) break;
+      if (!this.permitted(action) || !this.apply(action, false)) break;
     }
     if (before && this._state() !== before) this.keepMoveStart(before);
     this.regate();
@@ -265,18 +296,27 @@ export class GameService {
   private apply(action: Action, regate = true): boolean {
     const state = this._state();
     if (!state) return false;
+    let after: GameState;
     try {
-      this._state.set(resolve(state, action, this.ctx).state);
+      after = resolve(state, action, this.ctx).state;
+      this._state.set(after);
       if (regate) {
         this.keepMoveStart(state);
         this.regate();
       }
       this._lastError.set(null);
-      return true;
     } catch (err) {
       this._lastError.set(engineError(err));
       return false;
     }
+    this.hooks?.applied(action, after);
+    return true;
+  }
+
+  // The Tutorial's action filter: with no hooks every action goes through.
+  private permitted(action: Action): boolean {
+    const state = this._state();
+    return !this.hooks || (!!state && this.hooks.allows(action, state));
   }
 
   // Gates the next view in pass-and-play. Not once the game is over: the seat that made the last move
@@ -319,15 +359,25 @@ export class GameService {
     let action: Action;
     try {
       const legal = getLegalActions(state, seatId, this.registry);
-      const decision = ruleBasedPolicy.decide(
-        redactStateForSeat(state, seatId),
-        seatId,
-        legal,
-        this.registry,
-        this.botMemories.get(seatId) ?? null
-      );
-      this.botMemories.set(seatId, decision.memory);
-      action = decision.action;
+      if (this.hooks) {
+        // A lesson scripts its bots: a seat with no scripted move waits, it does not fall back to the policy.
+        const scripted = this.hooks.botMove(seatId, legal, state);
+        if (!scripted) {
+          this._botThinkingSeatId.set(null);
+          return;
+        }
+        action = scripted;
+      } else {
+        const decision = ruleBasedPolicy.decide(
+          redactStateForSeat(state, seatId),
+          seatId,
+          legal,
+          this.registry,
+          this.botMemories.get(seatId) ?? null
+        );
+        this.botMemories.set(seatId, decision.memory);
+        action = decision.action;
+      }
     } catch (err) {
       this._lastError.set(engineError(err));
       this._botThinkingSeatId.set(null);

@@ -24,6 +24,15 @@ describe('/play', () => {
     expect(gameService.state()).toBe(stateBefore);
   });
 
+  it('goes to Setup after the Tutorial game is discarded', async () => {
+    const gameService = TestBed.inject(GameService);
+    gameService.startGame(2, 1);
+    gameService.discardGame();
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/play');
+    expect(TestBed.inject(Router).url).toBe('/setup');
+  });
+
   it('goes to Setup once the game has ended', async () => {
     const gameService = TestBed.inject(GameService);
     gameService.startGame(2, 1);

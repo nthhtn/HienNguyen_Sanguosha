@@ -1,10 +1,10 @@
 import { TestBed } from '@angular/core/testing';
-import { GameService } from './game.service';
+import { GameService, TutorialHooks } from './game.service';
 import { PlaybackGate } from './playback-gate.service';
 import { PlaybackSpeed } from './playback-speed.service';
 import { pickRandomAction, ruleBasedPolicy } from 'bots';
 import { botNameIds } from 'content';
-import { createRng, getLegalActions, redactStateForSeat } from 'engine';
+import { Action, createRng, getLegalActions, redactStateForSeat } from 'engine';
 import { JUDGMENT_LEAD_IN_MS } from 'engine';
 import { askToChange, settleJudgment } from './settled-judgment.testing';
 
@@ -598,6 +598,129 @@ describe('GameService.showState', () => {
     expect(service.state()).toBe(next);
     expect(service.gameNumber()).toBe(number);
     expect(service.revealedSeatId()).toBe(revealed);
+    expect(service.botThinkingSeatId()).toBeNull();
+  });
+});
+
+describe('GameService tutorial hooks', () => {
+  let service: GameService;
+  // A vs-bots game on its way: the human's first General selection is open.
+  const start = () => service.startGame(3, 1, 'vs-bots');
+  const refuseAll = (): TutorialHooks => ({ allows: jest.fn(() => false), botMove: jest.fn(() => null), applied: jest.fn() });
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    service = TestBed.inject(GameService);
+    service.botDelayMs = 0;
+  });
+
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+  });
+
+  it('is inactive until hooks are set, and again once they are cleared', () => {
+    expect(service.tutorialActive()).toBe(false);
+    service.setTutorialHooks(refuseAll());
+    expect(service.tutorialActive()).toBe(true);
+    service.setTutorialHooks(null);
+    expect(service.tutorialActive()).toBe(false);
+  });
+
+  it('refuses a human action the hooks do not allow, leaving the state unchanged and no error', () => {
+    start();
+    const hooks = refuseAll();
+    service.setTutorialHooks(hooks);
+    const before = service.state();
+    const action = service.legalActions()[0];
+
+    service.submit(action);
+
+    expect(service.state()).toBe(before);
+    expect(service.lastError()).toBeNull();
+    expect(hooks.allows).toHaveBeenCalledWith(action, before);
+  });
+
+  it('refuses a whole submitAll when its first action is not allowed', () => {
+    start();
+    service.setTutorialHooks(refuseAll());
+    const before = service.state();
+
+    service.submitAll([service.legalActions()[0]]);
+
+    expect(service.state()).toBe(before);
+    expect(service.lastError()).toBeNull();
+  });
+
+  it('refuses closeJudgment when the hooks do not allow the acknowledgement', () => {
+    service.startGame(3, 1, 'vs-bots', [], { judgmentNotice: true });
+    settleJudgment(service);
+    service.setTutorialHooks(refuseAll());
+
+    service.closeJudgment('seat-0');
+
+    expect(service.judgmentSettled()).toBe(true);
+  });
+
+  it('applies an allowed human action and reports it once, with the state after it', () => {
+    start();
+    const applied = jest.fn();
+    service.setTutorialHooks({ allows: () => true, botMove: () => null, applied });
+    const before = service.state();
+
+    service.submit(service.legalActions()[0]);
+
+    expect(service.state()).not.toBe(before);
+    expect(applied).toHaveBeenCalledTimes(1);
+    expect(applied.mock.calls[0][1]).toBe(service.state());
+    expect(applied.mock.calls[0][0].seatId).toBe('seat-0');
+  });
+
+  it('takes a due bot’s move from botMove instead of the rule-based policy, and reports it', () => {
+    start();
+    service.submit(service.legalActions()[0]);
+    expect(service.activeSeatId()).toBe('seat-1');
+    const applied = jest.fn();
+    const botMove = jest.fn((_seatId: string, legal: Action[]) => legal[legal.length - 1]);
+    service.setTutorialHooks({ allows: () => true, botMove, applied });
+    const before = service.state()!;
+    const legal = getLegalActions(before, 'seat-1', service.registry);
+
+    service.startFromState(before, 'vs-bots');
+    jest.runOnlyPendingTimers();
+
+    expect(botMove).toHaveBeenNthCalledWith(1, 'seat-1', legal, before);
+    expect(applied.mock.calls[0][0]).toEqual(legal[legal.length - 1]);
+    // Every bot move that ran was the scripted one, and each was reported once.
+    expect(applied).toHaveBeenCalledTimes(botMove.mock.calls.length);
+  });
+
+  it('leaves a bot waiting, with no fall back to the rule-based policy, when botMove returns null', () => {
+    start();
+    service.submit(service.legalActions()[0]);
+    const before = service.state()!;
+    const botMove = jest.fn(() => null);
+    service.setTutorialHooks({ allows: () => true, botMove, applied: jest.fn() });
+
+    service.startFromState(before, 'vs-bots');
+    jest.runOnlyPendingTimers();
+
+    expect(botMove).toHaveBeenCalledTimes(1);
+    expect(service.state()).toBe(before);
+    expect(service.botThinkingSeatId()).toBeNull();
+  });
+
+  it('discardGame empties the game and cancels a pending bot move', () => {
+    start();
+    service.submit(service.legalActions()[0]);
+    expect(service.botThinkingSeatId()).toBe('seat-1');
+
+    service.discardGame();
+    jest.runOnlyPendingTimers();
+
+    expect(service.state()).toBeNull();
+    expect(service.activeSeatId()).toBeNull();
+    expect(service.revealedSeatId()).toBeNull();
     expect(service.botThinkingSeatId()).toBeNull();
   });
 });
