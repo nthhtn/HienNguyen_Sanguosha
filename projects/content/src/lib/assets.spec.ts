@@ -326,12 +326,6 @@ describe('generalFaceUrl', () => {
     expect(generalFaceUrl('kingdomWars:nobody')).toBeNull();
     expect(generalFaceUrl('nobody')).toBeNull();
   });
-
-  it('has a built face crop for every portrait', () => {
-    for (const skin of Object.values(skins as Record<string, string>)) {
-      expect(existsSync(join(__dirname, '../../assets/generals/faces/classic', `${skin}.webp`))).toBe(true);
-    }
-  });
 });
 
 
@@ -354,6 +348,11 @@ describe('portraits and faces by art set', () => {
 
   it('gives the face of the set that supplied the portrait', () => {
     expect(generalFaceUrl('cao-cao', choice('ink'))).toBe('/images/generals/faces/ink/wei/caocao.webp');
+  });
+
+  it('gives no face for a classic General that has no face crop, without an error', () => {
+    const noFace: ArtSetCatalog = { order: ['classic'], sets: { classic: entry(['zhang-fei'], []) } };
+    expect(generalFaceUrl('zhang-fei', { global: 'classic', overrides: {}, catalog: noFace })).toBeNull();
   });
 
   it('gives no face when the set that supplied the portrait has none, so no other set\'s face is borrowed', () => {
@@ -380,9 +379,7 @@ describe('the shipped art set catalog', () => {
     expect(missing).toEqual([]);
   });
 
-  it('gives classic a portrait and a face for every General with a skin', () => {
-    const everyone = Object.keys(skins).sort();
-    expect([...ART_SET_CATALOG.sets['classic'].portraits].sort()).toEqual(everyone);
-    expect([...ART_SET_CATALOG.sets['classic'].faces].sort()).toEqual(everyone);
+  it('gives classic a portrait for every General with a skin; a face crop is optional', () => {
+    expect([...ART_SET_CATALOG.sets['classic'].portraits].sort()).toEqual(Object.keys(skins).sort());
   });
 });

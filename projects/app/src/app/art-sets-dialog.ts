@@ -1,7 +1,7 @@
 import { Component, Injector, computed, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { artSetName, DEFAULT_ART_SET, generalDisplayData, generalSkinUrl, setsCovering } from 'content';
+import { artSetName, DEFAULT_ART_SET, generalDisplayData, generalSkinUrl, resolveArtSet, setsCovering } from 'content';
 import { ArtSets } from './art-sets.service';
 import { I18n } from './i18n/i18n.service';
 import { TPipe } from './i18n/t.pipe';
@@ -42,7 +42,7 @@ import { generalDisplayName } from './labels';
                 <img [src]="g.url" alt="" />
                 <span class="general-name">{{ g.name }}</span>
                 <select [attr.aria-label]="g.name" (change)="artSets.setOverride(g.id, $any($event.target).value || null)">
-                  <option value="" [selected]="!g.override">{{ 'artSets.useGlobal' | t: { set: globalName() } }}</option>
+                  <option value="" [selected]="!g.override">{{ 'artSets.useGlobal' | t: { set: g.globalName } }}</option>
                   @for (s of g.sets; track s.id) {
                     <option [value]="s.id" [selected]="g.override === s.id">{{ s.name }}</option>
                   }
@@ -96,8 +96,6 @@ export class ArtSetsDialog {
     });
   });
 
-  protected readonly globalName = computed(() => artSetName(this.artSets.catalog.sets[this.artSets.global()], this.i18n.locale()));
-
   protected readonly hasOverrides = computed(() => Object.keys(this.artSets.overrides()).length > 0);
 
   // Generals a set other than classic covers: the only ones with something to choose.
@@ -113,6 +111,8 @@ export class ArtSetsDialog {
         name: generalDisplayData(id, locale)?.name ?? generalDisplayName(id, this.i18n.translator),
         url: generalSkinUrl(id, choice) ?? '',
         override: overrides[id],
+        // The set that shows when this General follows the global set: Classic where the global set lacks it.
+        globalName: artSetName(catalog.sets[resolveArtSet(id, { global: this.artSets.global(), overrides: {}, catalog })], locale),
         sets: setsCovering(id, catalog).map((set) => ({ id: set, name: artSetName(catalog.sets[set], locale) })),
       }));
   });

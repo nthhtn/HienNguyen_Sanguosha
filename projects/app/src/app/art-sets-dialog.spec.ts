@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
-import { ArtSets } from './art-sets.service';
-import { provideFakeArtSets } from './art-sets.testing';
+import type { ArtSetCatalog } from 'content';
+import { ART_SET_CATALOG_TOKEN, ArtSets } from './art-sets.service';
+import { fakeCatalog, provideFakeArtSets } from './art-sets.testing';
 import { ArtSetsDialog } from './art-sets-dialog';
 import { I18n } from './i18n/i18n.service';
 
@@ -69,6 +70,22 @@ describe('ArtSetsDialog', () => {
     expect(clear.disabled).toBe(false);
     clear.click();
     expect(arts.overrides()).toEqual({});
+  });
+
+  it('names the set that will actually show in the Use Global Set option, not one that lacks the General', () => {
+    const base = fakeCatalog();
+    const catalog: ArtSetCatalog = {
+      order: [...base.order, 'studio'],
+      sets: { ...base.sets, studio: { names: { en: 'Studio', vi: 'Studio' }, provenance: 'test', portraits: ['zhao-yun'], faces: [] } },
+    };
+    localStorage.setItem('art-set', 'ink');
+    TestBed.configureTestingModule({ imports: [ArtSetsDialog], providers: [{ provide: ART_SET_CATALOG_TOKEN, useValue: catalog }] });
+    const fixture = TestBed.createComponent(ArtSetsDialog);
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    // Ink covers Cao Cao and Guan Yu but not Zhao Yun, who falls back to Classic under the global Ink Wash.
+    expect(optionTexts(select(el, 'zhao-yun'))).toEqual(['Use Global Set (Classic)', 'Classic', 'Studio']);
+    expect(optionTexts(select(el, 'cao-cao'))[0]).toBe('Use Global Set (Ink Wash)');
   });
 
   it('shows set names in Vietnamese', async () => {
