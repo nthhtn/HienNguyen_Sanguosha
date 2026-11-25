@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import type { ArtSetCatalog } from 'content';
 import { ART_SET_CATALOG_TOKEN, ArtSets } from './art-sets.service';
 import { fakeCatalog, provideFakeArtSets } from './art-sets.testing';
@@ -6,7 +7,7 @@ import { ArtSetsDialog } from './art-sets-dialog';
 import { I18n } from './i18n/i18n.service';
 
 function render() {
-  TestBed.configureTestingModule({ imports: [ArtSetsDialog], providers: provideFakeArtSets() });
+  TestBed.configureTestingModule({ imports: [ArtSetsDialog], providers: [...provideFakeArtSets(), provideRouter([])] });
   const fixture = TestBed.createComponent(ArtSetsDialog);
   fixture.detectChanges();
   return { fixture, el: fixture.nativeElement as HTMLElement, arts: TestBed.inject(ArtSets) };
@@ -90,7 +91,7 @@ describe('ArtSetsDialog', () => {
       sets: { ...base.sets, studio: { names: { en: 'Studio', vi: 'Studio' }, provenance: 'test', portraits: ['zhao-yun'], faces: [] } },
     };
     localStorage.setItem('art-set', 'ink');
-    TestBed.configureTestingModule({ imports: [ArtSetsDialog], providers: [{ provide: ART_SET_CATALOG_TOKEN, useValue: catalog }] });
+    TestBed.configureTestingModule({ imports: [ArtSetsDialog], providers: [{ provide: ART_SET_CATALOG_TOKEN, useValue: catalog }, provideRouter([])] });
     const fixture = TestBed.createComponent(ArtSetsDialog);
     fixture.detectChanges();
     const el = fixture.nativeElement as HTMLElement;
@@ -98,6 +99,14 @@ describe('ArtSetsDialog', () => {
     expect(texts(await openRow(fixture, el, 'zhao-yun'))).toEqual(['Use Global Set (Classic)', 'Classic', 'Studio']);
     document.querySelector('.cdk-overlay-container')?.replaceChildren();
     expect(texts(await openRow(fixture, el, 'cao-cao'))[0]).toBe('Use Global Set (Ink Wash)');
+  });
+
+  it('has a Browse All Art Sets link to the Art Sets page that closes the dialog', () => {
+    const { el } = render();
+    const browse = el.querySelector('a.browse') as HTMLAnchorElement;
+    expect(browse.textContent!.trim()).toBe('Browse All Art Sets');
+    expect(browse.getAttribute('href')).toBe('/wiki/art-sets');
+    expect(browse.hasAttribute('mat-dialog-close')).toBe(true);
   });
 
   it('shows set names in Vietnamese', async () => {

@@ -28,6 +28,9 @@
       <a mat-button class="nav-rules" routerLink="/wiki/rules" [class.active]="rulesActive()" [attr.aria-current]="rulesActive() ? 'page' : null" [attr.aria-label]="'nav.rules' | t">
         <mat-icon>menu_book</mat-icon><span class="label">{{ 'nav.rules' | t }}</span>
       </a>
+      <a mat-button class="nav-art-page" routerLink="/wiki/art-sets" [class.active]="artPageActive()" [attr.aria-current]="artPageActive() ? 'page' : null" [attr.aria-label]="'nav.artSetsPage' | t">
+        <mat-icon>collections</mat-icon><span class="label">{{ 'nav.artSetsPage' | t }}</span>
+      </a>
       @if (flags.playOffline) {
         <a mat-button class="nav-tutorial" routerLink="/tutorial" [class.active]="tutorialActive()" [attr.aria-current]="tutorialActive() ? 'page' : null" [attr.aria-label]="'nav.tutorial' | t">
           <mat-icon>school</mat-icon><span class="label">{{ 'nav.tutorial' | t }}</span>
@@ -142,6 +145,7 @@
       }
     }
     <a class="drawer-link" routerLink="/wiki/rules" [class.active]="rulesActive()" [attr.aria-current]="rulesActive() ? 'page' : null"><mat-icon>menu_book</mat-icon>{{ 'nav.rules' | t }}</a>
+    <a class="drawer-link drawer-art-page" routerLink="/wiki/art-sets" [class.active]="artPageActive()" [attr.aria-current]="artPageActive() ? 'page' : null"><mat-icon>collections</mat-icon>{{ 'nav.artSetsPage' | t }}</a>
     @if (flags.playOffline) {
       <a class="drawer-link" routerLink="/tutorial" [class.active]="tutorialActive()" [attr.aria-current]="tutorialActive() ? 'page' : null"><mat-icon>school</mat-icon>{{ 'nav.tutorial' | t }}</a>
     }

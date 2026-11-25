@@ -47,11 +47,11 @@ describe('App shell in Vietnamese', () => {
   }
   const menuItems = () => [...document.querySelectorAll('.mat-mdc-menu-panel [mat-menu-item]')].map((i) => text(i));
 
-  it('the title, the six navigation items and their aria labels', async () => {
+  it('the title, the seven navigation items and their aria labels', async () => {
     const { el } = await render();
     expect(text(el.querySelector('mat-toolbar h1'))).toBe('Tam quốc sát');
-    expect([...el.querySelectorAll('nav.nav .label')].map((l) => text(l))).toEqual(['Chơi ngoại tuyến', 'Chơi trực tuyến', 'Quốc chiến', 'Vương triều chiến', 'Luật', 'Hướng dẫn']);
-    expect([...el.querySelectorAll('nav.nav > a, nav.nav > button')].map((i) => i.getAttribute('aria-label'))).toEqual(['Chơi ngoại tuyến', 'Chơi trực tuyến', 'Quốc chiến', 'Vương triều chiến', 'Luật', 'Hướng dẫn']);
+    expect([...el.querySelectorAll('nav.nav .label')].map((l) => text(l))).toEqual(['Chơi ngoại tuyến', 'Chơi trực tuyến', 'Quốc chiến', 'Vương triều chiến', 'Luật', 'Bộ tranh', 'Hướng dẫn']);
+    expect([...el.querySelectorAll('nav.nav > a, nav.nav > button')].map((i) => i.getAttribute('aria-label'))).toEqual(['Chơi ngoại tuyến', 'Chơi trực tuyến', 'Quốc chiến', 'Vương triều chiến', 'Luật', 'Bộ tranh', 'Hướng dẫn']);
   });
 
   it('the Preview link (dev builds) is named in Vietnamese, in sentence case', async () => {
@@ -113,7 +113,7 @@ describe('App shell in Vietnamese', () => {
     await TestBed.inject(I18n).setLocale('en');
     await fixture.whenStable();
     expect(text(el.querySelector('mat-toolbar h1'))).toBe('Sanguosha');
-    expect([...el.querySelectorAll('nav.nav .label')].map((l) => text(l))).toEqual(['Play Offline', 'Play Online', 'Kingdom Wars', 'Identity', 'Rules', 'Tutorial']);
+    expect([...el.querySelectorAll('nav.nav .label')].map((l) => text(l))).toEqual(['Play Offline', 'Play Online', 'Kingdom Wars', 'Identity', 'Rules', 'Art Sets', 'Tutorial']);
     await TestBed.inject(I18n).setLocale('vi');
     await fixture.whenStable();
     expect(text(el.querySelector('mat-toolbar h1'))).toBe('Tam quốc sát');

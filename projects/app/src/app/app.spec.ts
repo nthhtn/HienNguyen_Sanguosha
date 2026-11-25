@@ -47,6 +47,7 @@ describe('App', () => {
           { path: 'wiki/identity/:page', children: [] },
           { path: 'wiki/kingdom-wars/:page', children: [] },
           { path: 'wiki/rules', children: [] },
+          { path: 'wiki/art-sets', children: [] },
           { path: 'wiki/rules/:page', children: [] },
         ]),
       ],
@@ -167,7 +168,7 @@ describe('App', () => {
     expect(el.querySelector('button.nav-kingdom-wars')!.classList).toContain('active');
   });
 
-  it('has six items in the bar: Play Offline, Play Online, Kingdom Wars, Identity, Rules and Tutorial, each with an icon', async () => {
+  it('has seven items in the bar: Play Offline, Play Online, Kingdom Wars, Identity, Rules, Art Sets and Tutorial, each with an icon', async () => {
     const { el } = await render();
     const items = [...el.querySelectorAll('nav.nav > a, nav.nav > button')];
     expect(items.map((i) => [i.querySelector('.label')!.textContent, i.querySelector('mat-icon')!.textContent])).toEqual([
@@ -176,6 +177,7 @@ describe('App', () => {
       ['Kingdom Wars', 'swords'],
       ['Identity', 'castle'],
       ['Rules', 'menu_book'],
+      ['Art Sets', 'collections'],
       ['Tutorial', 'school'],
     ]);
   });
@@ -205,7 +207,34 @@ describe('App', () => {
       fixture.detectChanges();
     };
 
-    it('offers no Art Sets entry while only one set ships', async () => {
+    it('links to the Art Sets page from the toolbar beside Rules, with one set and with two', async () => {
+      for (const catalog of [soloCatalog(), fakeCatalog()]) {
+        TestBed.resetTestingModule();
+        await TestBed.configureTestingModule({
+          imports: [App],
+          providers: [
+            { provide: AuthService, useValue: fakeAuth },
+            { provide: MUSIC_PLAYER_FACTORY, useValue: () => ({ loop: false, volume: 1, play: () => Promise.resolve(), pause: () => undefined }) },
+            { provide: ART_SET_CATALOG_TOKEN, useValue: catalog },
+            provideRouter([{ path: 'setup', children: [] }, { path: 'wiki/art-sets', children: [] }, { path: 'wiki/rules', children: [] }]),
+          ],
+        }).compileComponents();
+        const { el } = await render();
+        const link = el.querySelector('a.nav-art-page') as HTMLAnchorElement;
+        expect(link.getAttribute('href')).toBe('/wiki/art-sets');
+        expect(link.getAttribute('aria-label')).toBe('Art Sets');
+        expect(el.querySelector('a.nav-rules')!.nextElementSibling).toBe(link);
+      }
+    });
+
+    it('marks the Art Sets link current on the Art Sets page', async () => {
+      const { el } = await render('/wiki/art-sets');
+      const link = el.querySelector('a.nav-art-page') as HTMLAnchorElement;
+      expect(link.getAttribute('aria-current')).toBe('page');
+      expect(link.classList).toContain('active');
+    });
+
+    it('offers no Art Sets picker button while only one set ships', async () => {
       TestBed.overrideProvider(ART_SET_CATALOG_TOKEN, { useValue: soloCatalog() });
       const { el, fixture } = await render();
       await settle(fixture);
@@ -217,7 +246,7 @@ describe('App', () => {
       const { el, fixture } = await render();
       await settle(fixture);
       const button = el.querySelector('button.nav-art-sets') as HTMLButtonElement;
-      expect(button.getAttribute('aria-label')).toBe('Art Sets');
+      expect(button.getAttribute('aria-label')).toBe('Choose Art Set');
       button.click();
       await settle(fixture);
       expect(document.querySelector('app-art-sets-dialog')).not.toBeNull();
@@ -456,6 +485,13 @@ describe('App', () => {
       expect(drawer.querySelectorAll('.drawer-playback-speed button').length).toBeGreaterThan(0);
     });
 
+    it('links to the Art Sets page from the drawer', async () => {
+      const { drawer } = await openDrawer();
+      const link = drawer.querySelector('a.drawer-art-page') as HTMLAnchorElement;
+      expect(link.getAttribute('href')).toBe('/wiki/art-sets');
+      expect(link.textContent).toContain('Art Sets');
+    });
+
     it('lists Art Sets in the drawer only when more than one set ships, and closes the drawer when it opens the picker', async () => {
       TestBed.overrideProvider(ART_SET_CATALOG_TOKEN, { useValue: soloCatalog() });
       const single = await openDrawer();
@@ -476,7 +512,7 @@ describe('App', () => {
       await new Promise((resolve) => setTimeout(resolve));
       fixture.detectChanges();
       const entry = el.querySelector('.nav-drawer .drawer-art-sets button') as HTMLButtonElement;
-      expect(entry.textContent).toContain('Art Sets');
+      expect(entry.textContent).toContain('Choose Art Set');
       entry.click();
       await new Promise((resolve) => setTimeout(resolve));
       fixture.detectChanges();

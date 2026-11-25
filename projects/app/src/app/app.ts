@@ -93,6 +93,7 @@ export class App {
   protected deckActive(route: string): boolean {
     return new RegExp(`^/wiki/${route}(/|$|\\?)`).test(this.url());
   }
+  protected readonly artPageActive = computed(() => /^\/wiki\/art-sets(\/|$|\?)/.test(this.url()));
   protected readonly rulesActive = computed(() => /^\/wiki\/rules(\/|$|\?)/.test(this.url()));
   protected readonly tutorialActive = computed(() => /^\/tutorial(\/|$|\?)/.test(this.url()));
 

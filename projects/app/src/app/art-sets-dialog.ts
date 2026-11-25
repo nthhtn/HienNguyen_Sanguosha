@@ -1,6 +1,7 @@
 import { Component, Injector, computed, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { RouterLink } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { artSetName, DEFAULT_ART_SET, generalDisplayData, generalSkinUrl, resolveArtSet, setsCovering } from 'content';
@@ -12,7 +13,7 @@ import { generalDisplayName } from './labels';
 // The art set picker: one global set, and an override per General that some other set covers. The choice lives in ArtSets.
 @Component({
   selector: 'app-art-sets-dialog',
-  imports: [MatDialogModule, MatButtonModule, MatFormFieldModule, MatSelectModule, TPipe],
+  imports: [MatDialogModule, MatButtonModule, MatFormFieldModule, MatSelectModule, RouterLink, TPipe],
   template: `
     <h2 mat-dialog-title>{{ 'artSets.title' | t }}</h2>
     <mat-dialog-content class="content">
@@ -59,6 +60,7 @@ import { generalDisplayName } from './labels';
       }
     </mat-dialog-content>
     <mat-dialog-actions align="end">
+      <a mat-button class="browse" routerLink="/wiki/art-sets" mat-dialog-close>{{ 'artSets.browse' | t }}</a>
       <button mat-button mat-dialog-close>{{ 'artSets.done' | t }}</button>
     </mat-dialog-actions>
   `,
