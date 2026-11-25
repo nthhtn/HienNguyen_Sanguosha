@@ -15,6 +15,8 @@ const STEPS: Step[] = [
   step('missing', { target: 'seat:seat-9' }),
   step('phone', { target: 'hand', phone: { target: 'end-phase', textKey: 'history.title' } }),
   step('end', { target: 'end-phase' }),
+  // Several controls in turn (a card, its Play button, then a menu item that opens): the first one on the page.
+  step('either', { target: ['seat:seat-0', 'end-phase'] }),
 ];
 
 const lesson: Lesson = {
@@ -105,6 +107,36 @@ describe('TutorialOverlay', () => {
       create();
       show(4);
       expect(ring()!.style.left).toBe('392px');
+    });
+
+    it('rings the first of several targets that is on the page', () => {
+      anchored('end-phase', rect(400, 300, 100, 40));
+      create();
+      show(5);
+      expect(ring()!.style.left).toBe('392px');
+    });
+
+    it('moves to an earlier target of the list when it appears, and back when it leaves', async () => {
+      anchored('end-phase', rect(400, 300, 100, 40));
+      create();
+      show(5);
+      const menu = anchored('seat:seat-0', rect(100, 100, 200, 50));
+      await nextFrame();
+      await nextFrame();
+      fixture.detectChanges();
+      expect(ring()!.style.left).toBe('92px');
+      menu.remove();
+      await nextFrame();
+      await nextFrame();
+      fixture.detectChanges();
+      expect(ring()!.style.left).toBe('392px');
+    });
+
+    it('shows the step without a hole when none of several targets is on the page', () => {
+      create();
+      show(5);
+      expect(ring()).toBeNull();
+      expect(blockers()).toHaveLength(1);
     });
 
     it('ignores a click on a blocker: it does not reach the control underneath', () => {

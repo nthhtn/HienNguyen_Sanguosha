@@ -641,6 +641,22 @@ describe('GameService tutorial hooks', () => {
     expect(hooks.allows).toHaveBeenCalledWith(action, before);
   });
 
+  it('counts each refusal, so a window that closed on a refused action can open again', () => {
+    start();
+    expect(service.refusals()).toBe(0);
+    service.setTutorialHooks(refuseAll());
+    service.submit(service.legalActions()[0]);
+    service.submit(service.legalActions()[0]);
+    expect(service.refusals()).toBe(2);
+  });
+
+  it('does not count an allowed action as a refusal', () => {
+    start();
+    service.setTutorialHooks({ allows: () => true, botMove: () => null, applied: jest.fn() });
+    service.submit(service.legalActions()[0]);
+    expect(service.refusals()).toBe(0);
+  });
+
   it('refuses a whole submitAll when its first action is not allowed', () => {
     start();
     service.setTutorialHooks(refuseAll());

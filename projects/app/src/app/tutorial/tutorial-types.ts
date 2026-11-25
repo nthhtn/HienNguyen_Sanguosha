@@ -21,13 +21,17 @@ export interface BotMove {
   pick: (legal: Action[], state: GameState) => Action | undefined;
 }
 
+// One anchor id, or several tried in order: the spotlight rings the first that is on the page. A step whose action takes
+// several clicks (a card, its Play button, a target in a menu that opens) lists them, the latest control first.
+export type StepTarget = string | string[];
+
 export interface Step {
   id: string;
   textKey: MessageKey;
   // The `data-tutorial` anchor id to spotlight; without one the step shows as a centred card.
-  target?: string;
+  target?: StepTarget;
   // Where the phone board differs: its own target and, if the words differ, its own text.
-  phone?: { target?: string; textKey?: MessageKey };
+  phone?: { target?: StepTarget; textKey?: MessageKey };
   completes: Completion;
   bot?: BotMove[];
 }

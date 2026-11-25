@@ -71,10 +71,15 @@ export class TutorialOverlay {
   // The step on show: none before a lesson starts or once it has finished (the page then shows what comes next).
   protected readonly active = computed(() => (this.tutorial.finished() ? null : this.tutorial.step()));
   private readonly phone = computed(() => this.layout.kind() === 'compact');
-  private readonly targetId = computed(() => {
-    const step = this.active();
-    return step ? ((this.phone() ? step.phone?.target : undefined) ?? step.target ?? null) : null;
-  });
+  // The step's anchor ids in the order to try them; none for a centred card.
+  private readonly targetIds = computed<string[]>(
+    () => {
+      const step = this.active();
+      const target = step ? ((this.phone() ? step.phone?.target : undefined) ?? step.target) : undefined;
+      return target === undefined ? [] : Array.isArray(target) ? target : [target];
+    },
+    { equal: (a, b) => a.length === b.length && a.every((id, i) => id === b[i]) }
+  );
   protected readonly textKey = computed<MessageKey | null>(() => {
     const step = this.active();
     return step ? ((this.phone() ? step.phone?.textKey : undefined) ?? step.textKey) : null;
@@ -103,8 +108,8 @@ export class TutorialOverlay {
   constructor() {
     // A new target: look for it, scroll it into view once, and follow it until the step has none.
     effect(() => {
-      const id = this.targetId();
-      untracked(() => this.follow(id));
+      const ids = this.targetIds();
+      untracked(() => this.follow(ids));
     });
     window.addEventListener('resize', this.onChange);
     window.addEventListener('scroll', this.onChange, true);
@@ -115,11 +120,11 @@ export class TutorialOverlay {
     });
   }
 
-  private follow(id: string | null): void {
+  private follow(ids: string[]): void {
     this.stopFollowing();
     this.scrolled = false;
     this.box.set(null);
-    if (!id) return;
+    if (ids.length === 0) return;
     this.measure();
     // The board can move under the ring (an animation, a dialog opening, content loading): keep looking each frame.
     const tick = () => {
@@ -140,8 +145,7 @@ export class TutorialOverlay {
     const card = this.host.nativeElement.querySelector('.card');
     const cardRect = card?.getBoundingClientRect();
     if (cardRect && cardRect.width > 0 && cardRect.height > 0) this.cardSize.set({ width: cardRect.width, height: cardRect.height });
-    const id = this.targetId();
-    const el = id ? findAnchor(id) : null;
+    const el = findAnchor(this.targetIds());
     if (!el) {
       this.box.set(null);
       return;
@@ -157,10 +161,12 @@ export class TutorialOverlay {
   }
 }
 
-// The element carrying `data-tutorial="<id>"`, in the page or in a dialog's overlay container.
-function findAnchor(id: string): HTMLElement | null {
-  for (const el of Array.from(document.querySelectorAll<HTMLElement>('[data-tutorial]'))) {
-    if (el.getAttribute('data-tutorial') === id) return el;
+// The element carrying `data-tutorial="<id>"` for the first of `ids` that has one, in the page or in a dialog's overlay container.
+function findAnchor(ids: string[]): HTMLElement | null {
+  const anchored = Array.from(document.querySelectorAll<HTMLElement>('[data-tutorial]'));
+  for (const id of ids) {
+    const el = anchored.find((candidate) => candidate.getAttribute('data-tutorial') === id);
+    if (el) return el;
   }
   return null;
 }

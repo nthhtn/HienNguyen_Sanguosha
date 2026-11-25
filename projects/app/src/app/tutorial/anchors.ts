@@ -17,8 +17,11 @@ export const anchor = {
   targetSeat: (seatId: string) => `target-seat:${seatId}`,
   responseCard: (definitionId: string) => `response-card:${definitionId}`,
   responseConfirm: () => 'response-confirm',
+  // A window as a whole, for a step whose action takes several clicks inside it (tick a General, then Confirm).
+  responseDialog: () => 'response-dialog',
   revealSlot: (slot: RevealSlot) => `reveal-slot:${slot}`,
   revealConfirm: () => 'reveal-confirm',
+  revealDialog: () => 'reveal-dialog',
 } as const;
 
 // Whether `id` is one a builder above makes: the board and the lessons agree on the ids through the builders alone.

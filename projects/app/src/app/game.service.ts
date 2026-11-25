@@ -107,6 +107,9 @@ export class GameService {
   private readonly _tutorialActive = signal(false);
   // A Tutorial lesson is running: the decision clocks are off and the hooks filter the moves.
   readonly tutorialActive: Signal<boolean> = this._tutorialActive.asReadonly();
+  private readonly _refusals = signal(0);
+  // How many actions the hooks have refused: a window that closed on a refused action (its Confirm) opens again.
+  readonly refusals: Signal<number> = this._refusals.asReadonly();
 
   readonly state: Signal<GameState | null> = this._state.asReadonly();
   readonly revealedSeatId: Signal<string | null> = this._revealedSeatId.asReadonly();
@@ -321,7 +324,10 @@ export class GameService {
   // The Tutorial's action filter: with no hooks every action goes through.
   private permitted(action: Action): boolean {
     const state = this._state();
-    return !this.hooks || (!!state && this.hooks.allows(action, state));
+    if (!this.hooks) return true;
+    const allowed = !!state && this.hooks.allows(action, state);
+    if (!allowed) this._refusals.update((n) => n + 1);
+    return allowed;
   }
 
   // Gates the next view in pass-and-play. Not once the game is over: the seat that made the last move

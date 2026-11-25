@@ -155,6 +155,11 @@ describe('ResponseDialog', () => {
 });
 
 describe('ResponseDialog tutorial anchors', () => {
+  it('marks the whole window, which a step with several clicks spotlights as one', () => {
+    const { el } = render([{ id: 'shan-1', action: respond, card: shan, label: 'Dodge (2 ♥)' }]);
+    expect(el.getAttribute('data-tutorial')).toBe('response-dialog');
+  });
+
   it('marks a card option by its card, and the confirm button', () => {
     const { el } = render([{ id: 'shan-1', action: respond, card: shan, label: 'Dodge (2 ♥)' }]);
     const marked = [...el.querySelectorAll('[data-tutorial]')].map((e) => [e.tagName.toLowerCase(), e.getAttribute('data-tutorial')]);

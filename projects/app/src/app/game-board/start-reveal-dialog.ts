@@ -28,6 +28,7 @@ export interface StartRevealDialogData {
 // first. The engine offers it as one ConfirmRevealsAction; at zero the clock confirms with none.
 @Component({
   selector: 'app-start-reveal-dialog',
+  host: { 'data-tutorial': anchor.revealDialog() },
   imports: [MatDialogModule, MatButtonModule, MatIconModule, CardArt, DecisionCountdown, MinimizeButton, TPipe, TutorialAnchor],
   template: `
     <div class="title-row">
@@ -63,6 +64,7 @@ export interface StartRevealDialogData {
     </mat-dialog-actions>
   `,
   styles: `
+    :host { display: block; }
     .hint { margin: 0 0 12px; font: var(--mat-sys-body-medium); color: var(--mat-sys-on-surface-variant); }
     .generals { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
     .general {

@@ -29,7 +29,7 @@ describe('the lessons', () => {
   });
 
   it.each(LESSONS.map((l) => [l.id, l] as const))('lesson %s: every target is an anchor id the board can carry', (_id, lesson) => {
-    const targets = lesson.steps.flatMap((s) => [s.target, s.phone?.target].filter((t): t is string => !!t));
+    const targets = lesson.steps.flatMap((s) => [s.target, s.phone?.target].flatMap((t) => (t === undefined ? [] : Array.isArray(t) ? t : [t])));
     for (const target of targets) expect({ target, anchor: isAnchorId(target) }).toEqual({ target, anchor: true });
   });
 

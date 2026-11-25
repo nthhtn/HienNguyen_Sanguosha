@@ -41,6 +41,7 @@ const NO_RESPONSE = 'no-response';
 // Closes only through that button, with the chosen engine action.
 @Component({
   selector: 'app-response-dialog',
+  host: { 'data-tutorial': anchor.responseDialog() },
   imports: [MatDialogModule, MatButtonModule, MatIconModule, MatRadioModule, PlayingCard, DecisionCountdown, MinimizeButton, TPipe, TutorialAnchor],
   template: `
     <div class="title-row">
@@ -107,6 +108,7 @@ const NO_RESPONSE = 'no-response';
     </div>
   `,
   styles: `
+    :host { display: block; }
     .description { margin-bottom: 12px; }
     .description p { margin: 0 0 4px; }
     .source { font: var(--mat-sys-title-medium); }

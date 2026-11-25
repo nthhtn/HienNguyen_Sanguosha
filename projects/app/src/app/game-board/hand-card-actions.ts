@@ -126,7 +126,7 @@ export function handCardViewModels(cards: CardInstance[], legal: Action[], state
         </button>
         <mat-menu #choices="matMenu">
           @for (choice of v.actions; track choice.action) {
-            <button mat-menu-item type="button" (click)="played.emit(choice.action)"><app-target-label [label]="choice.label" [prefix]="choice.targeting?.prefix ?? null" [targets]="choice.targeting?.targets ?? []" [state]="state()" /></button>
+            <button mat-menu-item type="button" [appTutorialAnchor]="targetAnchor(choice.action)" (click)="played.emit(choice.action)"><app-target-label [label]="choice.label" [prefix]="choice.targeting?.prefix ?? null" [targets]="choice.targeting?.targets ?? []" [state]="state()" /></button>
           }
         </mat-menu>
       } @else if (v.actions.length > 0) {
@@ -154,6 +154,12 @@ export class HandCardActions {
 
   // Every Play button of the card carries the same anchor, whichever way the card is played.
   protected readonly playAnchor = computed(() => anchor.playButton(this.vm().card.definitionId));
+
+  // A menu item that plays the card on one seat, for a Tutorial step to spotlight once the menu has opened.
+  protected targetAnchor(action: Action): string | null {
+    const target = action.kind === 'PlayCardAction' && action.targets.length === 1 ? action.targets[0] : null;
+    return target?.kind === 'seat' ? anchor.targetSeat(target.seatId) : null;
+  }
 
   private readonly dialog = inject(MatDialog);
 

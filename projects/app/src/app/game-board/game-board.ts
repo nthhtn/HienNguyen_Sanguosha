@@ -531,6 +531,11 @@ export class GameBoard {
       this.releaseCompete = null;
       release?.();
     });
+    // An action the Tutorial refused closed its window for nothing: the decision is still owed, so the window opens again.
+    effect(() => {
+      this.gameService.refusals();
+      untracked(() => this.reopenOwedDialogs());
+    });
     effect(() => {
       const turn = this.startRevealDue();
       untracked(() => (turn === null ? this.closeDialog(this.startRevealDialog) : this.openStartRevealDialog()));
@@ -809,6 +814,14 @@ export class GameBoard {
       const actions = (ids ?? []).map((id) => legal.find((a) => a.cardInstanceId === id)).filter((a): a is DiscardCardAction => !!a);
       if (actions.length > 0) this.gameService.submitAll(actions);
     });
+  }
+
+  private reopenOwedDialogs(): void {
+    if (this.startRevealDue() !== null) this.openStartRevealDialog();
+    const discards = this.discardsDue();
+    if (discards > 0) this.openDiscardDialog(discards);
+    const pendingId = this.responseDue();
+    if (pendingId) this.openResponseDialog(pendingId);
   }
 
   // The start of the viewer's turn: tick the hidden Generals to reveal, Confirm. The engine's one

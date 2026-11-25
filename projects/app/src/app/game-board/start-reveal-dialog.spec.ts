@@ -36,6 +36,11 @@ describe('StartRevealDialog', () => {
 });
 
 describe('StartRevealDialog tutorial anchors', () => {
+  it('marks the whole window, which a step with several clicks spotlights as one', () => {
+    const { el } = render();
+    expect(el.getAttribute('data-tutorial')).toBe('reveal-dialog');
+  });
+
   it('marks each General slot and the confirm button', () => {
     const { el } = render();
     const marked = [...el.querySelectorAll('[data-tutorial]')].map((e) => [e.tagName.toLowerCase(), e.getAttribute('data-tutorial')]);

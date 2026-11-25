@@ -229,6 +229,30 @@ describe('GameBoard', () => {
     overlay.replaceChildren();
   });
 
+  it('opens the Start popup again when the Tutorial refused what was confirmed in it', async () => {
+    gameService.startGame(2, 1);
+    while (gameService.state()!.phase === 'GeneralSelection') gameService.submit(gameService.legalActions()[0]);
+    gameService.reveal(gameService.activeSeatId()!);
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    gameService.setTutorialHooks({ allows: () => false, botMove: () => null, applied: () => undefined });
+    const overlay = document.querySelector('.cdk-overlay-container') as HTMLElement;
+    const first = overlay.querySelector('app-start-reveal-dialog')!;
+
+    (first.querySelector('button.confirm') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    fixture.detectChanges();
+
+    const again = overlay.querySelector('app-start-reveal-dialog');
+    expect(gameService.state()!.turn.startWindow).toBe(true);
+    expect(again).not.toBeNull();
+    expect(again).not.toBe(first);
+    overlay.replaceChildren();
+  });
+
   it('seats everyone at a round table from the viewer’s chair, with the viewer’s own hand below', () => {
     // The large layout keeps the viewer's seat off the table; narrower layouts put it at the table's foot (layout spec).
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1366 });
