@@ -57,6 +57,15 @@ export function generalSkinUrl(id: string, choice: ArtChoice = DEFAULT_ART_CHOIC
   return skin ? `/images/${assetFile(skinFile(resolveArtSet(id, choice), skin))}` : cardArtUrl(id);
 }
 
+export type GeneralForce = 'Wei' | 'Shu' | 'Wu' | 'Qun';
+
+// The force a General's skin is filed under (the folder before the slash in skins.json), which is also where its death
+// voice lives; null for a General with no skin.
+export function generalSkinForce(id: string): GeneralForce | null {
+  const folder = GENERAL_SKINS[isKingdomWarsGeneralId(id) ? baseGeneralId(id) : id]?.split('/')[0];
+  return folder ? ((folder.charAt(0).toUpperCase() + folder.slice(1)) as GeneralForce) : null;
+}
+
 // A General's face, cut square from its portrait for the phone board's small tiles (asset-crops-faces.json), filed like
 // the portrait. Null for a General with no portrait, so the tile falls back to whatever art it has.
 // The face comes only from the set that supplies the portrait: a set with a portrait but no face crop gives

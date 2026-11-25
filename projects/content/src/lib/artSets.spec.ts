@@ -1,4 +1,4 @@
-import { ArtChoice, ArtSetCatalog, ArtSetEntry, DEFAULT_ART_CHOICE, DEFAULT_ART_SET, artSetName, resolveArtSet, setsCovering } from './artSets';
+import { ArtChoice, ArtSetCatalog, ArtSetEntry, DEFAULT_ART_CHOICE, DEFAULT_ART_SET, artSetGeneralId, artSetName, resolveArtSet, setsCovering } from './artSets';
 
 const entry = (names: { en: string; vi: string }, portraits: string[], faces: string[]): ArtSetEntry => ({ names, provenance: 'test', portraits, faces });
 
@@ -60,5 +60,12 @@ describe('DEFAULT_ART_CHOICE', () => {
   it('is classic with no overrides', () => {
     expect(DEFAULT_ART_CHOICE.global).toBe('classic');
     expect(DEFAULT_ART_CHOICE.overrides).toEqual({});
+  });
+});
+
+describe('artSetGeneralId', () => {
+  it('gives the base General id for a plain or a Kingdom Wars id', () => {
+    expect(artSetGeneralId('kingdomWars:guan-yu')).toBe('guan-yu');
+    expect(artSetGeneralId('guan-yu')).toBe('guan-yu');
   });
 });

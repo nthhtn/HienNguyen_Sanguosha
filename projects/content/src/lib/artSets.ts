@@ -1,4 +1,5 @@
 import index from '../../assets/generals/skins/art-sets.json';
+import { baseGeneralId, isKingdomWarsGeneralId } from './generalIds';
 
 // An art set is a named collection of alternate General portraits. `classic` is always present and complete;
 // any other set may cover only some Generals. The catalog is generated from the art set folders by
@@ -45,6 +46,11 @@ export function resolveArtSet(baseId: string, choice: ArtChoice): ArtSetId {
   if (override !== undefined && covers(choice.catalog, override, baseId)) return override;
   if (covers(choice.catalog, choice.global, baseId)) return choice.global;
   return DEFAULT_ART_SET;
+}
+
+// The base General id that art sets are keyed by, for a plain id or a Kingdom Wars one.
+export function artSetGeneralId(id: string): string {
+  return isKingdomWarsGeneralId(id) ? baseGeneralId(id) : id;
 }
 
 export function artSetName(entry: ArtSetEntry, locale: string): string {

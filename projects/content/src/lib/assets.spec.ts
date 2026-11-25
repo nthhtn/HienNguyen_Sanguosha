@@ -7,7 +7,7 @@ import { generalsData } from '../../data/generals';
 import { kingdomWarsGeneralIds } from './kingdomWarsGenerals';
 import { kingdomWarsGeneralId } from './generalIds';
 import { ART_SET_CATALOG, ArtChoice, ArtSetCatalog } from './artSets';
-import { AMBITIONIST_ICON_URL, assetFile, SPRITE_IDS, CARD_BACK_ART_URL, kingdomBannerUrl, spriteSheet, cardArtUrl, GENERAL_PLACEHOLDER_ART_URL, generalDeathVoiceUrl, generalFaceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls, skillFileId, skillPreviewUrl } from './assets';
+import { AMBITIONIST_ICON_URL, assetFile, SPRITE_IDS, CARD_BACK_ART_URL, kingdomBannerUrl, spriteSheet, cardArtUrl, GENERAL_PLACEHOLDER_ART_URL, generalDeathVoiceUrl, generalFaceUrl, generalSkinForce, generalSkinUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls, skillFileId, skillPreviewUrl } from './assets';
 
 describe('cardArtUrl', () => {
   it('returns the /images/ URL for a crawled id', () => {
@@ -381,5 +381,17 @@ describe('the shipped art set catalog', () => {
 
   it('gives classic a portrait for every General with a skin; a face crop is optional', () => {
     expect([...ART_SET_CATALOG.sets['classic'].portraits].sort()).toEqual(Object.keys(skins).sort());
+  });
+});
+
+describe('generalSkinForce', () => {
+  it('gives the force folder of the General\'s skin', () => {
+    expect(generalSkinForce('cao-cao')).toBe('Wei');
+    expect(generalSkinForce('guan-yu')).toBe('Shu');
+    expect(generalSkinForce('kingdomWars:diao-chan')).toBe('Qun');
+  });
+
+  it('gives null for a General with no skin', () => {
+    expect(generalSkinForce('nobody')).toBeNull();
   });
 });
