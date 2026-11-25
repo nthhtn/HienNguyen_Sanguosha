@@ -9,6 +9,7 @@ import { SceneFrame } from './scene-frame';
 import { SceneGeneral } from './scene-general';
 import { SceneHp } from './scene-hp';
 import { SceneSeat } from './scene-seat';
+import { provideFakeArtSets } from '../../../art-sets.testing';
 
 afterEach(() => localStorage.clear());
 
@@ -173,5 +174,14 @@ describe('scene art', () => {
   it.each(['sha', 'shan', 'peach', 'wine', 'wuxie', 'capture', 'cao-cao', 'guo-jia', 'zhang-jiao'])('%s resolves to a real asset path', (id) => {
     const card = render(id.includes('-') ? SceneGeneral : SceneCard, { id });
     expect(card.el.querySelector('img.scene-card')!.getAttribute('src')).toMatch(/^\/images\/.+\.webp$/);
+  });
+});
+
+describe('SceneSeat art sets', () => {
+  it('shows the art set the viewer chose for the portrait', () => {
+    TestBed.configureTestingModule({ providers: provideFakeArtSets() });
+    localStorage.setItem('art-set-overrides', JSON.stringify({ 'cao-cao': 'ink' }));
+    const { el } = render(SceneSeat, { general: 'cao-cao', n: 2 });
+    expect(el.querySelector('img.scene-avatar')!.getAttribute('src')).toBe('/images/generals/skins/ink/wei/caocao.webp');
   });
 });

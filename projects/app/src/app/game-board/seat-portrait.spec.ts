@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { SeatGenerals } from 'engine';
 import { HIDDEN_GENERAL_ART_URL, generalSkinUrl } from 'content';
 import { SeatPortrait } from './seat-portrait';
+import { provideFakeArtSets } from '../art-sets.testing';
 
 function render(generals: SeatGenerals | null): HTMLElement {
   const fixture = TestBed.createComponent(SeatPortrait);
@@ -34,5 +35,19 @@ describe('SeatPortrait', () => {
     el.querySelector('img')!.dispatchEvent(new Event('error'));
     fixture.detectChanges();
     expect(srcs(el)[0]).toBe(HIDDEN_GENERAL_ART_URL);
+  });
+});
+
+describe('SeatPortrait art sets', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    TestBed.configureTestingModule({ providers: provideFakeArtSets() });
+  });
+  afterEach(() => localStorage.clear());
+
+  it('shows the override the viewer set for a General', () => {
+    localStorage.setItem('art-set-overrides', JSON.stringify({ 'guan-yu': 'ink' }));
+    const el = render({ main: { generalDefinitionId: 'guan-yu', revealed: true }, deputy: { generalDefinitionId: 'zhang-fei', revealed: true } });
+    expect(srcs(el)).toEqual(['/images/generals/skins/ink/shu/guanyu.webp', '/images/generals/skins/classic/shu/zhangfei.webp']);
   });
 });

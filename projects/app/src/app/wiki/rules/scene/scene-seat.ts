@@ -1,5 +1,6 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { AMBITIONIST_ICON_URL, CHAIN_ICON_URL, generalDisplayData, generalSkinUrl } from 'content';
+import { ArtSets } from '../../../art-sets.service';
 import { DAMAGE_IMAGE_URLS } from '../../../game-board/damage-effects';
 import { I18n } from '../../../i18n/i18n.service';
 import type { MessageKey } from '../../../i18n/messages';
@@ -50,6 +51,7 @@ export type SceneForce = 'Wei' | 'Shu' | 'Wu' | 'Qun';
 })
 export class SceneSeat {
   private readonly i18n = inject(I18n);
+  private readonly artSets = inject(ArtSets);
   readonly general = input.required<string>();
   readonly n = input.required<number>();
   readonly force = input<SceneForce>();
@@ -69,7 +71,7 @@ export class SceneSeat {
     const mark = this.mark();
     return mark ? DAMAGE_IMAGE_URLS[mark] : null;
   });
-  protected readonly portrait = computed(() => generalSkinUrl(this.general()) ?? '');
+  protected readonly portrait = computed(() => generalSkinUrl(this.general(), this.artSets.choice()) ?? '');
   protected readonly portraitName = computed(() => generalDisplayData(this.general(), this.i18n.locale())?.name ?? '');
   protected readonly name = computed(() => this.label() ?? this.i18n.t('label.seat', { n: this.n() }));
   protected readonly forceName = computed(() => {

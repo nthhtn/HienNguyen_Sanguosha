@@ -7,6 +7,7 @@ import { CardInfoDialog } from '../card-info-dialog';
 import { GeneralInfoDialog } from '../general-info-dialog';
 import { SeatDetailsDialog, SeatDetailsData } from './seat-details-dialog';
 import { testSeat } from './phone.testing';
+import { provideFakeArtSets } from '../../art-sets.testing';
 
 const card = (instanceId: string, definitionId: string): CardInstance => ({ instanceId, definitionId, suit: 'spade', rank: 7 });
 
@@ -139,5 +140,27 @@ describe('SeatDetailsDialog', () => {
     const { el, close } = render(state(revealed()));
     (el.querySelector('button.close') as HTMLButtonElement).click();
     expect(close).toHaveBeenCalled();
+  });
+});
+
+describe('SeatDetailsDialog art sets', () => {
+  afterEach(() => localStorage.clear());
+
+  it('shows the art set the viewer chose for the General', () => {
+    localStorage.clear();
+    localStorage.setItem('art-set', 'ink');
+    const live = signal(state(revealed()));
+    TestBed.configureTestingModule({
+      providers: [
+        ...provideFakeArtSets(),
+        { provide: MAT_DIALOG_DATA, useValue: { state: live, seatId: 'seat-2' } satisfies SeatDetailsData },
+        { provide: MatDialogRef, useValue: { close: jest.fn() } },
+        { provide: MatDialog, useValue: { open: jest.fn() } },
+      ],
+    });
+    const fixture = TestBed.createComponent(SeatDetailsDialog);
+    fixture.detectChanges();
+    const portrait = (fixture.nativeElement as HTMLElement).querySelector('.general[data-slot="main"] img.portrait')!;
+    expect(portrait.getAttribute('src')).toBe('/images/generals/skins/ink/wei/caocao.webp');
   });
 });

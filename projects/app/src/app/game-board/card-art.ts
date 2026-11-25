@@ -1,5 +1,6 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { cardArtUrl, croppedCardArtUrl, generalSkinUrl } from 'content';
+import { ArtSets } from '../art-sets.service';
 
 @Component({
   selector: 'app-card-art',
@@ -67,8 +68,10 @@ export class CardArt {
   // A card shown on the Play screen uses its cropped art.
   readonly cropped = input(false);
 
+  private readonly artSets = inject(ArtSets);
+
   protected readonly url = computed(() => {
-    if (this.skin()) return generalSkinUrl(this.id());
+    if (this.skin()) return generalSkinUrl(this.id(), this.artSets.choice());
     return this.cropped() ? croppedCardArtUrl(this.id()) : cardArtUrl(this.id());
   });
 }

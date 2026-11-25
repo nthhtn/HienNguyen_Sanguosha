@@ -4,6 +4,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { BOT_NAME_PREFIX } from 'protocol';
 import { CardInstance, EQUIP_SLOTS, EquipSlot, GeneralInstance, Seat } from 'engine';
 import { AMBITIONIST_ICON_URL, equipSlotOf, generalFaceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls } from 'content';
+import { ArtSets } from '../../art-sets.service';
 import { cardIdDisplayName, seatForce } from '../../labels';
 import { I18n } from '../../i18n/i18n.service';
 import { TPipe } from '../../i18n/t.pipe';
@@ -203,6 +204,7 @@ export class PhoneSeatTile {
   readonly opened = output<void>();
 
   private readonly i18n = inject(I18n);
+  private readonly artSets = inject(ArtSets);
   protected readonly ambitionistIcon = AMBITIONIST_ICON_URL;
   // A bot is marked by the robot icon, so the "[Bot] " text is dropped from its name; any other name stays as it is.
   protected readonly shownName = computed(() => {
@@ -273,8 +275,9 @@ export class PhoneSeatTile {
 
   private art(id: string): { url: string | null; face: string | null } {
     if (id === 'hidden') return { url: HIDDEN_GENERAL_ART_URL, face: null };
-    const face = generalFaceUrl(id);
-    return face && !this.failedFaces().has(face) ? { url: face, face } : { url: generalSkinUrl(id), face: null };
+    const choice = this.artSets.choice();
+    const face = generalFaceUrl(id, choice);
+    return face && !this.failedFaces().has(face) ? { url: face, face } : { url: generalSkinUrl(id, choice), face: null };
   }
 
   protected faceFailed(face: string | null): void {
