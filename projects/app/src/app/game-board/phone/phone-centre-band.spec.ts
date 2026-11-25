@@ -63,6 +63,11 @@ describe('PhoneCentreBand', () => {
     expect(TestBed.inject(Layout).panelOpen()).toBe(true);
   });
 
+  it('carries the Tutorial anchor on the History button', () => {
+    const { el } = render(state());
+    expect(el.querySelector('button.history')!.getAttribute('data-tutorial')).toBe('history-button');
+  });
+
   it('shows the turned-up cards', () => {
     const { el } = render(state([{ instanceId: 'p1', definitionId: 'sha', suit: 'spade', rank: 7 }]));
     expect(el.querySelectorAll('.turned-up app-playing-card')).toHaveLength(1);

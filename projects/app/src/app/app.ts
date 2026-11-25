@@ -94,6 +94,7 @@ export class App {
     return new RegExp(`^/wiki/${route}(/|$|\\?)`).test(this.url());
   }
   protected readonly rulesActive = computed(() => /^\/wiki\/rules(\/|$|\?)/.test(this.url()));
+  protected readonly tutorialActive = computed(() => /^\/tutorial(\/|$|\?)/.test(this.url()));
 
   protected readonly music = inject(MusicService);
   protected readonly effects = inject(SoundEffects);

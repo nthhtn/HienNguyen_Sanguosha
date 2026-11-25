@@ -89,12 +89,15 @@ const UNLOCK_AT = 4200;
     .source { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border-radius: 12px; background: color-mix(in srgb, var(--force) 12%, transparent); }
     .who { font: var(--mat-sys-title-medium); color: var(--force-text); }
     .skill-text { margin: 4px 0 0; font: var(--mat-sys-body-medium); color: var(--mat-sys-on-surface-variant); }
-    .versus { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+    .versus { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); column-gap: 12px; align-items: center; justify-items: center; width: 100%; }
+    .versus > .side:nth-child(1) { grid-column: 1; }
+    .versus > .vs { grid-column: 2; }
+    .versus > .side:nth-child(3) { grid-column: 3; }
     .vs { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--mat-sys-on-surface); color: var(--mat-sys-surface); font: var(--mat-sys-title-small); font-weight: 700; transform: scale(0); transition: transform 0.45s cubic-bezier(0.3, 1.8, 0.5, 1); }
     .vs.in { transform: scale(1); }
     .side {
-      position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 18px 14px 14px; border-radius: 14px; border: 2px solid transparent;
-      background: var(--mat-sys-surface-container-low); opacity: 0;
+      position: relative; display: grid; grid-template-rows: 36px 96px; row-gap: 8px; justify-items: center; width: 100%; max-width: 168px; padding: 18px 14px 14px; border-radius: 14px; border: 2px solid transparent;
+      background: var(--mat-sys-surface-container-low); opacity: 0; box-sizing: border-box;
       transition: transform 0.5s cubic-bezier(0.3, 1.4, 0.5, 1), opacity 0.4s, filter 0.4s, background 0.4s, border-color 0.4s, box-shadow 0.5s;
     }
     .side.left { transform: translateX(-40px); }
@@ -106,16 +109,17 @@ const UNLOCK_AT = 4200;
     .tag { position: absolute; top: -12px; left: 50%; transform: translate(-50%, 6px); display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 999px; background: var(--force); color: #fff; font: var(--mat-sys-label-medium); white-space: nowrap; opacity: 0; transition: opacity 0.35s, transform 0.35s; }
     .tag mat-icon { font-size: 16px; width: 16px; height: 16px; }
     .side.win .tag { opacity: 1; transform: translate(-50%, 0); }
-    .player { display: flex; align-items: center; gap: 8px; }
-    .name { font: var(--mat-sys-title-small); color: var(--force-text); }
-    .slot { position: relative; width: 70px; height: 96px; }
+    .player { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-width: 0; }
+    .name { font: var(--mat-sys-title-small); color: var(--force-text); text-align: center; }
+    .slot { position: relative; width: 70px; height: 96px; align-self: center; }
     .pc { position: absolute; inset: 0; perspective: 600px; opacity: 0; transform: translateY(-14px); transition: opacity 0.3s, transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
     .pc.in { opacity: 1; transform: none; }
     .inner { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.3, 0.7, 0.2, 1); transform: rotateY(180deg); }
     .pc.up .inner { transform: none; }
-    .back, .face { position: absolute; inset: 0; border-radius: 6px; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+    .back, .face { position: absolute; inset: 0; box-sizing: border-box; border-radius: 6px; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
     .back { transform: rotateY(180deg); background: repeating-linear-gradient(45deg, var(--force) 0 6px, color-mix(in srgb, var(--force) 70%, #000) 6px 12px); border: 3px solid #fff; box-shadow: 0 0 0 1px var(--mat-sys-outline-variant); }
-    .face { display: grid; place-items: center; }
+    .face { display: flex; align-items: flex-start; justify-content: center; border: 3px solid transparent; overflow: hidden; }
+    .face app-playing-card { display: block; line-height: 0; }
     .cmp { margin: 0; min-height: 24px; text-align: center; font: var(--mat-sys-title-medium); opacity: 0; transition: opacity 0.3s; }
     .cmp.in { opacity: 1; }
     .result { position: absolute; width: 1px; height: 1px; margin: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

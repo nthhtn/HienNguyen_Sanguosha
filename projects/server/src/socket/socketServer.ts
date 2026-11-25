@@ -6,6 +6,7 @@ import { ERROR_MESSAGES, PROTOCOL_VERSION, REQ_ID_MAX, SOCKET_PATH } from 'proto
 import type { ClientMessage, ErrorCode } from 'protocol';
 import { ClientMessageSchema } from 'protocol/schemas';
 import { AccountService } from '../auth/accounts';
+import { originAllowed } from '../http/guard';
 import { SESSION_COOKIE } from '../http/session';
 import { TypedApp } from '../http/types';
 import { UserRecord } from '../persistence/records';
@@ -29,6 +30,7 @@ export interface SocketDeps extends SocketOptions {
   accounts: AccountService;
   rooms: RoomService;
   publicOrigin: string;
+  production?: boolean;
 }
 
 const clientMessage = TypeCompiler.Compile(ClientMessageSchema);
@@ -84,7 +86,7 @@ export function attachSocketServer(app: TypedApp, deps: SocketDeps): void {
 
   async function upgrade(request: IncomingMessage, socket: Duplex, head: Buffer): Promise<void> {
     if (new URL(request.url ?? '/', 'http://localhost').pathname !== SOCKET_PATH) return refuse(socket, 404, 'Not Found');
-    if (request.headers.origin !== deps.publicOrigin) return refuse(socket, 403, 'Forbidden');
+    if (!originAllowed(request.headers.origin, deps.publicOrigin, deps.production ?? true)) return refuse(socket, 403, 'Forbidden');
     const token = app.parseCookie(request.headers.cookie ?? '')[SESSION_COOKIE];
     const auth = token ? await deps.accounts.authenticate(token) : null;
     if (!auth) return refuse(socket, 401, 'Unauthorized');

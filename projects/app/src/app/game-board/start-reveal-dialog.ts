@@ -2,6 +2,8 @@ import { Component, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { TutorialAnchor } from '../tutorial/tutorial-anchor';
+import { anchor } from '../tutorial/anchors';
 import { CardArt } from './card-art';
 import { DecisionCountdown } from './decision-countdown';
 import { MinimizeButton } from './minimize-button';
@@ -26,7 +28,8 @@ export interface StartRevealDialogData {
 // first. The engine offers it as one ConfirmRevealsAction; at zero the clock confirms with none.
 @Component({
   selector: 'app-start-reveal-dialog',
-  imports: [MatDialogModule, MatButtonModule, MatIconModule, CardArt, DecisionCountdown, MinimizeButton, TPipe],
+  host: { 'data-tutorial': anchor.revealDialog() },
+  imports: [MatDialogModule, MatButtonModule, MatIconModule, CardArt, DecisionCountdown, MinimizeButton, TPipe, TutorialAnchor],
   template: `
     <div class="title-row">
       <h2 mat-dialog-title>{{ 'startReveal.title' | t }}</h2>
@@ -40,15 +43,17 @@ export interface StartRevealDialogData {
             <button
               type="button"
               class="general"
+              [appTutorialAnchor]="anchor.revealSlot(option.slot)"
               [class.checked]="chosen().has(option.slot)"
               [attr.aria-pressed]="chosen().has(option.slot)"
               [attr.data-slot]="option.slot"
               (click)="toggle(option.slot)"
             >
-              <mat-icon class="mark" aria-hidden="true">{{ chosen().has(option.slot) ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
               <app-card-art [skin]="true" [id]="option.generalId" [label]="option.name" size="small" />
-              <span class="slot">{{ option.slotLabel }}</span>
-              <span class="name">{{ option.name }}</span>
+              <span class="words">
+                <span class="name">{{ option.name }}</span>
+                <span class="slot">{{ option.slotLabel }}</span>
+              </span>
             </button>
           </li>
         }
@@ -56,25 +61,38 @@ export interface StartRevealDialogData {
     </mat-dialog-content>
     <app-decision-countdown class="timer" />
     <mat-dialog-actions align="end">
-      <button mat-flat-button type="button" class="confirm" (click)="confirm()">{{ 'ui.confirm' | t }}</button>
+      <button mat-flat-button type="button" class="confirm" [appTutorialAnchor]="anchor.revealConfirm()" (click)="confirm()">{{ 'ui.confirm' | t }}</button>
     </mat-dialog-actions>
   `,
   styles: `
+    :host { display: block; }
     .hint { margin: 0 0 12px; font: var(--mat-sys-body-medium); color: var(--mat-sys-on-surface-variant); }
     .generals { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
     .general {
       display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; text-align: left;
       border: 2px solid transparent; border-radius: 10px; background: none; color: inherit; cursor: pointer; font: var(--mat-sys-body-large);
     }
+    .general app-card-art { flex: none; }
+    .words { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; flex: 1; }
     .general:focus-visible { outline: 3px solid var(--mat-sys-primary); outline-offset: 2px; }
     .general.checked { border-color: var(--force); background: color-mix(in srgb, var(--force) 18%, white); }
-    .mark { color: var(--force); }
-    .slot { color: var(--mat-sys-on-surface-variant); font: var(--mat-sys-label-large); }
-    .name { font-weight: 600; }
+    .name { font-weight: 600; line-height: 1.2; overflow-wrap: anywhere; }
+    .slot { color: var(--mat-sys-on-surface-variant); font: var(--mat-sys-label-large); line-height: 1.15; }
     .timer { display: block; padding: 8px 24px 0; }
+    /* Phone board: both Generals on one row; tap the tile to select (spec 3h). */
+    :host-context([data-layout='compact']) .hint { margin: 0 0 6px; }
+    :host-context([data-layout='compact']) .generals {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+    }
+    :host-context([data-layout='compact']) .general { gap: 8px; min-height: unset; padding: 6px 8px; font: var(--mat-sys-body-medium); }
+    :host-context([data-layout='compact']) .name { font-size: 14px; }
+    :host-context([data-layout='compact']) .slot { font-size: 12px; }
+    :host-context([data-layout='compact']) .timer { padding: 4px 12px 0; }
   `,
 })
 export class StartRevealDialog {
+  protected readonly anchor = anchor;
   protected readonly data = inject<StartRevealDialogData>(MAT_DIALOG_DATA);
   private readonly dialogRef = inject<MatDialogRef<StartRevealDialog, Array<'main' | 'deputy'>>>(MatDialogRef);
 

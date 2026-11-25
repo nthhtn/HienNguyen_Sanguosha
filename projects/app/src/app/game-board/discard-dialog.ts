@@ -7,6 +7,7 @@ import { PlayingCard } from './playing-card';
 import { DecisionCountdown } from './decision-countdown';
 import { MinimizeButton } from './minimize-button';
 import { TPipe } from '../i18n/t.pipe';
+import { anchor } from '../tutorial/anchors';
 
 export interface DiscardDialogData {
   // The viewer's hand.
@@ -21,6 +22,7 @@ export interface DiscardDialogData {
 // Closes only through Discard, with the ticked instance ids, in hand order.
 @Component({
   selector: 'app-discard-dialog',
+  host: { 'data-tutorial': anchor.discardDialog() },
   imports: [MatDialogModule, MatButtonModule, MatIconModule, PlayingCard, DecisionCountdown, MinimizeButton, TPipe],
   template: `
     <div class="title-row">
@@ -62,6 +64,7 @@ export interface DiscardDialogData {
     </div>
   `,
   styles: `
+    :host { display: block; }
     .hint { margin: 0 0 12px; font: var(--mat-sys-body-medium); color: var(--mat-sys-on-surface-variant); }
     .hand { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 12px; }
     .card {

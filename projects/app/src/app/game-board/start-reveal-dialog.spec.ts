@@ -18,11 +18,17 @@ function render() {
 }
 
 describe('StartRevealDialog', () => {
-  it('shows each hidden General’s art beside its slot and name', () => {
-    const { el } = render();
+  it('shows each hidden General’s art with name and role on the right; tap toggles selection', () => {
+    const { el, fixture } = render();
     const art = [...el.querySelectorAll('.general img')].map((i) => i.getAttribute('src'));
     expect(art).toEqual([generalSkinUrl('cao-cao'), generalSkinUrl('sima-yi')]);
-    expect(el.querySelector('.general[data-slot="main"]')!.textContent).toContain('Cao Cao');
+    expect(el.querySelectorAll('mat-icon')).toHaveLength(0);
+    const main = el.querySelector('.general[data-slot="main"]')!;
+    expect(main.querySelector('.name')!.textContent).toBe('Cao Cao');
+    expect(main.querySelector('.slot')!.textContent).toBe('Main General');
+    (main as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(main.classList.contains('checked')).toBe(true);
   });
 
   it('closes with the ticked slots, Main first', () => {
@@ -34,3 +40,21 @@ describe('StartRevealDialog', () => {
     expect(close).toHaveBeenCalledWith(['main', 'deputy']);
   });
 });
+
+describe('StartRevealDialog tutorial anchors', () => {
+  it('marks the whole window, which a step with several clicks spotlights as one', () => {
+    const { el } = render();
+    expect(el.getAttribute('data-tutorial')).toBe('reveal-dialog');
+  });
+
+  it('marks each General slot and the confirm button', () => {
+    const { el } = render();
+    const marked = [...el.querySelectorAll('[data-tutorial]')].map((e) => [e.tagName.toLowerCase(), e.getAttribute('data-tutorial')]);
+    expect(marked).toEqual([
+      ['button', 'reveal-slot:main'],
+      ['button', 'reveal-slot:deputy'],
+      ['button', 'reveal-confirm'],
+    ]);
+  });
+});
+

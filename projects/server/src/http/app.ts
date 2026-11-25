@@ -13,7 +13,7 @@ import { AUTH_ERROR_STATUS, errorBody, ROOM_ERROR_STATUS } from './errors';
 import { requestGuard } from './guard';
 import { registerRoomRoutes } from './roomRoutes';
 import { createStaticHandler } from './staticFiles';
-import { clearSessionCookie, SESSION_COOKIE, setSessionCookie } from './session';
+import { clearSessionCookie, SESSION_COOKIE, sessionCookieSecure, setSessionCookie } from './session';
 
 declare module 'fastify' {
   interface FastifyRequest {
@@ -34,6 +34,7 @@ export interface AppDeps {
   staticDir?: string | null;
   // Passed to Fastify; see ServerConfig.trustProxy.
   trustProxy?: false | number | string[];
+  production?: boolean;
   rateLimits?: AuthRateLimits;
   // Clock for the rate limits.
   now?: () => number;
@@ -45,7 +46,8 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   await app.register(cookie);
   app.decorateRequest('auth', null);
 
-  app.addHook('onRequest', requestGuard(deps.publicOrigin));
+  const production = deps.production ?? true;
+  app.addHook('onRequest', requestGuard(deps.publicOrigin, production));
 
   // Resolve the session cookie. A valid one is refreshed so the browser's copy
   // slides along with the stored expiry; an invalid one is cleared.
@@ -54,11 +56,12 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     const token = request.cookies[SESSION_COOKIE];
     if (!token) return;
     const auth = await deps.accounts.authenticate(token);
+    const secure = sessionCookieSecure(production, deps.cookieSecure, request.headers);
     if (auth) {
       request.auth = auth;
-      setSessionCookie(reply, token, auth.session.expiresAt, deps.cookieSecure);
+      setSessionCookie(reply, token, auth.session.expiresAt, secure);
     } else {
-      clearSessionCookie(reply, deps.cookieSecure);
+      clearSessionCookie(reply, secure);
     }
   });
 
@@ -86,13 +89,14 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     accounts: deps.accounts,
     limits: deps.rateLimits ?? new AuthRateLimits(),
     cookieSecure: deps.cookieSecure,
+    production,
     now: deps.now ?? Date.now,
   });
 
   registerRoomRoutes(app, { rooms: deps.rooms });
   registerGameRoutes(app, { history: deps.history });
 
-  attachSocketServer(app, { accounts: deps.accounts, rooms: deps.rooms, publicOrigin: deps.publicOrigin, ...deps.socket });
+  attachSocketServer(app, { accounts: deps.accounts, rooms: deps.rooms, publicOrigin: deps.publicOrigin, production, ...deps.socket });
   await app.ready();
   return app;
 }

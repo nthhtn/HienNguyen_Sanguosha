@@ -312,6 +312,18 @@ describe('DecisionTimer', () => {
       expect(timer.secondsLeft()).toBe(DECISION_SECONDS.selection);
     });
 
+    it('runs no clock during a Tutorial lesson, and starts one once the hooks are cleared', () => {
+      game.setTutorialHooks({ allows: () => true, botMove: () => null, applied: () => undefined });
+      toPlayPhase();
+      expect(timer.secondsLeft()).toBeNull();
+      const before = game.state();
+      advance(DECISION_SECONDS.play + 5);
+      expect(game.state()).toBe(before);
+      game.setTutorialHooks(null);
+      TestBed.tick();
+      expect(timer.secondsLeft()).toBe(DECISION_SECONDS.play);
+    });
+
     it('stops when the board leaves the screen', () => {
       toPlayPhase();
       board.destroy();

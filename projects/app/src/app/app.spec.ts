@@ -37,6 +37,7 @@ describe('App', () => {
           { path: 'setup', children: [] },
           { path: 'game', children: [] },
           { path: 'play', children: [] },
+          { path: 'tutorial', children: [] },
           { path: 'rooms', children: [] },
           { path: 'my-games', children: [] },
           { path: 'preview', children: [] },
@@ -119,6 +120,11 @@ describe('App', () => {
       expect(el.querySelector('button.playback-speed')).toBeNull();
     });
 
+    it('hides the Tutorial link, which needs offline play', async () => {
+      const { el } = await render('/rooms');
+      expect(el.querySelector('a.nav-tutorial')).toBeNull();
+    });
+
     it('hides Play Offline and labels the online link Play', async () => {
       const { el } = await render('/rooms');
       expect(el.querySelector('a.nav-play')).toBeNull();
@@ -161,7 +167,7 @@ describe('App', () => {
     expect(el.querySelector('button.nav-kingdom-wars')!.classList).toContain('active');
   });
 
-  it('has five items in the bar: Play Offline, Play Online, Kingdom Wars, Identity and Rules, each with an icon', async () => {
+  it('has six items in the bar: Play Offline, Play Online, Kingdom Wars, Identity, Rules and Tutorial, each with an icon', async () => {
     const { el } = await render();
     const items = [...el.querySelectorAll('nav.nav > a, nav.nav > button')];
     expect(items.map((i) => [i.querySelector('.label')!.textContent, i.querySelector('mat-icon')!.textContent])).toEqual([
@@ -170,6 +176,7 @@ describe('App', () => {
       ['Kingdom Wars', 'swords'],
       ['Identity', 'castle'],
       ['Rules', 'menu_book'],
+      ['Tutorial', 'school'],
     ]);
   });
 
@@ -288,6 +295,19 @@ describe('App', () => {
     await TestBed.inject(Router).navigateByUrl('/wiki/rules/turn');
     fixture.detectChanges();
     expect(link.classList).toContain('active');
+  });
+
+  it('has a Tutorial link, highlighted on the Tutorial page', async () => {
+    const { el, fixture } = await render();
+    const link = el.querySelector('nav.nav a.nav-tutorial') as HTMLAnchorElement;
+    expect(link.querySelector('.label')!.textContent).toBe('Tutorial');
+    expect(link.getAttribute('aria-label')).toBe('Tutorial');
+    expect(link.getAttribute('href')).toBe('/tutorial');
+    expect(link.classList).not.toContain('active');
+    await TestBed.inject(Router).navigateByUrl('/tutorial');
+    fixture.detectChanges();
+    expect(link.classList).toContain('active');
+    expect(link.getAttribute('aria-current')).toBe('page');
   });
 
   it('sits on the left, straight after the title, with no side panel', async () => {
@@ -429,7 +449,7 @@ describe('App', () => {
       const { drawer } = await openDrawer();
       const hrefs = [...drawer.querySelectorAll('a')].map((a) => a.getAttribute('href'));
       expect(hrefs).toEqual(
-        expect.arrayContaining(['/play', '/rooms', '/wiki/kingdom-wars/generals', '/wiki/identity/tools', '/wiki/rules', '/sign-in'])
+        expect.arrayContaining(['/play', '/rooms', '/wiki/kingdom-wars/generals', '/wiki/identity/tools', '/wiki/rules', '/tutorial', '/sign-in'])
       );
       expect(drawer.textContent).toContain('Play Online');
       expect(drawer.querySelectorAll('.drawer-playback-speed button').length).toBeGreaterThan(0);

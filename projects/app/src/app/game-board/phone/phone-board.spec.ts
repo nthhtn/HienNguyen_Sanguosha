@@ -3,6 +3,7 @@ import type { Action, CardZone, GameState, Seat } from 'engine';
 import { buildContentRegistry } from 'content';
 import type { AvatarSkill } from '../avatar-skills';
 import { MatDialog } from '@angular/material/dialog';
+import { BattlefieldBackgrounds } from '../../battlefield-background.service';
 import { PhoneBoard } from './phone-board';
 import { SeatDetailsDialog } from './seat-details-dialog';
 import { phoneSeats, phoneSizes } from './phone-seat-layout';
@@ -33,6 +34,19 @@ describe('PhoneBoard', () => {
     return { fixture, el: fixture.nativeElement as HTMLElement };
   }
   const tilesIn = (el: HTMLElement, area: string) => el.querySelectorAll(`.${area} [data-seat-id] app-phone-seat-tile`).length;
+
+  it('offers the Battlefield menu while on screen and draws the default table', () => {
+    const backgrounds = TestBed.inject(BattlefieldBackgrounds);
+    const { fixture, el } = render(4);
+    expect(backgrounds.available()).toBe(true);
+    const board = el.querySelector('.phone-board') as HTMLElement;
+    expect(board.style.background).toBe('');
+    backgrounds.select('2');
+    fixture.detectChanges();
+    expect((fixture.componentInstance as PhoneBoard & { background: () => string | null }).background()).toContain('battlefield/2.jpg');
+    fixture.destroy();
+    expect(backgrounds.available()).toBe(false);
+  });
 
   it('puts 7 opponents of an 8-seat game along the top', () => {
     const { el } = render(8);
@@ -193,6 +207,45 @@ describe('PhoneBoard', () => {
       pick('p1');
       pick('p1');
       expect(el.querySelector('.actions app-hand-card-actions')).toBeNull();
+    });
+  });
+  describe('tutorial anchors', () => {
+    const sha = { instanceId: 's1', definitionId: 'sha', suit: 'spade' as const, rank: 7 };
+    const play = { kind: 'PlayCardAction', seatId: 'seat-0', cardInstanceId: 's1', targets: [] } as unknown as Action;
+    const endPhase = { kind: 'EndPhaseAction', seatId: 'seat-0' } as unknown as Action;
+    const count = (el: HTMLElement, id: string) => el.querySelectorAll(`[data-tutorial="${id}"]`).length;
+
+    function renderPlayPhase() {
+      const { fixture, el } = render(4);
+      fixture.componentRef.setInput('hand', [sha]);
+      fixture.componentRef.setInput('handActions', [play]);
+      fixture.componentRef.setInput('boardActions', [endPhase]);
+      fixture.detectChanges();
+      return { fixture, el };
+    }
+
+    it('anchors the viewer seat, its HP and its Generals, once each', () => {
+      const { el } = renderPlayPhase();
+      for (const id of ['seat:seat-0', 'hp:seat-0', 'general-info:seat-0']) expect([id, count(el, id)]).toEqual([id, 1]);
+    });
+
+    it('anchors every other seat once', () => {
+      const { el } = renderPlayPhase();
+      for (const id of ['seat:seat-1', 'seat:seat-2', 'seat:seat-3']) expect([id, count(el, id)]).toEqual([id, 1]);
+    });
+
+    it('anchors the hand, its cards, End Phase and the phase indicator once each', () => {
+      const { el } = renderPlayPhase();
+      for (const id of ['hand', 'hand-card:sha', 'end-phase', 'phase-indicator']) expect([id, count(el, id)]).toEqual([id, 1]);
+    });
+
+    it('anchors Play in the action column only once a card is picked', () => {
+      const { fixture, el } = renderPlayPhase();
+      expect(count(el, 'play-button:sha')).toBe(0);
+      (el.querySelector('app-hand-view [data-card-id="s1"]') as HTMLElement).click();
+      fixture.detectChanges();
+      expect(el.querySelectorAll('.actions [data-tutorial="play-button:sha"]')).toHaveLength(1);
+      expect(el.querySelector('.actions [data-tutorial="play-button:sha"]')!.tagName).toBe('BUTTON');
     });
   });
 });

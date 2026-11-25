@@ -5,6 +5,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatRadioModule } from '@angular/material/radio';
 import { Action, CardInstance } from 'engine';
 import { cardFaceLabel, cardIdDisplayName } from '../labels';
+import { TutorialAnchor } from '../tutorial/tutorial-anchor';
+import { anchor } from '../tutorial/anchors';
 import { PlayingCard } from './playing-card';
 import { DecisionCountdown } from './decision-countdown';
 import { MinimizeButton } from './minimize-button';
@@ -39,7 +41,8 @@ const NO_RESPONSE = 'no-response';
 // Closes only through that button, with the chosen engine action.
 @Component({
   selector: 'app-response-dialog',
-  imports: [MatDialogModule, MatButtonModule, MatIconModule, MatRadioModule, PlayingCard, DecisionCountdown, MinimizeButton, TPipe],
+  host: { 'data-tutorial': anchor.responseDialog() },
+  imports: [MatDialogModule, MatButtonModule, MatIconModule, MatRadioModule, PlayingCard, DecisionCountdown, MinimizeButton, TPipe, TutorialAnchor],
   template: `
     <div class="title-row">
       <h2 mat-dialog-title>{{ 'respDialog.title' | t }}</h2>
@@ -78,7 +81,7 @@ const NO_RESPONSE = 'no-response';
         <div class="cards">
           @for (option of data.cards; track option.id) {
             <!-- The same card face as in the hand: name, suit and number. -->
-            <mat-radio-button class="option card-option" [value]="option.id" [attr.data-option-id]="option.id" [aria-label]="option.label">
+            <mat-radio-button class="option card-option" [appTutorialAnchor]="option.card ? anchor.responseCard(option.card.definitionId) : null" [value]="option.id" [attr.data-option-id]="option.id" [aria-label]="option.label">
               @if (option.card; as card) {
                 <app-playing-card [card]="card" />
               }
@@ -100,11 +103,12 @@ const NO_RESPONSE = 'no-response';
     <div class="foot">
       <app-decision-countdown class="timer" />
       <mat-dialog-actions align="end">
-        <button mat-flat-button type="button" class="confirm" (click)="confirm()">{{ confirmLabel() }}</button>
+        <button mat-flat-button type="button" class="confirm" [appTutorialAnchor]="anchor.responseConfirm()" (click)="confirm()">{{ confirmLabel() }}</button>
       </mat-dialog-actions>
     </div>
   `,
   styles: `
+    :host { display: block; }
     .description { margin-bottom: 12px; }
     .description p { margin: 0 0 4px; }
     .source { font: var(--mat-sys-title-medium); }
@@ -134,6 +138,7 @@ const NO_RESPONSE = 'no-response';
   `,
 })
 export class ResponseDialog {
+  protected readonly anchor = anchor;
   protected readonly data = inject<ResponseDialogData>(MAT_DIALOG_DATA);
   private readonly dialogRef = inject<MatDialogRef<ResponseDialog, Action>>(MatDialogRef);
   private readonly i18n = inject(I18n);

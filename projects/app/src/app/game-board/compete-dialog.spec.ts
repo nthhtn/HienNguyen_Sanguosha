@@ -54,6 +54,8 @@ describe('CompeteDialog', () => {
     expect(sides[1].textContent).toContain('Seat 1');
     expect(sides.map((s) => s.getAttribute('data-force'))).toEqual(['Wu', 'Shu']);
     expect(sides.map((s) => s.querySelector('app-playing-card')!.textContent)).toEqual([expect.stringContaining('9 ♠'), expect.stringContaining('7 ♥')]);
+    const slots = sides.map((s) => s.querySelector('.slot') as HTMLElement);
+    expect(slots[0].offsetTop).toBe(slots[1].offsetTop);
   });
 
   it('plays the beats in order: players and VS, cards down, cards turned together, winner lit, outcome', () => {

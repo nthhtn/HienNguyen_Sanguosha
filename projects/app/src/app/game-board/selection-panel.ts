@@ -68,6 +68,9 @@ import { SeatPortrait } from './seat-portrait';
     :host-context([data-layout='compact']) { display: flex; flex-direction: column; min-height: 0; max-height: 100%; }
     :host-context([data-layout='compact']) .items { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 4px; }
     :host-context([data-layout='compact']) .actions { flex: none; padding: 8px 0 0; margin-top: 0; }
+    :host-context([data-layout='compact']) .item {
+      box-sizing: border-box; min-height: unset; overflow: hidden; align-items: stretch;
+    }
   `,
 })
 export class SelectionPanel {

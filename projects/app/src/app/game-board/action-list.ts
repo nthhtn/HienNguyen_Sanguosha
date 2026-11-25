@@ -5,6 +5,8 @@ import { Action, ContentRegistry, GameState, findSkill } from 'engine';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { actionLabel, conversionLabel, registryCardName, targetLabel } from '../labels';
+import { TutorialAnchor } from '../tutorial/tutorial-anchor';
+import { anchor } from '../tutorial/anchors';
 import { TargetLabel } from './target-label';
 import { TargetsDialog, TargetsDialogData } from './targets-dialog';
 import { I18n } from '../i18n/i18n.service';
@@ -52,11 +54,11 @@ interface ConversionGroup {
 
 @Component({
   selector: 'app-action-list',
-  imports: [MatButtonModule, MatMenuModule, MatTooltipModule, TargetLabel, TPipe],
+  imports: [MatButtonModule, MatMenuModule, MatTooltipModule, TargetLabel, TPipe, TutorialAnchor],
   template: `
     <div class="action-list">
       @for (item of labeledActions(); track item.action) {
-        <button mat-stroked-button type="button" [matTooltip]="item.label" [matTooltipDisabled]="!compact()" (click)="actionChosen.emit(item.action)">{{ item.label }}</button>
+        <button mat-stroked-button type="button" [appTutorialAnchor]="item.action.kind === 'EndPhaseAction' ? anchor.endPhase() : null" [matTooltip]="item.label" [matTooltipDisabled]="!compact()" (click)="actionChosen.emit(item.action)">{{ item.label }}</button>
       }
       @for (group of conversionGroups(); track group.label) {
         @if (group.template) {
@@ -79,6 +81,7 @@ interface ConversionGroup {
   `,
 })
 export class ActionList {
+  protected readonly anchor = anchor;
   // The phone board: labels are cut to one line there, so each button carries its full label as a long-press tooltip.
   readonly compact = input(false);
   readonly actions = input.required<Action[]>();

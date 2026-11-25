@@ -8,16 +8,18 @@ import { BoardChatState } from '../../online/board-chat-state.service';
 import { actionHistory } from '../action-history';
 import { seatForce, seatName } from '../../labels';
 import { PhaseIndicator } from '../phase-indicator';
+import { TutorialAnchor } from '../../tutorial/tutorial-anchor';
+import { anchor } from '../../tutorial/anchors';
 import { PlayingCard } from '../playing-card';
 
 // The phone board's middle: the phase and whose turn (the Draw Pile count is in the panel), the newest Action History line, the
 // cards just turned up, and the two buttons the hidden toolbar and the history tiles would otherwise hold.
 @Component({
   selector: 'app-phone-centre-band',
-  imports: [MatIconModule, PhaseIndicator, PlayingCard, TPipe],
+  imports: [MatIconModule, PhaseIndicator, PlayingCard, TPipe, TutorialAnchor],
   template: `
     <div class="info">
-      <app-phase-indicator [state]="state()" [viewerSeatId]="viewerSeatId()" [showDrawPile]="false" />
+      <app-phase-indicator [appTutorialAnchor]="anchor.phaseIndicator()" [state]="state()" [viewerSeatId]="viewerSeatId()" [showDrawPile]="false" />
       @if (latestParts().length) {
         <div class="latest">
           @for (part of latestParts(); track $index) {
@@ -42,6 +44,7 @@ import { PlayingCard } from '../playing-card';
       <button
         type="button"
         class="history"
+        [appTutorialAnchor]="anchor.historyButton()"
         [attr.aria-label]="unread() > 0 ? ('board.panel.openUnread' | t: { n: unread() }) : ('board.panel.open' | t)"
         (click)="layout.togglePanel()"
       >
@@ -80,6 +83,7 @@ import { PlayingCard } from '../playing-card';
   `,
 })
 export class PhoneCentreBand {
+  protected readonly anchor = anchor;
   readonly state = input.required<GameState>();
   readonly viewerSeatId = input<string | null>(null);
 

@@ -1,5 +1,7 @@
 import { Component, DestroyRef, ElementRef, computed, inject, input, output, signal } from '@angular/core';
 import { Action, CardInstance, ContentRegistry, GameState } from 'engine';
+import { TutorialAnchor } from '../tutorial/tutorial-anchor';
+import { anchor } from '../tutorial/anchors';
 import { PlayingCard } from './playing-card';
 import { HandCardActions, handCardViewModels } from './hand-card-actions';
 import { I18n } from '../i18n/i18n.service';
@@ -33,12 +35,13 @@ export function handStep(width: number, count: number, cardWidth: number, gap: n
 
 @Component({
   selector: 'app-hand-view',
-  imports: [PlayingCard, HandCardActions, TPipe],
+  imports: [PlayingCard, HandCardActions, TPipe, TutorialAnchor],
   template: `
-    <div class="hand-row" role="list" [class.overlap]="fit() === 'overlap'">
+    <div class="hand-row" role="list" [appTutorialAnchor]="anchor.hand()" [class.overlap]="fit() === 'overlap'">
       @for (vm of cardViewModels(); track vm.card.instanceId; let first = $first) {
         <div
           class="hand-card"
+          [appTutorialAnchor]="anchor.handCard(vm.card.definitionId)"
           role="listitem"
           tabindex="0"
           [attr.data-card-id]="vm.card.instanceId"
@@ -111,12 +114,13 @@ export function handStep(width: number, count: number, cardWidth: number, gap: n
     .hand-row.overlap .hand-card:focus-within { transform: none; }
     .hand-row.overlap .hand-card.picked { transform: translateY(-10px); z-index: 1; box-shadow: 0 0 0 3px #e0a92e; }
     /* A name stays inside its card: one line, 12 px, with an ellipsis (spec 3f). */
-    .hand-row.overlap ::ng-deep app-playing-card .name {
+    .hand-row.overlap ::ng-deep app-playing-card .name-text {
       font-size: 12px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
   `,
 })
 export class HandView {
+  protected readonly anchor = anchor;
   readonly cards = input.required<CardInstance[]>();
   // 'row': side by side, the row scrolls (the web board). 'overlap': the phone board's hand, see handStep.
   readonly fit = input<'row' | 'overlap'>('row');

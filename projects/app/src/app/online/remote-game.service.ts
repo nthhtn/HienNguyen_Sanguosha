@@ -128,6 +128,8 @@ export class RemoteGameService implements BoardGame {
   readonly clockWaitsForPlayback: boolean = false;
   // There is no Pass and Play gate online: playback never restarts from an earlier move.
   readonly lastMoveStart: Signal<GameState | null> = signal<GameState | null>(null).asReadonly();
+  // The Tutorial refuses nothing online, so no window ever needs to open again.
+  readonly refusals: Signal<number> = signal(0).asReadonly();
 
   // The server's offer, while the socket is up and no move is waiting for its answer.
   readonly legalActions: Signal<Action[]> = computed(() => (this.socket.status() === 'open' && !this._waiting() ? (this._update()?.legalActions ?? []) : []));

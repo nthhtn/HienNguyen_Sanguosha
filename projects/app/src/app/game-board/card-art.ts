@@ -13,6 +13,7 @@ import { ArtSets } from '../art-sets.service';
   `,
   styles: `
     .card-art {
+      box-sizing: border-box;
       height: 96px;
       width: 70px;
       object-fit: cover;

@@ -107,4 +107,11 @@ describe('TargetsDialog', () => {
     button('Cancel').click();
     expect(closed[1]).toBeUndefined();
   });
+
+  describe('tutorial anchors', () => {
+    it('marks each seat card with its seat id, so a lesson can point at one target', () => {
+      const anchors = [...el.querySelectorAll('.pk')].map((c) => c.getAttribute('data-tutorial'));
+      expect(anchors).toEqual(['target-seat:seat-0', 'target-seat:seat-2', 'target-seat:seat-3']);
+    });
+  });
 });

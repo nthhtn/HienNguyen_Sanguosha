@@ -19,9 +19,13 @@ describe('windows on the phone board', () => {
     expect(overlay).toMatch(/button\s*\{[^}]*min-height:\s*44px/);
   });
 
+  it('lets seat picker tiles grow with their General portrait, not the 44 px tap target', () => {
+    expect(overlay).toMatch(/button\.option,\s*button\.item,\s*button\.pk\s*\{[^}]*min-height:\s*unset/);
+  });
+
   it('draw card names in the phone hand on one line with an ellipsis at 12 px (spec 3f)', () => {
     const hand = read('game-board/hand-view.ts');
-    const rule = /\.hand-row\.overlap ::ng-deep app-playing-card \.name \{([^}]*)\}/.exec(hand)?.[1] ?? '';
+    const rule = /\.hand-row\.overlap ::ng-deep app-playing-card \.name-text \{([^}]*)\}/.exec(hand)?.[1] ?? '';
     expect(px(rule, 'font-size')).toBe(12);
     expect(rule).toMatch(/white-space:\s*nowrap/);
     expect(rule).toMatch(/text-overflow:\s*ellipsis/);
@@ -110,12 +114,14 @@ describe('windows on the phone board', () => {
   });
 
   it('draw card names in windows at 14 px', () => {
-    expect(overlay).toMatch(/app-playing-card \.name\s*\{[^}]*font-size:\s*14px/);
+    expect(overlay).toMatch(/app-playing-card \.name-text\s*\{[^}]*font-size:\s*14px/);
   });
 
   it('draw small cards in windows (the resolution notice) with no text under 12 px', () => {
-    const rule = /app-playing-card \.small \.name,\s*app-playing-card \.small \.face,\s*app-playing-card \.small \.stat\s*\{([^}]*)\}/.exec(overlay)?.[1] ?? '';
-    expect(px(rule, 'font-size')).toBeGreaterThanOrEqual(12);
+    const name = /app-playing-card \.small \.name-text\s*\{([^}]*)\}/.exec(overlay)?.[1] ?? '';
+    const faceStat = /app-playing-card \.small \.face,\s*app-playing-card \.small \.stat\s*\{([^}]*)\}/.exec(overlay)?.[1] ?? '';
+    expect(px(name, 'font-size')).toBeGreaterThanOrEqual(12);
+    expect(px(faceStat, 'font-size')).toBeGreaterThanOrEqual(12);
   });
 
   it('draw the skill trait chips at 12 px or more on the phone board', () => {
@@ -172,6 +178,12 @@ describe('windows on the phone board', () => {
     const app = read('app.css');
     const rule = /:host-context\(\[data-layout='compact'\]\) \.nav-drawer \{([^}]*)\}/.exec(app)?.[1] ?? '';
     expect(px(rule, 'width')).toBe(220);
+  });
+
+  it('lays out Start Reveal with Main and Deputy General on one row', () => {
+    const source = read('game-board/start-reveal-dialog.ts');
+    const generals = /:host-context\(\[data-layout='compact'\]\) \.generals \{([^}]*)\}/.exec(source)?.[1] ?? '';
+    expect(generals).toMatch(/grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/);
   });
 
   describe('the General picker on the phone', () => {
