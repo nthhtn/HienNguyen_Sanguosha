@@ -1,7 +1,10 @@
 import { Action, ContentRegistry, GameState } from 'engine';
 import type { MessageKey } from '../i18n/messages';
 
-export type LessonId = 'generals' | 'allegiance' | 'turn' | 'sha-shan' | 'damage';
+export type LessonId = 'generals' | 'allegiance' | 'turn' | 'sha-shan' | 'damage' | 'equipment' | 'tools' | 'wuxie' | 'judgment' | 'chains';
+
+// The tab a lesson sits in on the Tutorial page.
+export type LessonGroupId = 'basics' | 'cards' | 'effects';
 
 // One kind of action a step lets through. `match` narrows it (for example a Sha aimed at one seat).
 export interface ActionPattern {
@@ -38,6 +41,7 @@ export interface Step {
 
 export interface Lesson {
   id: LessonId;
+  group: LessonGroupId;
   titleKey: MessageKey;
   summaryKey: MessageKey;
   seatCount: number;

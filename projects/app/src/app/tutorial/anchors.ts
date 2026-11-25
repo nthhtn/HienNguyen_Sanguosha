@@ -25,6 +25,21 @@ export const anchor = {
   revealConfirm: () => 'reveal-confirm',
   revealDialog: () => 'reveal-dialog',
   discardDialog: () => 'discard-dialog',
+  // A seat's Equipment area (Weapon, Armor, Mounts) and its Judgment area (Delayed Tools waiting to be judged).
+  equipment: (seatId: string) => `equipment:${seatId}`,
+  judgmentArea: (seatId: string) => `judgment-area:${seatId}`,
+  // The sign that a seat is chained; it is on the page only while the seat is.
+  chainBadge: (seatId: string) => `chain-badge:${seatId}`,
+  // The popup that shows a judgment.
+  judgmentDialog: () => 'judgment-dialog',
+  // Inside it, the part that matters once the card is turned: the card, its verdict and what it does.
+  judgmentResult: () => 'judgment-result',
+  // The pick window of Steal, Break and the like: a card, a seat or a label, then Confirm.
+  choiceDialog: () => 'choice-dialog',
+  // The Play menu's item that opens that window, for a card that has other plays beside it (Chains and its Recast).
+  pickTargets: () => 'pick-targets',
+  // The window that picks several seats for one card (Chains): tick the seats, then Confirm.
+  targetsDialog: () => 'targets-dialog',
 } as const;
 
 // Whether `id` is one a builder above makes: the board and the lessons agree on the ids through the builders alone.

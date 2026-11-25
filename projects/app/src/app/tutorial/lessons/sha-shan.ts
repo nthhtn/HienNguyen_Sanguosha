@@ -13,6 +13,7 @@ const NEIGHBOUR = 'seat-1';
 // holds Sha, Shan and Peach in the Play Phase at 3 HP; the neighbour holds a Shan and a Sha and nobody else holds anything.
 export const SHA_SHAN_LESSON: Lesson = {
   id: 'sha-shan',
+  group: 'basics',
   titleKey: 'tutorial.shaShan.title',
   summaryKey: 'tutorial.shaShan.summary',
   seatCount: 4,

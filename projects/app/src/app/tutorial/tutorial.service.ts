@@ -5,7 +5,7 @@ import { PlaybackGate } from '../playback-gate.service';
 import { LESSONS } from './lessons';
 import { loadCompleted, saveCompleted } from './progress';
 import { allows, completedBy, reachedState } from './step-rules';
-import { BotMove, Lesson, LessonId, Step } from './tutorial-types';
+import { BotMove, Lesson, LessonGroupId, LessonId, Step } from './tutorial-types';
 
 // The lessons the service can start; a spec swaps in its own.
 export const TUTORIAL_LESSONS = new InjectionToken<Lesson[]>('TUTORIAL_LESSONS', { providedIn: 'root', factory: () => LESSONS });
@@ -25,6 +25,7 @@ export class TutorialService {
   private readonly _lesson = signal<Lesson | null>(null);
   private readonly _stepIndex = signal(0);
   private readonly _finished = signal(false);
+  private readonly _lastGroup = signal<LessonGroupId | null>(null);
   private readonly _completed = signal<ReadonlySet<LessonId>>(loadCompleted());
   // The step's rule has been met and it moves on once playback is idle.
   private readonly due = signal(false);
@@ -34,6 +35,8 @@ export class TutorialService {
   readonly lesson: Signal<Lesson | null> = this._lesson.asReadonly();
   readonly stepIndex: Signal<number> = this._stepIndex.asReadonly();
   readonly finished: Signal<boolean> = this._finished.asReadonly();
+  // The group of the lesson last started, kept after it ends, so the page can reopen that tab.
+  readonly lastGroup: Signal<LessonGroupId | null> = this._lastGroup.asReadonly();
   readonly completed: Signal<ReadonlySet<LessonId>> = this._completed.asReadonly();
   readonly step: Signal<Step | null> = computed(() => this._lesson()?.steps[this._stepIndex()] ?? null);
 
@@ -73,6 +76,7 @@ export class TutorialService {
     this.due.set(false);
     this._finished.set(false);
     this._lesson.set(lesson);
+    this._lastGroup.set(lesson.group);
     this._stepIndex.set(0);
     this.botQueue = [...(lesson.steps[0]?.bot ?? [])];
     this.game.setTutorialHooks(this.hooks);

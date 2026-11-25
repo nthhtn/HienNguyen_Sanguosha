@@ -22,7 +22,8 @@ export interface DiscardDialogData {
 // Closes only through Discard, with the ticked instance ids, in hand order.
 @Component({
   selector: 'app-discard-dialog',
-  host: { 'data-tutorial': anchor.discardDialog() },
+  // A block, so the host has a box the Tutorial's spotlight can cut a hole around (an inline host has none).
+  host: { 'data-tutorial': anchor.discardDialog(), style: 'display: block' },
   imports: [MatDialogModule, MatButtonModule, MatIconModule, PlayingCard, DecisionCountdown, MinimizeButton, TPipe],
   template: `
     <div class="title-row">

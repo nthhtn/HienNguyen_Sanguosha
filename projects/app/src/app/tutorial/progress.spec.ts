@@ -1,3 +1,4 @@
+import { LESSONS } from './lessons';
 import { loadCompleted, saveCompleted } from './progress';
 
 const KEY = 'tutorial.completed';
@@ -9,6 +10,11 @@ describe('lesson progress', () => {
   it('remembers the saved lessons', () => {
     saveCompleted(new Set(['turn', 'damage']));
     expect(loadCompleted()).toEqual(new Set(['turn', 'damage']));
+  });
+
+  it('can remember every lesson of the list', () => {
+    saveCompleted(new Set(LESSONS.map((l) => l.id)));
+    expect(loadCompleted()).toEqual(new Set(LESSONS.map((l) => l.id)));
   });
 
   it('starts with no lessons done', () => {

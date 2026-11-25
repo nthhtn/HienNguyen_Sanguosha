@@ -1319,8 +1319,90 @@ export const en = {
   'tutorial.damage.s4p': 'Peach recovers 1 HP. Tap it and press Play.',
   'tutorial.damage.s5': 'Your Peach recovered 1 HP.',
   'tutorial.damage.s6': 'Recovery can never take you above your maximum HP, so a Peach at full HP would be wasted.',
+  'tutorial.equipment.title': 'Equipment',
+  'tutorial.equipment.summary': 'Wear a Weapon, an Armor and a Mount, and see how they change who you can attack.',
+  // Condenses rules.cardTypes.equipmentText.
+  'tutorial.equipment.s1': 'These are Equipment cards. Once played they stay in front of you: a Weapon sets how far you attack, an Armor defends, and a Mount changes distance.',
+  // Condenses rules.distance.range2.
+  'tutorial.equipment.s2': 'Hover over Black Pommel and press Play. A Weapon sets your attack range: with it your range is 2 instead of 1.',
+  'tutorial.equipment.s2p': 'Tap Black Pommel and press Play. A Weapon sets your attack range: with it your range is 2 instead of 1.',
+  // Condenses rules.distance.text and rules.distance.range1.
+  'tutorial.equipment.s3': 'Your Weapon sits in your Equipment area. Distance is the steps round the table, and the seat across from you is 3 steps away, so a range of 2 still cannot reach it.',
+  // Condenses rules.cardTypes.role.eightTrigrams.
+  'tutorial.equipment.s4': 'Hover over Eight Trigrams and press Play. An Armor defends you: when you need a Shan, it judges for you and a red card counts as one.',
+  'tutorial.equipment.s4p': 'Tap Eight Trigrams and press Play. An Armor defends you: when you need a Shan, it judges for you and a red card counts as one.',
+  // Condenses rules.distance.minus.
+  'tutorial.equipment.s5': 'Hover over Red Hare and press Play. A Minus Mount takes 1 off the distance from you to every other seat.',
+  'tutorial.equipment.s5p': 'Tap Red Hare and press Play. A Minus Mount takes 1 off the distance from you to every other seat.',
+  // Condenses rules.distance.minus and rules.distance.range1.
+  'tutorial.equipment.s6': 'The seat across from you is now 2 steps away, inside your range of 2. Only the Weapon and the Mount together bring it into reach.',
+  'tutorial.equipment.s7': 'Hover over Sha and press Play, then choose the seat across from you.',
+  'tutorial.equipment.s7p': 'Tap Sha, press Play, then choose the seat across from you.',
+  // Condenses rules.response.shaDamage.
+  'tutorial.equipment.s8': 'That seat holds no Shan, so it passes and takes 1 damage. Without your Equipment the Sha could not have reached it.',
+  'tutorial.equipment.s9': 'Equipment stays on until it is replaced or destroyed, and each seat wears at most one of each kind. Click a worn card at any time to read what it does.',
+  'tutorial.tools.title': 'Tools',
+  'tutorial.tools.summary': 'Play Steal and Break, two Tools that take cards from other seats.',
+  // Condenses rules.cardTypes.toolsText.
+  'tutorial.tools.s1': 'Steal and Break are Tools. A Tool is played from your hand for a special effect, and it can reach seats that Sha cannot.',
+  // Condenses rules.distance.range3.
+  'tutorial.tools.s2': 'Hover over Steal and press Play, then choose the seat next to you. Steal can only target a seat at distance 1.',
+  'tutorial.tools.s2p': 'Tap Steal, press Play, then choose the seat next to you. Steal can only target a seat at distance 1.',
+  'tutorial.tools.s3': 'Steal lets you pick the card to take. That seat holds one card in hand, so pick it and press Confirm.',
+  'tutorial.tools.s4': 'The card moved from that seat’s hand to yours. Steal takes a card, and Break only throws one away.',
+  'tutorial.tools.s5': 'Hover over Break and press Play, then choose the seat across from you. Break works at any distance.',
+  'tutorial.tools.s5p': 'Tap Break, press Play, then choose the seat across from you. Break works at any distance.',
+  'tutorial.tools.s6': 'That seat holds no card in hand, only a Weapon in front of it. Pick the Weapon and press Confirm.',
+  'tutorial.tools.s7': 'The Weapon went to the Discard Pile, and the Action History shows both Tools.',
+  'tutorial.tools.s7p': 'The Weapon went to the Discard Pile. Open History to see it and both Tools.',
+  'tutorial.tools.s8': 'Before a Tool takes effect, another seat may cancel it with Wuxie. Nobody held one here, so both worked. The next lesson shows how it is cancelled.',
+  'tutorial.wuxie.title': 'Wuxie',
+  'tutorial.wuxie.summary': 'Cancel a Tool with Wuxie, then see a Wuxie cancelled and cancelled again.',
+  // Condenses rules.response.wuxieIntro.
+  'tutorial.wuxie.s1': 'The seat before you played Break on you. Before a Tool takes effect, the game asks each seat that holds a Wuxie, in seat order. You hold two, and this window is that check.',
+  // Condenses rules.response.chain2.
+  'tutorial.wuxie.s2': 'Pick Wuxie and press Confirm. Break is cancelled, unless someone answers your Wuxie.',
+  // Condenses rules.response.chain3.
+  'tutorial.wuxie.s3': 'The seat after you holds a Wuxie too, and plays it on yours. Your Wuxie is cancelled, so Break is about to take effect again.',
+  'tutorial.wuxie.s3p': 'The seat after you holds a Wuxie too, and plays it on yours. Your Wuxie is cancelled, so Break is about to take effect again. Open History to follow it.',
+  'tutorial.wuxie.s4': 'You hold a second Wuxie. Pick it and press Confirm to cancel theirs: a seat may answer any Wuxie, including one played against its own.',
+  // Condenses rules.response.chain4 and rules.response.breakCancelled.
+  'tutorial.wuxie.s5': 'Nobody holds another Wuxie, so Break is cancelled and you keep your cards. Any length of chain works the same way: the last Wuxie decides.',
+  'tutorial.wuxie.s5p': 'Nobody holds another Wuxie, so Break is cancelled and you keep your cards. The last Wuxie decides, however long the chain. Open History to read it.',
+  'tutorial.judgment.title': 'Delayed Tools and Judgment',
+  'tutorial.judgment.summary': 'Place Starvation on a seat and watch its Judgment Phase decide what happens.',
+  // Condenses rules.judgment.delayedText.
+  'tutorial.judgment.s1': 'Starvation is a Delayed Tool. It does nothing when you play it: it waits in a judgment area until its holder’s own Judgment Phase.',
+  // Condenses rules.judgment.starvation.
+  'tutorial.judgment.s2': 'Hover over Starvation and press Play, then choose the seat next to you. Starvation can only target a seat at distance 1.',
+  'tutorial.judgment.s2p': 'Tap Starvation, press Play, then choose the seat next to you. Starvation can only target a seat at distance 1.',
+  'tutorial.judgment.s3': 'Starvation now sits in that seat’s judgment area. It stays there, doing nothing, until that seat’s Judgment Phase.',
+  'tutorial.judgment.s4': 'End your Play Phase. The next seat takes its turn, and its Judgment Phase comes first.',
+  // Condenses rules.judgment.step1 and rules.judgment.starvation.
+  'tutorial.judgment.s5': 'The top card of the draw pile is turned face up: a heart. Starvation only spares a club, so anything else costs that seat its Draw Phase. The window closes by itself in a moment.',
+  // Condenses rules.judgment.skipDraw and rules.judgment.step4.
+  'tutorial.judgment.s6': 'That seat skipped its Draw Phase and went straight from Judgment to Play with no new cards. Starvation went to the Discard Pile.',
+  'tutorial.judgment.s7': 'Had the card been a club, the seat would have drawn as usual. A Delayed Tool is judged in its holder’s Judgment Phase, and Wuxie can cancel it when it is judged.',
+  'tutorial.chains.title': 'Chains',
+  'tutorial.chains.summary': 'Chain two seats, then hit one with fire and watch the damage pass along the chain.',
+  // Condenses rules.chains.lead.
+  'tutorial.chains.s1': 'Chains links seats together. A chained seat passes fire and thunder damage on to every other chained seat.',
+  // Condenses rules.chains.chainText.
+  'tutorial.chains.s2': 'Hover over Chains, press Play and choose Play Chains (Recast only swaps the card for a new one). Tick the seat on each side of you, then press Confirm. Chains works on 1 or 2 seats at any distance.',
+  'tutorial.chains.s2p': 'Tap Chains, press Play and choose Play Chains (Recast only swaps the card for a new one). Tick the seat on each side of you, then press Confirm. Chains works on 1 or 2 seats at any distance.',
+  'tutorial.chains.s3': 'Both seats are chained now, and the badge shows it. Playing Chains on a chained seat would free it again.',
+  'tutorial.chains.s4': 'Hover over Fire Attack and press Play, then choose one of the chained seats. Fire Attack deals fire damage if it is not answered.',
+  'tutorial.chains.s4p': 'Tap Fire Attack, press Play, then choose one of the chained seats. Fire Attack deals fire damage if it is not answered.',
+  // Condenses rules.chains.waveText.
+  'tutorial.chains.s5': 'That seat holds no Shan, so it takes 1 fire damage and is unchained. Then the other chained seat takes the same damage and is unchained too.',
+  'tutorial.chains.s5p': 'That seat holds no Shan, so it takes 1 fire damage and is unchained. Then the other chained seat takes the same damage and is unchained too. Open History to follow it.',
+  'tutorial.chains.s6': 'Both seats lost 1 HP and neither is chained now. Only fire and thunder damage travels along a chain: plain damage never does.',
   'tutorial.page.title': 'Tutorial',
-  'tutorial.page.intro': 'Five short lessons on the real board. A spotlight shows you what to do, one step at a time.',
+  'tutorial.page.intro': 'Short lessons on the real board. A spotlight shows you what to do, one step at a time.',
+  'tutorial.group.basics': 'Basics',
+  'tutorial.group.cards': 'Cards',
+  'tutorial.group.effects': 'Special Effects',
+  'tutorial.group.progress': '{name} ({done} of {total})',
   'tutorial.start': 'Start Lesson',
   'tutorial.nextLesson': 'Next Lesson',
   'tutorial.backToLessons': 'Back to Lessons',
@@ -1330,4 +1412,6 @@ export const en = {
   'tutorial.replaceWarning': 'A lesson replaces the game in progress on this device. That game will be lost.',
   'tutorial.next': 'Next',
   'tutorial.exit': 'Exit Tutorial',
+  'tutorial.minimize': 'Minimize',
+  'tutorial.restore': 'Show Instructions',
 } satisfies Record<string, string>;

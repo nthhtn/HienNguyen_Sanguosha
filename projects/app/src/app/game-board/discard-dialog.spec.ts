@@ -30,6 +30,8 @@ describe('DiscardDialog', () => {
   it('marks the whole window for the Tutorial, which spotlights it while the beginner picks the cards', () => {
     const { el } = render(1);
     expect(el.getAttribute('data-tutorial')).toBe('discard-dialog');
+    // A block, so the host has a box the spotlight can cut a hole around.
+    expect(el.style.display).toBe('block');
   });
 
   it('has a View Board button to minimize it', () => {

@@ -2,6 +2,7 @@ import { Component, Signal, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import type { Action } from 'engine';
 import { TPipe } from '../i18n/t.pipe';
+import { anchor } from '../tutorial/anchors';
 import { DecisionCountdown } from './decision-countdown';
 import { JudgmentDecisionView } from './judgment-decision';
 import { JudgmentDescription } from './judgment-description';
@@ -29,6 +30,8 @@ export interface JudgmentDialogData {
 @Component({
   selector: 'app-judgment-dialog',
   imports: [MatDialogModule, JudgmentStage, DecisionCountdown, MinimizeButton, TPipe],
+  // A block, so the host has a box the Tutorial's spotlight can cut a hole around (an inline host has none).
+  host: { 'data-tutorial': anchor.judgmentDialog(), style: 'display: block' },
   template: `
     <div class="title-row">
       <h2 mat-dialog-title>{{ 'judgment.title' | t }}</h2>

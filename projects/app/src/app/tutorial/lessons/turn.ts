@@ -14,6 +14,7 @@ const BEFORE = 'seat-3';
 // dealt, so the Discard Phase owes 3. The lesson opens in the previous seat's Play Phase, which a scripted move ends.
 export const TURN_LESSON: Lesson = {
   id: 'turn',
+  group: 'basics',
   titleKey: 'tutorial.turn.title',
   summaryKey: 'tutorial.turn.summary',
   seatCount: 4,

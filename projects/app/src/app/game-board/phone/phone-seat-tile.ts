@@ -54,7 +54,7 @@ export function generalArtFitsFaceCrop(tileWidth: number, tileHeight: number, de
         @if (isViewer()) {
           <span class="you">{{ 'seat.you' | t }}</span>
         }
-        <span class="judgment" [attr.aria-label]="'seat.judgment' | t">
+        <span class="judgment" [appTutorialAnchor]="anchor.judgmentArea(seat().id)" [attr.aria-label]="'seat.judgment' | t">
           @for (box of judgment(); track box.instanceId) {
             <span class="judgment-box filled" [attr.title]="'seat.judgmentTitle' | t: { card: cardName(box) }"></span>
           }
@@ -95,10 +95,10 @@ export function generalArtFitsFaceCrop(tileWidth: number, tileHeight: number, de
         }
         <span class="hand" [attr.aria-label]="'seat.handAria' | t: { n: handCount() }"><mat-icon aria-hidden="true">style</mat-icon>{{ handCount() }}</span>
         @if (seat().chained) {
-          <mat-icon class="chain-mark" role="img" [attr.aria-label]="'seat.chained' | t">link</mat-icon>
+          <mat-icon class="chain-mark" [appTutorialAnchor]="anchor.chainBadge(seat().id)" role="img" [attr.aria-label]="'seat.chained' | t">link</mat-icon>
         }
       </div>
-      <div class="equipment" [attr.aria-label]="'seat.equipment' | t">
+      <div class="equipment" [appTutorialAnchor]="anchor.equipment(seat().id)" [attr.aria-label]="'seat.equipment' | t">
         @for (s of slots(); track s.slot) {
           <span
             class="equip-box filled"

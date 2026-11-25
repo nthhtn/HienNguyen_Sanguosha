@@ -13,8 +13,9 @@ const confirm = (id: string): Step => ({ id, textKey: text, completes: { kind: '
 const reachesPlay = (id: string): Step => ({ id, textKey: text, completes: { kind: 'state', reached: (s) => s.phase === 'Play' } });
 
 // seat-0 starts in its Start window (the only legal move is ConfirmRevealsAction).
-const lesson = (id: Lesson['id'], steps: Step[], build?: Lesson['build']): Lesson => ({
+const lesson = (id: Lesson['id'], steps: Step[], build?: Lesson['build'], group: Lesson['group'] = 'basics'): Lesson => ({
   id,
+  group,
   titleKey: text,
   summaryKey: text,
   seatCount: 2,
@@ -50,6 +51,19 @@ describe('TutorialService', () => {
     jest.clearAllTimers();
     jest.useRealTimers();
     jest.restoreAllMocks();
+  });
+
+  describe('lastGroup', () => {
+    it('is none before any lesson, then the group of the lesson started, kept after it ends', () => {
+      setup([lesson('turn', [next('a')], undefined, 'basics'), lesson('chains', [next('a')], undefined, 'effects')]);
+      expect(service.lastGroup()).toBeNull();
+      service.start('chains');
+      expect(service.lastGroup()).toBe('effects');
+      service.exit();
+      expect(service.lastGroup()).toBe('effects');
+      service.start('turn');
+      expect(service.lastGroup()).toBe('basics');
+    });
   });
 
   describe('start', () => {

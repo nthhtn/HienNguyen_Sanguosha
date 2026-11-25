@@ -35,7 +35,7 @@ the first bundle holds only the shell:
 | `/rooms`, `/rooms/:id`, `/my-games` | Open rooms, a room's lobby and online game, and finished games; all behind `requireSignIn` |
 | `/sign-in`, `/sign-up`, `/guest`, `/forgot-password`, `/reset-password` | Accounts |
 | `/wiki/...` | See "Wiki" below |
-| `/tutorial` | Five guided lessons on the real board; offline only (see "Tutorial") |
+| `/tutorial` | Ten guided lessons in three tabs on the real board; offline only (see "Tutorial") |
 
 The guard and the online pages import the engine and content code lazily, so
 those stay out of the initial bundle.
@@ -588,10 +588,13 @@ A viewer chooses which art set the General portraits come from. Nothing about it
 
 ## Tutorial
 
-`/tutorial` teaches a beginner five short lessons on the real board, with a spotlight over the one control that matters. It lives in `projects/app/src/app/tutorial/`, is a lazy route behind `offlineOnly`, and imports no dev code.
+`/tutorial` teaches a beginner ten short lessons, grouped into three tabs, on the real board, with a spotlight over the one control that matters. It lives in `projects/app/src/app/tutorial/`, is a lazy route behind its own `tutorial` feature flag (on in production, unlike offline play), and imports no dev code.
 
-- **Lessons are data.** A `Lesson` (`tutorial-types.ts`) has an id, title and summary keys, a seat count, a `build(registry)` that returns the starting `GameState` (made with the scenario kit's recipe), and a list of `Step`s.
-  - The lessons are `generals`, `allegiance`, `turn`, `sha-shan` and `damage`, registered in `lessons/index.ts` and offered to the service through the `TUTORIAL_LESSONS` token.
+- **Lessons are data.** A `Lesson` (`tutorial-types.ts`) has an id, a `group`, title and summary keys, a seat count, a `build(registry)` that returns the starting `GameState` (made with the scenario kit's recipe), and a list of `Step`s.
+  - The lessons are registered in `lessons/index.ts` and offered to the service through the `TUTORIAL_LESSONS` token, in list order.
+  - **Basics:** `generals`, `allegiance`, `turn`, `sha-shan` and `damage`.
+  - **Cards:** `equipment`, `tools` and `wuxie`.
+  - **Special Effects:** `judgment` (Delayed Tools and Judgment) and `chains`.
   - A `Step` has a text key, an optional spotlight `target`, an optional `phone` variant (its own target and wording), a completion rule and optional scripted bot moves.
 - **Completion rules.** Each step ends in one of three ways (`step-rules.ts`):
   - **next:** The beginner presses Next.
@@ -602,22 +605,35 @@ A viewer chooses which art set the General portraits come from. Nothing about it
   - **Rules layer:** `TutorialService` installs `TutorialHooks` on `GameService` (`allows`, `botMove`, `applied`), so the engine only ever receives actions the current step allows. Only seat 0's actions complete a step.
   - **Overlay layer:** `TutorialOverlay` draws four blocker boxes and a ring, so a click outside the hole does nothing.
   - **Above dialogs:** Dialogs open as popovers in the browser's top layer, where z-index ranks nothing. The overlay is a popover too (`TutorialTopLayer`) and goes to the top again whenever something is added to the CDK overlay container.
+- **Staying out of the way.** The beginner can always see the board.
+  - **Waiting:** While a step has nothing to do (a `state` step, the Judgment popup closing by itself, or the board playing an animation), the dim goes and the card shrinks to a small note (the ring stays on what to watch, such as the `judgment-result` part of the Judgment popup) (`isWaiting` in `step-rules.ts`).
+  - **Minimize:** The card has a Minimize button. It drops the dim and the ring too and leaves a small Show Instructions button (with Exit, and Next on a Next step) in the bottom-left corner. It stays minimized through the lesson's next steps and opens again only on Show Instructions or when another lesson starts.
 - **Settling.** A short settle (`SETTLE_MS`) plus the playback gate (`PlaybackGate.idle`) hold the next step until the board has finished animating.
 - **Refusals reopen windows.** `GameService.refusals` counts actions the hooks refused. A board effect (`reopenOwedDialogs`) opens the Start, Discard or Response window again when the Tutorial refused what it closed on, so a wrong Confirm cannot leave a lesson stuck.
-- **Anchors.** The directive `[appTutorialAnchor]` sets `data-tutorial`. Ids come from the `anchor.*` builders in `anchors.ts` (seat, hp, generals, hand, hand card, play button, end phase, phase indicator, discard pile, action history, target seat, and the Start, Discard and Response windows). `isAnchorId` validates them.
+- **Anchors.** The directive `[appTutorialAnchor]` sets `data-tutorial`. Ids come from the `anchor.*` builders in `anchors.ts` (seat, hp, generals, hand, hand card, play button, end phase, phase indicator, discard pile, action history, target seat, a seat's equipment area, judgment area and chain badge, and the Start, Discard, Response, Judgment, pick (`choice-dialog`) and several-seats (`targets-dialog`) windows). `isAnchorId` validates them.
   - **Lists:** A `target` may list several ids (a card, then its Play button, then a seat in the menu); the ring goes to the first one on the page.
   - **Missing anchors:** A step with no anchor on screen shows as a centred card. The medium layout has no Discard Pile or Action History anchor.
   - **Zoom:** The viewer's own seat is shrunk with CSS `zoom`, and current browsers report such a rect in the element's own units. `anchor-rect.ts` probes the browser once and scales the rect back to screen units, so the ring sits on the seat.
-  - **Dialogs:** A dialog carries one whole-window anchor on its host element.
+  - **Dialogs:** A dialog carries one whole-window anchor on its host element. The host is a block (`style: 'display: block'`), since an inline host has no box and the spotlight would cover the whole screen.
+  - **Menus:** A menu item can carry an anchor too (`pick-targets` is the Play menu's item that opens the Choose Targets window, beside Recast), since the dim blocks every click outside the ring.
 - **Phone.** When `Layout.kind()` is `compact` the card and spotlight use each step's `phone` variant. The phone board has no Generals panel, so the Generals lesson uses phone wording. Its Discard Pile and Action History steps ring the History button (`anchor.historyButton()`), since both sit in the panel it opens.
 - **Progress.** `progress.ts` keeps the finished lesson ids in `localStorage` (`tutorial.completed`). The list marks them done, and the finished panel offers the next lesson.
-- **Page.** `TutorialPage` shows the lesson list, then the board and overlay while a lesson runs. Starting a lesson over a game in progress asks first (`TutorialReplaceDialog`), and leaving the page exits the Tutorial and discards its game.
+  - **Known ids:** Only ids in its `LESSON_IDS` list are read back, so a new lesson id is added there too.
+- **Groups.** `lesson-groups.ts` holds `LESSON_GROUPS` (Basics, Cards, Special Effects) and the helpers `groupedLessons`, `doneCount` and `defaultGroupIndex`.
+  - **Tabs:** The page shows one Material tab per group, labelled with the finished count ("Basics (3 of 5)").
+  - **Default tab:** The first tab with an unfinished lesson, or the first when all are done.
+  - **Back to Lessons:** Reopens the tab of the lesson just played (`TutorialService.lastGroup`).
+  - **Next Lesson:** Follows list order across tabs.
+  - **Narrow screens:** The tab row pages sideways, so every tab stays reachable.
+- **Judgment popup.** The popup has no button, and a lesson runs no decision timers, so `DecisionTimer` still clocks a settled judgment during a lesson. Its timeout is the acknowledgement, which the step must allow (`AcknowledgeJudgmentAction`).
+- **Staged hands.** `giveCopies` in the recipe moves a real card from the draw or discard pile and makes a copy when the deck has too few (the Wuxie lesson needs three of a card the deck holds once).
+- **Page.** `TutorialPage` shows the lesson tabs, then the board and overlay while a lesson runs. Starting a lesson over a game in progress asks first (`TutorialReplaceDialog`), and leaving the page exits the Tutorial and discards its game.
 - **Text.** Every visible string is a `tutorial.*` or `nav.*` key in both catalogs. The Vietnamese is draft.
 
 ### Adding a lesson
 
 1. Write the rules of what it teaches, then the lesson file in `lessons/` (a `Lesson` constant).
-2. Add the id to `LessonId` and the constant to `LESSONS`.
+2. Add the id to `LessonId` and `LESSON_IDS` (`progress.ts`), give it a `group`, and add the constant to `LESSONS`.
 3. Add the `tutorial.*` keys to `i18n/en.ts` and `i18n/vi.ts`.
 4. Add a spec that runs the lesson with `playLesson` (`lessons/play-lesson.testing.ts`). It fails with the step id when a scripted move or an allowed action is wrong.
 5. Register the id in the `REGISTERED` list of `lessons.spec.ts`.
