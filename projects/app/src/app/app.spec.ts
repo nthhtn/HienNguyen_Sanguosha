@@ -1,3 +1,5 @@
+import { ART_SET_CATALOG_TOKEN } from './art-sets.service';
+import { fakeCatalog } from './art-sets.testing';
 import { BattlefieldBackgrounds } from './battlefield-background.service';
 import { computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -187,6 +189,24 @@ describe('App', () => {
     expect(TestBed.inject(BattlefieldBackgrounds).choice()).toBe('2');
     expect(localStorage.getItem('battlefield-background')).toBe('2');
     localStorage.removeItem('battlefield-background');
+  });
+
+  describe('art sets', () => {
+    it('offers no Art Sets entry while only one set ships', async () => {
+      const { el } = await render();
+      expect(el.querySelector('button.nav-art-sets')).toBeNull();
+    });
+
+    it('has an Art Sets button in the toolbar that opens the picker, when more than one set ships', async () => {
+      TestBed.overrideProvider(ART_SET_CATALOG_TOKEN, { useValue: fakeCatalog() });
+      const { el, fixture } = await render();
+      const button = el.querySelector('button.nav-art-sets') as HTMLButtonElement;
+      expect(button.getAttribute('aria-label')).toBe('Art Sets');
+      button.click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(document.querySelector('app-art-sets-dialog')).not.toBeNull();
+    });
   });
 
   it('links Online to /rooms, highlighted on the online screens', async () => {
@@ -406,6 +426,28 @@ describe('App', () => {
       );
       expect(drawer.textContent).toContain('Play Online');
       expect(drawer.querySelectorAll('.drawer-playback-speed button').length).toBeGreaterThan(0);
+    });
+
+    it('lists Art Sets in the drawer only when more than one set ships, and closes the drawer when it opens the picker', async () => {
+      expect((await openDrawer()).drawer.querySelector('.drawer-art-sets')).toBeNull();
+      TestBed.resetTestingModule();
+      await TestBed.configureTestingModule({
+        imports: [App],
+        providers: [
+          { provide: AuthService, useValue: fakeAuth },
+          { provide: MUSIC_PLAYER_FACTORY, useValue: () => ({ loop: false, volume: 1, play: () => Promise.resolve(), pause: () => undefined }) },
+          { provide: ART_SET_CATALOG_TOKEN, useValue: fakeCatalog() },
+          provideRouter([{ path: 'setup', children: [] }]),
+        ],
+      }).compileComponents();
+      const { fixture, drawer } = await openDrawer();
+      const entry = drawer.querySelector('.drawer-art-sets button') as HTMLButtonElement;
+      expect(entry.textContent).toContain('Art Sets');
+      entry.click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(document.querySelector('app-art-sets-dialog')).not.toBeNull();
+      expect(TestBed.inject(Layout).navOpen()).toBe(false);
     });
 
     it('keeps the language menu out of the drawer and puts it in the bar, before the Music button (spec 3f)', async () => {

@@ -6,10 +6,13 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } fro
 import { filter, map } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDialog } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { DEV_PREVIEW } from './dev/dev-routes';
 import { BATTLEFIELD_BACKGROUNDS, BattlefieldBackgrounds } from './battlefield-background.service';
+import { ArtSets } from './art-sets.service';
+import { ArtSetsDialog } from './art-sets-dialog';
 import { AuthService } from './auth/auth.service';
 import { FEATURE_FLAGS } from './feature-flags';
 import { LanguageSwitcher } from './i18n/language-switcher';
@@ -60,6 +63,8 @@ export class App {
     },
   ];
 
+  protected readonly artSets = inject(ArtSets);
+  private readonly dialog = inject(MatDialog);
   protected readonly backgrounds = inject(BattlefieldBackgrounds);
   protected readonly backgroundOptions = BATTLEFIELD_BACKGROUNDS.map((value) => ({
     value,
@@ -78,6 +83,12 @@ export class App {
   protected readonly devPreview = DEV_PREVIEW;
   protected readonly previewActive = computed(() => /^\/preview(\/|$|\?)/.test(this.url()));
   protected readonly onlineActive = computed(() => /^\/(rooms|my-games)(\/|$|\?)/.test(this.url()));
+
+  // The picker is offered from the bar, and from the drawer on a phone, which closes behind it.
+  protected openArtSets(): void {
+    this.layout.closeNav();
+    this.dialog.open(ArtSetsDialog);
+  }
 
   protected deckActive(route: string): boolean {
     return new RegExp(`^/wiki/${route}(/|$|\\?)`).test(this.url());

@@ -55,6 +55,7 @@
 
 .app-bar .nav-preview,
 .app-bar .nav-battlefield,
+.app-bar .nav-art-sets,
 .app-bar .account,
 .app-bar .sign-in {
   --mat-button-text-label-text-color: var(--mat-sys-on-primary);
@@ -175,6 +176,7 @@
 @media (max-width: 1359px) {
   .nav .label,
   .nav-battlefield .label,
+  .nav-art-sets .label,
   .account .label,
   .sign-in .label {
     display: none;
