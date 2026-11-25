@@ -14,6 +14,18 @@ function withRevealChoices(legal: Action[], state: GameState, seatId: string): A
   return legal.flatMap((a): Action[] => (a.kind === 'ConfirmRevealsAction' ? subsets.map((slots) => ({ ...a, slots })) : [a]));
 }
 
+// A card played on several seats chosen by the player (Chains) is offered as one template with the seats it may pick from.
+// The board's window fills it; here every choice of `min` to `max` seats is a legal play, so a step may allow some of them.
+function withPickedTargets(legal: Action[]): Action[] {
+  return legal.flatMap((a): Action[] => {
+    if (a.kind !== 'PlayCardAction' || !a.pickTargets) return [a];
+    const { pickTargets, ...play } = a;
+    const subsets: string[][] = [[]];
+    for (const id of pickTargets.eligibleIds) subsets.push(...subsets.filter((s) => s.length < pickTargets.max).map((s) => [...s, id]));
+    return subsets.filter((s) => s.length >= pickTargets.min).map((seatIds) => ({ ...play, targets: seatIds.map((seatId) => ({ kind: 'seat' as const, seatId })) }));
+  });
+}
+
 export interface PlayedStep {
   stepId: string;
   ok: boolean;
@@ -47,7 +59,7 @@ export function playLesson(lesson: Lesson, registry: ContentRegistry): PlayedSte
     if (step.completes.kind === 'next') {
       ok = true;
     } else if (step.completes.kind === 'action') {
-      const action = withRevealChoices(getLegalActions(state, HUMAN, registry), state, HUMAN).find((a) => allows(step, a, state));
+      const action = withPickedTargets(withRevealChoices(getLegalActions(state, HUMAN, registry), state, HUMAN)).find((a) => allows(step, a, state));
       if (action) {
         state = act(state, registry, action);
         ok = true;

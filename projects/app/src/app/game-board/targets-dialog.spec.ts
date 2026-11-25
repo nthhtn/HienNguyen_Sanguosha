@@ -22,6 +22,16 @@ const state = {
   ],
 } as unknown as GameState;
 
+describe('TargetsDialog tutorial anchor', () => {
+  it('marks the whole window, which the Tutorial spotlights while the beginner ticks the seats and confirms', () => {
+    const data: TargetsDialogData = { title: 'Chains', pick: { eligibleIds: ['seat-0', 'seat-2'], min: 1, max: 2 }, state };
+    TestBed.configureTestingModule({ providers: [{ provide: MAT_DIALOG_DATA, useValue: data }, { provide: MatDialogRef, useValue: { close: () => undefined } }] });
+    const fixture = TestBed.createComponent(TargetsDialog);
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).getAttribute('data-tutorial')).toBe('targets-dialog');
+  });
+});
+
 describe('TargetsDialog', () => {
   let closed: (string[] | undefined)[];
   let el: HTMLElement;

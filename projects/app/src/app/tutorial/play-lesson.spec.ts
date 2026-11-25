@@ -1,5 +1,6 @@
 import { buildContentRegistry } from 'content';
-import { playableGame, setTurn } from '../scenario-kit/recipe';
+import { give, playableGame, setTurn } from '../scenario-kit/recipe';
+import { definitionOf } from './lessons/lesson-kit';
 import { playLesson } from './lessons/play-lesson.testing';
 import { Lesson, Step } from './tutorial-types';
 
@@ -62,5 +63,23 @@ describe('playLesson', () => {
     };
     const mainUp: Step = { id: 'main-up', textKey: text, completes: { kind: 'state', reached: (s) => s.phase === 'Play' && !!s.seats[0].generals?.main.revealed } };
     expect(playLesson(lesson([revealsMain, mainUp]), registry).map((s) => s.ok)).toEqual([true, true]);
+  });
+
+  it('fills a target pick (Chains on two seats) with the seats the step allows', () => {
+    const chainsOnOneAndTwo: Step = {
+      id: 'chains',
+      textKey: text,
+      completes: {
+        kind: 'action',
+        allow: [
+          {
+            kind: 'PlayCardAction',
+            match: (a, s) => a.kind === 'PlayCardAction' && definitionOf(s, a.cardInstanceId) === 'chains' && a.targets.map((t) => (t.kind === 'seat' ? t.seatId : '')).sort().join() === 'seat-1,seat-2',
+          },
+        ],
+      },
+    };
+    const withChains: Lesson = { ...lesson([chainsOnOneAndTwo]), seatCount: 3, build: (r) => give(setTurn(playableGame(r, 7, 3), 'seat-0', 'Play'), 'seat-0', ['chains']) };
+    expect(playLesson(withChains, registry)).toEqual([{ stepId: 'chains', ok: true }]);
   });
 });

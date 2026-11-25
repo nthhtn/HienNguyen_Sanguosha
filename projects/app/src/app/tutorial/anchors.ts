@@ -34,6 +34,8 @@ export const anchor = {
   judgmentDialog: () => 'judgment-dialog',
   // The pick window of Steal, Break and the like: a card, a seat or a label, then Confirm.
   choiceDialog: () => 'choice-dialog',
+  // The window that picks several seats for one card (Chains): tick the seats, then Confirm.
+  targetsDialog: () => 'targets-dialog',
 } as const;
 
 // Whether `id` is one a builder above makes: the board and the lessons agree on the ids through the builders alone.
