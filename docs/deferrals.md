@@ -351,3 +351,14 @@ From the Resolution Notice, picker and Judgment work (PR #62, 2026-11-09). The d
   - The repo's rule for new Vietnamese text (`npm run i18n:status`).
 - **Revisit when.**
   - A native speaker reviews the catalogs.
+
+### Tutorial: free play with hints
+
+- **What is missing.**
+  - The first Tutorial is a guided rail: The board is locked so only the highlighted control works.
+  - The alternative is free play: The beginner can click anywhere, the Tutorial shows hints, and it nudges them back when they wander.
+- **Why it waits.**
+  - The rail is predictable, and easier to build and test (decided 2026-11-25).
+  - Free play can reach situations a lesson never planned for.
+- **Revisit when.**
+  - The rail Tutorial is in use and beginners find it too restrictive.
