@@ -86,7 +86,7 @@ describe('SeatTile in Vietnamese', () => {
     expect(text(render(makeSeat({ combinedHp: 0 })).el.querySelector('.status.dying'))).toBe('Hấp hối…');
     expect(text(render(makeSeat(), { isResponding: true }).el.querySelector('.status'))).toBe('Đang phản hồi…');
     expect(text(render(makeSeat({ generals: null as never })).el.querySelector('.choosing'))).toBe('Đang chọn Tướng…');
-    expect(text(render(makeSeat({ faceDown: true })).el.querySelector('.face-down-badge'))).toBe('Úp');
+    expect(text(render(makeSeat({ faceDown: true })).el.querySelector('.face-down-badge'))).toBe('Chồng Tướng');
     expect(text(render(makeSeat({ silenced: true })).el.querySelector('.silenced-badge'))).toBe('Mất kỹ năng');
     expect(text(render(makeSeat({ chained: true })).el.querySelector('.chain-badge'))).toBe('Bị xích');
     const piles = render(makeSeat(), { pile: [sha], stash: [{ ...sha, instanceId: 'c-2' }] }).el;

@@ -18,6 +18,7 @@ const red = (card: CardInstance, state: GameState, seatId: string, registry: Con
 export const roar: SkillDefinition = { id: 'roar', compulsory: true, modifiers: { shaLimit: Number.POSITIVE_INFINITY } };
 
 // Horsemanship (compulsory): your distance to every other seat is 1 smaller, never below 1.
+// Attack range is unchanged.
 export const horsemanship: SkillDefinition = { id: 'horsemanship', compulsory: true, modifiers: { distanceToOthers: -1 } };
 
 // Empty City (compulsory): while you have no hand cards, Sha and Duel can't target you. `cancels`
@@ -37,11 +38,11 @@ export const emptyCity = makeEmptyCity(false);
 // Wondrous Talent (compulsory): your Tools ignore distance (Steal, Starvation).
 export const wondrousTalent: SkillDefinition = { id: 'wondrous-talent', compulsory: true, modifiers: { toolsIgnoreDistance: true } };
 
-// Fighting Saint (conversion, play and respond): any red card from your hand
-// or equipment as a Sha.
+// Fighting Saint (conversion, play and respond): any red hand card as a Sha.
+// An equipped card stays equipped.
 export const fightingSaint: SkillDefinition = {
   id: 'fighting-saint',
-  conversions: [{ id: 'fighting-saint', as: 'sha', cards: 1, from: 'hand-and-equipment', accepts: red, when: 'both' }],
+  conversions: [{ id: 'fighting-saint', as: 'sha', cards: 1, accepts: red, when: 'both' }],
 };
 
 // Dragon Courage (conversion, play and respond): a Shan as a Sha, and a Sha as a Shan.

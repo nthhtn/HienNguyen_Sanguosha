@@ -378,3 +378,10 @@ describe('Kingdom Wars Pang Tong, Resurrection', () => {
     expect(readyKingdomWarsSkills(kingdomWarsGeneralRecords().find((g) => g.id === 'pang-tong')!).map((x) => x.id)).toEqual(['shackle', id]);
   });
 });
+
+describe('Kingdom Wars Guan Yu, Warrior Saint', () => {
+  it('a red hand card is a Slash, and an equipped red card is not', () => {
+    const s = table({ 'seat-a:hand': [card('p', 'peach', 'heart')], 'seat-a:equip': [card('rh', 'red-hare', 'heart', 5)] }, { generals: at('seat-a', 'kingdomWars:guan-yu') });
+    expect(h.convert(s, 'seat-a', 'fighting-saint', 'seat-b').pendingSelection?.eligibleIds).toEqual(['p']);
+  });
+});

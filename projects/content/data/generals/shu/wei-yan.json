@@ -7,7 +7,7 @@
     {
       "name": "Violent Spirit",
       "nameZh": "狂骨",
-      "text": "For each unit of damage that Wei Yan causes to someone within his range, he regains one unit of health."
+      "text": "For each unit of damage that Wei Yan causes to a player at distance 1, he regains one unit of health."
     }
   ],
   "source": {

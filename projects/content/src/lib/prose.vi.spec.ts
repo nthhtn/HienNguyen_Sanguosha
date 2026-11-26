@@ -95,7 +95,7 @@ describe('the display functions by locale', () => {
 
   it('Kingdom Wars Resurrection says it also clears Chained', () => {
     expect(abilityHint('kingdomWars:resurrection', 'en')).toBe('Discard every card, draw 3, recover to 3 HP and turn face up and unchained');
-    expect(abilityHint('kingdomWars:resurrection', 'vi')).toBe('Bỏ mọi lá bài, rút 3, hồi Sinh lực lên 3, lật lại và tháo xích');
+    expect(abilityHint('kingdomWars:resurrection', 'vi')).toBe('Bỏ mọi lá bài, rút 3, hồi Sinh lực lên 3, bỏ chồng Tướng và tháo xích');
   });
 
   it('a locale with no prose, or an empty one, falls back to English', () => {

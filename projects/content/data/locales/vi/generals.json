@@ -195,7 +195,7 @@
     "skills": {
       "fighting-saint": {
         "name": "Võ thánh",
-        "text": "Quan Vũ có thể dùng bất kỳ lá bài đỏ nào làm Sát."
+        "text": "Quan Vũ có thể dùng bất kỳ lá bài đỏ nào trên tay làm Sát."
       }
     }
   },
@@ -317,7 +317,7 @@
     "skills": {
       "violent-spirit": {
         "name": "Cuồng cốt",
-        "text": "Với mỗi sát thương Ngụy Diên gây ra cho một người chơi trong tầm của ông, ông hồi một Sinh lực."
+        "text": "Với mỗi sát thương Ngụy Diên gây ra cho một người chơi ở khoảng cách 1, ông hồi một Sinh lực."
       }
     }
   },
@@ -723,7 +723,7 @@
     "skills": {
       "refusing-death": {
         "name": "Bất khuất",
-        "text": "Khi Chu Thái hấp hối, ông có thể lật lá bài trên cùng của chồng bài và đặt nó dưới lá Tướng của mình. Ông luôn được coi là hấp hối. Với mỗi sát thương thêm, ông có thể lật thêm một lá bài. Chu Thái chết nếu hai trong các lá bài này có cùng số. Mỗi khi Chu Thái được hồi Sinh lực, ông có thể bỏ một trong các lá bài này."
+        "text": "Khi Chu Thái hấp hối, ông có thể lật lá trên cùng của chồng bài và đặt nó dưới Tướng của mình làm lá Sang. Ông luôn được coi là hấp hối. Với mỗi sát thương thêm, ông có thể lật thêm một lá Sang. Chu Thái chết nếu hai lá Sang có cùng số. Mỗi khi Chu Thái được hồi Sinh lực, ông có thể bỏ một lá Sang."
       }
     }
   },

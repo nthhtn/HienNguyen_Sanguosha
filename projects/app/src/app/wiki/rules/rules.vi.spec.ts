@@ -254,7 +254,7 @@ describe('the rules pages in Vietnamese', () => {
   it('card types: the General cards are named by their General names, never ids', async () => {
     const { el } = await open('card-types');
     const names = [...el.querySelectorAll('figure figcaption b')].map(text);
-    expect(names.slice(0, 3)).toEqual(['Tào Tháo', 'Quan Vũ', 'Úp']);
+    expect(names.slice(0, 3)).toEqual(['Tào Tháo', 'Quan Vũ', 'Chồng Tướng']);
     expect(text(el)).not.toMatch(/cao-cao|guan-yu/);
   });
 

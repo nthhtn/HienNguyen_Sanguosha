@@ -2,7 +2,7 @@
 // he has lost, then it turns over. The text of scene-demo.js. HP, the draw of 2 and Seat 2's hand are made up and are listed
 // as such in the hand-over.
 const { seg, eo, eio, lerp } = kit;
-const T = {"owner": "Tào Phi", "other": "Người chơi 2", "hp": "Sinh lực", "skill": "Phóng trục", "hand": "Bài trên tay", "pile": "Chồng bài rút", "tag": "Úp", "c1": "Tào Phi chịu 1 sát thương", "c2": "Tào Phi chọn Người chơi 2", "c3": "Người chơi 2 rút 2 lá: Sinh lực Tào Phi đã mất", "c4": "Rồi Người chơi 2 lật mặt", "whoSize": 56};
+const T = {"owner": "Tào Phi", "other": "Người chơi 2", "hp": "Sinh lực", "skill": "Phóng trục", "hand": "Bài trên tay", "pile": "Chồng bài rút", "tag": "Chồng Tướng", "c1": "Tào Phi chịu 1 sát thương", "c2": "Tào Phi chọn Người chơi 2", "c3": "Người chơi 2 rút 2 lá: Sinh lực Tào Phi đã mất", "c4": "Rồi Người chơi 2 chồng Tướng", "whoSize": 56};
 const place = (st, x, y, s, r, sx) => { st.transform = 'translate(' + (x - 65) + 'px,' + (y - 91) + 'px) rotate(' + r + 'deg) scale(' + s * (sx === undefined ? 1 : sx) + ',' + s + ')'; };
 const CARD = (cls, glyph, rank, red) => '<div class="sha ' + cls + '"><b' + (red ? ' class="red"' : '') + ' style="font-size:96px">' + glyph + '</b><span>' + rank + '</span></div>';
 const WEAPON = (cls) => '<div class="sha ' + cls + '"><span style="font-size:26px">' + T.weapon + '</span></div>';

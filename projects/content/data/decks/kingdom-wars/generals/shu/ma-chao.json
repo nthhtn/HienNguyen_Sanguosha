@@ -11,7 +11,7 @@
     {
       "name": "Horsemanship",
       "nameZh": "马术",
-      "text": "Your distance and range when calculated to other players is always -1.",
+      "text": "Your distance calculated to other players is reduced by 1.",
       "tag": "Enforced ability"
     },
     {

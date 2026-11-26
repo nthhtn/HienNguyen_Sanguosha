@@ -42,7 +42,7 @@ const rows: Row[] = [
   ['discarded', 'discarded', true, null, "Seat 0's Axe: discards one of Seat 1's cards", 'Axe của Người chơi 0: bỏ một lá bài của Người chơi 1'],
   ['recast', 'recast', false, null, 'Seat 0 recast a club with Axe', 'Người chơi 0 đổi lại một lá ♣ bằng Axe'],
   ['took-cards', 'took-cards', true, null, "Seat 0 took all of Seat 1's cards (Axe)", 'Người chơi 0 lấy toàn bộ bài của Người chơi 1 (Axe)'],
-  ['exiled', 'exiled', true, null, "Seat 0's Axe: Seat 1 turns over and draws cards", 'Axe của Người chơi 0: Người chơi 1 lật mặt và rút bài'],
+  ['exiled', 'exiled', true, null, "Seat 0's Axe: Seat 1 turns over and draws cards", 'Axe của Người chơi 0: Người chơi 1 chồng Tướng và rút bài'],
   ['revealed', 'revealed', false, null, 'Seat 0 used Axe', 'Người chơi 0 dùng Axe'],
   ['culprit', 'culprit', true, null, "Seat 0's Axe: the damage to Seat 1 counts as theirs", 'Axe của Người chơi 0: sát thương lên Người chơi 1 tính là của họ'],
   ['took-card', 'took-card', false, null, "Seat 0's Axe: took the Tool card", 'Axe của Người chơi 0: lấy lá Cẩm nang'],

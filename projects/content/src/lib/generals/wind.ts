@@ -96,8 +96,9 @@ export const strongBow: SkillDefinition = {
   ],
 };
 
-// Violent Spirit (compulsory): after you deal damage to a seat within your
-// attack range (measured after the damage), you recover 1 HP per point dealt.
+// Violent Spirit (compulsory): after you deal damage to another seat at
+// distance 1 (mounts and distance skills count; attack range does not), you
+// recover 1 HP per point dealt. Measured after the damage.
 export const violentSpirit: SkillDefinition = {
   id: 'violent-spirit',
   compulsory: true,
@@ -107,7 +108,7 @@ export const violentSpirit: SkillDefinition = {
         const { source, target, amount } = event.damage;
         return (
           source?.kind === 'seat' && source.seatId === owner.seatId && target.seatId !== owner.seatId && amount > 0 &&
-          seatDistance(state, owner.seatId, target.seatId, registry) <= attackRange(state, owner.seatId, registry)
+          seatDistance(state, owner.seatId, target.seatId, registry) <= 1
         );
       },
       effect: (_state, event, owner) => [used(owner), heal(owner.seatId, event.damage.amount)],

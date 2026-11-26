@@ -15,5 +15,6 @@
   { "en": "\\bstarvation\\b", "vi": "Binh Lương Thốn Đoạn" },
   { "en": "\\bescapes?\\b", "vi": "Thiểm" },
   { "en": "king ability", "vi": "Chủ công" },
-  { "en": "\\bflip(ped)? (his|her|their|its|the) character card|\\bflip their character card", "vi": "lật mặt" }
+  { "en": "\\bflip(ped)? (his|her|their|its|the) character card|\\bflip their character card", "vi": "lật mặt" },
+  { "en": "\\b(?:un)?stacks?(?:/unstacks?)? (?:his/her |your )?character cards", "vi": "chồng Tướng" }
 ]

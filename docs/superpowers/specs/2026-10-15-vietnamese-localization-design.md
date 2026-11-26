@@ -119,11 +119,12 @@ Defaults proposed and accepted:
 - Card types: Cơ bản (Basic), Cẩm nang (Tool), Trang bị (Equipment).
   Subtypes: Vũ khí (Weapon), Giáp (Armor), Tọa kỵ (Mount).
 - Hand, Discard Pile, Draw Pile: Bài trên tay, Chồng bài bỏ, Chồng bài rút.
-- Dying: Hấp hối (user decision, 2026-11-03; it replaced the earlier default "Cận kề cái chết"). Reveal and Face Down: Lật Tướng, Úp.
+- Dying: Hấp hối (user decision, 2026-11-03; it replaced the earlier default "Cận kề cái chết"). Reveal and Face Down: Lật Tướng, Chồng Tướng.
 - Eliminated: Trận vong everywhere (user decision, 2026-11-05; it replaced "bị loại" in the action history, the response banners and the Rules wiki). It sits where a verb phrase goes: "Người chơi 2 trận vong", "người đã trận vong".
 - Farm (Deng Ai's judged-card status): Điền (user decision, 2026-10-16).
 - Compete (a skill's point contest): đấu điểm (user decision, 2026-10-16); the two faces are joined with "so với".
 - Wording decisions of 2026-10-16: counts as = tính là; Defensive Mount = Tọa kỵ thủ +1; Offensive Mount = Tọa kỵ công -1; the pile under a General (Refusing Death) = Lá bài Sang; silenced seat = Mất kỹ năng; Combined HP = Tổng Sinh lực; draw pile positions = Đầu chồng / Đáy chồng; playing a card = đánh (the phase stays "giai đoạn ra bài"); respond = phản hồi; turn over = lật mặt; Main General = Chủ tướng and Deputy General = Phó tướng everywhere (chips, sentences, buttons).
+- Stack/unstack (user decision, 2026-11-26): chồng Tướng. It replaces Úp on the face-down label and lật mặt where the English says stack or unstack (Banish, Entrenched, and the same action elsewhere). A hidden General stays úp. Turning face up from that state is bỏ chồng Tướng.
 - Names (phase 4b, draft pending review): General, skill and card names are Hán-Việt from the Chinese. General names and card names are capitalised word by word (Tào Tháo, Quyết Đấu, Nam Man Xâm Nhập); titles and skill names are sentence case (Ngụy Võ Đế, Gian hùng). A skill name avoids the UI terms (Feedback is Phản quỹ, not Phản hồi).
 - Lord: Chủ công.
 - Suits keep their symbols. Colours: đỏ, đen.

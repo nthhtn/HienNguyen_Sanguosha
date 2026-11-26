@@ -1,6 +1,7 @@
 import type { GameState } from 'engine';
 import { card, handIds, harness, hp, registry, table, TableOptions } from './skills.testing';
-import { shaLimit } from '../shared/queries';
+import { attackRange, shaLimit } from '../shared/queries';
+import { generalTextData, kingdomWarsGeneralDisplayData } from '../display';
 
 const { legal, play, pass, convert, select, cancel } = harness();
 const at = (seatId: string, general: string, revealed = true): TableOptions['generals'] => ({ [seatId]: [general, 'filler-meng-huo', revealed] });
@@ -42,10 +43,20 @@ describe('Zhang Fei — Roar (revealed on use)', () => {
 });
 
 describe('Ma Chao — Horsemanship', () => {
-  it('reaches a seat 2 away with an unarmed Slash', () => {
+  it('reaches a seat 2 away with an unarmed Slash, and leaves attack range at 1', () => {
     const cards = { 'seat-a:hand': [card('s1', 'sha')] };
-    expect(playTargets(table(cards, { generals: at('seat-a', 'ma-chao') }), 'seat-a', 's1')).toEqual(['seat-b', 'seat-c', 'seat-d']);
+    const shown = table(cards, { generals: at('seat-a', 'ma-chao') });
+    expect(playTargets(shown, 'seat-a', 's1')).toEqual(['seat-b', 'seat-c', 'seat-d']);
+    expect(attackRange(shown, 'seat-a', registry)).toBe(1);
     expect(playTargets(table(cards, { generals: at('seat-a', 'ma-chao', false) }), 'seat-a', 's1')).toEqual(['seat-b', 'seat-d']);
+  });
+
+  it('the Kingdom Wars text says distance is reduced by 1', () => {
+    expect(kingdomWarsGeneralDisplayData('ma-chao')!.skills[0]).toMatchObject({
+      name: 'Horsemanship',
+      text: 'Your distance calculated to other players is reduced by 1.',
+    });
+    expect(kingdomWarsGeneralDisplayData('ma-chao', 'vi')!.skills[0].text).toBe('Khoảng cách của bạn tính đến người chơi khác giảm 1.');
   });
 });
 
@@ -70,14 +81,21 @@ describe('Huang Yueying — Wondrous Talent', () => {
 });
 
 describe('Guan Yu — Fighting Saint', () => {
-  it('uses a red card from his hand or equipment as a Slash in his Play Phase', () => {
+  it('uses a red hand card as a Slash, and not an equipped red card', () => {
     const s = table({ 'seat-a:hand': [card('p', 'peach', 'heart'), card('k', 'shan', 'spade')], 'seat-a:equip': [card('rh', 'red-hare', 'heart', 5)] }, { generals: at('seat-a', 'guan-yu') });
     const selecting = convert(s, 'seat-a', 'fighting-saint', 'seat-b');
-    expect(selecting.pendingSelection).toMatchObject({ eligibleIds: ['p', 'rh'], min: 1, max: 1 });
-    const used = select(selecting, 'rh');
+    expect(selecting.pendingSelection).toMatchObject({ eligibleIds: ['p'], min: 1, max: 1 });
+    const used = select(selecting, 'p');
     expect(used.pendingResponse).toMatchObject({ respondingSeatId: 'seat-b', allowedCardIds: ['shan'] });
     expect(used.turn.cardPlays).toEqual({ sha: 1 });
-    expect(handIds(used, 'seat-a')).toEqual(['p', 'k']);
+    expect(handIds(used, 'seat-a')).toEqual(['k']);
+  });
+
+  it('the skill text says a red hand card, in both decks and both languages', () => {
+    expect(generalTextData('guan-yu')!.skills[0].text).toBe('Guan Yu can use any red hand card as an attack.');
+    expect(generalTextData('guan-yu', 'vi')!.skills[0].text).toBe('Quan Vũ có thể dùng bất kỳ lá bài đỏ nào trên tay làm Sát.');
+    expect(kingdomWarsGeneralDisplayData('guan-yu')!.skills[0].text).toBe('You can use or play a red-suited hand card as ATTACK 杀.');
+    expect(kingdomWarsGeneralDisplayData('guan-yu', 'vi')!.skills[0].text).toBe('Bạn có thể dùng hoặc đánh một lá bài đỏ trên tay làm Sát.');
   });
 
   it('answers a Duel with a red card', () => {
@@ -117,11 +135,11 @@ describe('Zhao Yun — Dragon Courage', () => {
 });
 
 describe('Fighting Saint with a worn card (final review #1)', () => {
-  it('can’t use the horse that brings the target in reach', () => {
+  it('keeps the horse that brings the target in reach, and cannot spend an equipped red card', () => {
     const s = table({ 'seat-a:hand': [card('p', 'peach', 'heart')], 'seat-a:equip': [card('rh', 'red-hare', 'heart', 5)] }, { generals: at('seat-a', 'guan-yu') });
     expect(convert(s, 'seat-a', 'fighting-saint', 'seat-c').pendingSelection?.eligibleIds).toEqual(['p']);
     const horseOnly = table({ 'seat-a:equip': [card('rh', 'red-hare', 'heart', 5)] }, { generals: at('seat-a', 'guan-yu') });
-    expect(conversions(horseOnly, 'seat-a').map((a) => a.targets[0]?.seatId)).toEqual(['seat-b', 'seat-d']);
+    expect(conversions(horseOnly, 'seat-a')).toEqual([]);
   });
 
   it('can’t use the Crossbow that lifts the Slash limit', () => {
