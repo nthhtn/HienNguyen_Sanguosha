@@ -38,6 +38,17 @@ describe('InstallHint', () => {
     expect(event.prompt).toHaveBeenCalled();
   });
 
+  it('tells an iPhone to use Share, then Add to Home Screen, since Safari offers no install button', () => {
+    const agent = jest.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Safari');
+    try {
+      const el = render('browser', 915, 412);
+      expect(el.textContent).toContain('On iPhone, tap Share, then Add to Home Screen');
+      expect(el.querySelector('button.install-app')).toBeNull();
+    } finally {
+      agent.mockRestore();
+    }
+  });
+
   it.each([
     ['fullscreen', 915, 412],
     ['browser', 1366, 768],

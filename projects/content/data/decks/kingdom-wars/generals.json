@@ -111,7 +111,7 @@
         {
           "name": "Warrior Saint",
           "nameZh": "武圣",
-          "text": "You can use or play a red-suited card as ATTACK 杀."
+          "text": "You can use or play a red-suited hand card as ATTACK 杀."
         }
       ],
       "synergisticPartners": [
@@ -285,7 +285,7 @@
         {
           "name": "Horsemanship",
           "nameZh": "马术",
-          "text": "Your distance and range when calculated to other players is always -1.",
+          "text": "Your distance calculated to other players is reduced by 1.",
           "tag": "Enforced ability"
         },
         {

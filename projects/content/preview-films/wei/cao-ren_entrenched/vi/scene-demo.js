@@ -1,7 +1,7 @@
 // Entrenched (Cao Ren, Wei), in the deck's order: at the end of his turn he draws three cards, then turns over. The text of scene-demo.js.
 // The hand of 1 and HP are made up and are listed as such in the hand-over.
 const { seg, eo, eio, lerp } = kit;
-const T = {"owner": "Tào Nhân", "hp": "Sinh lực", "skill": "Cứ thủ", "hand": "Bài trên tay", "pile": "Chồng bài rút", "tag": "Úp", "c1": "Giai đoạn kết thúc: Tào Nhân dùng Cứ thủ", "c2": "Tào Nhân rút ba lá bài", "c3": "Rồi Tào Nhân lật mặt", "whoSize": 56};
+const T = {"owner": "Tào Nhân", "hp": "Sinh lực", "skill": "Cứ thủ", "hand": "Bài trên tay", "pile": "Chồng bài rút", "tag": "Chồng Tướng", "c1": "Giai đoạn kết thúc: Tào Nhân dùng Cứ thủ", "c2": "Tào Nhân rút ba lá bài", "c3": "Rồi Tào Nhân chồng Tướng", "whoSize": 56};
 const place = (st, x, y, s, r, sx) => { st.transform = 'translate(' + (x - 65) + 'px,' + (y - 91) + 'px) rotate(' + r + 'deg) scale(' + s * (sx === undefined ? 1 : sx) + ',' + s + ')'; };
 const CARD = (cls, glyph, rank, red) => '<div class="sha ' + cls + '"><b' + (red ? ' class="red"' : '') + ' style="font-size:96px">' + glyph + '</b><span>' + rank + '</span></div>';
 const WEAPON = (cls) => '<div class="sha ' + cls + '"><span style="font-size:26px">' + T.weapon + '</span></div>';

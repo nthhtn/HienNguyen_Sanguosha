@@ -35,7 +35,7 @@ describe('GeneralInfoDialog', () => {
     const skills = [...el.querySelectorAll('.skills li')].map((li) => li.textContent!.trim());
     expect(skills).toHaveLength(1);
     expect(skills[0]).toContain('Fighting Saint');
-    expect(skills[0]).toContain('Guan Yu can use any red card as an attack.');
+    expect(skills[0]).toContain('Guan Yu can use any red hand card as an attack.');
   });
 
   it('shows a badge next to a skill that is once per turn', () => {

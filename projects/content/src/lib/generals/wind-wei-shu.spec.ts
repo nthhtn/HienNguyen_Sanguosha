@@ -1,4 +1,5 @@
 import { abilityLog, askedAbout, card, handIds, harness, hp, table, TableOptions } from './skills.testing';
+import { generalTextData } from '../display';
 
 const h = harness();
 const at = (seatId: string, general: string, revealed = true): TableOptions['generals'] => ({ [seatId]: [general, 'filler-zhang-he', revealed] });
@@ -75,15 +76,37 @@ describe('Huang Zhong — Strong Bow', () => {
 });
 
 describe('Wei Yan — Violent Spirit', () => {
-  it('recovers 1 HP per point of damage he deals to a seat in his attack range', () => {
+  it('recovers 1 HP per point of damage he deals to a seat at distance 1', () => {
     const s = h.pass(h.play(table({ 'seat-a:hand': [card('s1', 'sha')] }, { generals: at('seat-a', 'wei-yan'), hp: { 'seat-a': 2 }, flags: { wine: true } }), 's1', 'seat-b'));
     expect(hp(s, 'seat-b')).toBe(2);
     expect(hp(s, 'seat-a')).toBe(4);
   });
 
-  it('not for a seat outside his range', () => {
-    const s = h.pass(h.play(table({ 'seat-a:hand': [card('du', 'duel', 'spade', 1)] }, { generals: at('seat-a', 'wei-yan'), hp: { 'seat-a': 2 } }), 'du', 'seat-c'));
+  it('not for a seat at distance 2, even when a weapon could reach it', () => {
+    const armed = h.pass(h.play(
+      table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-a:equip': [card('gdb', 'green-dragon-blade', 'spade', 5)] }, { generals: at('seat-a', 'wei-yan'), hp: { 'seat-a': 2 } }),
+      's1',
+      'seat-c',
+    ));
+    expect(hp(armed, 'seat-c')).toBe(3);
+    expect(hp(armed, 'seat-a')).toBe(2);
+    const far = h.pass(h.play(table({ 'seat-a:hand': [card('du', 'duel', 'spade', 1)] }, { generals: at('seat-a', 'wei-yan'), hp: { 'seat-a': 2 } }), 'du', 'seat-c'));
+    expect(hp(far, 'seat-c')).toBe(3);
+    expect(hp(far, 'seat-a')).toBe(2);
+  });
+
+  it('does heal a seat a -1 horse brings to distance 1', () => {
+    const s = h.pass(h.play(
+      table({ 'seat-a:hand': [card('s1', 'sha')], 'seat-a:equip': [card('rh', 'red-hare', 'heart', 5)] }, { generals: at('seat-a', 'wei-yan'), hp: { 'seat-a': 2 } }),
+      's1',
+      'seat-c',
+    ));
     expect(hp(s, 'seat-c')).toBe(3);
-    expect(hp(s, 'seat-a')).toBe(2);
+    expect(hp(s, 'seat-a')).toBe(3);
+  });
+
+  it('the skill text says distance 1, one HP per point of damage', () => {
+    expect(generalTextData('wei-yan')!.skills[0].text).toBe('For each unit of damage that Wei Yan causes to a player at distance 1, he regains one unit of health.');
+    expect(generalTextData('wei-yan', 'vi')!.skills[0].text).toBe('Với mỗi sát thương Ngụy Diên gây ra cho một người chơi ở khoảng cách 1, ông hồi một Sinh lực.');
   });
 });

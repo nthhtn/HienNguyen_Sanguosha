@@ -283,9 +283,9 @@ describe('choices and skills in Vietnamese', () => {
   });
 
   it('turning over, showing a card and turning cards up', () => {
-    expect(vi_([{ kind: 'SeatTurnedEvent', seatId: 'seat-0', faceDown: true }])).toEqual(['Người chơi 0 úp Tướng']);
-    expect(vi_([{ kind: 'SeatTurnedEvent', seatId: 'seat-0', faceDown: false }])).toEqual(['Người chơi 0 lật lại']);
-    expect(vi_([{ kind: 'SeatTurnedEvent', seatId: 'seat-0', faceDown: false, passedTurn: true }])).toEqual(['Người chơi 0 lật lại và bỏ lượt']);
+    expect(vi_([{ kind: 'SeatTurnedEvent', seatId: 'seat-0', faceDown: true }])).toEqual(['Người chơi 0 chồng Tướng']);
+    expect(vi_([{ kind: 'SeatTurnedEvent', seatId: 'seat-0', faceDown: false }])).toEqual(['Người chơi 0 bỏ chồng Tướng']);
+    expect(vi_([{ kind: 'SeatTurnedEvent', seatId: 'seat-0', faceDown: false, passedTurn: true }])).toEqual(['Người chơi 0 bỏ chồng Tướng và bỏ lượt']);
     expect(vi_([{ kind: 'CardShownEvent', seatId: 'seat-1', card: sha, abilityId: 'sow-revolt' }])).toEqual(['Người chơi 1 cho xem Slash (7 ♠)']);
     expect(vi_([{ kind: 'CardsTurnedUpEvent', zoneId: 'processing', cards: [peach, sha] }])).toEqual(['Đã lật 2 lá bài: Peach (Q ♥), Slash (7 ♠)']);
     expect(en_([{ kind: 'CardsTurnedUpEvent', zoneId: 'processing', cards: [peach] }])).toEqual(['Turned up 1 card: Peach (Q ♥)']);

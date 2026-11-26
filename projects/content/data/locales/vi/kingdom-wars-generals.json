@@ -24,7 +24,7 @@
       },
       "banish": {
         "name": "Phóng trục",
-        "text": "Mỗi khi bạn bị sát thương, bạn có thể chọn một người chơi khác rút X lá bài (X là số Sinh lực bạn đã mất), rồi người đó lật mặt."
+        "text": "Mỗi khi bạn bị sát thương, bạn có thể chọn một người chơi khác rút X lá bài (X là số Sinh lực bạn đã mất), rồi người đó chồng Tướng."
       }
     },
     "differenceNote": "Kỹ năng Chủ công không có trong Quốc chiến.",
@@ -38,7 +38,7 @@
     "skills": {
       "entrenched": {
         "name": "Cứ thủ",
-        "text": "Vào giai đoạn kết thúc lượt của bạn, bạn có thể rút ba lá bài, rồi lật mặt."
+        "text": "Vào giai đoạn kết thúc lượt của bạn, bạn có thể rút ba lá bài, rồi chồng Tướng."
       }
     },
     "differenceNote": "Không có khác biệt.",
@@ -277,7 +277,7 @@
     "skills": {
       "warrior-saint": {
         "name": "Võ thánh",
-        "text": "Bạn có thể dùng hoặc đánh một lá bài đỏ làm Sát."
+        "text": "Bạn có thể dùng hoặc đánh một lá bài đỏ trên tay làm Sát."
       }
     },
     "differenceNote": "Sinh lực tối đa là 5, không phải 4.",
@@ -374,7 +374,7 @@
     "skills": {
       "horsemanship": {
         "name": "Mã thuật",
-        "text": "Khoảng cách và tầm tấn công của bạn khi tính đến người chơi khác luôn là -1."
+        "text": "Khoảng cách của bạn tính đến người chơi khác giảm 1."
       },
       "iron-calvary": {
         "name": "Thiết kỵ",
@@ -412,7 +412,7 @@
       },
       "resurrection": {
         "name": "Niết bàn",
-        "text": "Khi bạn hấp hối, bạn có thể bỏ toàn bộ bài của mình (trên tay và trang bị) cùng mọi lá bài trong khu chờ, rồi lật lại mặt Tướng và gỡ xích, rút ba lá bài và hồi Sinh lực lên 3."
+        "text": "Khi bạn hấp hối, bạn có thể bỏ toàn bộ bài của mình (trên tay và trang bị) cùng mọi lá bài trong khu chờ, rồi bỏ chồng Tướng và gỡ xích, rút ba lá bài và hồi Sinh lực lên 3."
       }
     },
     "differenceNote": "Niết bàn còn xóa trạng thái bị xích của ông khi ông hồi sinh.",
@@ -665,7 +665,7 @@
     "skills": {
       "refuting-death": {
         "name": "Bất khuất",
-        "text": "Mỗi khi Sinh lực của bạn bị giảm 1 trong khi Sinh lực hiện tại của bạn là 0, bạn có thể lật một lá từ đầu chồng bài rút và đặt lên Tướng của bạn. Chừng nào các lá này chưa có hai lá cùng số (từ A đến K) thì bạn không chết. Nếu lật được một lá cùng số với một lá đã có, bạn rơi vào trạng thái hấp hối."
+        "text": "Mỗi khi Sinh lực của bạn bị giảm 1 trong khi Sinh lực hiện tại của bạn là 0, bạn có thể lật một lá từ đầu chồng bài rút và đặt lên Tướng của bạn làm lá Sang. Chừng nào các lá Sang chưa có hai lá cùng số (từ A đến K) thì bạn không chết. Nếu lật được một lá Sang cùng số với một lá Sang đã có, bạn rơi vào trạng thái hấp hối."
       }
     },
     "differenceNote": "Không có khác biệt.",
@@ -760,7 +760,7 @@
     "skills": {
       "dirge": {
         "name": "Bi ca",
-        "text": "Mỗi khi một người chơi bị Sát gây sát thương, bạn có thể bỏ một lá bài và cho người đó phán xét. Nếu kết quả là:\nCơ: nạn nhân hồi 1 Sinh lực.\nRô: nạn nhân rút hai lá bài.\nChuồn: người tấn công bỏ hai lá bài.\nBích: người tấn công lật mặt."
+        "text": "Mỗi khi một người chơi bị Sát gây sát thương, bạn có thể bỏ một lá bài và cho người đó phán xét. Nếu kết quả là:\nCơ: nạn nhân hồi 1 Sinh lực.\nRô: nạn nhân rút hai lá bài.\nChuồn: người tấn công bỏ hai lá bài.\nBích: người tấn công chồng Tướng."
       },
       "sorrow": {
         "name": "Đoạn trường",

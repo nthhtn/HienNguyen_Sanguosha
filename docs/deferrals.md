@@ -15,7 +15,6 @@ When an item is done, delete its entry and say where it went in the commit.
 - [Game engine](#game-engine)
 - [Bots](#bots)
 - [Game setup](#game-setup)
-- [Translations](#translations)
 - [Deployment](#deployment)
 - [Backend](#backend)
 - [Presentation](#presentation)
@@ -36,49 +35,6 @@ When an item is done, delete its entry and say where it went in the commit.
   - Banish is next touched.
   - Then draw first and turn over second, in the engine, its spec and the two log lines (English and Vietnamese).
   - The Banish and Entrenched films need no change then.
-
-### Warrior Saint (Guan Yu) can use an equipped red card as a Sha
-
-- **What is missing.**
-  - The engine (`fightingSaint` in `projects/content/src/lib/generals/shu.ts`) converts a red card `from: 'hand-and-equipment'`.
-  - The deck says "a red-suited card", and the rule is that only a hand card may be converted, so an equipped card is not a legal one to use.
-  - Noted on 2026-11-10.
-- **Why it waits.**
-  - The Warrior Saint preview films follow the rule and show a hand card only.
-  - No game depends on it yet.
-- **Revisit when.**
-  - Warrior Saint is next touched.
-  - Then restrict the conversion to hand cards, update `shu.spec.ts` and `kingdom-wars-shu.spec.ts`, and check the other conversions that use `hand-and-equipment`.
-  - The films need no change then.
-
-### Horsemanship (Ma Chao): The deck says "distance and range", the engine changes distance only
-
-- **What is missing.**
-  - The deck text is "Your distance and range when calculated to other players is always -1".
-  - `horsemanship` in `projects/content/src/lib/generals/shu.ts` sets `distanceToOthers: -1` and nothing else.
-  - Noted on 2026-11-10.
-- **Why it waits.**
-  - Distance only matches the other Sanguosha versions, and the Horsemanship preview films show distance only.
-  - Whether the deck wording or the engine is the intended rule is not settled.
-- **Revisit when.**
-  - Horsemanship is next touched.
-  - Then decide which is right: Change the engine and its specs, or correct the deck text (and its Vietnamese).
-  - The films need no change if the engine stays as it is.
-
-### Insanity Streak (Wei Yan) heals by attack range and per point, not only at distance 1
-
-- **What is missing.**
-  - The deck says "after you inflict 1 unit of damage to a player within physical distance of 1, you regain 1 unit of health".
-  - The engine (`violentSpirit` in `projects/content/src/lib/generals/wind.ts`) heals after damage to any seat within Wei Yan's attack range, measured after the damage, and heals once per point dealt.
-  - Noted on 2026-11-10.
-- **Why it waits.**
-  - The correct rule is: Heal only when the damaged seat is at distance 1.
-  - The Insanity Streak preview films follow it.
-  - No game depends on it yet.
-- **Revisit when.**
-  - Insanity Streak is next touched.
-  - Then restrict the engine to distance 1 (and settle whether it heals once per damage or per point), and update `wind.ts`, its specs and the skill text.
-  - The films need no change then.
 
 ### The game can end while a seat is still dying
 
@@ -123,22 +79,6 @@ When an item is done, delete its entry and say where it went in the commit.
 - **Revisit when.**
   - The Identity rules are written and implemented.
   - Then remove `disabled: true` from the `identity` entry in `projects/app/src/app/deck-picker.ts` and restore the click test in `deck-picker.spec.ts`.
-
-## Translations
-
-### "Stack/unstack" in Vietnamese
-
-- **What is missing.**
-  - The deck's "stacks/unstacks his/her character cards" (Cao Pi's Banish, Cao Ren's Entrenched) is translated "lật mặt" in the Vietnamese Banish text.
-  - A face-down seat is labelled "Úp".
-  - The developer wants the term "chồng tướng" (decided 2026-11-09).
-- **Why it waits.**
-  - It touches the Kingdom Wars locale (`projects/content/data/locales/vi/kingdom-wars-generals.json`, Banish) and `projects/app/src/app/i18n/vi.ts` (`history.exiled`, and `seat.faceDown` if that label should follow).
-  - So it belongs in a pass over the Vietnamese terms.
-- **Revisit when.**
-  - The Vietnamese terms are next reviewed.
-  - Then record it in the glossary (`docs/superpowers/specs/2026-10-15-vietnamese-localization-design.md`) first.
-  - The Banish and Entrenched films' Vietnamese captions then change with it, and are re-rendered from `projects/content/preview-films/`.
 
 ## Deployment
 

@@ -129,8 +129,8 @@ Skill names and texts are compared after tidying whitespace, quotes and dashes.
 - **Guan Yu (关羽)**
   - Fighting Saint: named Warrior Saint in Kingdom Wars
   - Warrior Saint: text differs
-    - Kingdom Wars: You can use or play a red-suited card as ATTACK 杀.
-    - Identity: Guan Yu can use any red card as an attack.
+    - Kingdom Wars: You can use or play a red-suited hand card as ATTACK 杀.
+    - Identity: Guan Yu can use any red hand card as an attack.
 - **Zhang Fei (张飞)**
   - Roar: named Berserk in Kingdom Wars
   - Berserk: text differs
@@ -162,7 +162,7 @@ Skill names and texts are compared after tidying whitespace, quotes and dashes.
   - only in Identity: Seem Foolish
 - **Ma Chao (马超)**
   - Horsemanship: text differs
-    - Kingdom Wars: Your distance and range when calculated to other players is always -1.
+    - Kingdom Wars: Your distance calculated to other players is reduced by 1.
     - Identity: Ma Chao always has a -1 bonus.
   - Iron Cavalry: named Iron Calvary in Kingdom Wars
   - Iron Calvary: text differs
@@ -189,7 +189,7 @@ Skill names and texts are compared after tidying whitespace, quotes and dashes.
   - Violent Spirit: named Insanity Streak in Kingdom Wars
   - Insanity Streak: text differs
     - Kingdom Wars: After you inflict 1 unit of damage to a player within physical distance of 1, you regain 1 unit of health.
-    - Identity: For each unit of damage that Wei Yan causes to someone within his range, he regains one unit of health.
+    - Identity: For each unit of damage that Wei Yan causes to a player at distance 1, he regains one unit of health.
 - **Zhao Yun (赵云)**
   - Dragon Courage: named Dragon Heart in Kingdom Wars
   - Dragon Heart: text differs
