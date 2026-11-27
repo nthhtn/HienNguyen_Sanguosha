@@ -59,6 +59,7 @@ server does.
    | `DATABASE_SSL` | `require` (required in production; `off` only for a local Postgres) |
    | `PUBLIC_ORIGIN` | the service's `https://<name>.onrender.com` URL |
    | `TRUST_PROXY` | `1` (Render is one proxy; never `true`) |
+   | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Optional. Both or neither. They turn on Continue with Google (see [Google sign-in](#google-sign-in)) |
 
    `BUILD_ID` is taken from Render's `RENDER_GIT_COMMIT`, so it needs no setting.
    The path used to be `/healthz`. A service created earlier must have its
@@ -68,6 +69,25 @@ server does.
    the server refuses to start without a correct `PUBLIC_ORIGIN`. Create the
    service, let the first deploy fail, copy the URL into `PUBLIC_ORIGIN`, then
    redeploy.
+
+## Google sign-in
+
+Continue with Google needs an OAuth client of your own. Without one the button is hidden and nothing else changes.
+
+1. **Project:** In the [Google Cloud console](https://console.cloud.google.com/), create or pick a project.
+2. **Consent screen:** Under Google Auth Platform, set up the consent screen. Choose External, name the app, and add your own email as a test user while the app is in Testing.
+3. **Client:** Create an OAuth client of type **Web application**.
+4. **Redirect URIs:** Add both, exactly:
+   - `http://localhost:4200/api/auth/google/callback` for local development.
+   - `https://<name>.onrender.com/api/auth/google/callback` for the hosted service.
+5. **Keys:** Copy the client id and secret.
+   - **Local:** Put them in `.env` as `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`.
+   - **Render:** Add them as environment variables, then redeploy.
+6. **Check:** Open Sign In. The Continue with Google button appears when both variables are set.
+
+- **Testing mode:** Only the test users you listed can sign in until the app is published.
+- **Scopes:** The app asks for `openid email profile` only. Those need no Google review.
+- **Existing accounts:** An email that already has a password account is never linked. Its owner keeps signing in with the password.
 
 Logs are under the service's Logs tab. Migrations run on start, so the tables
 appear in Supabase after the first successful boot.

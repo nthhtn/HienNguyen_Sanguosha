@@ -88,6 +88,18 @@ When an item is done, delete its entry and say where it went in the commit.
 - **Why it waits.** The developer deferred it (2026-11-22). The installed web app reaches friends with no store, updates with each deploy and needs no second sign-in path (`docs/superpowers/specs/2026-11-13-phone-app-design.md`, Approaches).
 - **Revisit when.** A store listing is wanted, or a phone cannot install the web app. The app can be wrapped (Capacitor over the live site, or a bundled build) without redoing the phone board.
 
+### Linking Google to a password account
+
+- **What is missing.**
+  - A Google sign-in whose email already belongs to a password account is refused (`google_email_in_use`).
+  - There is no way to link Google from Settings, or to unlink it.
+- **Why it waits.**
+  - Nobody verifies email yet, so linking by email would let someone who registered a victim's address first keep their password (`docs/superpowers/specs/2026-11-27-google-signin-design.md`).
+  - The developer chose to refuse instead (2026-11-27).
+- **Revisit when.**
+  - Players with password accounts ask to use Google.
+  - Linking from a signed-in Settings page (start the Google flow while signed in, link on return) is the safe way.
+
 ### A real Mailer
 
 - **What is missing.**

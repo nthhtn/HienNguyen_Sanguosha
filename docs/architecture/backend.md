@@ -82,6 +82,21 @@ The HTTP API and the socket both require the request's `Origin` to equal
 reset-password are rate limited per IP, which needs `TRUST_PROXY` set correctly
 behind a reverse proxy (the README explains the accepted values).
 
+### Google sign-in
+
+Continue with Google, a server-side authorization code flow with PKCE. The design is in
+`docs/superpowers/specs/2026-11-27-google-signin-design.md`.
+
+- **Switch:** `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, both or neither. Without them `GET /api/auth/providers` answers `{ google: false }` and the two Google routes answer 404.
+- **Start:** `GET /api/auth/google/start` keeps a state, a nonce and a PKCE verifier in a short-lived HttpOnly cookie (`sgs_oauth`) and redirects to Google.
+- **Callback:** `GET /api/auth/google/callback` checks the state, exchanges the code server to server (`auth/google.ts`), checks the ID token's issuer, audience, expiry, nonce and verified email, and signs the player in.
+- **Failures:** Every failure redirects to `/sign-in?error=<code>` (`google_failed`, `google_cancelled`, `google_unverified`, `google_email_in_use`), keeping the original return URL.
+- **Rules** (`AccountService.signInWithGoogle`):
+  - **Known Google id:** Signs in as its user.
+  - **Email of a password account:** Refused. Nothing is linked, and nothing about that account changes.
+  - **Otherwise:** A registered user is created with a verified email, no password and the Google name, plus an `identities` row.
+- **No password:** A Google-created account has a null `password_hash`. Password sign-in never matches it. `Me.hasPassword` tells the page, and `POST /api/me/password` then sets a first password without a current one.
+
 ## Rooms and the socket
 
 - An **open** room is listed, and anyone signed in can join while it has space.
@@ -295,6 +310,7 @@ chat.
 - **More than one server process.** Live games live in the memory of one
   process; there is no cross-process coordination.
 - **A real Mailer.** Password reset emails go to the server log.
+- **Linking Google to a password account**, and unlinking it. Until then, a player with a password account cannot use Google.
 - **Merging a guest's games into a new account**, and a recovery code for a
   guest's seat.
 - **Email verification.**

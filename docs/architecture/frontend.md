@@ -16,7 +16,7 @@ projects/app/src/app/
   decision-timer.service.ts  per-decision countdowns for local games
   music.service.ts           background music and sound effects
   labels.ts                  names and formatting shared by every screen
-  auth/                      sign-in, sign-up, guest, forgot and reset password, AuthService, requireSignIn
+  auth/                      Sign-in, sign-up, guest, forgot and reset password, the Continue with Google button, AuthService, requireSignIn
   online/                    Rooms, Lobby, the My Games list, chat, SocketService, RemoteGameService, OnlineGame
   profile/                   The Profile page: stats, History (My Games) and settings
   setup/                     the local Game Setup screen
@@ -35,7 +35,7 @@ the first bundle holds only the shell:
 | `/play` | A guard that never renders; it redirects to `/game` when a local game is in progress, otherwise to `/setup` |
 | `/rooms`, `/rooms/:id` | Open rooms, and a room's lobby and online game; behind `requireSignIn` |
 | `/profile` | Stats, History (finished games) and settings; behind `requireSignIn`, with `?tab=history` or `?tab=settings`. `/my-games` redirects to the History tab |
-| `/sign-in`, `/sign-up`, `/guest`, `/forgot-password`, `/reset-password` | Accounts |
+| `/sign-in`, `/sign-up`, `/guest`, `/forgot-password`, `/reset-password` | Accounts. Sign In and Sign Up show Continue with Google when `/api/auth/providers` says it is on, and Sign In shows `?error=<code>` from a failed Google trip |
 | `/wiki/...` | See "Wiki" below |
 | `/tutorial` | Ten guided lessons in three tabs on the real board; offline only (see "Tutorial") |
 
