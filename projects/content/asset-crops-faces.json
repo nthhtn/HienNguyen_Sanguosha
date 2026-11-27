@@ -396,10 +396,10 @@
     112
   ],
   "ravages-of-time/qun/caiwenji": [
-    30,
-    0,
-    447,
-    447
+    149,
+    73,
+    292,
+    292
   ],
   "ravages-of-time/wei/caocao": [
     141,
@@ -408,10 +408,10 @@
     247
   ],
   "ravages-of-time/wei/caoren": [
-    37,
-    40,
-    323,
-    323
+    0,
+    48,
+    270,
+    270
   ],
   "ravages-of-time/qun/diaochan": [
     152,
@@ -450,10 +450,10 @@
     221
   ],
   "ravages-of-time/qun/jiling": [
-    189,
-    42,
-    203,
-    203
+    137,
+    48,
+    238,
+    238
   ],
   "ravages-of-time/shu/liubei": [
     160,
@@ -480,10 +480,10 @@
     247
   ],
   "ravages-of-time/shu/machao": [
-    70,
-    75,
-    250,
-    250
+    117,
+    86,
+    256,
+    256
   ],
   "ravages-of-time/qun/panfeng": [
     108,
@@ -576,10 +576,10 @@
     500
   ],
   "ravages-of-time/qun/zoushi": [
-    187,
-    118,
-    227,
-    227
+    110,
+    0,
+    282,
+    282
   ],
   "ravages-of-time/wu/daqiao": [
     131,
@@ -652,5 +652,41 @@
     64,
     237,
     237
+  ],
+  "ravages-of-time/shu/liushan": [
+    63,
+    51,
+    375,
+    375
+  ],
+  "ravages-of-time/shu/zhugeliang": [
+    186,
+    64,
+    256,
+    256
+  ],
+  "ravages-of-time/shu/ganfuren": [
+    98,
+    61,
+    325,
+    325
+  ],
+  "ravages-of-time/shu/huangyueying": [
+    59,
+    0,
+    381,
+    381
+  ],
+  "ravages-of-time/qun/kongrong": [
+    80,
+    153,
+    391,
+    391
+  ],
+  "ravages-of-time/wei/xuchu": [
+    75,
+    26,
+    334,
+    334
   ]
 }
