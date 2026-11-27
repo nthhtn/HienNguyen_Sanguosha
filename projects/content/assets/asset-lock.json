@@ -2246,9 +2246,352 @@
       "generals/skins/classic/wu/zhouyu.png": "ebde845fefc6ef82591e58c74ca6c2ef3ebaca4323fcca032c17d72ba39524aa"
     }
   },
+  "generals/faces/ravages-of-time/qun/caiwenji.webp": {
+    "output": "ba0ca38f89b7adb8ced1cbc7c07e221e169bdd86d1acaeb35f5e7a021c30309a",
+    "settings": "5d21b2c18ddc8a5644d183b9e930534c01811cfb7e6f7d63c6ccdc199c36ddb0",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/caiwenji.png": "6d0229643be36262159ba1ecbb54007c8d7bcc9536a3af5c26bcc8edd978f9a7"
+    }
+  },
+  "generals/faces/ravages-of-time/qun/diaochan.webp": {
+    "output": "79c586e80c61bedaff46a3610c3fed0abb56f969a9a4cf449587e592b4851d6b",
+    "settings": "5572a26e5af3aac44084e6424f41fddc88f566e82ebe05d85ada7a2a3c9bc1c5",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/diaochan.png": "5f5fe2d121cc49762eeb1420b26563517a35f64726a951797fa1ab5063c46806"
+    }
+  },
+  "generals/faces/ravages-of-time/qun/jiaxu.webp": {
+    "output": "a23a2edf7f00863d04ad58f59520abe09d06efb50588c0aba7e383c2cd1f4900",
+    "settings": "7400fe7e4c059a5edc51fddd969f36f15fa774707873109a9e6fc25092cb3697",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/jiaxu.png": "68c6e314c05f52ac457de3bf1573a03ad8beee90f1ddb149d0ececc8adacb9af"
+    }
+  },
+  "generals/faces/ravages-of-time/qun/jiling.webp": {
+    "output": "eead7c25ecbf9cb5c7a458e8f94f6c0747d59146764951e1ec98ca2da1d6f2e5",
+    "settings": "bcd2a51277fcef28b8465069972ffd9713d12790712801cc03980d52e8a3364c",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/jiling.png": "17a4379253fc03f5c264a068690a3080c1d24cf03360d2c39154009e5c004b7f"
+    }
+  },
+  "generals/faces/ravages-of-time/qun/kongrong.webp": {
+    "output": "5bbe0e34caee60aeab5e2b681928a2e2661b47bee1410b17fad1b499f7e56328",
+    "settings": "29645e2c498255561dbc1336d0934535a83e4ab8799d642d2bec2908cff2cd8a",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/kongrong.png": "55eee5061c684f7054372bd517dee1ea006a2b541d7bb7ab715954975e78812b"
+    }
+  },
+  "generals/faces/ravages-of-time/qun/lubu.webp": {
+    "output": "259202f929a2367550cfabac72f1db4b94b903daeca6e71d27f1a65b35a4cfe1",
+    "settings": "ded718cff985bacd4d12f1b0f3f8deab8d4a355f8ee5649a837c4bb262275c06",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/lubu.png": "10e4c4a44c76e1e122b14b447274127994c140e30fafc64ab2f11687c9dbe988"
+    }
+  },
+  "generals/faces/ravages-of-time/qun/mateng.webp": {
+    "output": "cc35ab35d4de4014bb37f7ea5ec70a6e82c965284b9b93c53d9675ce786537c2",
+    "settings": "da5feea4986fb5440e77333760d81844951c0addf013da43faaa448a261a8219",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/mateng.png": "33938c469ebe434be28bc57775116118af2b5ba6dd5953b3fb33e7daef454b17"
+    }
+  },
+  "generals/faces/ravages-of-time/qun/panfeng.webp": {
+    "output": "0e188b40a872c25c559c2ad2869d9a08346eea3603600fc21e91098796597cca",
+    "settings": "8f9910266a54edcb10add1e89a13ba78688bc6f400d7b3e8ccca91b1e800c318",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/panfeng.png": "a788836a9e6e8c704d51db191391be086cf390280a7b723a5764af4c2752356a"
+    }
+  },
+  "generals/faces/ravages-of-time/qun/pangde.webp": {
+    "output": "a062217fc1dcaaaa5214764d9d2b68bf67b139147981a98edda25696b6e09291",
+    "settings": "e1f709626521c50489ccbbfcb0612d41b42267da7c34e79eb7dc69c5102a2a0c",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/pangde.png": "64add30f89da30c792158e0933faab1c403ae62db09d8b09bf1080eccc99fc39"
+    }
+  },
+  "generals/faces/ravages-of-time/qun/tianfeng.webp": {
+    "output": "7ba1681f8fd5771fb5b739665fb2c9fbda49f370e8efcf8f47a755aabbe982d2",
+    "settings": "878f85155407e81fe49e9eb8cf1ca5cc6f395d569accd15f46c11addb3448520",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/tianfeng.png": "337886b52eee4ab24ec30603254476fd5201d71b118cf53b012e4833c3de56da"
+    }
+  },
+  "generals/faces/ravages-of-time/qun/yanliangwenchou.webp": {
+    "output": "ea5fc10fa2a8f9a42fe0ea484ffc925cb74ebef96326e259d0e7ece430e9be93",
+    "settings": "fed93bc94758988cbb3eea58bee58514aa7e5652c03527fbc2d68187b29e54e2",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/yanliangwenchou.png": "dbb410db309cea833c3181ef1d15c78069e7aa535cbabb8fdb116bf66e4062e9"
+    }
+  },
+  "generals/faces/ravages-of-time/qun/yuanshao.webp": {
+    "output": "03660ee334482d7316bca0e004b82ddd7242ea68feeba5f72d750d815a69fbc9",
+    "settings": "388ab5de7de7f636d5c90c387b6dff58a8b8cc1ce21a7df0c7c73fbfafb49215",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/yuanshao.png": "c9668df5c2d47b93dd47ea086a8277f7969a9ecc2d62f990eabf57e9cfae1204"
+    }
+  },
+  "generals/faces/ravages-of-time/qun/zhangjiao.webp": {
+    "output": "0804948419dea10d25a12d848cc9a689154b572159a5c930949e7da833772759",
+    "settings": "3b948125df3329baf3590cd2eb3a809eb7fc86f3b0db1b14ad9dd20647fc9e6f",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/zhangjiao.png": "522b883a3fdedb5c40929b30bb4c7a085e3766551675063fbbb9e2f013369229"
+    }
+  },
+  "generals/faces/ravages-of-time/qun/zoushi.webp": {
+    "output": "e78176202b8839a3dfdb3951d44d1db9987164b75cc1440caf46101a73c229b0",
+    "settings": "a4cae4ec97c72fc573d9908287f3b457afeb8d37367df7e2b7009e127343f98f",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/zoushi.png": "63f77021a5b5d260fe9b6efb7c8e26ae22129fabad026b1fe0609ce6fa25d244"
+    }
+  },
+  "generals/faces/ravages-of-time/shu/ganfuren.webp": {
+    "output": "b42b086140aaf62ec3e4d1f70945d875185ef844f110359f5062666b56c08341",
+    "settings": "62416d582ad6e88566d0df7c8cf330dbed6792880c9b3daaea4866a77d1ddd02",
+    "sources": {
+      "generals/skins/ravages-of-time/shu/ganfuren.png": "1083df636605a3e53a3c1b1870b2cf66ce0e47970ed681396d663ca81455e59f"
+    }
+  },
+  "generals/faces/ravages-of-time/shu/guanyu.webp": {
+    "output": "cdf611a20629442b88dd57df017b2e270eb459b76abeb9330e91bd1cd29c5f76",
+    "settings": "8ad4c91414cca7dc299679f5a7485f47de188c24d71f97f77acb3d6a5567cfb1",
+    "sources": {
+      "generals/skins/ravages-of-time/shu/guanyu.png": "f6abfc1203ee208a45f08092b9d5226fa6a68148e52a20188d717a3abe97efee"
+    }
+  },
+  "generals/faces/ravages-of-time/shu/huangyueying.webp": {
+    "output": "9530d0cf47dc55ff04315c72bba07aa16fb212ec9709ee90bafa529220819071",
+    "settings": "f1af23883c881f23b9589ad50610d754e65e8e348ae1e727ca520416e87697a9",
+    "sources": {
+      "generals/skins/ravages-of-time/shu/huangyueying.png": "30a58b7ac3f4a6a0b873eaf7848429ff34e52487067a9fb12a50aab2b7b40aa3"
+    }
+  },
+  "generals/faces/ravages-of-time/shu/huangzhong.webp": {
+    "output": "6f0c94b0672ffd65741709707f3c107a9bc1edf8ffefbbcd938fea8858477128",
+    "settings": "88b16ff376a3e77c28f989ad5ac2fa1f5c81eb89cd9080a928bfa554f8bfc2a4",
+    "sources": {
+      "generals/skins/ravages-of-time/shu/huangzhong.png": "8c4ca5d28339813e0160fab9b42b6ec00cf8f946ff59deffb68b4af1c2dd620b"
+    }
+  },
+  "generals/faces/ravages-of-time/shu/liubei.webp": {
+    "output": "462d3c3f06dc8d291a8bc111b8c3ed2547ea920276efa1695b0f80099bbbb7b2",
+    "settings": "033981d0d4910bcafdca27c861660751bbb47721943ba7093797597b2ff01924",
+    "sources": {
+      "generals/skins/ravages-of-time/shu/liubei.png": "172deddc3c08e4d08334f3efd87981e54a071135b2a60d9663cbf4c6d5019979"
+    }
+  },
+  "generals/faces/ravages-of-time/shu/liushan.webp": {
+    "output": "5986bdf3880b4537676a25f1fc4b9aee83191fcbfc0dbe5746d1e01b90ac4649",
+    "settings": "2d1a06a39f9fc32b1766d583f9bc3b27c205dc60bbc9595c1e2ec5334fbcbb80",
+    "sources": {
+      "generals/skins/ravages-of-time/shu/liushan.png": "27971d40d18f3d456f8fe8782ab4ce2fffc4cd89f9c42c2756c448b6cbb0f976"
+    }
+  },
+  "generals/faces/ravages-of-time/shu/machao.webp": {
+    "output": "be7f87d3ea95e632031994a3bd7be3be54e0e07b6288d431e9b674ac9f8246e9",
+    "settings": "b33c142cea08c3fcd7fc5d8695fb8f2ecf0537162c71b1e0fbd69015b77c910e",
+    "sources": {
+      "generals/skins/ravages-of-time/shu/machao.png": "ce777a2340f6d62ca09d721aba023f91620f7225897cdfaf3a5aad35db3fcbdc"
+    }
+  },
+  "generals/faces/ravages-of-time/shu/pangtong.webp": {
+    "output": "67ccc2a78da3defff0e0e62050b233685ab08d6bd1fed5050e2358a7bac9215a",
+    "settings": "7adfcd8ea9c30e096c83c7e30df52706baad16f9eb1913853e7f37a69aad085d",
+    "sources": {
+      "generals/skins/ravages-of-time/shu/pangtong.png": "ef990ddf815ccdbc8a1d8d2bdfa96d23d2a5b592d8f7a37b98d43b847c768168"
+    }
+  },
+  "generals/faces/ravages-of-time/shu/wolong.webp": {
+    "output": "1cc9b488f49b1c8daff15156d046f606b5f93a3dc7923548e9f0cbdb44ee55c7",
+    "settings": "98c118d9bae78f15f1412dcbcc350494edb85ebd8a62e4268e44bbe460703f1c",
+    "sources": {
+      "generals/skins/ravages-of-time/shu/wolong.png": "c3114ea3cb6e312d76118e2c8b488dba5f769dc68b2dda23a03074de8c7c57d5"
+    }
+  },
+  "generals/faces/ravages-of-time/shu/zhangfei.webp": {
+    "output": "183a63acb515e69531259bf96e4171bd73621b18ed898b602fb08d5e91e9a24f",
+    "settings": "d4d9da578582c6ce2b5965b499468722b8da28c55fbfa1d27440c45d9e1dcb8d",
+    "sources": {
+      "generals/skins/ravages-of-time/shu/zhangfei.png": "7bb9166d48a2038b47e1d48e8a05aa0a7b070482f904858f3695b2293612b0d5"
+    }
+  },
+  "generals/faces/ravages-of-time/shu/zhaoyun.webp": {
+    "output": "f4d40a9106330f81afe2fe18ab09d34e11fbaa41ba0a95412d4da5c7dd92201a",
+    "settings": "6e3218778553c25f5abb2a58f3ce6eb0ca3b728f94724187a8fe39c863728818",
+    "sources": {
+      "generals/skins/ravages-of-time/shu/zhaoyun.png": "dcb66de182aa0f5998233113dea57975ca8dcdd8f3d552a377fb7ceb93def9ec"
+    }
+  },
+  "generals/faces/ravages-of-time/shu/zhugeliang.webp": {
+    "output": "1fa36aae4de2f98bf43e559f1ef5b6de38960c4a5afd74ca31476b77eb159e69",
+    "settings": "f955500205baac3dee9602b408436a65231a4fff0cf81f2f92802aae5dfe5fd6",
+    "sources": {
+      "generals/skins/ravages-of-time/shu/zhugeliang.png": "4ac945b3df2df1b4279639a77eb80aec91c4baa2fe065d64343288fb1713ae4d"
+    }
+  },
+  "generals/faces/ravages-of-time/wei/caocao.webp": {
+    "output": "83a41385bc5f552b366da9cc4042de0e815c17b62f16709c4188855c0a15773f",
+    "settings": "94b924897c55cc69b04c39030e502baa64fb83bd1fab8591b44e7b6077795237",
+    "sources": {
+      "generals/skins/ravages-of-time/wei/caocao.png": "fe30f65cbb72bce9e535cf7fd36ae0fcd9eed8d80c42da1946cadd2ef29d5d4d"
+    }
+  },
+  "generals/faces/ravages-of-time/wei/caoren.webp": {
+    "output": "1c49adb9fce1ade58baa980350262fc3508f95f47c2a4f2c25bdb2eb8a81e7c0",
+    "settings": "f4fe977174e33c9d50c774fdc8ec1aa0adea71b536bab1cc9197d8dcf41ecc77",
+    "sources": {
+      "generals/skins/ravages-of-time/wei/caoren.png": "c7f639c7a9b2b6f80e0ab00d5d61cd0d7d33baf177aa1b0fe268147278145814"
+    }
+  },
+  "generals/faces/ravages-of-time/wei/guojia.webp": {
+    "output": "0a7aae88db3d8b477028e7ab67501fcda2dace3847454149f3f9e390b59b386c",
+    "settings": "899af1edddff880405a31aaef7269125a22fd1a36ff0d7e1a010c2fd33abea65",
+    "sources": {
+      "generals/skins/ravages-of-time/wei/guojia.png": "b3371fefad6a12ce0240723d65b59ada1d6be0298ba467ff62bfe56666c91d3b"
+    }
+  },
+  "generals/faces/ravages-of-time/wei/simayi.webp": {
+    "output": "b8d8cc66b7a5e15207f692ca137e681bdccace09cc9a260f8457c1fbc4dc9578",
+    "settings": "07f36a420c71098ed4cec9a3e4469df5f6eb529c330e26931dbe08205fd40bd8",
+    "sources": {
+      "generals/skins/ravages-of-time/wei/simayi.png": "72b3f0d15a3fa34591b2b1f453af540879504d88ded3e8085656dbe0768f0faa"
+    }
+  },
+  "generals/faces/ravages-of-time/wei/xiahoudun.webp": {
+    "output": "16bb55862fdc682fd954ed2cf936b1bd345a1fa9596cd58c8a26bd6c690b658b",
+    "settings": "f0a1b52279bfd42a50e0d0420b56b9ce5308d6e1f21d1e3fa2c7f21d29202e42",
+    "sources": {
+      "generals/skins/ravages-of-time/wei/xiahoudun.png": "d70e55d8d7094948fda2e33068cda5cb65533f91f6de532968953dd4fabb0bd8"
+    }
+  },
+  "generals/faces/ravages-of-time/wei/xuchu.webp": {
+    "output": "85db49f896283648cde9cea730c6455456786be7d541601f6aabd73c41a323cf",
+    "settings": "0747ea965efe9306f25c49f4bee18059da8ef6ef7e8096fe3de43f33dba10717",
+    "sources": {
+      "generals/skins/ravages-of-time/wei/xuchu.png": "2d4400902256fd1bbe40bcd0a5310dd65c29bb5fa2a073da78b671398fe4630f"
+    }
+  },
+  "generals/faces/ravages-of-time/wei/xuhuang.webp": {
+    "output": "18e137837b207e010cd8a00e56d2d22908c914f6cc24b64b344b169a84247ff7",
+    "settings": "f857c9b64e1932d42ad51472327ebb414a5864d871310717bc61ae10acbef033",
+    "sources": {
+      "generals/skins/ravages-of-time/wei/xuhuang.png": "934d859cc461e9f6664b9e6c74f914ec026a2855ecc7cabc0724562107a34466"
+    }
+  },
+  "generals/faces/ravages-of-time/wei/xunyu.webp": {
+    "output": "d46828f02c6e300b07393b984bfb49225b0f8fcbf23223326270dbc8e1739a87",
+    "settings": "fac02a17c84e79ea3f2b4bbe11aa25330b76c9c1b2dd90123093c2962a0664e5",
+    "sources": {
+      "generals/skins/ravages-of-time/wei/xunyu.png": "7335a75cc099f9f6b082fc3cf0decabc3c296080980609f11c4b0d812ed1e663"
+    }
+  },
+  "generals/faces/ravages-of-time/wei/zhanghe.webp": {
+    "output": "36bf83edf9b32ba4d69e0fdd1f5f6dadb38a157139093c31bacbb24faab6cc72",
+    "settings": "e82927165cdd7011ef227b46eda610146907e6f249344447ad84d490dfb7b5e6",
+    "sources": {
+      "generals/skins/ravages-of-time/wei/zhanghe.png": "8070f72bdf7960f7c257b15114d8a02c22b3958296a7dcb9dde4ac6070f0d63d"
+    }
+  },
+  "generals/faces/ravages-of-time/wei/zhangliao.webp": {
+    "output": "a7112ab5e0bab29520cbacb2f6e1204002632152430f7496380978290a1c5814",
+    "settings": "1e9b96f101ca152ef85b1de1c15da2d4d881e35284d8be2424bce21f9208ca74",
+    "sources": {
+      "generals/skins/ravages-of-time/wei/zhangliao.png": "4b0ec410fd347a9d7fd1ac01b43e727dc5f6a8d95c01fee887487a3b8006b593"
+    }
+  },
+  "generals/faces/ravages-of-time/wei/zhenji.webp": {
+    "output": "3db22f2f7d42a27792871f1ad43d6be4f9600652962092e2b1b1d5b92cf269e5",
+    "settings": "2b4e1301ea4ce95d223cdc23f8de6afa0a4922c3e5cf8153f6586570105e2843",
+    "sources": {
+      "generals/skins/ravages-of-time/wei/zhenji.png": "514cfcefd596f3d3489ba107b28d7d2d3649a3d3e4999fc5ff1be42d52c09af3"
+    }
+  },
+  "generals/faces/ravages-of-time/wu/daqiao.webp": {
+    "output": "0d7647c3d8819bceca95fb728482c1ef75ba9c5516a82d3db00032c2e974c10f",
+    "settings": "fa6fa3fddbc361b8e9051b448bd8d94273f4c51f3fba8d5525e501f5da5b1f5c",
+    "sources": {
+      "generals/skins/ravages-of-time/wu/daqiao.png": "7240c3762e51d12e3be5d75bb58ce29f304f143fe5a99ea34bd5efb4732aad1a"
+    }
+  },
+  "generals/faces/ravages-of-time/wu/ganning.webp": {
+    "output": "662ab9ff4ad48195b62c6983313c9d0728454ceaf1bae2f416d29f1ad0270dc1",
+    "settings": "5075bbb8cb89105234f8a71e98b7a7cff8eedb6119f84c780a3ddf97d6d55d54",
+    "sources": {
+      "generals/skins/ravages-of-time/wu/ganning.png": "cc6ca500833c7d655fa193b3531f8a2ad0c0fed0431e56e6f6a2f06decb33d76"
+    }
+  },
+  "generals/faces/ravages-of-time/wu/huanggai.webp": {
+    "output": "d923e3e88b5e00ef5365a07664ee46aa0d55f2e65f59a1a0a7d39b0c4b7fca03",
+    "settings": "ca1ee1ce773d9c19eface277116492596f2cb9c9494f62933200ef6ecf9a22e7",
+    "sources": {
+      "generals/skins/ravages-of-time/wu/huanggai.png": "2699092f74216d6e5f724ff56b67d05155a403a9bc36cb9bf6f0ca984d02d87c"
+    }
+  },
+  "generals/faces/ravages-of-time/wu/lumeng.webp": {
+    "output": "e581a5cd18b2d7ec472cdc1dee82baa695e7d479b12fa783952c6da623d92865",
+    "settings": "685956316679407c33861e2bf088e78b5c05ba28829035637e4a319cf28b5e09",
+    "sources": {
+      "generals/skins/ravages-of-time/wu/lumeng.png": "4d8eb3cdc7a017b6df3cc5aeb5a7c497a6d5ca7112387c304b33eacac8e0da34"
+    }
+  },
+  "generals/faces/ravages-of-time/wu/lusu.webp": {
+    "output": "f66f10e46df4234afa043abc1c0f8b7e76a1419c7684c86c0d31ad1d2b38ea86",
+    "settings": "7a2b8e7eb7ab691f796a6d231ae8ccbe6d50e4ed59d3e674a629609ec13be4c6",
+    "sources": {
+      "generals/skins/ravages-of-time/wu/lusu.png": "d1c1582efd208f067214db21d0ebf61e0c0c4363c2896be05694942051394984"
+    }
+  },
+  "generals/faces/ravages-of-time/wu/luxun.webp": {
+    "output": "8908dcbae0b4a57f55128057a474a32bd3ca940d725654b5d8db8ff2a594efff",
+    "settings": "bacf85927c00824db8647ab8fa8a989d34e2d35d4d61d2fe8ff8b0e6a121af7a",
+    "sources": {
+      "generals/skins/ravages-of-time/wu/luxun.png": "530476554c44d876a9a4d2995f759c480c774d64901f57d4d8ee811a00c7c99f"
+    }
+  },
+  "generals/faces/ravages-of-time/wu/sunjian.webp": {
+    "output": "b5b9f5982e9d7d1d772199f5fb77ff37f261aaaf8cbdaf6620fb94d289b1b455",
+    "settings": "f25ce7f1dc633ceeb2fc3abef55756d919ac9b0bd7df9520035839f4feaa5bb5",
+    "sources": {
+      "generals/skins/ravages-of-time/wu/sunjian.png": "7ac20bf809ee9edc3d3c7493ab6b04c76dcd42ad77abad296334348db0b3fd37"
+    }
+  },
+  "generals/faces/ravages-of-time/wu/sunquan.webp": {
+    "output": "9b6ddfd034f420d0dbc995af4820acceaaa4f25ed2a8f1fa6caccd14c74e3bd1",
+    "settings": "912b0dd0ca05f4ce8bd3f837f7e5e39afc6f0bfc933f2f05ddb06550e5921603",
+    "sources": {
+      "generals/skins/ravages-of-time/wu/sunquan.png": "8c86214573e353f31fef773fdf4d89d0752a4cd83ef5922feb6189328ce0024c"
+    }
+  },
+  "generals/faces/ravages-of-time/wu/sunshangxiang.webp": {
+    "output": "18367cd691c4becc13f6bb32bfe345041037529ac71e3b108e854b12e7aecd2c",
+    "settings": "9eaf1b2ef892e59785e36a2bfdfcb31db17b9c41d2a85c23b1aa5094144b37ef",
+    "sources": {
+      "generals/skins/ravages-of-time/wu/sunshangxiang.png": "6d52de136f5cd83a1e29afeca1632b2afa7e2dfa62822cc7a1ea77a22338fffd"
+    }
+  },
+  "generals/faces/ravages-of-time/wu/taishici.webp": {
+    "output": "263709805e0e8f648e1c62e886495158a51a7d372f6f5815b7f5d8e1ca124b01",
+    "settings": "cd287c0260915eb5a261156fc291d8c43c38ef0bce7e32ffb8dbbb2517f5ee05",
+    "sources": {
+      "generals/skins/ravages-of-time/wu/taishici.png": "e40fb8fbebf84adf55da35c45269e1663fb724059d804c9d053b8ab29717aa17"
+    }
+  },
+  "generals/faces/ravages-of-time/wu/xiaoqiao.webp": {
+    "output": "c3f8c71de276afd6a295e1c8566709373630728fdc204f025b05eaccf12e1f49",
+    "settings": "0edee2a0e20b058a447bf30dacf41c9fc7dff163f67e6124c9d5e09f1c590492",
+    "sources": {
+      "generals/skins/ravages-of-time/wu/xiaoqiao.png": "c52180218bc9b1d555b89fef44c945eabd9ac0784e872c0096bf7adfc09ce841"
+    }
+  },
+  "generals/faces/ravages-of-time/wu/zhouyu.webp": {
+    "output": "c6b8d5644f9cfaa6478fcd582272ece668095254cefcdd1da85a1520a6e5dbce",
+    "settings": "d8995094ed7f65f41dd313f51f8e2ca0b12bf7d728d0d2a187cc4d62a922af77",
+    "sources": {
+      "generals/skins/ravages-of-time/wu/zhouyu.png": "ea09e01a4af617568e91d7a7d288e7e957ea350e90449b23dae852e9164a81ad"
+    }
+  },
   "generals/skins/art-sets.json": {
-    "output": "d8e457abb1f635a97d2b11ab41cfc15ea06c86b94bfe31fa39551679a72821a2",
-    "settings": "9f65a6c12e4692aa9eca9fbf355d9ee1d8b6d305e76ba780f55ebd0e27020f74",
+    "output": "fba46fa1d265d736b5f911f9cdce49037735242bdb61679a6215ecdfc2861ea9",
+    "settings": "ac1280c027fdcf4788792e80f6ec679b3c0deef5c5a2b9138fa32606fd02e71b",
     "sources": {
       "generals/skins/classic/qun/caiwenji.png": "01cd16ace6c354a120336e5d72a50abbb03bf0fb0939a0060053103bc62fc08a",
       "generals/skins/classic/qun/diaochan.png": "33e79257697749c0eabb9ddf08f323ff591fecde0aec54197bc6d631ee8fa0e5",
@@ -2316,7 +2659,56 @@
       "generals/skins/classic/wu/xiaoqiao.png": "082931fbc552425496b92b04139ec7a08bdef427e1d3b0f606380162fd149f95",
       "generals/skins/classic/wu/zhoutai.png": "67e1695a5d185eb7f7be83c55072360993349c3b42a3978013482a6e7771a8a6",
       "generals/skins/classic/wu/zhouyu.png": "ebde845fefc6ef82591e58c74ca6c2ef3ebaca4323fcca032c17d72ba39524aa",
-      "generals/skins/sets.json": "6da0fc3cc366d024697d14f6e57002bba039e7df5a65ad1759a7f95f50dd6fd1",
+      "generals/skins/ravages-of-time/qun/caiwenji.png": "6d0229643be36262159ba1ecbb54007c8d7bcc9536a3af5c26bcc8edd978f9a7",
+      "generals/skins/ravages-of-time/qun/diaochan.png": "5f5fe2d121cc49762eeb1420b26563517a35f64726a951797fa1ab5063c46806",
+      "generals/skins/ravages-of-time/qun/jiaxu.png": "68c6e314c05f52ac457de3bf1573a03ad8beee90f1ddb149d0ececc8adacb9af",
+      "generals/skins/ravages-of-time/qun/jiling.png": "17a4379253fc03f5c264a068690a3080c1d24cf03360d2c39154009e5c004b7f",
+      "generals/skins/ravages-of-time/qun/kongrong.png": "55eee5061c684f7054372bd517dee1ea006a2b541d7bb7ab715954975e78812b",
+      "generals/skins/ravages-of-time/qun/lubu.png": "10e4c4a44c76e1e122b14b447274127994c140e30fafc64ab2f11687c9dbe988",
+      "generals/skins/ravages-of-time/qun/mateng.png": "33938c469ebe434be28bc57775116118af2b5ba6dd5953b3fb33e7daef454b17",
+      "generals/skins/ravages-of-time/qun/panfeng.png": "a788836a9e6e8c704d51db191391be086cf390280a7b723a5764af4c2752356a",
+      "generals/skins/ravages-of-time/qun/pangde.png": "64add30f89da30c792158e0933faab1c403ae62db09d8b09bf1080eccc99fc39",
+      "generals/skins/ravages-of-time/qun/tianfeng.png": "337886b52eee4ab24ec30603254476fd5201d71b118cf53b012e4833c3de56da",
+      "generals/skins/ravages-of-time/qun/yanliangwenchou.png": "dbb410db309cea833c3181ef1d15c78069e7aa535cbabb8fdb116bf66e4062e9",
+      "generals/skins/ravages-of-time/qun/yuanshao.png": "c9668df5c2d47b93dd47ea086a8277f7969a9ecc2d62f990eabf57e9cfae1204",
+      "generals/skins/ravages-of-time/qun/zhangjiao.png": "522b883a3fdedb5c40929b30bb4c7a085e3766551675063fbbb9e2f013369229",
+      "generals/skins/ravages-of-time/qun/zoushi.png": "63f77021a5b5d260fe9b6efb7c8e26ae22129fabad026b1fe0609ce6fa25d244",
+      "generals/skins/ravages-of-time/shu/ganfuren.png": "1083df636605a3e53a3c1b1870b2cf66ce0e47970ed681396d663ca81455e59f",
+      "generals/skins/ravages-of-time/shu/guanyu.png": "f6abfc1203ee208a45f08092b9d5226fa6a68148e52a20188d717a3abe97efee",
+      "generals/skins/ravages-of-time/shu/huangyueying.png": "30a58b7ac3f4a6a0b873eaf7848429ff34e52487067a9fb12a50aab2b7b40aa3",
+      "generals/skins/ravages-of-time/shu/huangzhong.png": "8c4ca5d28339813e0160fab9b42b6ec00cf8f946ff59deffb68b4af1c2dd620b",
+      "generals/skins/ravages-of-time/shu/liubei.png": "172deddc3c08e4d08334f3efd87981e54a071135b2a60d9663cbf4c6d5019979",
+      "generals/skins/ravages-of-time/shu/liushan.png": "27971d40d18f3d456f8fe8782ab4ce2fffc4cd89f9c42c2756c448b6cbb0f976",
+      "generals/skins/ravages-of-time/shu/machao.png": "ce777a2340f6d62ca09d721aba023f91620f7225897cdfaf3a5aad35db3fcbdc",
+      "generals/skins/ravages-of-time/shu/pangtong.png": "ef990ddf815ccdbc8a1d8d2bdfa96d23d2a5b592d8f7a37b98d43b847c768168",
+      "generals/skins/ravages-of-time/shu/wolong.png": "c3114ea3cb6e312d76118e2c8b488dba5f769dc68b2dda23a03074de8c7c57d5",
+      "generals/skins/ravages-of-time/shu/zhangfei.png": "7bb9166d48a2038b47e1d48e8a05aa0a7b070482f904858f3695b2293612b0d5",
+      "generals/skins/ravages-of-time/shu/zhaoyun.png": "dcb66de182aa0f5998233113dea57975ca8dcdd8f3d552a377fb7ceb93def9ec",
+      "generals/skins/ravages-of-time/shu/zhugeliang.png": "4ac945b3df2df1b4279639a77eb80aec91c4baa2fe065d64343288fb1713ae4d",
+      "generals/skins/ravages-of-time/wei/caocao.png": "fe30f65cbb72bce9e535cf7fd36ae0fcd9eed8d80c42da1946cadd2ef29d5d4d",
+      "generals/skins/ravages-of-time/wei/caoren.png": "c7f639c7a9b2b6f80e0ab00d5d61cd0d7d33baf177aa1b0fe268147278145814",
+      "generals/skins/ravages-of-time/wei/guojia.png": "b3371fefad6a12ce0240723d65b59ada1d6be0298ba467ff62bfe56666c91d3b",
+      "generals/skins/ravages-of-time/wei/simayi.png": "72b3f0d15a3fa34591b2b1f453af540879504d88ded3e8085656dbe0768f0faa",
+      "generals/skins/ravages-of-time/wei/xiahoudun.png": "d70e55d8d7094948fda2e33068cda5cb65533f91f6de532968953dd4fabb0bd8",
+      "generals/skins/ravages-of-time/wei/xuchu.png": "2d4400902256fd1bbe40bcd0a5310dd65c29bb5fa2a073da78b671398fe4630f",
+      "generals/skins/ravages-of-time/wei/xuhuang.png": "934d859cc461e9f6664b9e6c74f914ec026a2855ecc7cabc0724562107a34466",
+      "generals/skins/ravages-of-time/wei/xunyu.png": "7335a75cc099f9f6b082fc3cf0decabc3c296080980609f11c4b0d812ed1e663",
+      "generals/skins/ravages-of-time/wei/zhanghe.png": "8070f72bdf7960f7c257b15114d8a02c22b3958296a7dcb9dde4ac6070f0d63d",
+      "generals/skins/ravages-of-time/wei/zhangliao.png": "4b0ec410fd347a9d7fd1ac01b43e727dc5f6a8d95c01fee887487a3b8006b593",
+      "generals/skins/ravages-of-time/wei/zhenji.png": "514cfcefd596f3d3489ba107b28d7d2d3649a3d3e4999fc5ff1be42d52c09af3",
+      "generals/skins/ravages-of-time/wu/daqiao.png": "7240c3762e51d12e3be5d75bb58ce29f304f143fe5a99ea34bd5efb4732aad1a",
+      "generals/skins/ravages-of-time/wu/ganning.png": "cc6ca500833c7d655fa193b3531f8a2ad0c0fed0431e56e6f6a2f06decb33d76",
+      "generals/skins/ravages-of-time/wu/huanggai.png": "2699092f74216d6e5f724ff56b67d05155a403a9bc36cb9bf6f0ca984d02d87c",
+      "generals/skins/ravages-of-time/wu/lumeng.png": "4d8eb3cdc7a017b6df3cc5aeb5a7c497a6d5ca7112387c304b33eacac8e0da34",
+      "generals/skins/ravages-of-time/wu/lusu.png": "d1c1582efd208f067214db21d0ebf61e0c0c4363c2896be05694942051394984",
+      "generals/skins/ravages-of-time/wu/luxun.png": "530476554c44d876a9a4d2995f759c480c774d64901f57d4d8ee811a00c7c99f",
+      "generals/skins/ravages-of-time/wu/sunjian.png": "7ac20bf809ee9edc3d3c7493ab6b04c76dcd42ad77abad296334348db0b3fd37",
+      "generals/skins/ravages-of-time/wu/sunquan.png": "8c86214573e353f31fef773fdf4d89d0752a4cd83ef5922feb6189328ce0024c",
+      "generals/skins/ravages-of-time/wu/sunshangxiang.png": "6d52de136f5cd83a1e29afeca1632b2afa7e2dfa62822cc7a1ea77a22338fffd",
+      "generals/skins/ravages-of-time/wu/taishici.png": "e40fb8fbebf84adf55da35c45269e1663fb724059d804c9d053b8ab29717aa17",
+      "generals/skins/ravages-of-time/wu/xiaoqiao.png": "c52180218bc9b1d555b89fef44c945eabd9ac0784e872c0096bf7adfc09ce841",
+      "generals/skins/ravages-of-time/wu/zhouyu.png": "ea09e01a4af617568e91d7a7d288e7e957ea350e90449b23dae852e9164a81ad",
+      "generals/skins/sets.json": "e3170b59d013d08719fd45790135300dddb05f25722b6a6d612b8b664fc82cc4",
       "generals/skins/skins.json": "77c6cbcabc811ec7dae20d63efeae9607b4d7ad5528cdfdcc01a5019e70c7562"
     }
   },
@@ -2780,6 +3172,349 @@
     "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
     "sources": {
       "generals/skins/classic/wu/zhouyu.png": "ebde845fefc6ef82591e58c74ca6c2ef3ebaca4323fcca032c17d72ba39524aa"
+    }
+  },
+  "generals/skins/ravages-of-time/qun/caiwenji.webp": {
+    "output": "2906ec7866e5abced55c4d6670515ebb185ba53436630e56ba0c40c4b4b0a183",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/caiwenji.png": "6d0229643be36262159ba1ecbb54007c8d7bcc9536a3af5c26bcc8edd978f9a7"
+    }
+  },
+  "generals/skins/ravages-of-time/qun/diaochan.webp": {
+    "output": "0f05b6e10df872aa6dcd2bcfa70e66958982e7ae326670ce6901ae25bdb23b47",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/diaochan.png": "5f5fe2d121cc49762eeb1420b26563517a35f64726a951797fa1ab5063c46806"
+    }
+  },
+  "generals/skins/ravages-of-time/qun/jiaxu.webp": {
+    "output": "4df72032bf120f799a044696608f0c89655f5f3257c8a087c2a397c4b740d633",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/jiaxu.png": "68c6e314c05f52ac457de3bf1573a03ad8beee90f1ddb149d0ececc8adacb9af"
+    }
+  },
+  "generals/skins/ravages-of-time/qun/jiling.webp": {
+    "output": "3cf898d97044b1c039c0a0de385d6f7a3cc840ce0cd0d292ef41d7cf84245f06",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/jiling.png": "17a4379253fc03f5c264a068690a3080c1d24cf03360d2c39154009e5c004b7f"
+    }
+  },
+  "generals/skins/ravages-of-time/qun/kongrong.webp": {
+    "output": "6b2e8da66e212542b90b163d29e970ce6432fc4a2980697f2dddcd8eb4f66ed6",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/kongrong.png": "55eee5061c684f7054372bd517dee1ea006a2b541d7bb7ab715954975e78812b"
+    }
+  },
+  "generals/skins/ravages-of-time/qun/lubu.webp": {
+    "output": "c6f5fa5f07616976040dbacacdf271b9566f56cf49ec30db7ac72a3f6004663a",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/lubu.png": "10e4c4a44c76e1e122b14b447274127994c140e30fafc64ab2f11687c9dbe988"
+    }
+  },
+  "generals/skins/ravages-of-time/qun/mateng.webp": {
+    "output": "272462887ba88a84d47b7991a8bfccb2792aa0116af534c479c72d7e061c0fa8",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/mateng.png": "33938c469ebe434be28bc57775116118af2b5ba6dd5953b3fb33e7daef454b17"
+    }
+  },
+  "generals/skins/ravages-of-time/qun/panfeng.webp": {
+    "output": "1ed1332701ef60e44291ffed2f4317e0cc4b068ca1e34f9d30ddc116d0756b82",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/panfeng.png": "a788836a9e6e8c704d51db191391be086cf390280a7b723a5764af4c2752356a"
+    }
+  },
+  "generals/skins/ravages-of-time/qun/pangde.webp": {
+    "output": "599a62e74800fc0e4d99299f1693d43755c88b7444bb7e20a0f8c3d395ce80f1",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/pangde.png": "64add30f89da30c792158e0933faab1c403ae62db09d8b09bf1080eccc99fc39"
+    }
+  },
+  "generals/skins/ravages-of-time/qun/tianfeng.webp": {
+    "output": "3e1e255f7464585f14ffca692248a993ec288cd30298774343a42fd8c8315bb1",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/tianfeng.png": "337886b52eee4ab24ec30603254476fd5201d71b118cf53b012e4833c3de56da"
+    }
+  },
+  "generals/skins/ravages-of-time/qun/yanliangwenchou.webp": {
+    "output": "319284c317e1ba869a8f172f7108c6489fcced12dc11fbf9cef8a7da384a4461",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/yanliangwenchou.png": "dbb410db309cea833c3181ef1d15c78069e7aa535cbabb8fdb116bf66e4062e9"
+    }
+  },
+  "generals/skins/ravages-of-time/qun/yuanshao.webp": {
+    "output": "771bc8834cf9bc41d0f88ccde98a7401d13a712af6ded932c3df58f2ec0d3e7c",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/yuanshao.png": "c9668df5c2d47b93dd47ea086a8277f7969a9ecc2d62f990eabf57e9cfae1204"
+    }
+  },
+  "generals/skins/ravages-of-time/qun/zhangjiao.webp": {
+    "output": "f00573ab2ceebe69a66756eb4da3412ab097977372a3f16118c183c8b89bb008",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/zhangjiao.png": "522b883a3fdedb5c40929b30bb4c7a085e3766551675063fbbb9e2f013369229"
+    }
+  },
+  "generals/skins/ravages-of-time/qun/zoushi.webp": {
+    "output": "88bf0b15deae3d595fd4c81bd50abda0eac5db55921024ad95471c117c31fadf",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/qun/zoushi.png": "63f77021a5b5d260fe9b6efb7c8e26ae22129fabad026b1fe0609ce6fa25d244"
+    }
+  },
+  "generals/skins/ravages-of-time/shu/ganfuren.webp": {
+    "output": "37a5bf2931a010229ba2be77ec2d12a7d664cb4d80246fb9dc6371e9c624cdd1",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/shu/ganfuren.png": "1083df636605a3e53a3c1b1870b2cf66ce0e47970ed681396d663ca81455e59f"
+    }
+  },
+  "generals/skins/ravages-of-time/shu/guanyu.webp": {
+    "output": "8e4edbbd4c76a39970a1b0d0937ba0448eefb3380e0c04a831c4fd9124985835",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/shu/guanyu.png": "f6abfc1203ee208a45f08092b9d5226fa6a68148e52a20188d717a3abe97efee"
+    }
+  },
+  "generals/skins/ravages-of-time/shu/huangyueying.webp": {
+    "output": "de2749b7c29d308b3d5a8d142d018912cb7ffc157efa7e2b35b58db5b0dfcbc8",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/shu/huangyueying.png": "30a58b7ac3f4a6a0b873eaf7848429ff34e52487067a9fb12a50aab2b7b40aa3"
+    }
+  },
+  "generals/skins/ravages-of-time/shu/huangzhong.webp": {
+    "output": "7a1357ef92f29e14bbafdbc7b3e19538beab61dc1ac42a029791e5376acfb8ce",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/shu/huangzhong.png": "8c4ca5d28339813e0160fab9b42b6ec00cf8f946ff59deffb68b4af1c2dd620b"
+    }
+  },
+  "generals/skins/ravages-of-time/shu/liubei.webp": {
+    "output": "dbab3bd9adafc363ae458dcacf77abf72b4965226ce36e40e0d4f8e44fff0abd",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/shu/liubei.png": "172deddc3c08e4d08334f3efd87981e54a071135b2a60d9663cbf4c6d5019979"
+    }
+  },
+  "generals/skins/ravages-of-time/shu/liushan.webp": {
+    "output": "df0a3394b667ba3dc24878cbb58551ab58ead9e22e9b5fb134d35d1af37e30c2",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/shu/liushan.png": "27971d40d18f3d456f8fe8782ab4ce2fffc4cd89f9c42c2756c448b6cbb0f976"
+    }
+  },
+  "generals/skins/ravages-of-time/shu/machao.webp": {
+    "output": "a0fae580b184c7996199779eeb67bef6bb50719155c0055465e9dc23dc9eede6",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/shu/machao.png": "ce777a2340f6d62ca09d721aba023f91620f7225897cdfaf3a5aad35db3fcbdc"
+    }
+  },
+  "generals/skins/ravages-of-time/shu/pangtong.webp": {
+    "output": "40d1410f538d4b97033d9f6f09342bc1295fcfd15dc89738bb1ea4e42d62d4d6",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/shu/pangtong.png": "ef990ddf815ccdbc8a1d8d2bdfa96d23d2a5b592d8f7a37b98d43b847c768168"
+    }
+  },
+  "generals/skins/ravages-of-time/shu/wolong.webp": {
+    "output": "462e8cd877c6bc1b425bb35c26261e9dd6063f0ace71666d82bf0bb778fb5e2d",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/shu/wolong.png": "c3114ea3cb6e312d76118e2c8b488dba5f769dc68b2dda23a03074de8c7c57d5"
+    }
+  },
+  "generals/skins/ravages-of-time/shu/zhangfei.webp": {
+    "output": "3d683f663f9c72c11221c2f23d2b962b8e87e81354594d1a116356e475931233",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/shu/zhangfei.png": "7bb9166d48a2038b47e1d48e8a05aa0a7b070482f904858f3695b2293612b0d5"
+    }
+  },
+  "generals/skins/ravages-of-time/shu/zhaoyun.webp": {
+    "output": "01ddffe520079d659bc1fa559f9cb942998a6e40f83c3a158749683902c57f31",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/shu/zhaoyun.png": "dcb66de182aa0f5998233113dea57975ca8dcdd8f3d552a377fb7ceb93def9ec"
+    }
+  },
+  "generals/skins/ravages-of-time/shu/zhugeliang.webp": {
+    "output": "090c05697e306604ea072a0aa6f1d9a618b1bed15f39a89560c8035e71687b91",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/shu/zhugeliang.png": "4ac945b3df2df1b4279639a77eb80aec91c4baa2fe065d64343288fb1713ae4d"
+    }
+  },
+  "generals/skins/ravages-of-time/wei/caocao.webp": {
+    "output": "baddc02351682f0b7a7a01ecc0e53303ec87608598a91a2707b0627bbdb0e39f",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/wei/caocao.png": "fe30f65cbb72bce9e535cf7fd36ae0fcd9eed8d80c42da1946cadd2ef29d5d4d"
+    }
+  },
+  "generals/skins/ravages-of-time/wei/caoren.webp": {
+    "output": "98371fad70c5dfab508d3a4349a11d822969c06869052c9513f4d407ec09d6f4",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/wei/caoren.png": "c7f639c7a9b2b6f80e0ab00d5d61cd0d7d33baf177aa1b0fe268147278145814"
+    }
+  },
+  "generals/skins/ravages-of-time/wei/guojia.webp": {
+    "output": "09b320e7a25a5d074538b4557e9c1a4f74ca5038020d7c62a7e269cffe13157b",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/wei/guojia.png": "b3371fefad6a12ce0240723d65b59ada1d6be0298ba467ff62bfe56666c91d3b"
+    }
+  },
+  "generals/skins/ravages-of-time/wei/simayi.webp": {
+    "output": "dfda7fc91e05e8cc1667a5b813e0216bcaeb82153959a5a24881f2e02b67f5d5",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/wei/simayi.png": "72b3f0d15a3fa34591b2b1f453af540879504d88ded3e8085656dbe0768f0faa"
+    }
+  },
+  "generals/skins/ravages-of-time/wei/xiahoudun.webp": {
+    "output": "d9b1f9bc31d90fa0e3557422792ff7d3b2be4ed4747c7b6e0facd6257e8fe758",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/wei/xiahoudun.png": "d70e55d8d7094948fda2e33068cda5cb65533f91f6de532968953dd4fabb0bd8"
+    }
+  },
+  "generals/skins/ravages-of-time/wei/xuchu.webp": {
+    "output": "10462e059c7842e6dfe695b0c9f46ba2306014cced9e8d51099eff7be226dfbf",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/wei/xuchu.png": "2d4400902256fd1bbe40bcd0a5310dd65c29bb5fa2a073da78b671398fe4630f"
+    }
+  },
+  "generals/skins/ravages-of-time/wei/xuhuang.webp": {
+    "output": "8ee3d0c0b3e51d31d87451623f5e0f9fe26c625f2876dbc8ba010c2503b9cfbb",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/wei/xuhuang.png": "934d859cc461e9f6664b9e6c74f914ec026a2855ecc7cabc0724562107a34466"
+    }
+  },
+  "generals/skins/ravages-of-time/wei/xunyu.webp": {
+    "output": "687a6731ea8f339bb407fcfeb910640d850f04350ae458fb96e5b0e808abff27",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/wei/xunyu.png": "7335a75cc099f9f6b082fc3cf0decabc3c296080980609f11c4b0d812ed1e663"
+    }
+  },
+  "generals/skins/ravages-of-time/wei/zhanghe.webp": {
+    "output": "abc6ef5b4710525385f06d6c5606994c44afb5734f431e1276d053ca89f16095",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/wei/zhanghe.png": "8070f72bdf7960f7c257b15114d8a02c22b3958296a7dcb9dde4ac6070f0d63d"
+    }
+  },
+  "generals/skins/ravages-of-time/wei/zhangliao.webp": {
+    "output": "973dc9066cc69f3140435ed67b43ccb79c3c5a487badae30c908fbefcf895d38",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/wei/zhangliao.png": "4b0ec410fd347a9d7fd1ac01b43e727dc5f6a8d95c01fee887487a3b8006b593"
+    }
+  },
+  "generals/skins/ravages-of-time/wei/zhenji.webp": {
+    "output": "f0522838926c8ef69c8961997a84ef0f56a73e3d1c360bce875bf95758b755fb",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/wei/zhenji.png": "514cfcefd596f3d3489ba107b28d7d2d3649a3d3e4999fc5ff1be42d52c09af3"
+    }
+  },
+  "generals/skins/ravages-of-time/wu/daqiao.webp": {
+    "output": "38ea6bfba40babd8fb9bc3c6af0372b80d0ca0c018eac531ac66fb08976e0eaf",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/wu/daqiao.png": "7240c3762e51d12e3be5d75bb58ce29f304f143fe5a99ea34bd5efb4732aad1a"
+    }
+  },
+  "generals/skins/ravages-of-time/wu/ganning.webp": {
+    "output": "90e044c3b7b2bab24a7cfc7c5fe3ccb4fd496683e5e7275dd640fa39dd82dc83",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/wu/ganning.png": "cc6ca500833c7d655fa193b3531f8a2ad0c0fed0431e56e6f6a2f06decb33d76"
+    }
+  },
+  "generals/skins/ravages-of-time/wu/huanggai.webp": {
+    "output": "ed60f960e2a56b3e7723f543e42ff57c7be46228e8d88859c1c2fd7348880921",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/wu/huanggai.png": "2699092f74216d6e5f724ff56b67d05155a403a9bc36cb9bf6f0ca984d02d87c"
+    }
+  },
+  "generals/skins/ravages-of-time/wu/lumeng.webp": {
+    "output": "2e9a59d35dfc603d6042e540ae66f46aa95486b3af7cc1c15f90668ccfbe5251",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/wu/lumeng.png": "4d8eb3cdc7a017b6df3cc5aeb5a7c497a6d5ca7112387c304b33eacac8e0da34"
+    }
+  },
+  "generals/skins/ravages-of-time/wu/lusu.webp": {
+    "output": "cdf64fc79d7b017b8276e28161df1719e9156c000d0baf843573a104f4703bf2",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/wu/lusu.png": "d1c1582efd208f067214db21d0ebf61e0c0c4363c2896be05694942051394984"
+    }
+  },
+  "generals/skins/ravages-of-time/wu/luxun.webp": {
+    "output": "f1d8f4efb5ab0d2242e79e9a288269dac95f4c985a0ff738cdf82f33bbcc6d39",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/wu/luxun.png": "530476554c44d876a9a4d2995f759c480c774d64901f57d4d8ee811a00c7c99f"
+    }
+  },
+  "generals/skins/ravages-of-time/wu/sunjian.webp": {
+    "output": "2679e85424a610d6bf4b69a85dba6c5da9f2dd5237bca875840de7e2137f17a2",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/wu/sunjian.png": "7ac20bf809ee9edc3d3c7493ab6b04c76dcd42ad77abad296334348db0b3fd37"
+    }
+  },
+  "generals/skins/ravages-of-time/wu/sunquan.webp": {
+    "output": "579de8f3ba1bf927029340f8fa35bb3a19a5a2cfe6ddbd9d38918e5f57fcf392",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/wu/sunquan.png": "8c86214573e353f31fef773fdf4d89d0752a4cd83ef5922feb6189328ce0024c"
+    }
+  },
+  "generals/skins/ravages-of-time/wu/sunshangxiang.webp": {
+    "output": "c5d2e8efc2bd8a01eaea26a0fd0beaa7b568fd6200cb2673f30bd64e1079a576",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/wu/sunshangxiang.png": "6d52de136f5cd83a1e29afeca1632b2afa7e2dfa62822cc7a1ea77a22338fffd"
+    }
+  },
+  "generals/skins/ravages-of-time/wu/taishici.webp": {
+    "output": "0c9a18799f8e5475e7c85b2dd35740f222d0918dc96aad80c7e7d5d57db0a2e3",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/wu/taishici.png": "e40fb8fbebf84adf55da35c45269e1663fb724059d804c9d053b8ab29717aa17"
+    }
+  },
+  "generals/skins/ravages-of-time/wu/xiaoqiao.webp": {
+    "output": "89d0e046ae5580f48cd5b002277ad6703ac43575f2ccae5827e244e6c9f84ff3",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/wu/xiaoqiao.png": "c52180218bc9b1d555b89fef44c945eabd9ac0784e872c0096bf7adfc09ce841"
+    }
+  },
+  "generals/skins/ravages-of-time/wu/zhouyu.webp": {
+    "output": "f56003a7b1df0ace71e56f15667d25090d4e68ff5ef8793912e31b16e887b286",
+    "settings": "4d9d264d8cbecfe651b5ec652fee3b9fecd8d4e91f5e3db779eb0d4ad41ddab6",
+    "sources": {
+      "generals/skins/ravages-of-time/wu/zhouyu.png": "ea09e01a4af617568e91d7a7d288e7e957ea350e90449b23dae852e9164a81ad"
     }
   },
   "generals/skins/skins.json": {
