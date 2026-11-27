@@ -169,12 +169,12 @@ function sessionExpiry(user: UserRecord, now: Date): Date {
   return new Date(now.getTime() + SESSION_DAYS[user.kind] * DAY_MS);
 }
 
-function requireName(raw: string): string {
+export function requireName(raw: string): string {
   const name = normalizeDisplayName(raw);
   if (name === null) throw new AuthError('invalid_name');
   return name;
 }
 
-function requirePassword(password: string): void {
+export function requirePassword(password: string): void {
   if (password.length < PASSWORD_MIN) throw new AuthError('weak_password');
 }

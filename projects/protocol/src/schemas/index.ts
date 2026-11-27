@@ -2,5 +2,6 @@
 // imports this, so TypeBox stays out of the browser bundle.
 export * from './auth';
 export * from './game';
+export * from './profile';
 export * from './rooms';
 export * from './socket';

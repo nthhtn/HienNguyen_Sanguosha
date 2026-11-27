@@ -4,7 +4,7 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import type { GameSummary } from 'protocol';
-import { MyGamesPage } from './my-games-page';
+import { MyGamesList } from './my-games-list';
 import { MyGamesService } from './my-games.service';
 import { msg, type Msg } from '../i18n/msg';
 
@@ -20,16 +20,16 @@ const WON: GameSummary = {
 };
 const LOST: GameSummary = { ...WON, gameId: 'g-lost', yourSeat: 'seat-0' };
 
-describe('MyGamesPage', () => {
+describe('MyGamesList', () => {
   const games = signal<GameSummary[] | null>(null);
   const error = signal<Msg | null>(null);
   const service = { games, error, load: jest.fn(async () => undefined) };
 
   async function render() {
-    await TestBed.configureTestingModule({ imports: [MyGamesPage], providers: [provideRouter([])] })
-      .overrideComponent(MyGamesPage, { set: { providers: [{ provide: MyGamesService, useValue: service }] } })
+    await TestBed.configureTestingModule({ imports: [MyGamesList], providers: [provideRouter([])] })
+      .overrideComponent(MyGamesList, { set: { providers: [{ provide: MyGamesService, useValue: service }] } })
       .compileComponents();
-    const fixture = TestBed.createComponent(MyGamesPage);
+    const fixture = TestBed.createComponent(MyGamesList);
     fixture.detectChanges();
     return { fixture, el: fixture.nativeElement as HTMLElement };
   }
@@ -43,7 +43,6 @@ describe('MyGamesPage', () => {
   it('loads the games when it opens, and says it is loading', async () => {
     const { el } = await render();
     expect(service.load).toHaveBeenCalled();
-    expect(el.querySelector('mat-card-title')?.textContent?.trim()).toBe('My Games');
     expect(el.querySelector('.loading')?.textContent?.trim()).toBe('Loading games…');
   });
 
@@ -74,24 +73,18 @@ describe('MyGamesPage', () => {
     expect(el.querySelector('.error')?.textContent?.trim()).toBe('Sign in with an account to see your games');
   });
 
-  it('links back to Rooms', async () => {
-    const { el } = await render();
-    expect((el.querySelector('a.back') as HTMLAnchorElement).getAttribute('href')).toBe('/rooms');
-    expect(el.querySelector('a.back')?.textContent?.trim()).toBe('Back to Rooms');
-  });
-
   it('starts each visit empty, so the next player never sees the last list', async () => {
     TestBed.resetTestingModule();
-    await TestBed.configureTestingModule({ imports: [MyGamesPage], providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()] }).compileComponents();
+    await TestBed.configureTestingModule({ imports: [MyGamesList], providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()] }).compileComponents();
     const http = TestBed.inject(HttpTestingController);
-    const first = TestBed.createComponent(MyGamesPage);
+    const first = TestBed.createComponent(MyGamesList);
     first.detectChanges();
     http.expectOne('/api/me/games').flush({ games: [WON] });
     await first.whenStable();
     first.detectChanges();
     expect((first.nativeElement as HTMLElement).querySelectorAll('.game').length).toBe(1);
     first.destroy();
-    const second = TestBed.createComponent(MyGamesPage);
+    const second = TestBed.createComponent(MyGamesList);
     second.detectChanges();
     expect((second.nativeElement as HTMLElement).querySelectorAll('.game').length).toBe(0);
     expect((second.nativeElement as HTMLElement).querySelector('.loading')).not.toBeNull();

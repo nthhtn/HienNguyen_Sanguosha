@@ -17,7 +17,8 @@ projects/app/src/app/
   music.service.ts           background music and sound effects
   labels.ts                  names and formatting shared by every screen
   auth/                      sign-in, sign-up, guest, forgot and reset password, AuthService, requireSignIn
-  online/                    Rooms, Lobby, My Games, chat, SocketService, RemoteGameService, OnlineGame
+  online/                    Rooms, Lobby, the My Games list, chat, SocketService, RemoteGameService, OnlineGame
+  profile/                   The Profile page: stats, History (My Games) and settings
   setup/                     the local Game Setup screen
   game-board/                the board, its dialogs and its view-model helpers
   tutorial/                  the Tutorial: lessons as data, the spotlight overlay, anchors, progress
@@ -32,7 +33,8 @@ the first bundle holds only the shell:
 |---|---|
 | `/setup`, `/game` | Local Play vs Bots and Pass and Play |
 | `/play` | A guard that never renders; it redirects to `/game` when a local game is in progress, otherwise to `/setup` |
-| `/rooms`, `/rooms/:id`, `/my-games` | Open rooms, a room's lobby and online game, and finished games; all behind `requireSignIn` |
+| `/rooms`, `/rooms/:id` | Open rooms, and a room's lobby and online game; behind `requireSignIn` |
+| `/profile` | Stats, History (finished games) and settings; behind `requireSignIn`, with `?tab=history` or `?tab=settings`. `/my-games` redirects to the History tab |
 | `/sign-in`, `/sign-up`, `/guest`, `/forgot-password`, `/reset-password` | Accounts |
 | `/wiki/...` | See "Wiki" below |
 | `/tutorial` | Ten guided lessons in three tabs on the real board; offline only (see "Tutorial") |

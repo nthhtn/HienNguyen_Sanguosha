@@ -369,6 +369,18 @@ describe('App', () => {
     const overlay = document.querySelector('.cdk-overlay-container') as HTMLElement;
     expect(overlay.textContent).toContain('Playing as a guest');
     expect(overlay.querySelector('a.create-account')?.textContent).toContain('Create Account');
+    expect(overlay.querySelector('a.profile-link')).toBeNull();
+  });
+
+  it('links the account menu to Profile for a registered player', async () => {
+    me.set({ id: 'u1', kind: 'registered', displayName: 'Ann', email: 'ann@example.com' });
+    const { fixture, el } = await render();
+    (el.querySelector('button.account') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const link = document.querySelector('.cdk-overlay-container a.profile-link') as HTMLAnchorElement;
+    expect(link.textContent).toContain('Profile');
+    expect(link.getAttribute('href')).toBe('/profile');
   });
 
   it('has no toolbar while the phone board is open, and the drawer still opens', async () => {

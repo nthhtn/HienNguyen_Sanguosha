@@ -1,4 +1,5 @@
 import { GameHistory } from '../game/history';
+import { ProfileService } from '../profile/profileService';
 import { randomUUID } from 'node:crypto';
 import { AddressInfo, connect as tcpConnect } from 'node:net';
 import { PROTOCOL_VERSION } from 'protocol';
@@ -19,7 +20,7 @@ async function setup(socket: SocketOptions = {}) {
   const accounts = new AccountService({ repos, mailer: new RecordingMailer(), publicOrigin: ORIGIN });
   const rooms = new RoomService({ repos, seatLimits: { min: 2, max: 6 } });
   const rateLimits = new AuthRateLimits({ ...RATE_LIMITS, signUpPerIp: { limit: 1000, windowMs: 60_000 } });
-  const app = await buildApp({ accounts, rooms, history: new GameHistory(repos), publicOrigin: ORIGIN, cookieSecure: false, rateLimits, socket });
+  const app = await buildApp({ accounts, rooms, history: new GameHistory(repos), profile: new ProfileService({ repos }), publicOrigin: ORIGIN, cookieSecure: false, rateLimits, socket });
   await app.listen({ port: 0, host: '127.0.0.1' });
   const url = `ws://127.0.0.1:${(app.server.address() as AddressInfo).port}/api/ws`;
   const clients: TestClient[] = [];

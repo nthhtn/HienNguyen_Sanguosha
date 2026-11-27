@@ -61,6 +61,7 @@ projects/server/src/
   auth/          AccountService, scrypt password hashing, tokens, rate limits
   rooms/         Room (lobby rules), RoomService (live rooms, host rules, restore), ChatService, serial queue
   game/          GameRunner, engine calls and replay hashing (engineGame), history
+  profile/       ProfileService, `computeProfile` (the stats rules), seat results and their backfill
   views/         records and engine state to wire shapes
   persistence/   repository interfaces, in-memory and Postgres stores, migrations
   mail/          the Mailer interface (console implementation only)
@@ -73,7 +74,7 @@ Email and password sign-up, sign-in, sign-out and password reset
 (`/api/auth/*`), plus **guests** (`/api/auth/guest`) who play without
 registering. The session is an HttpOnly cookie holding a random token; only its
 sha256 is stored. Registered sessions slide for 30 days, guest sessions for 7.
-Only registered users can host an open room, see **My Games** and read a replay.
+Only registered users can host an open room, see their **Profile** (stats, **My Games**, settings) and read a replay.
 
 The HTTP API and the socket both require the request's `Origin` to equal
 `PUBLIC_ORIGIN`, so the app must be opened at that origin (`localhost`, not
@@ -225,8 +226,8 @@ users can read a finished game's actions at `/api/games/:id/replay` for
 debugging; there is no replay viewer in the app.
 
 Postgres tables (migrations in `persistence/migrations`): `users`, `sessions`,
-`password_reset_tokens`, `rooms`, `room_players`, `games`, `game_actions` and
-`chat_messages`.
+`password_reset_tokens`, `rooms`, `room_players`, `games`, `game_actions`,
+`chat_messages` and `game_seat_results`.
 
 - **Without `DATABASE_URL`:** The server uses an in-memory store and forgets
   everything on restart. That is for local runs only.
@@ -244,10 +245,30 @@ seats' names) for the lobby that follows. `LastGame.finalSeats` is:
 - **Source:** Built by the protocol's `finalSeatViews(state)` from the **full**
   final state on the server, so every member can show who was on which side
   whatever their own seat could see.
-- **Storage:** Held in memory with the room only, never written to Postgres.
-  It is `[]` for a `broken` or `outdated` game.
+- **Storage:** Held in memory with the room. What each human seat came to is
+  also written to Postgres as seat results (see [Profile](#profile)). It is
+  `[]` for a `broken` or `outdated` game, which has no seat results.
 - **Versioning:** Adding it moved `PROTOCOL_VERSION` to 2; an older tab is asked
   to reload.
+
+## Profile
+
+A registered user's stats, name and password. The design is in
+`docs/superpowers/specs/2026-11-27-profile-design.md`.
+
+- **Seat results:** Table `game_seat_results`, one row per human seat of a finished game.
+  - **Columns:** Game, seat, user, main and deputy General (null when never shown), printed Kingdom, allegiance, eliminated and `won` (null when the game gave the seat neither a win nor a loss).
+  - **Written:** In the transaction that stores the game's end (`RoomService.closeGame`), from `finalSeatViews`. Broken and outdated games write none.
+  - **Removed:** With their game, and with their user (a guest's rows go when the idle guest is purged).
+- **Backfill:** Games that finished before seat results existed are filled in by replaying them.
+  - **At start:** The server runs it in the background after migrations.
+  - **By hand:** `npm run backfill:seat-results`.
+  - **Safe to repeat:** It only touches finished games with no rows, and logs a game that no longer replays.
+- **Stats:** `computeProfile` (pure) turns a user's rows into the response, so the rules exist once for both stores. The rules are in the spec, "Rules for the numbers".
+- **Routes** (registered users only):
+  - `GET /api/me/profile?mode=all|solo|online` answers the stats.
+  - `PATCH /api/me/profile` renames. It applies to rooms joined afterwards.
+  - `POST /api/me/password` changes the password, keeps the current session, revokes the others and voids reset links. It is rate limited per user.
 
 ## Chat
 
@@ -270,6 +291,7 @@ chat.
 - **Spectators**, room codes and passwords, share links, matchmaking, ratings
   and friends lists.
 - **A replay viewer.** The data and the debug endpoint exist.
+- **Public profiles, head-to-head records and kill or damage stats.** See `docs/deferrals.md`.
 - **More than one server process.** Live games live in the memory of one
   process; there is no cross-process coordination.
 - **A real Mailer.** Password reset emails go to the server log.

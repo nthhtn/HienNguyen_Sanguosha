@@ -1,0 +1,120 @@
+.title {
+  margin: 0;
+  font: var(--mat-sys-headline-small);
+}
+h2 {
+  margin: 20px 0 8px;
+  font: var(--mat-sys-title-medium);
+}
+.hint,
+.since {
+  margin: 4px 0 12px;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-small);
+}
+.error {
+  margin: 0 0 12px;
+  color: var(--mat-sys-error);
+  font: var(--mat-sys-body-medium);
+}
+.empty,
+.loading {
+  padding: 24px 0;
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-large);
+}
+.tabs,
+.modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 12px;
+}
+.tab,
+.mode {
+  padding: 6px 14px;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 16px;
+  background: transparent;
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-label-large);
+  cursor: pointer;
+}
+.tab.active,
+.mode.active {
+  background: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+  border-color: transparent;
+}
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: 8px;
+}
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--mat-sys-surface-container);
+}
+.tile-label {
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-label-medium);
+}
+.tile-value {
+  font: var(--mat-sys-headline-small);
+}
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.form-chip {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font: var(--mat-sys-label-large);
+  background: var(--mat-sys-surface-container-high);
+}
+.form-chip.win {
+  background: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+}
+.form-chip.loss {
+  background: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+}
+.table {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.table li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) repeat(4, 56px);
+  align-items: center;
+  gap: 4px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  text-align: right;
+}
+.table .name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+}
+.table-head {
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-label-medium);
+}
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  padding-top: 8px;
+}

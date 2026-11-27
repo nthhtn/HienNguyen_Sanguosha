@@ -1,3 +1,4 @@
+import { requireSignIn } from './auth/require-sign-in';
 import { offlineOnly, tutorialEnabled } from './feature-flags';
 import { routes } from './app.routes';
 import { TutorialPage } from './tutorial/tutorial-page';
@@ -9,6 +10,11 @@ describe('routes', () => {
     expect(tutorial).toBeDefined();
     expect(tutorial!.component).toBeUndefined();
     expect(await (tutorial!.loadComponent as () => Promise<unknown>)()).toBe(TutorialPage);
+  });
+
+  it('sends My Games to the History tab of Profile, which needs sign-in', () => {
+    expect(routes.find((r) => r.path === 'profile')!.canActivate).toEqual([requireSignIn]);
+    expect(routes.find((r) => r.path === 'my-games')!.redirectTo).toEqual(expect.any(Function));
   });
 
   it('guards the Tutorial with its own switch, so it is on in production where Setup and Game are not', () => {

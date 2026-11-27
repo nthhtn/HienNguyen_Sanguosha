@@ -1,5 +1,5 @@
 import type { GameRules } from 'engine';
-import { ChatMessageRecord, GameActionRecord, GameRecord, GameSeat, ResetTokenRecord, RoomPlayerRecord, RoomRecord, SessionRecord, UserGameRecord, UserRecord } from './records';
+import { ChatMessageRecord, GameActionRecord, GameRecord, GameSeat, ProfileGameRow, ResetTokenRecord, RoomPlayerRecord, RoomRecord, SeatResultRecord, SessionRecord, UnrecordedGame, UserGameRecord, UserRecord } from './records';
 
 export class EmailTakenError extends Error {
   constructor() {
@@ -30,6 +30,7 @@ export interface UserRepository {
   // Case-insensitive.
   findByEmail(email: string): Promise<UserRecord | null>;
   setPasswordHash(userId: string, passwordHash: string, now: Date): Promise<void>;
+  setDisplayName(userId: string, displayName: string, now: Date): Promise<void>;
   touch(userId: string, now: Date): Promise<void>;
   // Deletes guests last seen before `cutoff`, with their sessions; returns how many.
   deleteIdleGuests(cutoff: Date): Promise<number>;
@@ -42,6 +43,8 @@ export interface SessionRepository {
   slide(sessionId: string, now: Date, expiresAt: Date): Promise<void>;
   revoke(sessionId: string, now: Date): Promise<void>;
   revokeAllForUser(userId: string, now: Date): Promise<void>;
+  // Revokes the user's other sessions and keeps `exceptSessionId`.
+  revokeOthersForUser(userId: string, exceptSessionId: string, now: Date): Promise<void>;
   // Deletes sessions that expired or were revoked before `cutoff`; returns how many.
   deleteExpired(cutoff: Date): Promise<number>;
 }
@@ -98,6 +101,17 @@ export interface GameRepository {
   listFinishedForUser(userId: string): Promise<UserGameRecord[]>;
   // One finished game the user sat in; null for anyone else's, an unfinished or an unknown one.
   findFinishedForUser(userId: string, gameId: string): Promise<UserGameRecord | null>;
+  // Stores seat results; a (game, seat) that already has one is left as it is, and a row for a user who no longer exists is skipped.
+  saveSeatResults(rows: SeatResultRecord[]): Promise<void>;
+  // The user's seat results in finished games, newest finish first (ties by game id).
+  listSeatResultsForUser(userId: string): Promise<ProfileGameRow[]>;
+  // The user at each human seat of a game, by seat id, from the stored players
+  // (a player who left the room still counts); {} for an unknown game.
+  findSeatUserIds(gameId: string): Promise<Record<string, string>>;
+  // Remembers that the game's seat results could not be filled in, so it is not offered again.
+  markSeatResultsFailed(gameId: string, now: Date): Promise<void>;
+  // Finished games with no seat results and no recorded failure, oldest first, that have a human seat with a user.
+  listUnrecordedFinishedGames(): Promise<UnrecordedGame[]>;
 }
 
 export interface NewChatMessage {
