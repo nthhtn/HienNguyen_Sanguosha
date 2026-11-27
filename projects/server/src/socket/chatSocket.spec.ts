@@ -5,6 +5,7 @@ import { PROTOCOL_VERSION } from 'protocol';
 import { AccountService } from '../auth/accounts';
 import { AuthRateLimits, RATE_LIMITS } from '../auth/rateLimits';
 import { GameHistory } from '../game/history';
+import { ProfileService } from '../profile/profileService';
 import { buildApp } from '../http/app';
 import { RecordingMailer } from '../mail/recordingMailer';
 import { createMemoryRepositories } from '../persistence/memory/memoryRepositories';
@@ -18,7 +19,7 @@ async function setup() {
   const accounts = new AccountService({ repos, mailer: new RecordingMailer(), publicOrigin: ORIGIN });
   const rooms = new RoomService({ repos, seatLimits: { min: 2, max: 6 } });
   const rateLimits = new AuthRateLimits({ ...RATE_LIMITS, signUpPerIp: { limit: 1000, windowMs: 60_000 } });
-  const app: FastifyInstance = await buildApp({ accounts, rooms, history: new GameHistory(repos), publicOrigin: ORIGIN, cookieSecure: false, rateLimits });
+  const app: FastifyInstance = await buildApp({ accounts, rooms, history: new GameHistory(repos), profile: new ProfileService({ repos }), publicOrigin: ORIGIN, cookieSecure: false, rateLimits });
   await app.listen({ port: 0, host: '127.0.0.1' });
   const url = `ws://127.0.0.1:${(app.server.address() as AddressInfo).port}/api/ws`;
   const clients: TestClient[] = [];

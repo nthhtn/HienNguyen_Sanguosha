@@ -15,6 +15,7 @@ import { createDb } from './persistence/postgres/db';
 import { createPostgresRepositories } from './persistence/postgres/postgresRepositories';
 import { Repositories } from './persistence/repositories';
 import { backfillSeatResults } from './profile/backfill';
+import { ProfileService } from './profile/profileService';
 import { ROOM_TICK_MS, RoomService } from './rooms/roomService';
 
 const HOUSEKEEPING_MS = 60 * 60_000;
@@ -48,6 +49,7 @@ export async function createServer(config: ServerConfig, options: { logger?: boo
     accounts,
     rooms,
     history: new GameHistory(store.repos),
+    profile: new ProfileService({ repos: store.repos }),
     publicOrigin: config.publicOrigin,
     production: config.production,
     cookieSecure: config.cookieSecure,

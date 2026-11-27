@@ -6,6 +6,7 @@ import { AccountService } from '../auth/accounts';
 import { AuthRateLimits, RATE_LIMITS } from '../auth/rateLimits';
 import { engineContext, openingState, replay as replayGame, stateHash } from '../game/engineGame';
 import { GameHistory } from '../game/history';
+import { ProfileService } from '../profile/profileService';
 import { playBots } from '../game/testing';
 import { RecordingMailer } from '../mail/recordingMailer';
 import { createMemoryRepositories } from '../persistence/memory/memoryRepositories';
@@ -24,7 +25,7 @@ async function setup() {
   const accounts = new AccountService({ repos, mailer: new RecordingMailer(), publicOrigin: ORIGIN });
   const rooms = new RoomService({ repos, seatLimits: { min: 2, max: 6 } });
   const rateLimits = new AuthRateLimits({ ...RATE_LIMITS, signUpPerIp: { limit: 1000, windowMs: 60_000 } });
-  const app = await buildApp({ accounts, rooms, history: new GameHistory(repos), publicOrigin: ORIGIN, cookieSecure: false, rateLimits });
+  const app = await buildApp({ accounts, rooms, history: new GameHistory(repos), profile: new ProfileService({ repos }), publicOrigin: ORIGIN, cookieSecure: false, rateLimits });
   return { app, repos };
 }
 

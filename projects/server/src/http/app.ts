@@ -1,5 +1,7 @@
 import { GameHistory } from '../game/history';
+import { ProfileService } from '../profile/profileService';
 import { registerGameRoutes } from './gameRoutes';
+import { registerProfileRoutes } from './profileRoutes';
 import cookie from '@fastify/cookie';
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import Fastify, { FastifyError, FastifyInstance } from 'fastify';
@@ -26,6 +28,7 @@ export interface AppDeps {
   accounts: AccountService;
   rooms: RoomService;
   history: GameHistory;
+  profile: ProfileService;
   publicOrigin: string;
   // Heartbeat and hello timeouts; tests shorten them.
   socket?: SocketOptions;
@@ -85,16 +88,20 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
 
   app.get('/health', async () => ({ status: 'ok' }));
 
+  const limits = deps.rateLimits ?? new AuthRateLimits();
+  const clock = deps.now ?? Date.now;
+
   registerAuthRoutes(app, {
     accounts: deps.accounts,
-    limits: deps.rateLimits ?? new AuthRateLimits(),
+    limits,
     cookieSecure: deps.cookieSecure,
     production,
-    now: deps.now ?? Date.now,
+    now: clock,
   });
 
   registerRoomRoutes(app, { rooms: deps.rooms });
   registerGameRoutes(app, { history: deps.history });
+  registerProfileRoutes(app, { profile: deps.profile, limits, now: clock });
 
   attachSocketServer(app, { accounts: deps.accounts, rooms: deps.rooms, publicOrigin: deps.publicOrigin, production, ...deps.socket });
   await app.ready();

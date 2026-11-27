@@ -169,6 +169,11 @@ class MemoryUsers implements UserRepository {
     return copy(this.byEmail(email));
   }
 
+  async setDisplayName(userId: string, displayName: string, now: Date): Promise<void> {
+    const user = this.store.users.get(userId);
+    if (user) Object.assign(user, { displayName, updatedAt: now });
+  }
+
   async setPasswordHash(userId: string, passwordHash: string, now: Date): Promise<void> {
     const user = this.store.users.get(userId);
     if (user) Object.assign(user, { passwordHash, updatedAt: now });
@@ -226,6 +231,12 @@ class MemorySessions implements SessionRepository {
   async revoke(sessionId: string, now: Date): Promise<void> {
     const session = this.store.sessions.get(sessionId);
     if (session && session.revokedAt === null) session.revokedAt = now;
+  }
+
+  async revokeOthersForUser(userId: string, exceptSessionId: string, now: Date): Promise<void> {
+    for (const session of this.store.sessions.values()) {
+      if (session.userId === userId && session.id !== exceptSessionId && session.revokedAt === null) session.revokedAt = now;
+    }
   }
 
   async revokeAllForUser(userId: string, now: Date): Promise<void> {

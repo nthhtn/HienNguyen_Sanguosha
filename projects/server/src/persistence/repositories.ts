@@ -30,6 +30,7 @@ export interface UserRepository {
   // Case-insensitive.
   findByEmail(email: string): Promise<UserRecord | null>;
   setPasswordHash(userId: string, passwordHash: string, now: Date): Promise<void>;
+  setDisplayName(userId: string, displayName: string, now: Date): Promise<void>;
   touch(userId: string, now: Date): Promise<void>;
   // Deletes guests last seen before `cutoff`, with their sessions; returns how many.
   deleteIdleGuests(cutoff: Date): Promise<number>;
@@ -42,6 +43,8 @@ export interface SessionRepository {
   slide(sessionId: string, now: Date, expiresAt: Date): Promise<void>;
   revoke(sessionId: string, now: Date): Promise<void>;
   revokeAllForUser(userId: string, now: Date): Promise<void>;
+  // Revokes the user's other sessions and keeps `exceptSessionId`.
+  revokeOthersForUser(userId: string, exceptSessionId: string, now: Date): Promise<void>;
   // Deletes sessions that expired or were revoked before `cutoff`; returns how many.
   deleteExpired(cutoff: Date): Promise<number>;
 }

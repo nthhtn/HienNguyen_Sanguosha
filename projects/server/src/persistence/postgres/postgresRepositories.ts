@@ -88,6 +88,10 @@ class PostgresUsers implements UserRepository {
     await this.db.updateTable('users').set({ password_hash: passwordHash, updated_at: now }).where('id', '=', userId).execute();
   }
 
+  async setDisplayName(userId: string, displayName: string, now: Date): Promise<void> {
+    await this.db.updateTable('users').set({ display_name: displayName, updated_at: now }).where('id', '=', userId).execute();
+  }
+
   async touch(userId: string, now: Date): Promise<void> {
     await this.db.updateTable('users').set({ last_seen_at: now }).where('id', '=', userId).execute();
   }
@@ -128,6 +132,10 @@ class PostgresSessions implements SessionRepository {
 
   async revoke(sessionId: string, now: Date): Promise<void> {
     await this.db.updateTable('sessions').set({ revoked_at: now }).where('id', '=', sessionId).where('revoked_at', 'is', null).execute();
+  }
+
+  async revokeOthersForUser(userId: string, exceptSessionId: string, now: Date): Promise<void> {
+    await this.db.updateTable('sessions').set({ revoked_at: now }).where('user_id', '=', userId).where('id', '!=', exceptSessionId).where('revoked_at', 'is', null).execute();
   }
 
   async revokeAllForUser(userId: string, now: Date): Promise<void> {

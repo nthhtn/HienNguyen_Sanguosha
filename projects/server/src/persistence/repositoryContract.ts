@@ -684,4 +684,25 @@ export function describeRepositoryContract(open: () => Promise<RepositoryHarness
       expect((await repos().games.listUnrecordedFinishedGames()).some((entry) => entry.game.id === game.id)).toBe(false);
     });
   });
+
+  describe('account changes', () => {
+    it('revokeOthersForUser revokes every other session of the user and keeps the named one', async () => {
+      const ann = await registered();
+      const bo = await registered();
+      const hashes = [`t-${randomUUID()}`, `t-${randomUUID()}`, `t-${randomUUID()}`];
+      const [keep] = await Promise.all(hashes.map((tokenHash) => repos().sessions.create({ userId: ann.id, tokenHash, now: NOW, expiresAt: minutes(10) })));
+      const boHash = `t-${randomUUID()}`;
+      await repos().sessions.create({ userId: bo.id, tokenHash: boHash, now: NOW, expiresAt: minutes(10) });
+      await repos().sessions.revokeOthersForUser(ann.id, keep.id, minutes(1));
+      const active = await Promise.all(hashes.map((h) => repos().sessions.findActiveByTokenHash(h, minutes(2))));
+      expect(active.map((a) => a?.id ?? null)).toEqual([keep.id, null, null]);
+      expect(await repos().sessions.findActiveByTokenHash(boHash, minutes(2))).not.toBeNull();
+    });
+
+    it('setDisplayName changes the name and records the update time', async () => {
+      const user = await registered();
+      await repos().users.setDisplayName(user.id, 'Ann Two', minutes(5));
+      expect(await repos().users.findById(user.id)).toMatchObject({ displayName: 'Ann Two', updatedAt: minutes(5) });
+    });
+  });
 }
