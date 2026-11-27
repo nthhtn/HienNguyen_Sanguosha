@@ -101,11 +101,16 @@ export interface GameRepository {
   listFinishedForUser(userId: string): Promise<UserGameRecord[]>;
   // One finished game the user sat in; null for anyone else's, an unfinished or an unknown one.
   findFinishedForUser(userId: string, gameId: string): Promise<UserGameRecord | null>;
-  // Stores seat results; a (game, seat) that already has one is left as it is.
+  // Stores seat results; a (game, seat) that already has one is left as it is, and a row for a user who no longer exists is skipped.
   saveSeatResults(rows: SeatResultRecord[]): Promise<void>;
   // The user's seat results in finished games, newest finish first (ties by game id).
   listSeatResultsForUser(userId: string): Promise<ProfileGameRow[]>;
-  // Finished games with no seat results, oldest first, that have a human seat with a user.
+  // The user at each human seat of a game, by seat id, from the stored players
+  // (a player who left the room still counts); {} for an unknown game.
+  findSeatUserIds(gameId: string): Promise<Record<string, string>>;
+  // Remembers that the game's seat results could not be filled in, so it is not offered again.
+  markSeatResultsFailed(gameId: string, now: Date): Promise<void>;
+  // Finished games with no seat results and no recorded failure, oldest first, that have a human seat with a user.
   listUnrecordedFinishedGames(): Promise<UnrecordedGame[]>;
 }
 

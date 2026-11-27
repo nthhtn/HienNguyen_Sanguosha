@@ -705,4 +705,45 @@ export function describeRepositoryContract(open: () => Promise<RepositoryHarness
       expect(await repos().users.findById(user.id)).toMatchObject({ displayName: 'Ann Two', updatedAt: minutes(5) });
     });
   });
+
+  describe('seat results in odd cases', () => {
+    const RESULT = { endedAt: 9, winningSeatIds: ['seat-1'], losingSeatIds: ['seat-0'] };
+    const play = async (userId: string | null, finishedAt: Date) => {
+      const room = await repos().rooms.create({ visibility: 'open', seatCount: 2, rules: {}, now: NOW });
+      const person = await repos().rooms.addPlayer({ roomId: room.id, userId, kind: 'human', displayName: 'Ann', now: NOW });
+      const bot = await repos().rooms.addPlayer({ roomId: room.id, userId: null, kind: 'bot', displayName: 'Bot 1', now: NOW });
+      const seats: GameSeat[] = [
+        { seatId: 'seat-0', roomPlayerId: bot.id, name: 'Bot 1', kind: 'bot' },
+        { seatId: 'seat-1', roomPlayerId: person.id, name: 'Ann', kind: 'human' },
+      ];
+      const game = await repos().games.create({ roomId: room.id, seed: 1, seats, rules: {}, buildId: 'build-1', now: NOW });
+      await repos().games.update(game.id, { status: 'finished', result: RESULT, finishedAt });
+      return { game, person };
+    };
+    const row = (gameId: string, userId: string): SeatResultRecord => ({ gameId, seatId: 'seat-1', userId, mainGeneralId: null, deputyGeneralId: null, kingdom: 'Wei', allegiance: 'kingdom', eliminated: false, won: true });
+
+    it('finds the user at each human seat, even for a player who has left the room', async () => {
+      const user = await registered();
+      const { game, person } = await play(user.id, minutes(1));
+      await repos().rooms.markLeft(person.id, minutes(2));
+      expect(await repos().games.findSeatUserIds(game.id)).toEqual({ 'seat-1': user.id });
+      expect(await repos().games.findSeatUserIds(randomUUID())).toEqual({});
+    });
+
+    it('skips a row whose user no longer exists instead of failing, and still saves the others', async () => {
+      const user = await registered();
+      const { game } = await play(user.id, minutes(1));
+      const gone = await play(user.id, minutes(2));
+      await expect(repos().games.saveSeatResults([row(gone.game.id, randomUUID()), row(game.id, user.id)])).resolves.toBeUndefined();
+      expect((await repos().games.listSeatResultsForUser(user.id)).map((r) => r.gameId)).toEqual([game.id]);
+    });
+
+    it('stops listing a game as unrecorded once it is marked as failed', async () => {
+      const user = await registered();
+      const { game } = await play(user.id, minutes(1));
+      expect((await repos().games.listUnrecordedFinishedGames()).some((entry) => entry.game.id === game.id)).toBe(true);
+      await repos().games.markSeatResultsFailed(game.id, minutes(3));
+      expect((await repos().games.listUnrecordedFinishedGames()).some((entry) => entry.game.id === game.id)).toBe(false);
+    });
+  });
 }

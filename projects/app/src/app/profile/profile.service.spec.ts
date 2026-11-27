@@ -44,6 +44,17 @@ describe('ProfileService', () => {
     expect(service.stats()?.mode).toBe('solo');
   });
 
+  it('ignores a slow answer for a filter that is no longer chosen', async () => {
+    const solo = service.setMode('solo');
+    const all = service.setMode('all');
+    const [soloRequest, allRequest] = http.match((request) => request.url === '/api/me/profile');
+    allRequest.flush(STATS);
+    soloRequest.flush({ ...STATS, mode: 'solo' });
+    await Promise.all([solo, all]);
+    expect(service.mode()).toBe('all');
+    expect(service.stats()?.mode).toBe('all');
+  });
+
   it('shows an error and keeps the last stats when a reload fails', async () => {
     const first = service.load();
     http.expectOne('/api/me/profile?mode=all').flush(STATS);
@@ -87,6 +98,6 @@ describe('ProfileService', () => {
     const done = service.changePassword('wrong', 'new-password');
     http.expectOne('/api/me/password').flush({ code: 'invalid_credentials', message: 'Email or password is incorrect' }, { status: 401, statusText: 'Unauthorized' });
     expect(await done).toBe(false);
-    expect(english(service.actionError())).toBe('Email or password is incorrect');
+    expect(english(service.actionError())).toBe('Your current password is incorrect');
   });
 });

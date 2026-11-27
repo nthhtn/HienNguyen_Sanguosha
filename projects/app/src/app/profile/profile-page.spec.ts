@@ -75,6 +75,14 @@ describe('ProfilePage', () => {
     expect(service.setMode).toHaveBeenCalledWith('solo');
   });
 
+  it('shows the error on the Settings tab too when the stats cannot be loaded, not a blank card', async () => {
+    stats.set(null);
+    error.set(msg('error.internal'));
+    const { el } = await render('settings');
+    expect(el.querySelector('.error')?.textContent).toContain('Something went wrong');
+    expect(el.querySelector('app-profile-settings')).toBeNull();
+  });
+
   it('shows the error when the stats cannot be loaded', async () => {
     stats.set(null);
     error.set(msg('error.internal'));

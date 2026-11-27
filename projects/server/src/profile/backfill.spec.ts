@@ -105,7 +105,22 @@ describe('backfillSeatResults', () => {
       .mockImplementation(real);
     expect(await backfillSeatResults({ repos, ctx, log, replay })).toEqual({ filled: 1, failed: 1 });
     expect(log).toHaveBeenCalledWith(expect.stringContaining('cannot be replayed'), expect.any(Error));
+    // The failure is remembered: the next run does not replay that game again.
+    expect(await backfillSeatResults({ repos, ctx, log, replay: jest.fn().mockImplementation(real) })).toEqual({ filled: 0, failed: 0 });
     const user = (await repos.users.findByEmail('ann@example.com'))!;
     expect(await repos.games.listSeatResultsForUser(user.id)).toHaveLength(1);
+  }, 60_000);
+
+  it('does not fill a game whose replay ends differently from the stored result, and remembers it', async () => {
+    const played = await playOne();
+    const { repos } = await copyUnrecorded(played);
+    const real = jest.requireActual<typeof import('../game/engineGame')>('../game/engineGame').replay;
+    const drifted = jest.fn().mockImplementation((...args: Parameters<typeof real>) => ({ ...real(...args), result: { endedAt: 1, winningSeatIds: ['someone-else'], losingSeatIds: [] } }));
+    const log = jest.fn();
+    expect(await backfillSeatResults({ repos, ctx, log, replay: drifted })).toEqual({ filled: 0, failed: 1 });
+    expect(log).toHaveBeenCalledWith(expect.stringContaining('differs from the stored result'), undefined);
+    expect(await backfillSeatResults({ repos, ctx, log, replay: drifted })).toEqual({ filled: 0, failed: 0 });
+    const user = (await repos.users.findByEmail('ann@example.com'))!;
+    expect(await repos.games.listSeatResultsForUser(user.id)).toEqual([]);
   }, 60_000);
 });

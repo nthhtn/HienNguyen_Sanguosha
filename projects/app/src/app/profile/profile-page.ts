@@ -65,6 +65,9 @@ const MODES: readonly { id: ProfileMode; label: MessageKey }[] = [
               <app-my-games-list />
             }
             @case ('settings') {
+              @if (service.error(); as text) {
+                <p class="error" role="alert">{{ text | tm }}</p>
+              }
               @if (service.stats(); as stats) {
                 <app-profile-settings [displayName]="stats.displayName" />
               } @else if (!service.error()) {

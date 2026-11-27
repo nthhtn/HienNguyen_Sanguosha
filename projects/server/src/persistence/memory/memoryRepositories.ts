@@ -28,10 +28,12 @@ interface Store {
   gameActions: Map<string, GameActionRecord>;
   chatMessages: Map<string, ChatMessageRecord>;
   seatResults: Map<string, SeatResultRecord>;
+  // Games whose seat results could not be backfilled, by game id.
+  seatResultFailures: Map<string, { gameId: string }>;
 }
 
 type Table = keyof Store;
-const TABLES: readonly Table[] = ['users', 'sessions', 'resetTokens', 'rooms', 'roomPlayers', 'games', 'gameActions', 'chatMessages', 'seatResults'];
+const TABLES: readonly Table[] = ['users', 'sessions', 'resetTokens', 'rooms', 'roomPlayers', 'games', 'gameActions', 'chatMessages', 'seatResults', 'seatResultFailures'];
 // Retries of a transaction whose records others changed under it, before giving up.
 const MAX_TRANSACTION_ATTEMPTS = 10;
 
@@ -39,7 +41,7 @@ const MAX_TRANSACTION_ATTEMPTS = 10;
 // and writes with no `await` between them, so concurrent calls can't interleave
 // (the uniqueness and single-use rules hold under Promise.all).
 export function createMemoryRepositories(): Repositories {
-  return repositoriesOver({ users: new Map(), sessions: new Map(), resetTokens: new Map(), rooms: new Map(), roomPlayers: new Map(), games: new Map(), gameActions: new Map(), chatMessages: new Map(), seatResults: new Map() });
+  return repositoriesOver({ users: new Map(), sessions: new Map(), resetTokens: new Map(), rooms: new Map(), roomPlayers: new Map(), games: new Map(), gameActions: new Map(), chatMessages: new Map(), seatResults: new Map(), seatResultFailures: new Map() });
 }
 
 function repositoriesOver(store: Store): Repositories {
@@ -100,6 +102,7 @@ const cloneStore = (store: Store): Store => ({
   gameActions: cloneMap(store.gameActions),
   chatMessages: cloneMap(store.chatMessages),
   seatResults: cloneMap(store.seatResults),
+  seatResultFailures: cloneMap(store.seatResultFailures),
 });
 
 // Compare field by field: dates by time, plain objects (rules) by their JSON.
@@ -446,7 +449,7 @@ class MemoryGames implements GameRepository {
   async saveSeatResults(rows: SeatResultRecord[]): Promise<void> {
     for (const row of rows) {
       const key = `${row.gameId}/${row.seatId}`;
-      if (!this.store.seatResults.has(key)) this.store.seatResults.set(key, { ...row });
+      if (this.store.users.has(row.userId) && !this.store.seatResults.has(key)) this.store.seatResults.set(key, { ...row });
     }
   }
 
@@ -461,18 +464,30 @@ class MemoryGames implements GameRepository {
       .sort((a, b) => b.finishedAt.getTime() - a.finishedAt.getTime() || a.gameId.localeCompare(b.gameId));
   }
 
+  async findSeatUserIds(gameId: string): Promise<Record<string, string>> {
+    const game = this.store.games.get(gameId);
+    const userIds: Record<string, string> = {};
+    for (const seat of game?.seats ?? []) {
+      const userId = this.store.roomPlayers.get(seat.roomPlayerId)?.userId;
+      if (userId) userIds[seat.seatId] = userId;
+    }
+    return userIds;
+  }
+
+  async markSeatResultsFailed(gameId: string): Promise<void> {
+    this.store.seatResultFailures.set(gameId, { gameId });
+  }
+
   async listUnrecordedFinishedGames(): Promise<UnrecordedGame[]> {
     const recorded = new Set([...this.store.seatResults.values()].map((row) => row.gameId));
-    return [...this.store.games.values()]
-      .filter((game) => game.status === 'finished' && !recorded.has(game.id))
-      .flatMap((game) => {
-        const userIds: Record<string, string> = {};
-        for (const seat of game.seats) {
-          const userId = this.store.roomPlayers.get(seat.roomPlayerId)?.userId;
-          if (userId) userIds[seat.seatId] = userId;
-        }
-        return Object.keys(userIds).length > 0 ? [{ game: deepCopy(game), userIds }] : [];
-      })
+    return (
+      await Promise.all(
+        [...this.store.games.values()]
+          .filter((game) => game.status === 'finished' && !recorded.has(game.id) && !this.store.seatResultFailures.has(game.id))
+          .map(async (game) => ({ game: deepCopy(game), userIds: await this.findSeatUserIds(game.id) }))
+      )
+    )
+      .filter((entry) => Object.keys(entry.userIds).length > 0)
       .sort((a, b) => (a.game.finishedAt?.getTime() ?? 0) - (b.game.finishedAt?.getTime() ?? 0) || a.game.id.localeCompare(b.game.id));
   }
 }

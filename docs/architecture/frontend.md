@@ -18,7 +18,7 @@ projects/app/src/app/
   labels.ts                  names and formatting shared by every screen
   auth/                      sign-in, sign-up, guest, forgot and reset password, AuthService, requireSignIn
   online/                    Rooms, Lobby, the My Games list, chat, SocketService, RemoteGameService, OnlineGame
-  profile/                   the Profile page: stats, History (My Games) and settings
+  profile/                   The Profile page: stats, History (My Games) and settings
   setup/                     the local Game Setup screen
   game-board/                the board, its dialogs and its view-model helpers
   tutorial/                  the Tutorial: lessons as data, the spotlight overlay, anchors, progress

@@ -54,6 +54,10 @@ describe('ProfileStatsView', () => {
     expect(text(el, '.streak')[0]).toBe('Current streak: 1, best streak: 2');
   });
 
+  it('says nothing matches when a filter has no games, not that there are none', () => {
+    expect(text(render({ ...EMPTY, mode: 'solo' }), '.empty')).toEqual(['No finished games match this filter']);
+  });
+
   it('shows an empty message and no tables when there are no games', () => {
     const el = render(EMPTY);
     expect(text(el, '.empty')).toEqual(['No finished games yet']);

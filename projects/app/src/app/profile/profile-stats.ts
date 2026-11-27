@@ -13,7 +13,7 @@ import { generalDisplayName, kingdomDisplayName } from '../labels';
   styleUrl: './profile.css',
   template: `
     @if (stats().totals.games === 0) {
-      <p class="empty">{{ 'myGames.empty' | t }}</p>
+      <p class="empty">{{ (stats().mode === 'all' ? 'myGames.empty' : 'profile.emptyFiltered') | t }}</p>
     } @else {
       <div class="tiles">
         <div class="tile"><span class="tile-label">{{ 'profile.tile.games' | t }}</span><span class="tile-value">{{ stats().totals.games }}</span></div>

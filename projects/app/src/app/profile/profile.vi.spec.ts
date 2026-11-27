@@ -27,6 +27,7 @@ describe('Profile in Vietnamese', () => {
     const el = fixture.nativeElement as HTMLElement;
     expect(Array.from(el.querySelectorAll('.tile-label')).map((n) => n.textContent)).toEqual(['Số ván', 'Thắng', 'Thua', 'Tỷ lệ thắng', 'Không kết quả']);
     expect(Array.from(el.querySelectorAll('.force-row .name')).map((n) => n.textContent)).toEqual(['Ngụy', 'Dã tâm gia']);
+    expect(el.querySelector('.table-head .name')?.textContent).toBe('Thế lực');
     expect(el.querySelector('.streak')?.textContent).toBe('Chuỗi hiện tại: 1, chuỗi dài nhất: 2');
   });
 });

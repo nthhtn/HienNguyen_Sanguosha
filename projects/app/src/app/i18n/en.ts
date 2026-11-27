@@ -945,6 +945,8 @@ export const en = {
   'profile.settings.nameSaved': 'Name saved',
   'profile.settings.changePassword': 'Change Password',
   'profile.settings.current': 'Current Password',
+  'profile.settings.wrongPassword': 'Your current password is incorrect',
+  'profile.emptyFiltered': 'No finished games match this filter',
   'profile.settings.new': 'New Password',
   'profile.settings.newHint': 'Use at least {min} characters',
   'profile.settings.passwordChanged': 'Password changed. Your other devices were signed out',

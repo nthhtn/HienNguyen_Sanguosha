@@ -74,6 +74,8 @@ export interface GamesTable {
   action_count: ColumnType<number, number | undefined, number>;
   started_at: Timestamp;
   finished_at: NullableTimestamp;
+  // Set when the game's seat results could not be backfilled.
+  seat_results_failed_at: NullableTimestamp;
 }
 
 export interface GameActionsTable {

@@ -3,7 +3,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import type { ChangePasswordBody, ProfileMode, ProfileStats } from 'protocol';
 import { AuthService, errorMsg, toApiError } from '../auth/auth.service';
-import type { Msg } from '../i18n/msg';
+import { msg, type Msg } from '../i18n/msg';
 
 // The signed-in player's profile, from GET /api/me/profile, and the two things
 // they may change. The server decides who may ask and computes every number;
@@ -27,11 +27,15 @@ export class ProfileService {
   readonly mode = this._mode.asReadonly();
 
   async load(): Promise<void> {
+    const mode = this._mode();
     try {
-      this._stats.set(await firstValueFrom(this.http.get<ProfileStats>('/api/me/profile', { params: { mode: this._mode() } })));
+      const stats = await firstValueFrom(this.http.get<ProfileStats>('/api/me/profile', { params: { mode } }));
+      // A slow answer for a filter that is no longer chosen must not replace the current one.
+      if (mode !== this._mode()) return;
+      this._stats.set(stats);
       this._error.set(null);
     } catch (err) {
-      this._error.set(errorMsg(toApiError(err)));
+      if (mode === this._mode()) this._error.set(errorMsg(toApiError(err)));
     }
   }
 
@@ -61,7 +65,9 @@ export class ProfileService {
       await firstValueFrom(this.http.post<void>('/api/me/password', body));
       return true;
     } catch (err) {
-      this._actionError.set(errorMsg(toApiError(err)));
+      const failure = toApiError(err);
+      // The sign-in text names an email, which this form has none of.
+      this._actionError.set(failure.code === 'invalid_credentials' ? msg('profile.settings.wrongPassword') : errorMsg(failure));
       return false;
     }
   }

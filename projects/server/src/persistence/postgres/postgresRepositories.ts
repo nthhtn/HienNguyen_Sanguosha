@@ -355,10 +355,14 @@ class PostgresGames implements GameRepository {
 
   async saveSeatResults(rows: SeatResultRecord[]): Promise<void> {
     if (rows.length === 0) return;
+    // A user purged since the game began (an idle guest) has no row to keep, and must not fail the game's end.
+    const existing = new Set((await this.db.selectFrom('users').select('id').where('id', 'in', [...new Set(rows.map((r) => r.userId))]).execute()).map((u) => u.id));
+    const kept = rows.filter((r) => existing.has(r.userId));
+    if (kept.length === 0) return;
     await this.db
       .insertInto('game_seat_results')
       .values(
-        rows.map((r) => ({
+        kept.map((r) => ({
           game_id: r.gameId,
           seat_id: r.seatId,
           user_id: r.userId,
@@ -400,20 +404,39 @@ class PostgresGames implements GameRepository {
     }));
   }
 
+  async findSeatUserIds(gameId: string): Promise<Record<string, string>> {
+    const { rows } = await sql<{ seat_users: Record<string, string> | null }>`
+      SELECT (
+        SELECT jsonb_object_agg(s.seat ->> 'seatId', rp.user_id::text)
+        FROM jsonb_array_elements(g.seats) AS s(seat)
+        JOIN room_players rp ON rp.id = (s.seat ->> 'roomPlayerId')::uuid
+        WHERE rp.user_id IS NOT NULL
+      ) AS seat_users
+      FROM games g
+      WHERE g.id = ${gameId}::uuid
+    `.execute(this.db);
+    return rows[0]?.seat_users ?? {};
+  }
+
+  async markSeatResultsFailed(gameId: string, now: Date): Promise<void> {
+    await this.db.updateTable('games').set({ seat_results_failed_at: now }).where('id', '=', gameId).execute();
+  }
+
   async listUnrecordedFinishedGames(): Promise<UnrecordedGame[]> {
-    const { rows } = await sql<Selectable<GamesTable> & { seat_users: Record<string, string> }>`
+    const { rows } = await sql<Selectable<GamesTable> & { seat_users: Record<string, string> | null }>`
       SELECT g.*, (
         SELECT jsonb_object_agg(s.seat ->> 'seatId', rp.user_id::text)
         FROM jsonb_array_elements(g.seats) AS s(seat)
-        JOIN room_players rp ON rp.id::text = s.seat ->> 'roomPlayerId'
+        JOIN room_players rp ON rp.id = (s.seat ->> 'roomPlayerId')::uuid
         WHERE rp.user_id IS NOT NULL
       ) AS seat_users
       FROM games g
       WHERE g.status = 'finished'
+        AND g.seat_results_failed_at IS NULL
         AND NOT EXISTS (SELECT 1 FROM game_seat_results r WHERE r.game_id = g.id)
       ORDER BY g.finished_at, g.id
     `.execute(this.db);
-    return rows.filter((row) => row.seat_users !== null).map((row) => ({ game: toGameRecord(row), userIds: row.seat_users }));
+    return rows.flatMap((row) => (row.seat_users ? [{ game: toGameRecord(row), userIds: row.seat_users }] : []));
   }
 }
 

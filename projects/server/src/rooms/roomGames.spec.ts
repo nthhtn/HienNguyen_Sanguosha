@@ -329,6 +329,18 @@ describe('RoomService games', () => {
     });
   }, 60_000);
 
+  it('still stores a seat result for a player who left the running game, whose seat a bot finished', async () => {
+    const { rooms, repos, scheduler, pair, start, command } = await setup();
+    const { roomId, a, b } = await pair();
+    await start(a, roomId);
+    await command(b, roomId, { type: 'room.leave' });
+    await rooms.disconnect(roomId, a.playerId, a.connection);
+    await scheduler.runUntil(() => rooms.snapshot(a.user, roomId).status === 'lobby', 50_000);
+    const { gameId } = rooms.snapshot(a.user, roomId).lastGame!;
+    expect(await repos.games.listSeatResultsForUser(b.user.id)).toEqual([expect.objectContaining({ gameId, userId: b.user.id })]);
+    expect(await repos.games.listSeatResultsForUser(a.user.id)).toHaveLength(1);
+  }, 60_000);
+
   it('stores no seat results for a game that broke', async () => {
     const { repos, scheduler, withBot, start } = await setup({ botPolicy: failing });
     const { roomId, a } = await withBot();
