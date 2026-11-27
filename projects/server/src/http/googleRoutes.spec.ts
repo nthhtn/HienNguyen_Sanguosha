@@ -109,6 +109,15 @@ describe('GET /api/auth/google/callback', () => {
     expect((await repos.identities.findByProviderUser('google', CLAIMS.sub))?.userId).toBe(me.json().id);
   });
 
+  it('does not trust the return URL kept in the cookie: a planted one that leaves the site goes to /', async () => {
+    const { app } = await setup();
+    const planted = Buffer.from(JSON.stringify({ state: 'planted-state', nonce: 'n', verifier: 'v', returnUrl: '//evil.example/steal' })).toString('base64url');
+    const ok = await callback(app, 'code=c&state=planted-state', { sgs_oauth: planted });
+    expect(ok.headers.location).toBe('/');
+    const failed = await callback(app, 'error=access_denied&state=planted-state', { sgs_oauth: planted });
+    expect(location(failed).searchParams.get('returnUrl')).toBeNull();
+  });
+
   it('goes to / when the flow had no return URL', async () => {
     const { app } = await setup();
     const { state, oauth } = await begin(app);

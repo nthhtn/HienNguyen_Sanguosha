@@ -45,7 +45,8 @@ function decodeFlow(value: string | undefined): OAuthFlow | null {
   try {
     const flow = JSON.parse(Buffer.from(value, 'base64url').toString('utf8')) as Partial<OAuthFlow>;
     const ok = [flow.state, flow.nonce, flow.verifier, flow.returnUrl].every((part) => typeof part === 'string' && part !== '');
-    return ok ? (flow as OAuthFlow) : null;
+    // The cookie is not signed: its return URL is checked again, not trusted.
+    return ok ? { ...(flow as OAuthFlow), returnUrl: safeReturnPath(flow.returnUrl) } : null;
   } catch {
     return null;
   }

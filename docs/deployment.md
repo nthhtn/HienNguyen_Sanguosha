@@ -86,6 +86,7 @@ Continue with Google needs an OAuth client of your own. Without one the button i
 6. **Check:** Open Sign In. The Continue with Google button appears when both variables are set.
 
 - **Testing mode:** Only the test users you listed can sign in until the app is published.
+- **Phone testing through a tunnel:** The redirect URI is built from `PUBLIC_ORIGIN`, so Google sends the phone back to localhost and the flow fails. Test Google sign-in on the local site or the hosted one.
 - **Scopes:** The app asks for `openid email profile` only. Those need no Google review.
 - **Existing accounts:** An email that already has a password account is never linked. Its owner keeps signing in with the password.
 
