@@ -39,6 +39,39 @@ describe('ProfileService', () => {
     });
   });
 
+  describe('setting a first password (a Google account has none)', () => {
+    const googleUser = async () => {
+      const { repos, profile, active } = await setup();
+      const user = await repos.users.createFromGoogle({ email: 'gail@example.com', displayName: 'Gail', now: NOW });
+      const mine = await repos.sessions.create({ userId: user.id, tokenHash: hashToken('mine'), now: NOW, expiresAt: new Date(NOW.getTime() + 60_000) });
+      await repos.sessions.create({ userId: user.id, tokenHash: hashToken('other'), now: NOW, expiresAt: new Date(NOW.getTime() + 60_000) });
+      return { repos, profile, user, mine, active };
+    };
+
+    it('stores the password without a current one, keeps this session and revokes the others', async () => {
+      const { repos, profile, user, mine, active } = await googleUser();
+      await profile.changePassword(user, mine.id, { newPassword: 'brand-new-pass' });
+      expect(await verifyPassword('brand-new-pass', (await repos.users.findById(user.id))!.passwordHash!)).toBe(true);
+      expect(await active('mine')).toBe(true);
+      expect(await active('other')).toBe(false);
+    });
+
+    it('refuses a weak password, and stores nothing', async () => {
+      const { repos, profile, user, mine } = await googleUser();
+      await expect(profile.changePassword(user, mine.id, { newPassword: 'short' })).rejects.toMatchObject({ code: 'weak_password' });
+      expect((await repos.users.findById(user.id))!.passwordHash).toBeNull();
+    });
+
+    it('still needs the right current password once the account has one, and a missing one is refused', async () => {
+      const { repos, profile, user, mine } = await googleUser();
+      await profile.changePassword(user, mine.id, { newPassword: 'first-password' });
+      const withPassword = (await repos.users.findById(user.id))!;
+      await expect(profile.changePassword(withPassword, mine.id, { newPassword: 'second-password' })).rejects.toMatchObject({ code: 'invalid_credentials' });
+      await expect(profile.changePassword(withPassword, mine.id, { currentPassword: 'wrong-pass', newPassword: 'second-password' })).rejects.toMatchObject({ code: 'invalid_credentials' });
+      await profile.changePassword(withPassword, mine.id, { currentPassword: 'first-password', newPassword: 'second-password' });
+    });
+  });
+
   describe('changePassword', () => {
     it('refuses a wrong current password and revokes nothing', async () => {
       const { repos, profile, user, session, active } = await setup();
