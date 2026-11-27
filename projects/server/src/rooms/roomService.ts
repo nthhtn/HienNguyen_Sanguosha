@@ -11,6 +11,7 @@ import { realScheduler, Scheduler } from '../game/scheduler';
 import { GameRecord, RoomPlayerRecord, UserRecord } from '../persistence/records';
 import { NameTakenError, Repositories } from '../persistence/repositories';
 import { toRoomListItem, toRoomSnapshot } from '../views/room';
+import { buildSeatResults } from '../profile/seatResults';
 import { RoomError } from './errors';
 import { ChatService } from './chatService';
 import { memberFrom, Room, RoomMember } from './room';
@@ -564,6 +565,7 @@ export class RoomService {
     const at = new Date(now);
     await this.repos.transaction(async (tx) => {
       await tx.games.update(game.id, { status: outcome === 'finished' ? 'finished' : 'broken', result, finishedAt: at });
+      if (outcome === 'finished') await tx.games.saveSeatResults(buildSeatResults({ gameId: game.id, finalSeats, result, userIds: seatUserIds(game, room) }));
       await tx.rooms.update(room.id, { status: 'lobby' }, at);
     });
     room.record = { ...room.record, status: 'lobby', updatedAt: at };
@@ -777,4 +779,14 @@ export class RoomService {
   private snapshotOf(entry: LiveRoom): RoomSnapshot {
     return toRoomSnapshot(entry.room, this.seatLimits, entry.runner);
   }
+}
+
+// The user at each human seat of a game, by seat id, for the members still in the room.
+function seatUserIds(game: GameRecord, room: Room): Record<string, string> {
+  const userIds: Record<string, string> = {};
+  for (const seat of game.seats) {
+    const userId = room.member(seat.roomPlayerId)?.userId;
+    if (userId) userIds[seat.seatId] = userId;
+  }
+  return userIds;
 }

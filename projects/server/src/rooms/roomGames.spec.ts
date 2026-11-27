@@ -304,6 +304,39 @@ describe('RoomService games', () => {
     expect(logError).toHaveBeenCalled();
   });
 
+  it('stores a seat result for the human seat of a finished game, and none for the bot', async () => {
+    const { rooms, repos, scheduler, withBot, start } = await setup();
+    const { roomId, a } = await withBot();
+    await start(a, roomId);
+    await rooms.disconnect(roomId, a.playerId, a.connection);
+    await scheduler.runUntil(() => rooms.snapshot(a.user, roomId).status === 'lobby', 50_000);
+    const { gameId, result, seats, finalSeats } = rooms.snapshot(a.user, roomId).lastGame!;
+    const annSeat = seats.find((s) => s.name === 'Ann')!.seatId;
+    const final = finalSeats.find((s) => s.seatId === annSeat)!;
+    const rows = await repos.games.listSeatResultsForUser(a.user.id);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      gameId,
+      seatId: annSeat,
+      userId: a.user.id,
+      mainGeneralId: final.mainGeneralId,
+      deputyGeneralId: final.deputyGeneralId,
+      kingdom: final.kingdom,
+      allegiance: final.allegiance,
+      eliminated: final.eliminated,
+      won: result!.winningSeatIds.includes(annSeat) ? true : result!.losingSeatIds.includes(annSeat) ? false : null,
+      visibility: 'open',
+    });
+  }, 60_000);
+
+  it('stores no seat results for a game that broke', async () => {
+    const { repos, scheduler, withBot, start } = await setup({ botPolicy: failing });
+    const { roomId, a } = await withBot();
+    await start(a, roomId);
+    await scheduler.runUntil(() => a.connection.room!.status === 'lobby');
+    expect(await repos.games.listSeatResultsForUser(a.user.id)).toEqual([]);
+  });
+
   it("a finished game's lastGame carries a summary of every seat", async () => {
     const { rooms, scheduler, withBot, start } = await setup();
     const { roomId, a } = await withBot();

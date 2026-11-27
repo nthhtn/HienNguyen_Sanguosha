@@ -9,10 +9,12 @@ import { ServerConfig } from './config';
 import { buildApp } from './http/app';
 import { ConsoleMailer } from './mail/mailer';
 import { createMemoryRepositories } from './persistence/memory/memoryRepositories';
+import { engineContext } from './game/engineGame';
 import { migrateToLatest } from './persistence/migrate';
 import { createDb } from './persistence/postgres/db';
 import { createPostgresRepositories } from './persistence/postgres/postgresRepositories';
 import { Repositories } from './persistence/repositories';
+import { backfillSeatResults } from './profile/backfill';
 import { ROOM_TICK_MS, RoomService } from './rooms/roomService';
 
 const HOUSEKEEPING_MS = 60 * 60_000;
@@ -56,6 +58,8 @@ export async function createServer(config: ServerConfig, options: { logger?: boo
   });
   // After the app, whose logger `logError` writes to: a room that fails to restore must not stop the start.
   await rooms.restore();
+  // Old games get their seat results in the background; a failure only means they are tried again at the next start.
+  void backfillSeatResults({ repos: store.repos, ctx: engineContext(registry), log: (message, err) => app.log.error(err, message) }).catch((err: unknown) => app.log.error(err, 'Filling in seat results failed'));
 
   const housekeeping = setInterval(() => {
     rateLimits.prune(Date.now());
