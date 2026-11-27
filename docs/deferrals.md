@@ -151,9 +151,15 @@ From [Backend](architecture/backend.md#not-done), which holds the detail:
 
 - Spectators, room codes and passwords, share links, matchmaking, ratings and friends lists.
 - A replay viewer. The data and the debug endpoint exist.
+  - Far future (the developer, 2026-11-27): The Profile History tab lists games and has no replay button.
+  - Needs a viewer UI that steps through `GET /api/games/:id/replay` (`docs/superpowers/specs/2026-11-27-profile-design.md`).
 - More than one server process. Live games live in the memory of one process.
 - Merging a guest's games into a new account, and a recovery code for a guest's seat.
 - Email verification.
+- Profile extras (`docs/superpowers/specs/2026-11-27-profile-design.md`, Non-goals):
+  - Public profiles and head-to-head records, which need a privacy decision.
+  - Kills, damage and card stats, which would be derived from the game log.
+- Google sign-in. Needs a Google Cloud client, an `identities` table and an optional `password_hash`.
 
 ## Presentation
 
