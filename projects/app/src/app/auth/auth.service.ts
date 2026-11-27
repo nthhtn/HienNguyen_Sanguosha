@@ -5,7 +5,7 @@ import { CHAT_BODY_MAX, DISPLAY_NAME_MAX, ERROR_MESSAGES, PASSWORD_MIN } from 'p
 import { en } from '../i18n/en';
 import { msg, type Msg } from '../i18n/msg';
 import type { MessageKey, MessageParams } from '../i18n/messages';
-import type { ErrorBody, ForgotPasswordBody, GuestBody, Me, MessageBody, ResetPasswordBody, SignInBody, SignUpBody } from 'protocol';
+import type { ErrorBody, ForgotPasswordBody, GuestBody, Me, MessageBody, ResetPasswordBody, SignInBody, SignUpBody, UpdateProfileBody } from 'protocol';
 
 // A failed API call: the server's code and message, ready to show.
 export class ApiError extends Error {
@@ -86,6 +86,18 @@ export class AuthService {
 
   resetPassword(body: ResetPasswordBody): Promise<Me> {
     return this.signInWith('/api/auth/reset-password', body);
+  }
+
+  // Renames the signed-in user; the toolbar shows the new name at once.
+  async rename(body: UpdateProfileBody): Promise<Me> {
+    let me: Me;
+    try {
+      me = await firstValueFrom(this.http.patch<Me>('/api/me/profile', body));
+    } catch (err) {
+      throw toApiError(err);
+    }
+    this.current.set(me);
+    return me;
   }
 
   async signOut(): Promise<void> {

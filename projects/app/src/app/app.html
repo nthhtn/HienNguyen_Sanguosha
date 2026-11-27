@@ -59,6 +59,8 @@
           <div class="account-summary" mat-menu-item disabled>{{ me.kind === 'guest' ? ('nav.guest' | t) : me.email }}</div>
           @if (me.kind === 'guest') {
             <a mat-menu-item class="create-account" routerLink="/sign-up">{{ 'nav.createAccount' | t }}</a>
+          } @else {
+            <a mat-menu-item class="profile-link" routerLink="/profile">{{ 'nav.profile' | t }}</a>
           }
           <button mat-menu-item type="button" class="sign-out" (click)="signOut()">{{ 'nav.signOut' | t }}</button>
         </mat-menu>
@@ -158,6 +160,8 @@
           <div class="drawer-note">{{ me.kind === 'guest' ? ('nav.guest' | t) : me.email }}</div>
           @if (me.kind === 'guest') {
             <a class="drawer-link sub create-account" routerLink="/sign-up">{{ 'nav.createAccount' | t }}</a>
+          } @else {
+            <a class="drawer-link sub profile-link" routerLink="/profile">{{ 'nav.profile' | t }}</a>
           }
           <button type="button" class="drawer-link sub sign-out" (click)="signOut()">{{ 'nav.signOut' | t }}</button>
         } @else {

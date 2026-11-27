@@ -1,4 +1,5 @@
-import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { Router, Routes } from '@angular/router';
 import { requireSignIn } from './auth/require-sign-in';
 import { offlineOnly, tutorialEnabled } from './feature-flags';
 import { DEV_ROUTES } from './dev/dev-routes';
@@ -17,7 +18,9 @@ export const routes: Routes = [
   { path: 'wiki', loadChildren: () => import('./wiki/wiki.routes').then((m) => m.WIKI_ROUTES) },
   { path: 'rooms', canActivate: [requireSignIn], loadComponent: () => import('./online/rooms-page').then((m) => m.RoomsPage) },
   { path: 'rooms/:id', canActivate: [requireSignIn], loadComponent: () => import('./online/lobby-page').then((m) => m.LobbyPage) },
-  { path: 'my-games', canActivate: [requireSignIn], loadComponent: () => import('./online/my-games-page').then((m) => m.MyGamesPage) },
+  { path: 'profile', canActivate: [requireSignIn], loadComponent: () => import('./profile/profile-page').then((m) => m.ProfilePage) },
+  // My Games is the Profile's History tab now; old links still land on it.
+  { path: 'my-games', redirectTo: () => inject(Router).parseUrl('/profile?tab=history') },
   { path: 'sign-in', loadComponent: () => import('./auth/sign-in').then((m) => m.SignIn) },
   { path: 'sign-up', loadComponent: () => import('./auth/sign-up').then((m) => m.SignUp) },
   { path: 'guest', loadComponent: () => import('./auth/guest').then((m) => m.PlayAsGuest) },

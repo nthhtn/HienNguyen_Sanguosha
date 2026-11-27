@@ -13,7 +13,7 @@ import { ChatService } from './chat.service';
 import { CreateRoomDialog } from './create-room-dialog';
 import { gameHeadline, gameOutcome, gameWhen, playerLabel } from './game-labels';
 import { JoinRoomDialog } from './join-room-dialog';
-import { MyGamesPage } from './my-games-page';
+import { MyGamesList } from './my-games-list';
 import { MyGamesService } from './my-games.service';
 import { OnlineNotice } from './online-notice';
 import { OnlineResult } from './online-result';
@@ -151,26 +151,25 @@ describe('Rooms, My Games and the dialogs in Vietnamese', () => {
     });
   });
 
-  describe('MyGamesPage', () => {
+  describe('MyGamesList', () => {
     const games = signal<GameSummary[] | null>(null);
     const error = signal<Msg | null>(null);
     const service = { games, error, load: jest.fn(async () => undefined) };
 
     async function render() {
-      await TestBed.configureTestingModule({ imports: [MyGamesPage], providers: [provideRouter([])] })
-        .overrideComponent(MyGamesPage, { set: { providers: [{ provide: MyGamesService, useValue: service }] } })
+      await TestBed.configureTestingModule({ imports: [MyGamesList], providers: [provideRouter([])] })
+        .overrideComponent(MyGamesList, { set: { providers: [{ provide: MyGamesService, useValue: service }] } })
         .compileComponents();
       await vietnamese();
-      const fixture = TestBed.createComponent(MyGamesPage);
+      const fixture = TestBed.createComponent(MyGamesList);
       fixture.detectChanges();
       return { fixture, el: fixture.nativeElement as HTMLElement };
     }
 
-    it('the title, the loading line, the empty list, a row and an error', async () => {
+    it('the loading line, the empty list, a row and an error', async () => {
       games.set(null);
       error.set(null);
       const { fixture, el } = await render();
-      expect(text(el.querySelector('mat-card-title'))).toBe('Ván của tôi');
       expect(text(el.querySelector('.loading'))).toBe('Đang tải các ván…');
       games.set([]);
       fixture.detectChanges();
@@ -180,7 +179,6 @@ describe('Rooms, My Games and the dialogs in Vietnamese', () => {
       expect(text(el.querySelector('.outcome'))).toBe('Thắng');
       expect(text(el.querySelector('.headline'))).toBe('Ngụy thắng');
       expect(text(el.querySelector('.players'))).toBe('Bot 1 (máy), Ann (Bạn)');
-      expect(text(el.querySelector('a.back'))).toBe('Quay lại danh sách phòng');
       error.set(msg('error.registered_only'));
       fixture.detectChanges();
       expect(text(el.querySelector('.error'))).toBe('Hãy đăng nhập bằng tài khoản để xem các ván của bạn');

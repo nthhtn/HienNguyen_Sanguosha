@@ -92,7 +92,7 @@ describe('App shell in Vietnamese', () => {
     (el.querySelector('button.account') as HTMLButtonElement).click();
     fixture.detectChanges();
     await fixture.whenStable();
-    expect(menuItems()).toEqual(['ann@example.com', 'Đăng xuất']);
+    expect(menuItems()).toEqual(['ann@example.com', 'Hồ sơ', 'Đăng xuất']);
   });
 
   it('the music and sound buttons, in both states, label and tooltip', async () => {
