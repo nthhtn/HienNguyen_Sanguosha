@@ -25,6 +25,16 @@ const authCode = (promise: Promise<unknown>) =>
 const resetTokenFrom = (link: string) => new URL(link).searchParams.get('token')!;
 
 describe('AccountService', () => {
+  describe('a user with no password', () => {
+    it('cannot sign in with a password, not even the one the dummy hash is made from', async () => {
+      const { accounts, repos } = setup();
+      await repos.users.createFromGoogle({ email: 'gail@example.com', displayName: 'Gail', now: new Date() });
+      for (const password of ['no-such-account-password', 'anything-else', '']) {
+        expect(await authCode(accounts.signIn({ email: 'gail@example.com', password }))).toBe('invalid_credentials');
+      }
+    });
+  });
+
   describe('sign up and sign in', () => {
     it('signs up a registered user with a trimmed email and normalized name, and signs them in', async () => {
       const { accounts } = setup();

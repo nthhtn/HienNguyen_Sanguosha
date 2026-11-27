@@ -77,7 +77,8 @@ export class AccountService {
   async signIn(input: { email: string; password: string }): Promise<SignedIn> {
     const user = await this.repos.users.findByEmail(input.email.trim());
     const matches = await verifyPassword(input.password, user?.passwordHash ?? (await dummy()));
-    if (!user || user.kind !== 'registered' || !matches) throw new AuthError('invalid_credentials');
+    // A user with no password hash (a Google account) never matches: `matches` was then only checked against the dummy hash.
+    if (!user || user.kind !== 'registered' || !user.passwordHash || !matches) throw new AuthError('invalid_credentials');
     return this.startSession(user, this.now());
   }
 
