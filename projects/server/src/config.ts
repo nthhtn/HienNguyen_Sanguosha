@@ -17,6 +17,8 @@ export interface ServerConfig {
   staticDir: string | null;
   // Encrypt the Postgres connection (Supabase requires it). The certificate chain is not verified.
   databaseSsl: boolean;
+  // Set when both GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are; null turns Google sign-in off.
+  google: { clientId: string; clientSecret: string } | null;
 }
 
 export class ConfigError extends Error {
@@ -51,7 +53,16 @@ export function loadConfig(env: Record<string, string | undefined>): ServerConfi
     production,
     staticDir: env['STATIC_DIR'] || null,
     databaseSsl,
+    google: parseGoogle(env['GOOGLE_CLIENT_ID'], env['GOOGLE_CLIENT_SECRET']),
   };
+}
+
+function parseGoogle(clientId: string | undefined, clientSecret: string | undefined): ServerConfig['google'] {
+  const id = clientId?.trim() ?? '';
+  const secret = clientSecret?.trim() ?? '';
+  if (!id && !secret) return null;
+  if (!id || !secret) throw new ConfigError('GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET must be set together');
+  return { clientId: id, clientSecret: secret };
 }
 
 function parseOrigin(raw: string): string {

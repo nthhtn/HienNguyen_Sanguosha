@@ -13,6 +13,7 @@ describe('loadConfig', () => {
       production: false,
       staticDir: null,
       databaseSsl: false,
+      google: null,
     });
   });
 
@@ -39,7 +40,15 @@ describe('loadConfig', () => {
       production: true,
       staticDir: '/app/dist/app/browser',
       databaseSsl: true,
+      google: null,
     });
+  });
+
+  it('has no Google sign-in unless both credentials are set', () => {
+    expect(loadConfig({}).google).toBeNull();
+    expect(loadConfig({ GOOGLE_CLIENT_ID: 'id', GOOGLE_CLIENT_SECRET: 'secret' }).google).toEqual({ clientId: 'id', clientSecret: 'secret' });
+    expect(() => loadConfig({ GOOGLE_CLIENT_ID: 'id' })).toThrow(ConfigError);
+    expect(() => loadConfig({ GOOGLE_CLIENT_SECRET: 'secret' })).toThrow(ConfigError);
   });
 
   it('uses RENDER_GIT_COMMIT when BUILD_ID is unset', () => {
