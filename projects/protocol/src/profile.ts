@@ -45,6 +45,7 @@ export interface UpdateProfileBody {
 }
 
 export interface ChangePasswordBody {
-  currentPassword: string;
+  // Left out by an account that has no password yet (it signed in with Google).
+  currentPassword?: string;
   newPassword: string;
 }

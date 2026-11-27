@@ -1,6 +1,7 @@
 import type { Static } from '@sinclair/typebox';
 import type {
   ForgotPasswordBodySchema,
+  AuthProvidersSchema,
   GuestBodySchema,
   MeSchema,
   MessageBodySchema,
@@ -17,6 +18,7 @@ export type ForgotPasswordBody = Static<typeof ForgotPasswordBodySchema>;
 export type ResetPasswordBody = Static<typeof ResetPasswordBodySchema>;
 export type Me = Static<typeof MeSchema>;
 export type MessageBody = Static<typeof MessageBodySchema>;
+export type AuthProviders = Static<typeof AuthProvidersSchema>;
 
 // The answer to every forgot-password request, so it never tells whether an
 // email has an account.
