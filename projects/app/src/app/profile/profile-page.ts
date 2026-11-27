@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import type { ProfileMode } from 'protocol';
 import { I18n } from '../i18n/i18n.service';
+import type { MessageKey } from '../i18n/messages';
 import { TMsgPipe } from '../i18n/msg';
 import { TPipe } from '../i18n/t.pipe';
 import { MyGamesList } from '../online/my-games-list';
@@ -12,8 +13,16 @@ import { ProfileStatsView } from './profile-stats';
 import { ProfileService } from './profile.service';
 
 type Tab = 'stats' | 'history' | 'settings';
-const TABS: readonly Tab[] = ['stats', 'history', 'settings'];
-const MODES: readonly ProfileMode[] = ['all', 'solo', 'online'];
+const TABS: readonly { id: Tab; label: MessageKey }[] = [
+  { id: 'stats', label: 'profile.tab.stats' },
+  { id: 'history', label: 'profile.tab.history' },
+  { id: 'settings', label: 'profile.tab.settings' },
+];
+const MODES: readonly { id: ProfileMode; label: MessageKey }[] = [
+  { id: 'all', label: 'profile.mode.all' },
+  { id: 'solo', label: 'profile.mode.solo' },
+  { id: 'online', label: 'profile.mode.online' },
+];
 
 // A registered player's Profile: their stats, their finished games and their settings.
 @Component({
@@ -32,15 +41,15 @@ const MODES: readonly ProfileMode[] = ['all', 'solo', 'online'];
             <p class="since hint">{{ 'profile.since' | t: { date: since(stats.memberSince) } }}</p>
           }
           <div class="tabs" role="tablist" [attr.aria-label]="'profile.tabs' | t">
-            @for (id of tabs; track id) {
-              <button type="button" role="tab" [class]="'tab tab-' + id" [class.active]="tab() === id" [attr.aria-selected]="tab() === id" (click)="tab.set(id)">{{ 'profile.tab.' + id | t }}</button>
+            @for (item of tabs; track item.id) {
+              <button type="button" role="tab" [class]="'tab tab-' + item.id" [class.active]="tab() === item.id" [attr.aria-selected]="tab() === item.id" (click)="tab.set(item.id)">{{ item.label | t }}</button>
             }
           </div>
           @switch (tab()) {
             @case ('stats') {
               <div class="modes" role="group" [attr.aria-label]="'profile.mode.aria' | t">
-                @for (id of modes; track id) {
-                  <button type="button" [class]="'mode mode-' + id" [class.active]="service.mode() === id" [attr.aria-pressed]="service.mode() === id" (click)="setMode(id)">{{ 'profile.mode.' + id | t }}</button>
+                @for (item of modes; track item.id) {
+                  <button type="button" [class]="'mode mode-' + item.id" [class.active]="service.mode() === item.id" [attr.aria-pressed]="service.mode() === item.id" (click)="setMode(item.id)">{{ item.label | t }}</button>
                 }
               </div>
               @if (service.error(); as text) {
@@ -90,5 +99,5 @@ export class ProfilePage {
 }
 
 function initialTab(raw: string | null): Tab {
-  return TABS.find((id) => id === raw) ?? 'stats';
+  return TABS.find((item) => item.id === raw)?.id ?? 'stats';
 }
