@@ -128,7 +128,7 @@ describe('windows on the phone board', () => {
       for (const file of ['ask-dialog.ts', 'choice-dialog.ts', 'selection-dialog.ts', 'arrange-dialog.ts', 'start-reveal-dialog.ts', 'response-dialog.ts', 'discard-dialog.ts']) {
         const src = read(`game-board/${file}`);
         expect(src).toMatch(/class="header-timer"/);
-        expect(src).toMatch(/:host-context\(\[data-layout='compact'\]\)[^\{]*\.timer \{ display: none; \}/);
+        expect(src).toMatch(/:host-context\(\[data-layout='compact'\]\)[^{]*\.timer \{ display: none; \}/);
       }
     });
 
