@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { ChatMessageRecord, GameActionRecord, GameRecord, ResetTokenRecord, RoomPlayerRecord, RoomRecord, SessionRecord, UserGameRecord, UserRecord } from '../records';
+import { ChatMessageRecord, GameActionRecord, GameRecord, ResetTokenRecord, RoomPlayerRecord, RoomRecord, SeatResultRecord, SessionRecord, ProfileGameRow, UnrecordedGame, UserGameRecord, UserRecord } from '../records';
 import {
   EmailTakenError,
   GameChanges,
@@ -27,10 +27,11 @@ interface Store {
   games: Map<string, GameRecord>;
   gameActions: Map<string, GameActionRecord>;
   chatMessages: Map<string, ChatMessageRecord>;
+  seatResults: Map<string, SeatResultRecord>;
 }
 
 type Table = keyof Store;
-const TABLES: readonly Table[] = ['users', 'sessions', 'resetTokens', 'rooms', 'roomPlayers', 'games', 'gameActions', 'chatMessages'];
+const TABLES: readonly Table[] = ['users', 'sessions', 'resetTokens', 'rooms', 'roomPlayers', 'games', 'gameActions', 'chatMessages', 'seatResults'];
 // Retries of a transaction whose records others changed under it, before giving up.
 const MAX_TRANSACTION_ATTEMPTS = 10;
 
@@ -38,7 +39,7 @@ const MAX_TRANSACTION_ATTEMPTS = 10;
 // and writes with no `await` between them, so concurrent calls can't interleave
 // (the uniqueness and single-use rules hold under Promise.all).
 export function createMemoryRepositories(): Repositories {
-  return repositoriesOver({ users: new Map(), sessions: new Map(), resetTokens: new Map(), rooms: new Map(), roomPlayers: new Map(), games: new Map(), gameActions: new Map(), chatMessages: new Map() });
+  return repositoriesOver({ users: new Map(), sessions: new Map(), resetTokens: new Map(), rooms: new Map(), roomPlayers: new Map(), games: new Map(), gameActions: new Map(), chatMessages: new Map(), seatResults: new Map() });
 }
 
 function repositoriesOver(store: Store): Repositories {
@@ -98,6 +99,7 @@ const cloneStore = (store: Store): Store => ({
   games: cloneMap(store.games),
   gameActions: cloneMap(store.gameActions),
   chatMessages: cloneMap(store.chatMessages),
+  seatResults: cloneMap(store.seatResults),
 });
 
 // Compare field by field: dates by time, plain objects (rules) by their JSON.
@@ -184,6 +186,7 @@ class MemoryUsers implements UserRepository {
       this.store.users.delete(user.id);
       for (const [id, session] of this.store.sessions) if (session.userId === user.id) this.store.sessions.delete(id);
       for (const [id, token] of this.store.resetTokens) if (token.userId === user.id) this.store.resetTokens.delete(id);
+      for (const [key, result] of this.store.seatResults) if (result.userId === user.id) this.store.seatResults.delete(key);
       for (const player of this.store.roomPlayers.values()) if (player.userId === user.id) player.userId = null;
       deleted += 1;
     }
@@ -427,6 +430,39 @@ class MemoryGames implements GameRepository {
 
   async findFinishedForUser(userId: string, gameId: string): Promise<UserGameRecord | null> {
     return (await this.listFinishedForUser(userId)).find((entry) => entry.game.id === gameId) ?? null;
+  }
+
+  async saveSeatResults(rows: SeatResultRecord[]): Promise<void> {
+    for (const row of rows) {
+      const key = `${row.gameId}/${row.seatId}`;
+      if (!this.store.seatResults.has(key)) this.store.seatResults.set(key, { ...row });
+    }
+  }
+
+  async listSeatResultsForUser(userId: string): Promise<ProfileGameRow[]> {
+    return [...this.store.seatResults.values()]
+      .filter((row) => row.userId === userId)
+      .flatMap((row) => {
+        const game = this.store.games.get(row.gameId);
+        const room = game && this.store.rooms.get(game.roomId);
+        return game && room && game.status === 'finished' ? [{ ...row, finishedAt: game.finishedAt ?? game.startedAt, visibility: room.visibility }] : [];
+      })
+      .sort((a, b) => b.finishedAt.getTime() - a.finishedAt.getTime() || a.gameId.localeCompare(b.gameId));
+  }
+
+  async listUnrecordedFinishedGames(): Promise<UnrecordedGame[]> {
+    const recorded = new Set([...this.store.seatResults.values()].map((row) => row.gameId));
+    return [...this.store.games.values()]
+      .filter((game) => game.status === 'finished' && !recorded.has(game.id))
+      .flatMap((game) => {
+        const userIds: Record<string, string> = {};
+        for (const seat of game.seats) {
+          const userId = this.store.roomPlayers.get(seat.roomPlayerId)?.userId;
+          if (userId) userIds[seat.seatId] = userId;
+        }
+        return Object.keys(userIds).length > 0 ? [{ game: deepCopy(game), userIds }] : [];
+      })
+      .sort((a, b) => (a.game.finishedAt?.getTime() ?? 0) - (b.game.finishedAt?.getTime() ?? 0) || a.game.id.localeCompare(b.game.id));
   }
 }
 

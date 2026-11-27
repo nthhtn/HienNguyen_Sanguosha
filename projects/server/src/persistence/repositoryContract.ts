@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { ActionSource } from 'protocol';
-import { GameSeat } from './records';
+import { GameSeat, SeatResultRecord } from './records';
 import { EmailTakenError, NameTakenError, NewGameAction, RepositoryHarness, StaleGameError } from './repositories';
 
 const NOW = new Date('2026-10-13T12:00:00.000Z');
@@ -608,6 +608,80 @@ export function describeRepositoryContract(open: () => Promise<RepositoryHarness
       expect(await repos().games.findFinishedForUser(user.id, running.id)).toBeNull();
       expect(await repos().games.findFinishedForUser(user.id, aborted.id)).toBeNull();
       expect(await repos().games.findFinishedForUser(user.id, randomUUID())).toBeNull();
+    });
+  });
+
+  describe('seat results', () => {
+    const RESULT = { endedAt: 9, winningSeatIds: ['seat-1'], losingSeatIds: ['seat-0'] };
+    // A two-seat game: a bot on seat-0 and the user (or nobody) on seat-1.
+    const play = async (userId: string | null, status: 'running' | 'finished' | 'broken', finishedAt: Date | null, visibility: 'open' | 'solo' = 'open') => {
+      const room = await repos().rooms.create({ visibility, seatCount: 2, rules: {}, now: NOW });
+      const person = await repos().rooms.addPlayer({ roomId: room.id, userId, kind: 'human', displayName: 'Ann', now: NOW });
+      const bot = await repos().rooms.addPlayer({ roomId: room.id, userId: null, kind: 'bot', displayName: 'Bot 1', now: NOW });
+      const seats: GameSeat[] = [
+        { seatId: 'seat-0', roomPlayerId: bot.id, name: 'Bot 1', kind: 'bot' },
+        { seatId: 'seat-1', roomPlayerId: person.id, name: 'Ann', kind: 'human' },
+      ];
+      const game = await repos().games.create({ roomId: room.id, seed: 1, seats, rules: {}, buildId: 'build-1', now: NOW });
+      if (status !== 'running') await repos().games.update(game.id, { status, result: status === 'finished' ? RESULT : null, finishedAt });
+      return game;
+    };
+    const row = (gameId: string, userId: string, overrides: Partial<SeatResultRecord> = {}): SeatResultRecord => ({
+      gameId,
+      seatId: 'seat-1',
+      userId,
+      mainGeneralId: 'cao-cao',
+      deputyGeneralId: 'zhang-liao',
+      kingdom: 'Wei',
+      allegiance: 'kingdom',
+      eliminated: false,
+      won: true,
+      ...overrides,
+    });
+
+    it('stores a row once: saving the same seat again changes nothing', async () => {
+      const user = await registered();
+      const game = await play(user.id, 'finished', minutes(1));
+      await repos().games.saveSeatResults([row(game.id, user.id)]);
+      await repos().games.saveSeatResults([row(game.id, user.id, { won: false, mainGeneralId: null })]);
+      const rows = await repos().games.listSeatResultsForUser(user.id);
+      expect(rows).toHaveLength(1);
+      expect(rows[0]).toMatchObject({ gameId: game.id, seatId: 'seat-1', mainGeneralId: 'cao-cao', won: true, finishedAt: minutes(1), visibility: 'open' });
+    });
+
+    it('lists only the user\'s rows of finished games, newest first, with the room visibility', async () => {
+      const user = await registered();
+      const other = await registered();
+      const older = await play(user.id, 'finished', minutes(1), 'solo');
+      const newer = await play(user.id, 'finished', minutes(5));
+      const broken = await play(user.id, 'broken', minutes(7));
+      const theirs = await play(other.id, 'finished', minutes(9));
+      await repos().games.saveSeatResults([row(older.id, user.id, { won: null }), row(newer.id, user.id), row(broken.id, user.id), row(theirs.id, other.id)]);
+      const rows = await repos().games.listSeatResultsForUser(user.id);
+      expect(rows.map((r) => r.gameId)).toEqual([newer.id, older.id]);
+      expect(rows.map((r) => r.visibility)).toEqual(['open', 'solo']);
+      expect(rows[1].won).toBeNull();
+      expect(await repos().games.listSeatResultsForUser(randomUUID())).toEqual([]);
+    });
+
+    it('removes the rows of a guest when the idle guest is deleted', async () => {
+      const guest = await repos().users.createGuest({ displayName: 'Guest', now: NOW });
+      const game = await play(guest.id, 'finished', minutes(1));
+      await repos().games.saveSeatResults([row(game.id, guest.id)]);
+      await repos().users.deleteIdleGuests(minutes(60));
+      expect(await repos().games.listSeatResultsForUser(guest.id)).toEqual([]);
+    });
+
+    it('lists finished games that have no rows yet with their human seats\' users, until rows are saved', async () => {
+      const user = await registered();
+      const game = await play(user.id, 'finished', minutes(1));
+      const nobody = await play(null, 'finished', minutes(2));
+      const running = await play(user.id, 'running', null);
+      const unrecorded = await repos().games.listUnrecordedFinishedGames();
+      expect(unrecorded.find((entry) => entry.game.id === game.id)?.userIds).toEqual({ 'seat-1': user.id });
+      expect(unrecorded.some((entry) => entry.game.id === nobody.id || entry.game.id === running.id)).toBe(false);
+      await repos().games.saveSeatResults([row(game.id, user.id)]);
+      expect((await repos().games.listUnrecordedFinishedGames()).some((entry) => entry.game.id === game.id)).toBe(false);
     });
   });
 }

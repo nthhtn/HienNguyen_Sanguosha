@@ -1,4 +1,4 @@
-import type { Action, GameResult, GameRules } from 'engine';
+import type { Action, GameResult, GameRules, Kingdom } from 'engine';
 import type { ColumnType, Generated } from 'kysely';
 import type { GameSeat } from '../records';
 
@@ -97,6 +97,18 @@ export interface ChatMessagesTable {
   created_at: Timestamp;
 }
 
+export interface GameSeatResultsTable {
+  game_id: string;
+  seat_id: string;
+  user_id: string;
+  main_general_id: string | null;
+  deputy_general_id: string | null;
+  kingdom: Kingdom;
+  allegiance: 'kingdom' | 'ambitionist' | null;
+  eliminated: boolean;
+  won: boolean | null;
+}
+
 export interface Database {
   chat_messages: ChatMessagesTable;
   users: UsersTable;
@@ -106,4 +118,5 @@ export interface Database {
   room_players: RoomPlayersTable;
   games: GamesTable;
   game_actions: GameActionsTable;
+  game_seat_results: GameSeatResultsTable;
 }

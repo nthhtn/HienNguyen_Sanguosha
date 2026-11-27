@@ -1,4 +1,4 @@
-import type { Action, GameResult, GameRules } from 'engine';
+import type { Action, GameResult, GameRules, Kingdom } from 'engine';
 import type { ActionSource, GameStatus, MemberKind, RoomStatus, RoomVisibility, UserKind } from 'protocol';
 
 // Domain records: what the server works with. Database rows map to these in
@@ -118,4 +118,31 @@ export interface ChatMessageRecord {
 export interface UserGameRecord {
   game: GameRecord;
   yourSeatId: string;
+}
+
+// What one human seat of a finished game came to: written when the game ends, read for the Profile.
+export interface SeatResultRecord {
+  gameId: string;
+  seatId: string;
+  userId: string;
+  // null when the General was never shown.
+  mainGeneralId: string | null;
+  deputyGeneralId: string | null;
+  kingdom: Kingdom;
+  allegiance: 'kingdom' | 'ambitionist' | null;
+  eliminated: boolean;
+  // null when the game gave this seat neither a win nor a loss.
+  won: boolean | null;
+}
+
+// A seat result with what the Profile filters and orders by.
+export interface ProfileGameRow extends SeatResultRecord {
+  finishedAt: Date;
+  visibility: RoomRecord['visibility'];
+}
+
+// A finished game with no seat results yet, and the user at each human seat that has one.
+export interface UnrecordedGame {
+  game: GameRecord;
+  userIds: Record<string, string>;
 }

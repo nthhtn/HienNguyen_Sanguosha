@@ -1,5 +1,5 @@
 import { Kysely, Selectable, sql } from 'kysely';
-import { ChatMessageRecord, GameActionRecord, GameRecord, ResetTokenRecord, RoomPlayerRecord, RoomRecord, SessionRecord, UserGameRecord, UserRecord } from '../records';
+import { ChatMessageRecord, GameActionRecord, GameRecord, ResetTokenRecord, RoomPlayerRecord, RoomRecord, SeatResultRecord, SessionRecord, ProfileGameRow, UnrecordedGame, UserGameRecord, UserRecord } from '../records';
 import {
   EmailTakenError,
   GameChanges,
@@ -343,6 +343,69 @@ class PostgresGames implements GameRepository {
       WHERE g.status = 'finished' AND g.id = ${gameId}::uuid AND s.seat ->> 'roomPlayerId' = rp.id::text
     `.execute(this.db);
     return rows[0] ? toUserGameRecord(rows[0]) : null;
+  }
+
+  async saveSeatResults(rows: SeatResultRecord[]): Promise<void> {
+    if (rows.length === 0) return;
+    await this.db
+      .insertInto('game_seat_results')
+      .values(
+        rows.map((r) => ({
+          game_id: r.gameId,
+          seat_id: r.seatId,
+          user_id: r.userId,
+          main_general_id: r.mainGeneralId,
+          deputy_general_id: r.deputyGeneralId,
+          kingdom: r.kingdom,
+          allegiance: r.allegiance,
+          eliminated: r.eliminated,
+          won: r.won,
+        })),
+      )
+      .onConflict((oc) => oc.columns(['game_id', 'seat_id']).doNothing())
+      .execute();
+  }
+
+  async listSeatResultsForUser(userId: string): Promise<ProfileGameRow[]> {
+    const rows = await this.db
+      .selectFrom('game_seat_results as r')
+      .innerJoin('games as g', 'g.id', 'r.game_id')
+      .innerJoin('rooms as room', 'room.id', 'g.room_id')
+      .where('r.user_id', '=', userId)
+      .where('g.status', '=', 'finished')
+      .select(['r.game_id', 'r.seat_id', 'r.user_id', 'r.main_general_id', 'r.deputy_general_id', 'r.kingdom', 'r.allegiance', 'r.eliminated', 'r.won', 'g.finished_at', 'g.started_at', 'room.visibility'])
+      .orderBy('g.finished_at', 'desc')
+      .orderBy('g.id')
+      .execute();
+    return rows.map((r) => ({
+      gameId: r.game_id,
+      seatId: r.seat_id,
+      userId: r.user_id,
+      mainGeneralId: r.main_general_id,
+      deputyGeneralId: r.deputy_general_id,
+      kingdom: r.kingdom,
+      allegiance: r.allegiance,
+      eliminated: r.eliminated,
+      won: r.won,
+      finishedAt: r.finished_at ?? r.started_at,
+      visibility: r.visibility,
+    }));
+  }
+
+  async listUnrecordedFinishedGames(): Promise<UnrecordedGame[]> {
+    const { rows } = await sql<Selectable<GamesTable> & { seat_users: Record<string, string> }>`
+      SELECT g.*, (
+        SELECT jsonb_object_agg(s.seat ->> 'seatId', rp.user_id::text)
+        FROM jsonb_array_elements(g.seats) AS s(seat)
+        JOIN room_players rp ON rp.id::text = s.seat ->> 'roomPlayerId'
+        WHERE rp.user_id IS NOT NULL
+      ) AS seat_users
+      FROM games g
+      WHERE g.status = 'finished'
+        AND NOT EXISTS (SELECT 1 FROM game_seat_results r WHERE r.game_id = g.id)
+      ORDER BY g.finished_at, g.id
+    `.execute(this.db);
+    return rows.filter((row) => row.seat_users !== null).map((row) => ({ game: toGameRecord(row), userIds: row.seat_users }));
   }
 }
 

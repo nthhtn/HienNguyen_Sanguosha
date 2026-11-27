@@ -1,5 +1,5 @@
 import type { GameRules } from 'engine';
-import { ChatMessageRecord, GameActionRecord, GameRecord, GameSeat, ResetTokenRecord, RoomPlayerRecord, RoomRecord, SessionRecord, UserGameRecord, UserRecord } from './records';
+import { ChatMessageRecord, GameActionRecord, GameRecord, GameSeat, ProfileGameRow, ResetTokenRecord, RoomPlayerRecord, RoomRecord, SeatResultRecord, SessionRecord, UnrecordedGame, UserGameRecord, UserRecord } from './records';
 
 export class EmailTakenError extends Error {
   constructor() {
@@ -98,6 +98,12 @@ export interface GameRepository {
   listFinishedForUser(userId: string): Promise<UserGameRecord[]>;
   // One finished game the user sat in; null for anyone else's, an unfinished or an unknown one.
   findFinishedForUser(userId: string, gameId: string): Promise<UserGameRecord | null>;
+  // Stores seat results; a (game, seat) that already has one is left as it is.
+  saveSeatResults(rows: SeatResultRecord[]): Promise<void>;
+  // The user's seat results in finished games, newest finish first (ties by game id).
+  listSeatResultsForUser(userId: string): Promise<ProfileGameRow[]>;
+  // Finished games with no seat results, oldest first, that have a human seat with a user.
+  listUnrecordedFinishedGames(): Promise<UnrecordedGame[]>;
 }
 
 export interface NewChatMessage {

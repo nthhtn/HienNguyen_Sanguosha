@@ -4,6 +4,7 @@ import * as rooms from './migrations/0002_rooms';
 import * as games from './migrations/0003_games';
 import * as chat from './migrations/0004_chat';
 import * as botNames from './migrations/0005_bot_names';
+import * as seatResults from './migrations/0006_game_seat_results';
 import { Database } from './postgres/schema';
 
 // Listed explicitly rather than read from disk, so migrations run the same
@@ -14,6 +15,7 @@ const MIGRATIONS: Record<string, Migration> = {
   '0003_games': games,
   '0004_chat': chat,
   '0005_bot_names': botNames,
+  '0006_game_seat_results': seatResults,
 };
 
 export async function migrateToLatest(db: Kysely<Database>): Promise<void> {
