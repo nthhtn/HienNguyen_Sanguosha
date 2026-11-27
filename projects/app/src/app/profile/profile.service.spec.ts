@@ -90,8 +90,21 @@ describe('ProfileService', () => {
     const post = http.expectOne({ method: 'POST', url: '/api/me/password' });
     expect(post.request.body).toEqual({ currentPassword: 'old-pass', newPassword: 'new-password' });
     post.flush(null, { status: 204, statusText: 'No Content' });
+    await new Promise((resolve) => setTimeout(resolve));
+    http.expectOne('/api/me').flush({ id: 'u1', kind: 'registered', displayName: 'Ann', email: 'a@b.c', hasPassword: true });
     expect(await done).toBe(true);
     expect(service.actionError()).toBeNull();
+  });
+
+  it('changePassword with no current password (a Google account) sends only the new one, then reloads the signed-in user', async () => {
+    const done = service.changePassword(null, 'new-password');
+    const post = http.expectOne({ method: 'POST', url: '/api/me/password' });
+    expect(post.request.body).toEqual({ newPassword: 'new-password' });
+    post.flush(null, { status: 204, statusText: 'No Content' });
+    await new Promise((resolve) => setTimeout(resolve));
+    http.expectOne('/api/me').flush({ id: 'u1', kind: 'registered', displayName: 'Gail', email: 'g@b.c', hasPassword: true });
+    expect(await done).toBe(true);
+    expect(TestBed.inject(AuthService).me()?.hasPassword).toBe(true);
   });
 
   it('changePassword answers false and shows the error for a wrong current password', async () => {

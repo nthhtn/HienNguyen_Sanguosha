@@ -18,6 +18,15 @@ describe('AuthService', () => {
   });
   afterEach(() => http.verify());
 
+  it('providers() asks which sign-in options are on, and says Google is off when the call fails', async () => {
+    const on = auth.providers();
+    http.expectOne({ method: 'GET', url: '/api/auth/providers' }).flush({ google: true });
+    expect(await on).toEqual({ google: true });
+    const off = auth.providers();
+    http.expectOne('/api/auth/providers').error(new ProgressEvent('error'), { status: 0 });
+    expect(await off).toEqual({ google: false });
+  });
+
   it('load() reads /api/me', async () => {
     const done = auth.load();
     http.expectOne({ method: 'GET', url: '/api/me' }).flush(ANN);

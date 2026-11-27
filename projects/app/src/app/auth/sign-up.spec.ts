@@ -4,7 +4,7 @@ import { ApiError, AuthService } from './auth.service';
 import { SignUp } from './sign-up';
 
 describe('SignUp', () => {
-  const auth = { signUp: jest.fn() };
+  const auth = { signUp: jest.fn(), providers: jest.fn() };
 
   async function create() {
     await TestBed.configureTestingModule({
@@ -16,7 +16,10 @@ describe('SignUp', () => {
     return { fixture, component: fixture.componentInstance, el: fixture.nativeElement as HTMLElement, router: TestBed.inject(Router) };
   }
 
-  beforeEach(() => auth.signUp.mockReset());
+  beforeEach(() => {
+    auth.signUp.mockReset();
+    auth.providers.mockReset().mockResolvedValue({ google: true });
+  });
 
   it('has the Create Account title and the three fields', async () => {
     const { el } = await create();
@@ -24,6 +27,13 @@ describe('SignUp', () => {
     const labels = [...el.querySelectorAll('mat-label')].map((l) => l.textContent?.trim());
     expect(labels).toEqual(['Email', 'Password', 'Your Name']);
     expect(el.querySelector('.password-hint')?.textContent).toContain('At least 8 characters');
+  });
+
+  it('offers Continue with Google', async () => {
+    const { fixture, el } = await create();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(el.querySelector('a.google-button')?.getAttribute('href')).toBe('/api/auth/google/start');
   });
 
   it('creates the account and goes to Setup', async () => {
