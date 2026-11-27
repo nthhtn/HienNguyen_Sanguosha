@@ -58,11 +58,14 @@ export class ProfileService {
   }
 
   // True when the password was changed; the other devices are signed out by the server.
-  async changePassword(currentPassword: string, newPassword: string): Promise<boolean> {
+  // `currentPassword` is null for an account with no password yet (it signed in with Google).
+  async changePassword(currentPassword: string | null, newPassword: string): Promise<boolean> {
     this._actionError.set(null);
-    const body: ChangePasswordBody = { currentPassword, newPassword };
+    const body: ChangePasswordBody = currentPassword === null ? { newPassword } : { currentPassword, newPassword };
     try {
       await firstValueFrom(this.http.post<void>('/api/me/password', body));
+      // The account may have just got its first password: the page shows what the server now says.
+      await this.auth.load();
       return true;
     } catch (err) {
       const failure = toApiError(err);

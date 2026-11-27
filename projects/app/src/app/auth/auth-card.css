@@ -45,3 +45,9 @@ form {
 .links a {
   color: var(--mat-sys-primary);
 }
+
+.google-button {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}

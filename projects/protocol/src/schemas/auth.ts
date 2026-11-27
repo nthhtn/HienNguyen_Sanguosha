@@ -18,7 +18,12 @@ export const MeSchema = Type.Object({
   kind: Type.Union([Type.Literal('registered'), Type.Literal('guest')]),
   displayName: Type.String(),
   email: Type.Optional(Type.String()),
+  // Registered users only: false for a Google-only account that has not set a password.
+  hasPassword: Type.Optional(Type.Boolean()),
 });
+
+// GET /api/auth/providers: which sign-in options the server has set up.
+export const AuthProvidersSchema = Type.Object({ google: Type.Boolean() });
 
 export const MessageBodySchema = Type.Object({ message: Type.String() });
 export const ErrorBodySchema = Type.Object({ code: Type.String(), message: Type.String() });

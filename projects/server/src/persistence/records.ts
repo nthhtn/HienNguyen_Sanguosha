@@ -146,3 +146,14 @@ export interface UnrecordedGame {
   game: GameRecord;
   userIds: Record<string, string>;
 }
+
+// A way to sign in that is not a password: the provider's own id for the user.
+export interface IdentityRecord {
+  id: string;
+  userId: string;
+  provider: 'google';
+  providerUserId: string;
+  // The email the provider reported when the identity was made.
+  email: string;
+  createdAt: Date;
+}

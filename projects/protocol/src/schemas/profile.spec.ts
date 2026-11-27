@@ -14,8 +14,12 @@ describe('profile schemas', () => {
     expect(Value.Check(UpdateProfileBodySchema, { displayName: 'x'.repeat(500) })).toBe(false);
   });
 
-  it('requires both passwords, caps their length, and leaves the length rule to the server', () => {
-    expect(Value.Check(ChangePasswordBodySchema, { newPassword: 'secret-pass' })).toBe(false);
+  it('allows no current password (a Google-only account sets its first), but always requires the new one', () => {
+    expect(Value.Check(ChangePasswordBodySchema, { newPassword: 'secret-pass' })).toBe(true);
+    expect(Value.Check(ChangePasswordBodySchema, { currentPassword: 'a' })).toBe(false);
+  });
+
+  it('caps password lengths, and leaves the length rule to the server', () => {
     expect(Value.Check(ChangePasswordBodySchema, { currentPassword: 'a', newPassword: 'x'.repeat(201) })).toBe(false);
     expect(Value.Check(ChangePasswordBodySchema, { currentPassword: 'a', newPassword: 'short' })).toBe(true);
   });

@@ -8,11 +8,12 @@ import { DISPLAY_NAME_MAX, EMAIL_MAX, PASSWORD_MAX, PASSWORD_MIN } from 'protoco
 import { errorMsg, AuthService } from './auth.service';
 import { TMsgPipe, type Msg } from '../i18n/msg';
 import { TPipe } from '../i18n/t.pipe';
+import { GoogleButton } from './google-button';
 import { returnUrlParams, safeReturnUrl } from './return-url';
 
 @Component({
   selector: 'app-sign-up',
-  imports: [RouterLink, MatButtonModule, MatCardModule, MatFormFieldModule, MatInputModule, TPipe, TMsgPipe],
+  imports: [RouterLink, MatButtonModule, MatCardModule, MatFormFieldModule, MatInputModule, TPipe, TMsgPipe, GoogleButton],
   styleUrl: './auth-card.css',
   template: `
     <div class="auth-page">
@@ -38,6 +39,7 @@ import { returnUrlParams, safeReturnUrl } from './return-url';
             }
             <button mat-flat-button class="submit" type="submit" [disabled]="busy() || !canSubmit()">{{ 'nav.createAccount' | t }}</button>
           </form>
+          <app-google-button [returnUrl]="returnUrl" />
           <div class="links">
             <a routerLink="/sign-in" [queryParams]="returnParams">{{ 'nav.signIn' | t }}</a>
             <a routerLink="/guest" [queryParams]="returnParams">{{ 'auth.playAsGuest' | t }}</a>
@@ -50,7 +52,7 @@ import { returnUrlParams, safeReturnUrl } from './return-url';
 export class SignUp {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
-  private readonly returnUrl = inject(ActivatedRoute).snapshot.queryParamMap.get('returnUrl');
+  protected readonly returnUrl = inject(ActivatedRoute).snapshot.queryParamMap.get('returnUrl');
   protected readonly returnParams = returnUrlParams(this.returnUrl);
   protected readonly emailMax = EMAIL_MAX;
   protected readonly passwordMax = PASSWORD_MAX;

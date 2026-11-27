@@ -1,6 +1,6 @@
 import { Selectable } from 'kysely';
-import { ChatMessageRecord, GameActionRecord, GameRecord, ResetTokenRecord, RoomPlayerRecord, RoomRecord, SessionRecord, UserGameRecord, UserRecord } from '../records';
-import { ChatMessagesTable, GameActionsTable, GamesTable, PasswordResetTokensTable, RoomPlayersTable, RoomsTable, SessionsTable, UsersTable } from './schema';
+import { ChatMessageRecord, GameActionRecord, GameRecord, IdentityRecord, ResetTokenRecord, RoomPlayerRecord, RoomRecord, SessionRecord, UserGameRecord, UserRecord } from '../records';
+import { ChatMessagesTable, GameActionsTable, GamesTable, IdentitiesTable, PasswordResetTokensTable, RoomPlayersTable, RoomsTable, SessionsTable, UsersTable } from './schema';
 
 export function toUserRecord(row: Selectable<UsersTable>): UserRecord {
   return {
@@ -14,6 +14,10 @@ export function toUserRecord(row: Selectable<UsersTable>): UserRecord {
     updatedAt: row.updated_at,
     lastSeenAt: row.last_seen_at,
   };
+}
+
+export function toIdentityRecord(row: Selectable<IdentitiesTable>): IdentityRecord {
+  return { id: row.id, userId: row.user_id, provider: row.provider, providerUserId: row.provider_user_id, email: row.email, createdAt: row.created_at };
 }
 
 export function toSessionRecord(row: Selectable<SessionsTable>): SessionRecord {

@@ -19,12 +19,14 @@ const auth = {
   playAsGuest: jest.fn(),
   forgotPassword: jest.fn(),
   resetPassword: jest.fn(),
+  providers: jest.fn(),
 };
 
 describe('Auth screens in Vietnamese', () => {
   beforeEach(async () => {
     localStorage.clear();
     Object.values(auth).forEach((fn) => fn.mockReset());
+    auth.providers.mockResolvedValue({ google: false });
     TestBed.configureTestingModule({ providers: [{ provide: AuthService, useValue: auth }, provideRouter([])] });
     await TestBed.inject(I18n).setLocale('vi');
   });
@@ -42,6 +44,14 @@ describe('Auth screens in Vietnamese', () => {
     expect([...el.querySelectorAll('mat-label')].map(text)).toEqual(['Email', 'Mật khẩu']);
     expect(text(el.querySelector('button.submit'))).toBe('Đăng nhập');
     expect([...el.querySelectorAll('.links a')].map(text)).toEqual(['Quên mật khẩu', 'Tạo tài khoản', 'Chơi với tư cách khách']);
+  });
+
+  it('sign in: the Google button, in Vietnamese, when Google is on', async () => {
+    auth.providers.mockResolvedValue({ google: true });
+    const { fixture, el } = render(SignIn);
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(text(el.querySelector('a.google-button'))).toBe('Tiếp tục với Google');
   });
 
   it('sign in: a refused sign-in shows the server error by its code, in Vietnamese', async () => {

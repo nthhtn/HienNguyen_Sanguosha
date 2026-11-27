@@ -5,7 +5,7 @@ import { CHAT_BODY_MAX, DISPLAY_NAME_MAX, ERROR_MESSAGES, PASSWORD_MIN } from 'p
 import { en } from '../i18n/en';
 import { msg, type Msg } from '../i18n/msg';
 import type { MessageKey, MessageParams } from '../i18n/messages';
-import type { ErrorBody, ForgotPasswordBody, GuestBody, Me, MessageBody, ResetPasswordBody, SignInBody, SignUpBody, UpdateProfileBody } from 'protocol';
+import type { AuthProviders, ErrorBody, ForgotPasswordBody, GuestBody, Me, MessageBody, ResetPasswordBody, SignInBody, SignUpBody, UpdateProfileBody } from 'protocol';
 
 // A failed API call: the server's code and message, ready to show.
 export class ApiError extends Error {
@@ -98,6 +98,15 @@ export class AuthService {
     }
     this.current.set(me);
     return me;
+  }
+
+  // Which sign-in options the server has set up; Google counts as off when it cannot be asked.
+  async providers(): Promise<AuthProviders> {
+    try {
+      return await firstValueFrom(this.http.get<AuthProviders>('/api/auth/providers'));
+    } catch {
+      return { google: false };
+    }
   }
 
   async signOut(): Promise<void> {

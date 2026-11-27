@@ -1,6 +1,8 @@
 import { GameHistory } from '../game/history';
 import { ProfileService } from '../profile/profileService';
+import { GoogleClient } from '../auth/google';
 import { registerGameRoutes } from './gameRoutes';
+import { registerGoogleRoutes } from './googleRoutes';
 import { registerProfileRoutes } from './profileRoutes';
 import cookie from '@fastify/cookie';
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
@@ -29,6 +31,8 @@ export interface AppDeps {
   rooms: RoomService;
   history: GameHistory;
   profile: ProfileService;
+  // Null or unset turns Google sign-in off.
+  google?: GoogleClient | null;
   publicOrigin: string;
   // Heartbeat and hello timeouts; tests shorten them.
   socket?: SocketOptions;
@@ -99,6 +103,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     now: clock,
   });
 
+  registerGoogleRoutes(app, { accounts: deps.accounts, google: deps.google ?? null, limits, cookieSecure: deps.cookieSecure, production, now: clock });
   registerRoomRoutes(app, { rooms: deps.rooms });
   registerGameRoutes(app, { history: deps.history });
   registerProfileRoutes(app, { profile: deps.profile, limits, now: clock });

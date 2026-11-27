@@ -35,9 +35,10 @@ export class ProfileService {
   }
 
   // The session `sessionId` stays signed in; every other one of the user is
-  // revoked, and any reset link still out is voided.
-  async changePassword(user: UserRecord, sessionId: string, input: { currentPassword: string; newPassword: string }): Promise<void> {
-    if (!user.passwordHash || !(await verifyPassword(input.currentPassword, user.passwordHash))) throw new AuthError('invalid_credentials');
+  // revoked, and any reset link still out is voided. An account with no password
+  // yet (it signed in with Google) sets its first without a current one.
+  async changePassword(user: UserRecord, sessionId: string, input: { currentPassword?: string; newPassword: string }): Promise<void> {
+    if (user.passwordHash && (!input.currentPassword || !(await verifyPassword(input.currentPassword, user.passwordHash)))) throw new AuthError('invalid_credentials');
     requirePassword(input.newPassword);
     const passwordHash = await hashPassword(input.newPassword);
     const now = this.now();

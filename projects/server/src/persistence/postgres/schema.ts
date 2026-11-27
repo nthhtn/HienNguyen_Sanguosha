@@ -19,6 +19,15 @@ export interface UsersTable {
   last_seen_at: Timestamp;
 }
 
+export interface IdentitiesTable {
+  id: Generated<string>;
+  user_id: string;
+  provider: 'google';
+  provider_user_id: string;
+  email: string;
+  created_at: Timestamp;
+}
+
 export interface SessionsTable {
   id: Generated<string>;
   user_id: string;
@@ -115,6 +124,7 @@ export interface Database {
   chat_messages: ChatMessagesTable;
   users: UsersTable;
   sessions: SessionsTable;
+  identities: IdentitiesTable;
   password_reset_tokens: PasswordResetTokensTable;
   rooms: RoomsTable;
   room_players: RoomPlayersTable;

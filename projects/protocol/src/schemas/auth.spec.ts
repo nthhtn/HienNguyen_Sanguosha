@@ -1,5 +1,5 @@
 import { Value } from '@sinclair/typebox/value';
-import { GuestBodySchema, MeSchema, ResetPasswordBodySchema, SignInBodySchema, SignUpBodySchema } from './index';
+import { AuthProvidersSchema, GuestBodySchema, MeSchema, ResetPasswordBodySchema, SignInBodySchema, SignUpBodySchema } from './index';
 
 describe('auth schemas', () => {
   it('accepts a sign-up body, including an email with surrounding spaces', () => {
@@ -26,6 +26,17 @@ describe('auth schemas', () => {
   it('requires a display name for a guest', () => {
     expect(Value.Check(GuestBodySchema, {})).toBe(false);
     expect(Value.Check(GuestBodySchema, { displayName: 'Guest' })).toBe(true);
+  });
+
+  it('accepts hasPassword true and false on Me', () => {
+    expect(Value.Check(MeSchema, { id: 'u', kind: 'registered', displayName: 'Ann', email: 'a@b.c', hasPassword: true })).toBe(true);
+    expect(Value.Check(MeSchema, { id: 'u', kind: 'registered', displayName: 'Ann', email: 'a@b.c', hasPassword: false })).toBe(true);
+    expect(Value.Check(MeSchema, { id: 'u', kind: 'registered', displayName: 'Ann', hasPassword: 'yes' })).toBe(false);
+  });
+
+  it('describes which providers are on', () => {
+    expect(Value.Check(AuthProvidersSchema, { google: true })).toBe(true);
+    expect(Value.Check(AuthProvidersSchema, {})).toBe(false);
   });
 
   it('describes a guest Me without an email and a registered one with it', () => {

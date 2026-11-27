@@ -8,11 +8,13 @@ import { EMAIL_MAX, PASSWORD_MAX } from 'protocol';
 import { errorMsg, AuthService } from './auth.service';
 import { TMsgPipe, type Msg } from '../i18n/msg';
 import { TPipe } from '../i18n/t.pipe';
+import { googleErrorMsg } from './google-errors';
+import { GoogleButton } from './google-button';
 import { returnUrlParams, safeReturnUrl } from './return-url';
 
 @Component({
   selector: 'app-sign-in',
-  imports: [RouterLink, MatButtonModule, MatCardModule, MatFormFieldModule, MatInputModule, TPipe, TMsgPipe],
+  imports: [RouterLink, MatButtonModule, MatCardModule, MatFormFieldModule, MatInputModule, TPipe, TMsgPipe, GoogleButton],
   styleUrl: './auth-card.css',
   template: `
     <div class="auth-page">
@@ -33,6 +35,7 @@ import { returnUrlParams, safeReturnUrl } from './return-url';
             }
             <button mat-flat-button class="submit" type="submit" [disabled]="busy() || !canSubmit()">{{ 'nav.signIn' | t }}</button>
           </form>
+          <app-google-button [returnUrl]="returnUrl" />
           <div class="links">
             <a routerLink="/forgot-password">{{ 'auth.forgotPassword' | t }}</a>
             <a routerLink="/sign-up" [queryParams]="returnParams">{{ 'nav.createAccount' | t }}</a>
@@ -46,14 +49,15 @@ import { returnUrlParams, safeReturnUrl } from './return-url';
 export class SignIn {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
-  private readonly returnUrl = inject(ActivatedRoute).snapshot.queryParamMap.get('returnUrl');
+  protected readonly returnUrl = inject(ActivatedRoute).snapshot.queryParamMap.get('returnUrl');
   protected readonly returnParams = returnUrlParams(this.returnUrl);
   protected readonly emailMax = EMAIL_MAX;
   protected readonly passwordMax = PASSWORD_MAX;
 
   readonly email = signal('');
   readonly password = signal('');
-  readonly error = signal<Msg | null>(null);
+  // Google sends a player back here with ?error=<code> when it did not work out.
+  readonly error = signal<Msg | null>(googleErrorMsg(inject(ActivatedRoute).snapshot.queryParamMap.get('error')));
   readonly busy = signal(false);
   protected readonly canSubmit = computed(() => this.email().trim() !== '' && this.password() !== '');
 

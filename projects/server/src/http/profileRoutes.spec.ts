@@ -19,7 +19,7 @@ async function setup(rateLimits = new AuthRateLimits({ ...RATE_LIMITS, signUpPer
   const accounts = new AccountService({ repos, mailer: new RecordingMailer(), publicOrigin: ORIGIN });
   const rooms = new RoomService({ repos, seatLimits: { min: 2, max: 6 } });
   const app = await buildApp({ accounts, rooms, history: new GameHistory(repos), profile: new ProfileService({ repos }), publicOrigin: ORIGIN, cookieSecure: false, rateLimits });
-  return { app, repos };
+  return { app, repos, accounts };
 }
 
 const token = (res: LightMyRequestResponse) => res.cookies.find((c) => c.name === 'sgs_session')!.value;
@@ -119,6 +119,24 @@ describe('POST /api/me/password', () => {
     expect((await attempt()).statusCode).toBe(401);
     expect((await attempt()).statusCode).toBe(401);
     expect((await attempt()).statusCode).toBe(429);
+  });
+
+  it('lets a Google account set its first password without a current one, and then reports hasPassword', async () => {
+    const { app, accounts } = await setup();
+    const result = await accounts.signInWithGoogle({ sub: 'g1', email: 'gail@example.com', emailVerified: true, name: 'Gail' });
+    if (!('signedIn' in result)) throw new Error('refused');
+    const session = result.signedIn.token;
+    expect((await get(app, '/api/me', session)).json().hasPassword).toBe(false);
+    expect((await send(app, 'POST', '/api/me/password', { newPassword: 'first-password' }, session)).statusCode).toBe(204);
+    expect((await get(app, '/api/me', session)).json().hasPassword).toBe(true);
+    expect((await send(app, 'POST', '/api/me/password', { newPassword: 'second-password' }, session)).statusCode).toBe(401);
+  });
+
+  it('answers 401 invalid_credentials for a password account that leaves the current password out', async () => {
+    const { app } = await setup();
+    const ann = await signUp(app);
+    const res = await send(app, 'POST', '/api/me/password', { newPassword: 'another-pass' }, ann.session);
+    expect([res.statusCode, res.json().code]).toEqual([401, 'invalid_credentials']);
   });
 
   it('refuses a guest and a signed-out request', async () => {

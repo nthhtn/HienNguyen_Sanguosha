@@ -5,7 +5,7 @@ import { AccountService, SignedIn } from '../auth/accounts';
 import { AuthRateLimits } from '../auth/rateLimits';
 import { toMe } from '../views/me';
 import { errorBody } from './errors';
-import { clearSessionCookie, SESSION_COOKIE, sessionCookieSecure, setSessionCookie } from './session';
+import { beginSession, clearSessionCookie, SESSION_COOKIE, sessionCookieSecure } from './session';
 import { TypedApp } from './types';
 
 export interface AuthRouteDeps {
@@ -31,9 +31,7 @@ export function registerAuthRoutes(app: TypedApp, deps: AuthRouteDeps): void {
   };
 
   const signedIn = async (request: FastifyRequest, reply: FastifyReply, result: SignedIn, status: number) => {
-    await endCurrentSession(request);
-    const secure = sessionCookieSecure(production, cookieSecure, request.headers);
-    setSessionCookie(reply, result.token, result.expiresAt, secure);
+    await beginSession(request, reply, accounts, result, { production, cookieSecure });
     return reply.code(status).send(toMe(result.user));
   };
 

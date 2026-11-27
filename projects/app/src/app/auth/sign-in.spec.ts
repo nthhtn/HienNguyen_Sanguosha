@@ -6,7 +6,7 @@ import { SignIn } from './sign-in';
 const ANN = { id: 'u1', kind: 'registered' as const, displayName: 'Ann', email: 'ann@example.com' };
 
 describe('SignIn', () => {
-  const auth = { signIn: jest.fn() };
+  const auth = { signIn: jest.fn(), providers: jest.fn() };
 
   async function create(url = '/sign-in') {
     await TestBed.configureTestingModule({
@@ -26,7 +26,10 @@ describe('SignIn', () => {
     return { fixture, component: fixture.componentInstance, el: fixture.nativeElement as HTMLElement, router: TestBed.inject(Router) };
   }
 
-  beforeEach(() => auth.signIn.mockReset());
+  beforeEach(() => {
+    auth.signIn.mockReset();
+    auth.providers.mockReset().mockResolvedValue({ google: true });
+  });
 
   it('has the Sign In title, fields and links', async () => {
     const { el } = await create();
@@ -35,6 +38,28 @@ describe('SignIn', () => {
     expect(el.querySelector('input.password')?.getAttribute('type')).toBe('password');
     const links = [...el.querySelectorAll('.links a')].map((a) => a.textContent?.trim());
     expect(links).toEqual(['Forgot Password', 'Create Account', 'Play as Guest']);
+  });
+
+  it('offers Continue with Google, passing on the return URL', async () => {
+    const { fixture, el } = await create('/sign-in?returnUrl=%2Frooms');
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(el.querySelector('a.google-button')?.getAttribute('href')).toBe('/api/auth/google/start?returnUrl=%2Frooms');
+  });
+
+  it.each([
+    ['google_email_in_use', 'That email already has a password account. Sign in with your password'],
+    ['google_failed', 'Google sign-in did not work. Try again'],
+    ['google_cancelled', 'Google sign-in was cancelled'],
+    ['google_unverified', 'Your Google email is not verified'],
+  ])('shows what went wrong when Google sent the player back with error=%s', async (code, text) => {
+    const { el } = await create(`/sign-in?error=${code}`);
+    expect(el.querySelector('.error')?.textContent?.trim()).toBe(text);
+  });
+
+  it('shows nothing for an error code it does not know', async () => {
+    const { el } = await create('/sign-in?error=whatever');
+    expect(el.querySelector('.error')).toBeNull();
   });
 
   it('signs in with the trimmed email, typed through the form, then goes to Setup', async () => {

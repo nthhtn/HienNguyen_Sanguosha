@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { ActionSource } from 'protocol';
 import { GameSeat, SeatResultRecord } from './records';
-import { EmailTakenError, NameTakenError, NewGameAction, RepositoryHarness, StaleGameError } from './repositories';
+import { EmailTakenError, IdentityTakenError, NameTakenError, NewGameAction, RepositoryHarness, StaleGameError } from './repositories';
 
 const NOW = new Date('2026-10-13T12:00:00.000Z');
 const minutes = (n: number) => new Date(NOW.getTime() + n * 60_000);
@@ -744,6 +744,72 @@ export function describeRepositoryContract(open: () => Promise<RepositoryHarness
       expect((await repos().games.listUnrecordedFinishedGames()).some((entry) => entry.game.id === game.id)).toBe(true);
       await repos().games.markSeatResultsFailed(game.id, minutes(3));
       expect((await repos().games.listUnrecordedFinishedGames()).some((entry) => entry.game.id === game.id)).toBe(false);
+    });
+  });
+
+  describe('Google users and identities', () => {
+    const google = (email = freshEmail()) => repos().users.createFromGoogle({ email, displayName: 'Gail', now: NOW });
+    const sub = () => `sub-${randomUUID()}`;
+
+    it('creates a registered user with no password and a verified email', async () => {
+      const email = freshEmail();
+      const user = await google(email);
+      expect(user).toEqual({ id: expect.any(String), kind: 'registered', email, passwordHash: null, displayName: 'Gail', emailVerifiedAt: NOW, createdAt: NOW, updatedAt: NOW, lastSeenAt: NOW });
+      expect(await repos().users.findByEmail(email.toUpperCase())).toEqual(user);
+    });
+
+    it('refuses a taken email in any case, for a password user or a Google user', async () => {
+      const email = freshEmail();
+      await registered(email);
+      await expect(google(email.toUpperCase())).rejects.toBeInstanceOf(EmailTakenError);
+      const other = freshEmail();
+      await google(other);
+      await expect(google(other.toUpperCase())).rejects.toBeInstanceOf(EmailTakenError);
+    });
+
+    it('finds an identity by provider and Google id, and null for an unknown one', async () => {
+      const user = await google();
+      const providerUserId = sub();
+      const identity = await repos().identities.create({ userId: user.id, provider: 'google', providerUserId, email: user.email!, now: NOW });
+      expect(identity).toEqual({ id: expect.any(String), userId: user.id, provider: 'google', providerUserId, email: user.email, createdAt: NOW });
+      expect(await repos().identities.findByProviderUser('google', providerUserId)).toEqual(identity);
+      expect(await repos().identities.findByProviderUser('google', sub())).toBeNull();
+    });
+
+    it('refuses a second identity for the same Google id', async () => {
+      const first = await google();
+      const second = await google();
+      const providerUserId = sub();
+      await repos().identities.create({ userId: first.id, provider: 'google', providerUserId, email: 'a@example.com', now: NOW });
+      await expect(repos().identities.create({ userId: second.id, provider: 'google', providerUserId, email: 'b@example.com', now: NOW })).rejects.toBeInstanceOf(IdentityTakenError);
+    });
+
+    it('refuses a second Google identity for one user', async () => {
+      const user = await google();
+      await repos().identities.create({ userId: user.id, provider: 'google', providerUserId: sub(), email: 'a@example.com', now: NOW });
+      await expect(repos().identities.create({ userId: user.id, provider: 'google', providerUserId: sub(), email: 'a@example.com', now: NOW })).rejects.toBeInstanceOf(IdentityTakenError);
+    });
+
+    it('removes the identities of a deleted user', async () => {
+      const guest = await repos().users.createGuest({ displayName: 'Guest', now: NOW });
+      const providerUserId = sub();
+      await repos().identities.create({ userId: guest.id, provider: 'google', providerUserId, email: 'g@example.com', now: NOW });
+      await repos().users.deleteIdleGuests(minutes(60));
+      expect(await repos().identities.findByProviderUser('google', providerUserId)).toBeNull();
+    });
+
+    it('leaves neither the user nor the identity when the transaction fails after both writes', async () => {
+      const email = freshEmail();
+      const providerUserId = sub();
+      await expect(
+        repos().transaction(async (tx) => {
+          const user = await tx.users.createFromGoogle({ email, displayName: 'Gail', now: NOW });
+          await tx.identities.create({ userId: user.id, provider: 'google', providerUserId, email, now: NOW });
+          throw new Error('stop');
+        })
+      ).rejects.toThrow('stop');
+      expect(await repos().users.findByEmail(email)).toBeNull();
+      expect(await repos().identities.findByProviderUser('google', providerUserId)).toBeNull();
     });
   });
 }
