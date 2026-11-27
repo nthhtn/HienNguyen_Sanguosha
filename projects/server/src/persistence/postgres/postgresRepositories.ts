@@ -5,6 +5,8 @@ import {
   GameChanges,
   ChatRepository,
   GameRepository,
+  IdentityRepository,
+  IdentityTakenError,
   LiveRoomRecord,
   NameTakenError,
   NewChatMessage,
@@ -17,7 +19,7 @@ import {
   StaleGameError,
   UserRepository,
 } from '../repositories';
-import { toChatMessageRecord, toUserGameRecord, toGameActionRecord, toGameRecord, toResetTokenRecord, toRoomPlayerRecord, toRoomRecord, toSessionRecord, toUserRecord } from './mappers';
+import { toChatMessageRecord, toIdentityRecord, toUserGameRecord, toGameActionRecord, toGameRecord, toResetTokenRecord, toRoomPlayerRecord, toRoomRecord, toSessionRecord, toUserRecord } from './mappers';
 import { Database, GamesTable } from './schema';
 
 const UNIQUE_VIOLATION = '23505';
@@ -31,6 +33,7 @@ export function createPostgresRepositories(db: Kysely<Database>): Repositories {
   return {
     users: new PostgresUsers(db),
     sessions: new PostgresSessions(db),
+    identities: new PostgresIdentities(db),
     resetTokens: new PostgresResetTokens(db),
     rooms: new PostgresRooms(db),
     games: new PostgresGames(db),
@@ -60,6 +63,20 @@ class PostgresUsers implements UserRepository {
       return toUserRecord(row);
     } catch (err) {
       // `email` is citext UNIQUE, so another casing of the same email lands here.
+      if (isUniqueViolation(err)) throw new EmailTakenError();
+      throw err;
+    }
+  }
+
+  async createFromGoogle(input: { email: string; displayName: string; now: Date }): Promise<UserRecord> {
+    try {
+      const row = await this.db
+        .insertInto('users')
+        .values({ kind: 'registered', email: input.email, password_hash: null, display_name: input.displayName, email_verified_at: input.now, created_at: input.now, updated_at: input.now, last_seen_at: input.now })
+        .returningAll()
+        .executeTakeFirstOrThrow();
+      return toUserRecord(row);
+    } catch (err) {
       if (isUniqueViolation(err)) throw new EmailTakenError();
       throw err;
     }
@@ -100,6 +117,29 @@ class PostgresUsers implements UserRepository {
     // Sessions and reset tokens go with them (ON DELETE CASCADE).
     const result = await this.db.deleteFrom('users').where('kind', '=', 'guest').where('last_seen_at', '<', cutoff).executeTakeFirst();
     return Number(result.numDeletedRows);
+  }
+}
+
+class PostgresIdentities implements IdentityRepository {
+  constructor(private readonly db: Kysely<Database>) {}
+
+  async findByProviderUser(provider: 'google', providerUserId: string) {
+    const row = await this.db.selectFrom('identities').selectAll().where('provider', '=', provider).where('provider_user_id', '=', providerUserId).executeTakeFirst();
+    return row ? toIdentityRecord(row) : null;
+  }
+
+  async create(input: { userId: string; provider: 'google'; providerUserId: string; email: string; now: Date }) {
+    try {
+      const row = await this.db
+        .insertInto('identities')
+        .values({ user_id: input.userId, provider: input.provider, provider_user_id: input.providerUserId, email: input.email, created_at: input.now })
+        .returningAll()
+        .executeTakeFirstOrThrow();
+      return toIdentityRecord(row);
+    } catch (err) {
+      if (isUniqueViolation(err)) throw new IdentityTakenError();
+      throw err;
+    }
   }
 }
 

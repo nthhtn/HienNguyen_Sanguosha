@@ -1,10 +1,12 @@
 import { randomUUID } from 'node:crypto';
-import { ChatMessageRecord, GameActionRecord, GameRecord, ResetTokenRecord, RoomPlayerRecord, RoomRecord, SeatResultRecord, SessionRecord, ProfileGameRow, UnrecordedGame, UserGameRecord, UserRecord } from '../records';
+import { ChatMessageRecord, GameActionRecord, GameRecord, IdentityRecord, ResetTokenRecord, RoomPlayerRecord, RoomRecord, SeatResultRecord, SessionRecord, ProfileGameRow, UnrecordedGame, UserGameRecord, UserRecord } from '../records';
 import {
   EmailTakenError,
   GameChanges,
   ChatRepository,
   GameRepository,
+  IdentityRepository,
+  IdentityTakenError,
   LiveRoomRecord,
   NameTakenError,
   NewChatMessage,
@@ -21,6 +23,7 @@ import {
 interface Store {
   users: Map<string, UserRecord>;
   sessions: Map<string, SessionRecord>;
+  identities: Map<string, IdentityRecord>;
   resetTokens: Map<string, ResetTokenRecord>;
   rooms: Map<string, RoomRecord>;
   roomPlayers: Map<string, RoomPlayerRecord>;
@@ -33,7 +36,7 @@ interface Store {
 }
 
 type Table = keyof Store;
-const TABLES: readonly Table[] = ['users', 'sessions', 'resetTokens', 'rooms', 'roomPlayers', 'games', 'gameActions', 'chatMessages', 'seatResults', 'seatResultFailures'];
+const TABLES: readonly Table[] = ['users', 'sessions', 'identities', 'resetTokens', 'rooms', 'roomPlayers', 'games', 'gameActions', 'chatMessages', 'seatResults', 'seatResultFailures'];
 // Retries of a transaction whose records others changed under it, before giving up.
 const MAX_TRANSACTION_ATTEMPTS = 10;
 
@@ -41,13 +44,14 @@ const MAX_TRANSACTION_ATTEMPTS = 10;
 // and writes with no `await` between them, so concurrent calls can't interleave
 // (the uniqueness and single-use rules hold under Promise.all).
 export function createMemoryRepositories(): Repositories {
-  return repositoriesOver({ users: new Map(), sessions: new Map(), resetTokens: new Map(), rooms: new Map(), roomPlayers: new Map(), games: new Map(), gameActions: new Map(), chatMessages: new Map(), seatResults: new Map(), seatResultFailures: new Map() });
+  return repositoriesOver({ users: new Map(), sessions: new Map(), identities: new Map(), resetTokens: new Map(), rooms: new Map(), roomPlayers: new Map(), games: new Map(), gameActions: new Map(), chatMessages: new Map(), seatResults: new Map(), seatResultFailures: new Map() });
 }
 
 function repositoriesOver(store: Store): Repositories {
   return {
     users: new MemoryUsers(store),
     sessions: new MemorySessions(store),
+    identities: new MemoryIdentities(store),
     resetTokens: new MemoryResetTokens(store),
     rooms: new MemoryRooms(store),
     games: new MemoryGames(store),
@@ -95,6 +99,7 @@ const cloneMap = <T extends object>(map: Map<string, T>) => new Map([...map].map
 const cloneStore = (store: Store): Store => ({
   users: cloneMap(store.users),
   sessions: cloneMap(store.sessions),
+  identities: cloneMap(store.identities),
   resetTokens: cloneMap(store.resetTokens),
   rooms: cloneMap(store.rooms),
   roomPlayers: cloneMap(store.roomPlayers),
@@ -148,6 +153,13 @@ class MemoryUsers implements UserRepository {
     return { ...user };
   }
 
+  async createFromGoogle(input: { email: string; displayName: string; now: Date }): Promise<UserRecord> {
+    if (this.byEmail(input.email)) throw new EmailTakenError();
+    const user: UserRecord = { id: randomUUID(), kind: 'registered', email: input.email, passwordHash: null, displayName: input.displayName, emailVerifiedAt: input.now, createdAt: input.now, updatedAt: input.now, lastSeenAt: input.now };
+    this.store.users.set(user.id, user);
+    return { ...user };
+  }
+
   async createGuest(input: { displayName: string; now: Date }): Promise<UserRecord> {
     const user: UserRecord = {
       id: randomUUID(),
@@ -194,11 +206,30 @@ class MemoryUsers implements UserRepository {
       this.store.users.delete(user.id);
       for (const [id, session] of this.store.sessions) if (session.userId === user.id) this.store.sessions.delete(id);
       for (const [id, token] of this.store.resetTokens) if (token.userId === user.id) this.store.resetTokens.delete(id);
+      for (const [id, identity] of this.store.identities) if (identity.userId === user.id) this.store.identities.delete(id);
       for (const [key, result] of this.store.seatResults) if (result.userId === user.id) this.store.seatResults.delete(key);
       for (const player of this.store.roomPlayers.values()) if (player.userId === user.id) player.userId = null;
       deleted += 1;
     }
     return deleted;
+  }
+}
+
+class MemoryIdentities implements IdentityRepository {
+  constructor(private readonly store: Store) {}
+
+  async findByProviderUser(provider: 'google', providerUserId: string): Promise<IdentityRecord | null> {
+    for (const identity of this.store.identities.values()) if (identity.provider === provider && identity.providerUserId === providerUserId) return { ...identity };
+    return null;
+  }
+
+  async create(input: { userId: string; provider: 'google'; providerUserId: string; email: string; now: Date }): Promise<IdentityRecord> {
+    for (const identity of this.store.identities.values()) {
+      if (identity.provider === input.provider && (identity.providerUserId === input.providerUserId || identity.userId === input.userId)) throw new IdentityTakenError();
+    }
+    const identity: IdentityRecord = { id: randomUUID(), userId: input.userId, provider: input.provider, providerUserId: input.providerUserId, email: input.email, createdAt: input.now };
+    this.store.identities.set(identity.id, identity);
+    return { ...identity };
   }
 }
 

@@ -1,10 +1,17 @@
 import type { GameRules } from 'engine';
-import { ChatMessageRecord, GameActionRecord, GameRecord, GameSeat, ProfileGameRow, ResetTokenRecord, RoomPlayerRecord, RoomRecord, SeatResultRecord, SessionRecord, UnrecordedGame, UserGameRecord, UserRecord } from './records';
+import { ChatMessageRecord, GameActionRecord, GameRecord, GameSeat, ProfileGameRow, ResetTokenRecord, RoomPlayerRecord, IdentityRecord, RoomRecord, SeatResultRecord, SessionRecord, UnrecordedGame, UserGameRecord, UserRecord } from './records';
 
 export class EmailTakenError extends Error {
   constructor() {
     super('A user with that email already exists');
     this.name = 'EmailTakenError';
+  }
+}
+
+export class IdentityTakenError extends Error {
+  constructor() {
+    super('That sign-in identity already exists');
+    this.name = 'IdentityTakenError';
   }
 }
 
@@ -25,6 +32,8 @@ export class StaleGameError extends Error {
 export interface UserRepository {
   // Throws EmailTakenError when the email (compared case-insensitively) exists.
   createRegistered(input: { email: string; passwordHash: string; displayName: string; now: Date }): Promise<UserRecord>;
+  // A registered user who signed in with Google: no password, email verified. Throws EmailTakenError.
+  createFromGoogle(input: { email: string; displayName: string; now: Date }): Promise<UserRecord>;
   createGuest(input: { displayName: string; now: Date }): Promise<UserRecord>;
   findById(id: string): Promise<UserRecord | null>;
   // Case-insensitive.
@@ -34,6 +43,12 @@ export interface UserRepository {
   touch(userId: string, now: Date): Promise<void>;
   // Deletes guests last seen before `cutoff`, with their sessions; returns how many.
   deleteIdleGuests(cutoff: Date): Promise<number>;
+}
+
+export interface IdentityRepository {
+  findByProviderUser(provider: IdentityRecord['provider'], providerUserId: string): Promise<IdentityRecord | null>;
+  // Throws IdentityTakenError when the provider's id is already used, or the user already has one for that provider.
+  create(input: { userId: string; provider: IdentityRecord['provider']; providerUserId: string; email: string; now: Date }): Promise<IdentityRecord>;
 }
 
 export interface SessionRepository {
@@ -135,6 +150,7 @@ export interface ChatRepository {
 export interface Repositories {
   users: UserRepository;
   sessions: SessionRepository;
+  identities: IdentityRepository;
   resetTokens: ResetTokenRepository;
   rooms: RoomRepository;
   games: GameRepository;
