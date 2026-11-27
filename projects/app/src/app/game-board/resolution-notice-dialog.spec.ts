@@ -42,6 +42,15 @@ describe('ResolutionNoticeDialog', () => {
     expect(skill.el.querySelector('.source .who')!.textContent).toContain('Resurgence');
   });
 
+  it('names the card Blaze turned up, under the picture and in the step', () => {
+    const { el } = render(content({
+      steps: [{ key: 'notice.blaze.shown', params: { targetSeat: 'seat-1', card: 'sha', face: '7 ♥' } }],
+      cards: [{ card: { instanceId: 'c1', definitionId: 'sha', suit: 'heart', rank: 7 } }],
+    }));
+    expect(el.querySelector('.steps li')!.textContent!.trim()).toBe('Seat 1 showed Slash (7 ♥)');
+    expect(el.querySelector('.notice-card figcaption')!.textContent!.trim()).toBe('Slash (7 ♥)');
+  });
+
   it('shows the title, a portrait and name per seat, a line per step, and the cards', () => {
     const { el } = render(content());
     expect(el.querySelector('h2')!.textContent).toBe('Resolution');

@@ -122,8 +122,10 @@ export class TutorialOverlay {
   private readonly gate = inject(PlaybackGate);
   private readonly host: ElementRef<HTMLElement> = inject(ElementRef);
 
-  // The step on show: none before a lesson starts or once it has finished (the page then shows what comes next).
-  protected readonly active = computed(() => (this.tutorial.finished() ? null : this.tutorial.step()));
+  // The step on show: none before a lesson starts, once it has finished (the page then shows what comes next), or
+  // while the board is covered by the rotate or install prompt. A spotlight there would ring controls the prompt
+  // is hiding.
+  protected readonly active = computed(() => (this.tutorial.finished() || !this.layout.canPlay() ? null : this.tutorial.step()));
   private readonly phone = computed(() => this.layout.kind() === 'compact');
   // The step's anchor ids in the order to try them; none for a centred card.
   private readonly targetIds = computed<string[]>(

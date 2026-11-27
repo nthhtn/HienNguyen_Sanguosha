@@ -52,7 +52,7 @@ import { CompeteDialog } from './compete-dialog';
 import { JudgmentDialog, JudgmentDialogData } from './judgment-dialog';
 import { StartRevealDialog, StartRevealDialogData } from './start-reveal-dialog';
 import { judgmentDecision } from './judgment-decision';
-import { judgmentDescription } from './judgment-description';
+import { JudgmentDescription, judgmentDescription } from './judgment-description';
 import { CompeteResult, competeResults } from './compete-result';
 import { chainEffectsFor, damageEffectsFor, ShownDamage } from './damage-effects';
 import { spriteDurationMs } from './sprite-plan';
@@ -361,6 +361,11 @@ export class GameBoard {
   private discardDialog: MatDialogRef<DiscardDialog, string[]> | null = null;
   private responseDialog: MatDialogRef<ResponseDialog, Action> | null = null;
   private judgmentDialog: MatDialogRef<JudgmentDialog> | null = null;
+  // The description the open popup is playing. Kept after the judgment leaves the table until that
+  // popup's own sequence has finished, so a later state cannot cut the beats short.
+  private readonly shownJudgment = signal<JudgmentDescription | null>(null);
+  // True once the open stage has played its card and outcome, or when no stage is playing.
+  private judgmentSequenceDone = true;
   // A minimized decision is being closed and opened again in the current language.
   private rebuilding = false;
   private startRevealDialog: MatDialogRef<StartRevealDialog, Array<'main' | 'deputy'>> | null = null;
@@ -451,15 +456,12 @@ export class GameBoard {
         locale = next;
       });
     });
-    // A judgment on show: its popup is open while the judgment is, whatever the gate or the viewer's seat.
-    // It opens once playback has reached it, and stays open through any playback until the judgment ends.
+    // A judgment on show: its popup opens once playback has reached it, whatever the gate or the viewer's seat,
+    // and stays through any playback. A later state does not close it until its own sequence has finished.
     effect(() => {
-      const on = this.judgmentView() !== null;
+      const view = this.judgmentView();
       const reached = this.judgmentReached();
-      untracked(() => {
-        if (!on) this.closeDialog(this.judgmentDialog);
-        else if (reached) this.openJudgmentDialog();
-      });
+      untracked(() => this.syncJudgmentDialog(view, reached));
     });
     // Event sounds (soundsFor) for whatever the played log gained since the last look, so each sounds
     // with its beat. Beats that take no time play together and are heard together.
@@ -629,6 +631,14 @@ export class GameBoard {
   private readonly judgmentView = computed(() => {
     const state = this.gameService.publicState();
     return state ? judgmentDescription(state, this.gameService.registry, this.i18n.translator) : null;
+  });
+
+  // The notice countdown belongs to the judgment still on the table. A sequence finishing after the
+  // table has moved on does not show the next decision's clock.
+  private readonly judgmentCountdown = computed(() => {
+    const view = this.judgmentView();
+    const shown = this.shownJudgment();
+    return !!view && !!shown && view.key === shown.key;
   });
 
   // Whether playback has reached the judgment. The fold never carries a judgment, so the displayed state
@@ -847,22 +857,54 @@ export class GameBoard {
     });
   }
 
-  // Opens the judgment popup. It reads the description live, so a replacement or a language switch
-  // updates it in place. It closes when the engine's notice clock runs out; nobody can skip it.
+  // Opens the judgment popup, or keeps the one already open on the description it is playing.
+  // It reads that description live, so a replacement or a language switch updates it in place.
+  // It closes when the engine's notice clock runs out, and not before its own sequence has finished.
   private openJudgmentDialog(resumed = this.rebuilding): void {
-    const description = this.judgmentView();
+    const description = this.shownJudgment();
     if (this.judgmentDialog || !description) return;
     const data: JudgmentDialogData = {
-      description: this.judgmentView,
+      description: this.shownJudgment,
       decision: this.judgmentDecisionView,
       choose: (action) => this.submit(action),
       // A skill's decision whether to change the card is not remembered for a timeout: running out declines it.
       resumed,
       reveal: (seatId) => this.gameService.reveal(seatId),
+      done: () => this.finishJudgmentSequence(),
+      showCountdown: this.judgmentCountdown,
     };
     const ref = openForceDialog<JudgmentDialog, JudgmentDialogData>(this.dialog, JudgmentDialog, description.force, { data, width: 'min(92vw, 560px)', disableClose: true });
     this.judgmentDialog = ref;
     ref.beforeClosed().subscribe(() => (this.judgmentDialog = null));
+  }
+
+  // The stage has played the card and the outcome. A close that arrived during the beats can proceed.
+  private finishJudgmentSequence(): void {
+    this.judgmentSequenceDone = true;
+    // The open that created the stage may still be assigning the ref (reduced motion finishes at once).
+    if (!this.judgmentDialog) return;
+    this.syncJudgmentDialog(this.judgmentView(), this.judgmentReached());
+  }
+
+  // Shows the judgment playback has reached. While a settled sequence is still playing, a later state
+  // (the judgment leaving the table, or the next judgment) waits: the open stage keeps its beats.
+  private syncJudgmentDialog(view: JudgmentDescription | null, reached: boolean): void {
+    const shown = this.shownJudgment();
+    const playing = !!this.judgmentDialog && !!shown && !this.judgmentSequenceDone;
+    if (playing && view && view.key === shown.key) {
+      this.shownJudgment.set(view);
+      return;
+    }
+    if (playing && shown.settled) return;
+    if (!view || !reached) {
+      this.judgmentSequenceDone = true;
+      this.shownJudgment.set(null);
+      this.closeDialog(this.judgmentDialog);
+      return;
+    }
+    if (!shown || shown.key !== view.key) this.judgmentSequenceDone = false;
+    this.shownJudgment.set(view);
+    this.openJudgmentDialog();
   }
 
   // Closes the minimized decision dialog and opens its pending decision again in the current
@@ -888,7 +930,7 @@ export class GameBoard {
       const fresh = this.dialog.openDialogs.at(-1);
       if (!fresh) return;
       // Hidden from the moment it exists, so it never flashes; registered with the dock (title,
-      // banner) as soon as its content has rendered, through its own View Board button.
+      // banner) as soon as its content has rendered, through its own Minimize button.
       fresh.addPanelClass('decision-minimized');
       afterNextRender(() => (document.getElementById(fresh.id)?.querySelector('button.minimize') as HTMLButtonElement | null)?.click(), { injector: this.injector });
     });

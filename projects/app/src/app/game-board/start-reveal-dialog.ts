@@ -34,6 +34,7 @@ export interface StartRevealDialogData {
   template: `
     <div class="title-row">
       <h2 mat-dialog-title>{{ 'startReveal.title' | t }}</h2>
+      <app-decision-countdown class="header-timer" />
       <app-minimize-button />
     </div>
     <mat-dialog-content>
@@ -80,6 +81,7 @@ export interface StartRevealDialogData {
     .name { font-weight: 600; line-height: 1.2; overflow-wrap: anywhere; }
     .slot { color: var(--mat-sys-on-surface-variant); font: var(--mat-sys-label-large); line-height: 1.15; }
     .timer { display: block; padding: 8px 24px 0; }
+    :host-context([data-layout='compact']) .timer { display: none; }
     /* Phone board: both Generals on one row; tap the tile to select (spec 3h). */
     :host-context([data-layout='compact']) .hint { margin: 0 0 6px; }
     :host-context([data-layout='compact']) .generals {

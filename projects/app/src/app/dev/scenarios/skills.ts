@@ -5,14 +5,29 @@ import { act, emptyHand, give, giveOfSuit, playCard, playableGame, revealGeneral
 const SEED = 7;
 const ZHEN_JI = 'kingdomWars:zhen-ji';
 const GODDESS_LUO = 'kingdomWars:goddess-luo';
+const SIMA_YI = 'sima-yi';
+const DEVIL = 'devil';
 const XIAO_QIAO = 'xiao-qiao';
 const PARTNER = 'kingdomWars:guan-yu';
 
 const askedAbout = (s: GameState, abilityId: string): boolean =>
   getActiveSeatId(s) === 'seat-0' && s.pendingChoice?.reason.kind === 'ability' && s.pendingChoice.reason.abilityId === abilityId;
 
-const use = (state: GameState, registry: ContentRegistry): GameState =>
-  act(state, registry, { kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: state.pendingChoice!.id, optionId: 'use' });
+const choose = (state: GameState, registry: ContentRegistry, optionId: 'use' | 'decline'): GameState =>
+  act(state, registry, { kind: 'ChooseOptionAction', seatId: 'seat-0', choiceId: state.pendingChoice!.id, optionId });
+
+const use = (state: GameState, registry: ContentRegistry): GameState => choose(state, registry, 'use');
+
+// Zhen Ji with Sima Yi face up. Goddess Luo has set one black card aside, and Demonic Talent (Devil) is asking to
+// replace the next judgment with a hand card, so the chain and the alteration are both in the popup.
+function luoAndDemonicTalent(registry: ContentRegistry): GameState {
+  let state = revealGenerals(setGenerals(playableGame(registry, SEED, 4), registry, 'seat-0', ZHEN_JI, SIMA_YI), 'seat-0', ['main', 'deputy']);
+  state = stepUntil(setTurn(state, 'seat-1', 'Play'), registry, (s) => askedAbout(s, GODDESS_LUO), 400);
+  state = giveOfSuit(emptyHand(state, 'seat-0'), 'seat-0', 'heart', 1);
+  state = stackDrawPile(state, ['spade', 'club', 'heart']);
+  state = choose(use(state, registry), registry, 'decline');
+  return use(state, registry);
+}
 
 // Seat-0 plays Zhen Ji with her General face up. The bots play on until her Start Phase asks about Goddess Luo, and then the
 // draw pile is stacked so the judgments come up in `suits` order: black, black, red lets the whole chain play.
@@ -61,6 +76,17 @@ export const SKILL_SCENARIOS: BoardScenario[] = [
     seatCount: 4,
     build: (registry) => use(use(use(goddessLuoAsk(registry, ['spade', 'club', 'heart']), registry), registry), registry),
     reaches: (s) => awaitsAcknowledgement(s.judgmentView) && s.judgmentView?.aside?.length === 2 && s.judgmentView.card.suit === 'heart',
+  },
+  {
+    kind: 'board',
+    id: 'luo-demonic-talent',
+    group: 'Choice Prompts',
+    title: 'preview.luo-demonic-talent.title',
+    description: 'preview.luo-demonic-talent.description',
+    seatCount: 4,
+    build: luoAndDemonicTalent,
+    // The chain's first card is set aside; Devil is asking before this judgment settles, so `continuing` is not set yet.
+    reaches: (s) => askedAbout(s, DEVIL) && s.judgmentView?.settled === false && (s.judgmentView.aside?.length ?? 0) === 1,
   },
   {
     kind: 'board',

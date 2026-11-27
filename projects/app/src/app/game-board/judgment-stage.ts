@@ -113,18 +113,8 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
         </ul>
       }
 
-      <section class="cons" [class.on]="consequenceOn()">
-        @if (!d.settled) {
-          @if (decision(); as dec) {
-            @if (decisionOpen()) {
-              <ng-container [ngTemplateOutlet]="decideArea" [ngTemplateOutletContext]="{ $implicit: dec }" />
-            } @else if (d.waiting; as waiting) {
-              <p class="waiting"><span class="spin"></span>{{ waiting }}</p>
-            }
-          } @else if (d.waiting; as waiting) {
-            <p class="waiting"><span class="spin"></span>{{ waiting }}</p>
-          }
-        } @else {
+      @if (d.settled) {
+        <section class="cons" [class.on]="consequenceOn()">
           @switch (d.effect?.kind) {
             @case ('damage') {
               @if (hpView(); as hp) {
@@ -159,15 +149,28 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
           @if (d.outcome; as outcome) {
             <p class="line" [class.in]="consequenceOn()">{{ outcome }}</p>
           }
-          <!-- A chain's Judge again ask, once the verdict has played. -->
-          @if (d.continuing && tailDone()) {
-            @if (decision(); as dec) {
-              <ng-container [ngTemplateOutlet]="decideArea" [ngTemplateOutletContext]="{ $implicit: dec }" />
-            }
-          }
-        }
-      </section>
+        </section>
+      }
       </div>
+
+      <!-- The choice sits beside the card on a short screen, so its buttons stay on screen. -->
+      @if (!d.settled || (d.continuing && tailDone())) {
+        <section class="choice">
+          @if (!d.settled) {
+            @if (decision(); as dec) {
+              @if (decisionOpen()) {
+                <ng-container [ngTemplateOutlet]="decideArea" [ngTemplateOutletContext]="{ $implicit: dec }" />
+              } @else if (d.waiting; as waiting) {
+                <p class="waiting"><span class="spin"></span>{{ waiting }}</p>
+              }
+            } @else if (d.waiting; as waiting) {
+              <p class="waiting"><span class="spin"></span>{{ waiting }}</p>
+            }
+          } @else if (decision(); as dec) {
+            <ng-container [ngTemplateOutlet]="decideArea" [ngTemplateOutletContext]="{ $implicit: dec }" />
+          }
+        </section>
+      }
     </div>
 
     <ng-template #decideArea let-dec>
@@ -236,7 +239,7 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
     .aside-cards { display: flex; flex-wrap: wrap; gap: 6px; }
     .aside-card { animation: aside-in 0.35s ease-out both; }
     @keyframes aside-in { from { opacity: 0; transform: translateY(-10px); } }
-    .cons { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 12px; min-height: 110px; border-radius: 12px; border: 1px solid var(--mat-sys-outline-variant); }
+    .cons, .choice { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 12px; min-height: 110px; border-radius: 12px; border: 1px solid var(--mat-sys-outline-variant); }
     .decide { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px; }
     .pass { margin: 0; font: var(--mat-sys-title-medium); text-align: center; }
     .waiting { display: flex; align-items: center; gap: 10px; margin: 0; font: var(--mat-sys-body-large); color: var(--force-text); text-align: center; }
@@ -255,11 +258,38 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
     .cons.on .dmg { opacity: 1; }
     .line { margin: 0; font: var(--mat-sys-title-small); text-align: center; opacity: 0; transform: translateY(6px); transition: opacity 0.3s, transform 0.3s; }
     .line.in { opacity: 1; transform: none; }
-    /* The phone board (spec 3g): the outcome box is only as tall as its contents, and the stage is tighter. */
+    /* The phone board (spec 3g): the outcome box is only as tall as its contents, and the stage is tighter.
+       On a short landscape screen (iPhone 18 is 852 × 393) the card stays on the left and the choice on the
+       right, so Use, Cancel and Confirm are on screen. A long card pick scrolls inside its list. */
     :host-context([data-layout='compact']) .stage, :host-context([data-layout='compact']) .result { gap: 8px; }
-    :host-context([data-layout='compact']) .source { padding: 6px 12px; }
-    :host-context([data-layout='compact']) .arena { min-height: 0; padding: 0; }
-    :host-context([data-layout='compact']) .cons { min-height: 0; padding: 6px 12px; gap: 4px; }
+    :host-context([data-layout='compact']) .stage {
+      display: grid; grid-template-columns: 180px minmax(0, 1fr); align-items: center;
+      grid-template-areas: "result source" "result rule" "result choice"; column-gap: 12px; row-gap: 4px;
+    }
+    :host-context([data-layout='compact']) .result { grid-area: result; min-height: 0; max-height: 100%; overflow-y: auto; align-self: stretch; }
+    :host-context([data-layout='compact']) .source { grid-area: source; min-width: 0; padding: 4px 8px; align-items: center; }
+    :host-context([data-layout='compact']) .skill-text {
+      display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    :host-context([data-layout='compact']) .rule { grid-area: rule; min-width: 0; margin: 0; text-align: start; }
+    :host-context([data-layout='compact']) .arena { min-height: 0; padding: 0; gap: 12px; }
+    /* The outcome sentence sits under the set-aside cards and crowds them. On the phone it goes, and that
+       height belongs to the cards. The "Aside cards" label stays for screen readers only. */
+    :host-context([data-layout='compact']) .cons { display: none; }
+    :host-context([data-layout='compact']) .aside { flex: 1 1 auto; min-height: 0; align-items: stretch; padding: 6px; }
+    :host-context([data-layout='compact']) .aside-label {
+      position: absolute; width: 1px; height: 1px; margin: 0; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+    }
+    :host-context([data-layout='compact']) .aside-cards { flex: 1 1 auto; min-height: 0; overflow-y: auto; align-content: flex-start; }
+    :host-context([data-layout='compact']) .choice {
+      grid-area: choice; width: 100%; min-width: 0; min-height: 0; padding: 0; border: 0;
+      align-items: stretch; justify-content: flex-start;
+    }
+    /* A hand of cards is taller than the screen: the cards scroll and Cancel and Confirm stay under them. */
+    :host-context([data-layout='compact']) .decide app-decision-countdown { display: none; }
+    :host-context([data-layout='compact']) .choice app-selection-panel {
+      max-height: calc(100dvh - 220px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    }
     @media (prefers-reduced-motion: reduce) {
       .rise, .pc, .inner, .stamp, .verdict-label, .arrow, .line, .chip, .dmg { transition-duration: 0s !important; transition-delay: 0s !important; }
       .aside-card { animation: none; }

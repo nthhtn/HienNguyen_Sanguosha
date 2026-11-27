@@ -46,6 +46,7 @@ const NO_RESPONSE = 'no-response';
   template: `
     <div class="title-row">
       <h2 mat-dialog-title>{{ 'respDialog.title' | t }}</h2>
+      <app-decision-countdown class="header-timer" />
       <app-minimize-button [context]="data.description.source" />
     </div>
     <mat-dialog-content>
@@ -134,7 +135,7 @@ const NO_RESPONSE = 'no-response';
     :host-context([data-layout='compact']) .card-option app-playing-card { padding: 0; }
     :host-context([data-layout='compact']) .description p { margin-bottom: 2px; }
     :host-context([data-layout='compact']) .foot { display: flex; align-items: center; gap: 8px; }
-    :host-context([data-layout='compact']) .foot .timer { flex: 1 1 auto; min-width: 0; padding: 0 0 0 12px; }
+    :host-context([data-layout='compact']) .foot .timer { display: none; }
   `,
 })
 export class ResponseDialog {

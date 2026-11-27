@@ -20,6 +20,10 @@ import { TPipe } from '../i18n/t.pipe';
     }
   `,
   styles: `
+    /* In a title row only on the phone board. Wide layouts keep the clock at the foot. */
+    :host(.header-timer) { display: none; }
+    :host-context([data-layout='compact']).header-timer { display: flex; flex: 1 1 auto; min-width: 0; align-items: center; padding: 0 8px; }
+    :host-context([data-layout='compact']).header-timer .countdown { flex: 1 1 auto; min-width: 0; width: 100%; }
     .countdown { display: flex; align-items: center; gap: 6px; font: var(--mat-sys-label-large); color: var(--force-text, var(--mat-sys-on-surface-variant)); }
     .countdown mat-icon { font-size: 18px; width: 18px; height: 18px; }
     .seconds { min-width: 3ch; font-variant-numeric: tabular-nums; }

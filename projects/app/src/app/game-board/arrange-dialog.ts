@@ -32,6 +32,7 @@ interface Placed {
   template: `
     <div class="title-row">
       <h2 mat-dialog-title>{{ data.description.title }}</h2>
+      <app-decision-countdown class="header-timer" />
       <app-minimize-button />
     </div>
     <mat-dialog-content>
@@ -70,6 +71,7 @@ interface Placed {
     .place button.on { background: var(--mat-sys-primary); color: var(--mat-sys-on-primary); border-color: var(--mat-sys-primary); }
     .move button:disabled { opacity: 0.4; cursor: default; }
     .timer { display: block; padding: 8px 24px 0; }
+    :host-context([data-layout='compact']) .timer { display: none; }
     .cdk-drag-preview { box-shadow: 0 4px 12px rgb(0 0 0 / 30%); }
     .cdk-drag-placeholder { opacity: 0.3; }
   `,

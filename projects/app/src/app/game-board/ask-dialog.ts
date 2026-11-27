@@ -18,6 +18,7 @@ export interface AskDialogData {
   template: `
     <div class="title-row">
       <h2 mat-dialog-title>{{ data.description.title }}</h2>
+      <app-decision-countdown class="header-timer" />
       <app-minimize-button />
     </div>
     <mat-dialog-content>
@@ -28,6 +29,7 @@ export interface AskDialogData {
   `,
   styles: `
     .timer { display: block; padding: 8px 24px 0; }
+    :host-context([data-layout='compact']) .timer { display: none; }
   `,
 })
 export class AskDialog {

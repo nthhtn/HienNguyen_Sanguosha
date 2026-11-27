@@ -28,6 +28,7 @@ export interface DiscardDialogData {
   template: `
     <div class="title-row">
       <h2 mat-dialog-title>{{ (data.count === 1 ? 'discardDialog.title.one' : 'discardDialog.title.other') | t: { n: data.count } }}</h2>
+      <app-decision-countdown class="header-timer" />
       <app-minimize-button />
     </div>
     <mat-dialog-content>
@@ -83,7 +84,7 @@ export interface DiscardDialogData {
     :host-context([data-layout='compact']) .hand { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 10px; padding: 4px; }
     :host-context([data-layout='compact']) .hint { margin-bottom: 6px; }
     :host-context([data-layout='compact']) .foot { display: flex; align-items: center; gap: 8px; }
-    :host-context([data-layout='compact']) .foot .timer { flex: 1 1 auto; min-width: 0; padding: 0 0 0 12px; }
+    :host-context([data-layout='compact']) .foot .timer { display: none; }
   `,
 })
 export class DiscardDialog {

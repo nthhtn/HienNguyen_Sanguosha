@@ -137,7 +137,7 @@ body {
   display: none;
 }
 
-// A decision dialog's title row: the title, and View Board at its end.
+// A decision dialog's title row: the title, the clock on the phone board, and Minimize at its end.
 .title-row {
   display: flex;
   align-items: center;
@@ -216,18 +216,47 @@ html[data-board='open'] {
   --mat-toolbar-mobile-height: 0px;
 }
 
-// Dialogs on a short screen (a phone on its side): the whole dialog stays inside the screen, and only its content
-// scrolls, so the title and the buttons stay where they can be reached. Material caps the content at 65vh, which
-// on a 344 px screen leaves no room for the title and buttons as well.
+// Dialogs on a short screen (a phone on its side): the whole dialog stays inside the screen, with 24 px of
+// margin above and below (plus the camera and home-indicator insets), and only its content scrolls, so the
+// title and the buttons stay where they can be reached. Material caps the content at 65vh, which on a short
+// screen leaves no room for the title and buttons as well. A block host (the tutorial spotlight needs a box)
+// sits between the surface and the title, so the surface's own flex rules never reach the content.
 html[data-layout='phone'],
 html[data-layout='compact'] {
+  .cdk-overlay-pane.mat-mdc-dialog-panel,
+  .mat-mdc-dialog-container .mdc-dialog__surface,
+  .mat-mdc-dialog-component-host {
+    max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 48px);
+  }
   .mat-mdc-dialog-container .mdc-dialog__surface {
-    max-height: calc(100dvh - 16px);
+    overflow: hidden;
+  }
+  .mat-mdc-dialog-component-host {
+    display: flex !important;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
     overflow: hidden;
   }
   .mat-mdc-dialog-content {
     max-height: none;
     flex: 1 1 auto;
     min-height: 0;
+    overflow-y: auto;
+  }
+  .mat-mdc-dialog-component-host > .title-row,
+  .mat-mdc-dialog-component-host > .mat-mdc-dialog-actions,
+  .mat-mdc-dialog-component-host > .foot,
+  .mat-mdc-dialog-component-host > .timer,
+  .mat-mdc-dialog-component-host > app-decision-countdown {
+    flex: none;
+  }
+  /* The clock sits between the title and Minimize. The title does not grow, so the bar gets the spare width. */
+  .mat-mdc-dialog-component-host > .title-row h2,
+  .mat-mdc-dialog-component-host > .title-row app-minimize-button {
+    flex: none;
+  }
+  .mat-mdc-dialog-component-host > .title-row h2::before {
+    height: 0;
   }
 }

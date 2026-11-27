@@ -3,7 +3,7 @@ import { OverlayContainer } from '@angular/cdk/overlay';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { playableGame } from '../scenario-kit/recipe';
 import { DISPLAY_MODE_OVERRIDE } from '../display-mode-override';
-import { setWindowSize } from '../layout.testing';
+import { resizeTo, setWindowSize } from '../layout.testing';
 import { TutorialOverlay } from './tutorial-overlay';
 import { TUTORIAL_LESSONS, TutorialService } from './tutorial.service';
 import { Lesson, Step } from './tutorial-types';
@@ -539,6 +539,21 @@ describe('TutorialOverlay', () => {
     fixture.detectChanges();
     expect(service.finished()).toBe(true);
     expect(el.querySelector('.tutorial-overlay')).toBeNull();
+  });
+
+  describe('while the board asks to rotate or install', () => {
+    it('shows no spotlight, and brings it back once the window can play', () => {
+      setWindowSize(390, 844);
+      anchored('hand', rect(100, 100, 200, 50));
+      create();
+      show();
+      expect(service.step()!.id).toBe('hand');
+      expect(el.querySelector('.tutorial-overlay')).toBeNull();
+      resizeTo(1000, 800);
+      fixture.detectChanges();
+      expect(ring()).not.toBeNull();
+      expect(text()).toBe('Discard Pile');
+    });
   });
 
   describe('on the phone board', () => {

@@ -26,6 +26,7 @@ describe('Blaze notice', () => {
     expect(n.source).toEqual({ kind: 'card', id: 'blaze' });
     expect(n.seatIds).toEqual(['a', 'b']);
     expect(n.steps.map((s) => s.key)).toEqual(['notice.blaze.shown', 'notice.blaze.discarded']);
+    expect(n.steps[0].params).toEqual({ targetSeat: 'b', card: 'sha', face: '7 ♥' });
     expect(n.cards).toEqual([{ card: shownCard }, { card: discardedCard }]);
     expect(n.outcome).toMatchObject({ tone: 'good', headline: { key: 'notice.blaze.hit', params: { card: 'blaze' } }, text: { key: 'notice.blaze.hitText', params: { targetSeat: 'b', amount: 1 } }, hp: { seatId: 'b' } });
   });

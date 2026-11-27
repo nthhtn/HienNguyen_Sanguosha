@@ -1,7 +1,8 @@
-import { Component, Signal, inject } from '@angular/core';
+import { Component, Signal, computed, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import type { Action } from 'engine';
 import { TPipe } from '../i18n/t.pipe';
+import { Layout } from '../layout.service';
 import { anchor } from '../tutorial/anchors';
 import { DecisionCountdown } from './decision-countdown';
 import { JudgmentDecisionView } from './judgment-decision';
@@ -20,6 +21,11 @@ export interface JudgmentDialogData {
   resumed?: boolean;
   // Pass and Play: shows the view of the seat whose player took the device.
   reveal?: (seatId: string) => void;
+  // The stage has played the card and the outcome. The board may close after this, not before.
+  done?: () => void;
+  // The notice countdown. False while this popup is finishing a sequence the table has already left,
+  // so a later decision's clock is not shown on it.
+  showCountdown?: Signal<boolean>;
 }
 
 // A judgment, for every seat at the table to see, as a fixed sequence (JudgmentStage): what required it,
@@ -30,11 +36,15 @@ export interface JudgmentDialogData {
 @Component({
   selector: 'app-judgment-dialog',
   imports: [MatDialogModule, JudgmentStage, DecisionCountdown, MinimizeButton, TPipe],
-  // A block, so the host has a box the Tutorial's spotlight can cut a hole around (an inline host has none).
-  host: { 'data-tutorial': anchor.judgmentDialog(), style: 'display: block' },
+  // A flex column, so the host has a box the Tutorial's spotlight can cut a hole around, and on a short
+  // screen the body can shrink and scroll under the title (display:contents, Material's default, has no box).
+  host: { 'data-tutorial': anchor.judgmentDialog(), style: 'display: flex; flex-direction: column; min-height: 0' },
   template: `
     <div class="title-row">
       <h2 mat-dialog-title>{{ 'judgment.title' | t }}</h2>
+      @if (compact() && counting()) {
+        <app-decision-countdown class="header-timer" />
+      }
       <app-minimize-button />
     </div>
     @if (data.description(); as d) {
@@ -47,18 +57,35 @@ export interface JudgmentDialogData {
             [instant]="data.resumed ?? false"
             (chosen)="data.choose?.($event)"
             (revealed)="data.reveal?.($event)"
+            (unlocked)="data.done?.()"
           />
         }
       </mat-dialog-content>
-      @if (d.settled && !d.continuing) {
+      @if (d.settled && !d.continuing && counting()) {
         <app-decision-countdown class="timer" />
       }
     }
   `,
   styles: `
     .timer { display: block; padding: 8px 24px 0; }
+    /* Phone board: the window stays inside a short landscape screen and the body scrolls, so the title
+       stays put and a choice below the fold can still be reached. The height cap is the shared one in
+       styles.scss (24 px of margin above and below). */
+    :host-context([data-layout='compact']) .title-row { flex: none; }
+    :host-context([data-layout='compact']) .title-row h2 { flex: none; }
+    :host-context([data-layout='compact']) .title-row h2::before { height: 0; }
+    :host-context([data-layout='compact']) .title-row app-minimize-button { flex: none; }
+    :host-context([data-layout='compact']) mat-dialog-content {
+      flex: 1 1 auto; min-height: 0; overflow-y: auto; touch-action: pan-y; overscroll-behavior: contain;
+    }
+    /* The clock moves into the title row; the footer copy would be a second one. */
+    :host-context([data-layout='compact']) .timer { display: none; }
   `,
 })
 export class JudgmentDialog {
   protected readonly data = inject<JudgmentDialogData>(MAT_DIALOG_DATA);
+  private readonly layout = inject(Layout);
+  protected readonly compact = computed(() => this.layout.kind() === 'compact');
+  // The notice clock. A sequence the table has already left keeps playing without the next decision's clock.
+  protected readonly counting = computed(() => this.data.showCountdown?.() ?? true);
 }

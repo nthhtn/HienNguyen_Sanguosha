@@ -23,7 +23,7 @@ describe('JudgmentDialog in Vietnamese', () => {
     fixture.detectChanges();
     const el = fixture.nativeElement as HTMLElement;
     expect(el.querySelector('h2')!.textContent).toContain('Phán xét');
-    expect(el.querySelector('button.minimize')!.textContent!.trim()).toBe('Xem bàn');
+    expect(el.querySelector('button.minimize')!.textContent!.trim()).toBe('Thu nhỏ');
     jest.advanceTimersByTime(3000);
     fixture.detectChanges();
     expect(el.querySelector('.line')!.textContent).toContain('Bo chịu 1 sát thương');

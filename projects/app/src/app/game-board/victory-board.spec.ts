@@ -97,6 +97,28 @@ describe('VictoryBoard', () => {
     expect(text(rows[1].querySelector('.state'))).toBe('✕ Fallen');
   });
 
+  it('shows a Winning Ambitionist column added after the reveal was scheduled for fewer columns', () => {
+    jest.useFakeTimers();
+    const { fixture, el } = render(weiSeats, weiResult);
+    jest.advanceTimersByTime(3000);
+    fixture.detectChanges();
+    const six = [
+      seat(0, 'Wei', 'ambitionist', 'cao-cao', 'xiahou-dun'),
+      seat(1, 'Wei', 'kingdom', 'xiahou-dun', null, true),
+      seat(2, 'Shu', 'kingdom', 'liu-bei', null, true),
+      seat(3, 'Wu', 'kingdom', 'sun-quan', null, true),
+      seat(4, 'Qun', 'kingdom', 'lu-bu', null, true),
+      seat(5, 'Qun', 'ambitionist', 'zhen-ji', null, true),
+    ];
+    fixture.componentRef.setInput('seats', six);
+    fixture.componentRef.setInput('result', result({ winningSeatIds: ['seat-0'], losingSeatIds: ['seat-1', 'seat-2', 'seat-3', 'seat-4', 'seat-5'] }));
+    fixture.detectChanges();
+    const winner = el.querySelector('section.col[data-winning]');
+    expect(text(winner?.querySelector('.title') ?? null)).toBe('Winning Ambitionist');
+    expect(winner?.classList.contains('shown')).toBe(true);
+    fixture.destroy();
+  });
+
   it('lights only the winning column after the reveal and dims the rest', () => {
     jest.useFakeTimers();
     const { fixture, el } = render(weiSeats, weiResult);
