@@ -1,7 +1,8 @@
 import { ErrorCode, normalizeDisplayName, PASSWORD_MIN } from 'protocol';
 import { Mailer } from '../mail/mailer';
 import { SessionRecord, UserRecord } from '../persistence/records';
-import { EmailTakenError, Repositories } from '../persistence/repositories';
+import { EmailTakenError, IdentityTakenError, Repositories } from '../persistence/repositories';
+import { GoogleClaims, googleDisplayName } from './google';
 import { hashPassword, verifyPassword } from './password';
 import { hashToken, newToken } from './tokens';
 
@@ -80,6 +81,40 @@ export class AccountService {
     // A user with no password hash (a Google account) never matches: `matches` was then only checked against the dummy hash.
     if (!user || user.kind !== 'registered' || !user.passwordHash || !matches) throw new AuthError('invalid_credentials');
     return this.startSession(user, this.now());
+  }
+
+  // Signs in the user behind a Google account (Google sign-in spec "Signing in"):
+  //   1. A known Google id signs in as its user.
+  //   2. An email that belongs to a password account is refused, never linked.
+  //   3. Otherwise a user is created, with an identity.
+  // The two writes of rule 3 are not one transaction (the in-memory store cannot
+  // make a cross-record race safe): a Google-created user that lost its identity
+  // is adopted on the next sign-in, and a conflict is retried once.
+  async signInWithGoogle(claims: GoogleClaims): Promise<{ signedIn: SignedIn } | { refused: 'email_in_use' }> {
+    const now = this.now();
+    for (let attempt = 1; attempt <= 2; attempt += 1) {
+      const identity = await this.repos.identities.findByProviderUser('google', claims.sub);
+      if (identity) {
+        const user = await this.repos.users.findById(identity.userId);
+        if (user) return { signedIn: await this.startSession(user, now) };
+      }
+      try {
+        const existing = await this.repos.users.findByEmail(claims.email);
+        if (existing) {
+          // A password account is never linked. One without a password was made from Google.
+          if (existing.kind !== 'registered' || existing.passwordHash !== null) return { refused: 'email_in_use' };
+          await this.repos.identities.create({ userId: existing.id, provider: 'google', providerUserId: claims.sub, email: claims.email, now });
+          return { signedIn: await this.startSession(existing, now) };
+        }
+        const user = await this.repos.users.createFromGoogle({ email: claims.email, displayName: googleDisplayName(claims.name, claims.email), now });
+        await this.repos.identities.create({ userId: user.id, provider: 'google', providerUserId: claims.sub, email: claims.email, now });
+        return { signedIn: await this.startSession(user, now) };
+      } catch (err) {
+        // Someone else's write won a race: look again. A second conflict is a refusal, not a loop.
+        if (!(err instanceof EmailTakenError || err instanceof IdentityTakenError)) throw err;
+      }
+    }
+    return { refused: 'email_in_use' };
   }
 
   async createGuest(input: { displayName: string }): Promise<SignedIn> {

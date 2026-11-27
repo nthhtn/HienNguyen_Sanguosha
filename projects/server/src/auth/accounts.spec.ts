@@ -25,6 +25,60 @@ const authCode = (promise: Promise<unknown>) =>
 const resetTokenFrom = (link: string) => new URL(link).searchParams.get('token')!;
 
 describe('AccountService', () => {
+  describe('signInWithGoogle', () => {
+    const CLAIMS = { sub: 'google-sub-1', email: 'gail@example.com', emailVerified: true, name: 'Gail Lee' };
+    const signedIn = async (promise: ReturnType<AccountService['signInWithGoogle']>) => {
+      const result = await promise;
+      if (!('signedIn' in result)) throw new Error(`Refused: ${result.refused}`);
+      return result.signedIn;
+    };
+
+    it('creates a new Google user: registered, verified email, no password, named from Google, signed in', async () => {
+      const { accounts } = setup();
+      const result = await signedIn(accounts.signInWithGoogle(CLAIMS));
+      expect(result.user).toMatchObject({ kind: 'registered', email: 'gail@example.com', passwordHash: null, displayName: 'Gail Lee', emailVerifiedAt: expect.any(Date) });
+      expect((await accounts.authenticate(result.token))?.user.id).toBe(result.user.id);
+    });
+
+    it('signs the same Google account in as the same user next time, even when its Google email changed', async () => {
+      const { accounts } = setup();
+      const first = await signedIn(accounts.signInWithGoogle(CLAIMS));
+      const second = await signedIn(accounts.signInWithGoogle({ ...CLAIMS, email: 'gail.new@example.com' }));
+      expect(second.user.id).toBe(first.user.id);
+      expect(second.token).not.toBe(first.token);
+    });
+
+    it('refuses an email that has a password account, in any case, and creates and changes nothing', async () => {
+      const { accounts, repos } = setup();
+      const ann = await accounts.signUp({ email: 'ann@example.com', password: 'secret-pass', displayName: 'Ann' });
+      expect(await accounts.signInWithGoogle({ ...CLAIMS, sub: 'google-sub-ann', email: 'ANN@Example.com' })).toEqual({ refused: 'email_in_use' });
+      expect(await repos.identities.findByProviderUser('google', 'google-sub-ann')).toBeNull();
+      expect(await repos.users.findByEmail('ann@example.com')).toMatchObject({ id: ann.user.id, passwordHash: ann.user.passwordHash });
+      expect((await accounts.authenticate(ann.token))?.user.id).toBe(ann.user.id);
+    });
+
+    it('gives two concurrent first sign-ins for one Google account one user and one identity', async () => {
+      const { accounts, repos } = setup();
+      const [a, b] = await Promise.all([signedIn(accounts.signInWithGoogle(CLAIMS)), signedIn(accounts.signInWithGoogle(CLAIMS))]);
+      expect(a.user.id).toBe(b.user.id);
+      expect((await repos.identities.findByProviderUser('google', CLAIMS.sub))?.userId).toBe(a.user.id);
+    });
+
+    it('adopts a Google-created user whose first sign-in was cut short before its identity was stored', async () => {
+      const { accounts, repos } = setup();
+      const orphan = await repos.users.createFromGoogle({ email: 'gail@example.com', displayName: 'Gail', now: new Date() });
+      const result = await signedIn(accounts.signInWithGoogle(CLAIMS));
+      expect(result.user.id).toBe(orphan.id);
+      expect((await repos.identities.findByProviderUser('google', CLAIMS.sub))?.userId).toBe(orphan.id);
+    });
+
+    it('refuses a different Google account claiming the email of a Google user, so a recycled email takes nothing over', async () => {
+      const { accounts } = setup();
+      await signedIn(accounts.signInWithGoogle(CLAIMS));
+      expect(await accounts.signInWithGoogle({ ...CLAIMS, sub: 'google-sub-2' })).toEqual({ refused: 'email_in_use' });
+    });
+  });
+
   describe('a user with no password', () => {
     it('cannot sign in with a password, not even the one the dummy hash is made from', async () => {
       const { accounts, repos } = setup();
