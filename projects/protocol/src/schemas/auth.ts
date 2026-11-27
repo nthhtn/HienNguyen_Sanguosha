@@ -4,8 +4,8 @@ import { DISPLAY_NAME_MAX, EMAIL_MAX, PASSWORD_MAX } from '../limits';
 // Shape checks only. The server trims and applies the semantic rules (password
 // length, display name) so it can answer with a specific error code.
 const Email = Type.String({ minLength: 3, maxLength: EMAIL_MAX + 16, pattern: '^\\s*[^\\s@]+@[^\\s@]+\\s*$' });
-const Password = Type.String({ maxLength: PASSWORD_MAX });
-const DisplayName = Type.String({ maxLength: DISPLAY_NAME_MAX * 4 });
+export const Password = Type.String({ maxLength: PASSWORD_MAX });
+export const DisplayName = Type.String({ maxLength: DISPLAY_NAME_MAX * 4 });
 
 export const SignUpBodySchema = Type.Object({ email: Email, password: Password, displayName: DisplayName });
 export const SignInBodySchema = Type.Object({ email: Email, password: Type.String({ minLength: 1, maxLength: PASSWORD_MAX }) });
