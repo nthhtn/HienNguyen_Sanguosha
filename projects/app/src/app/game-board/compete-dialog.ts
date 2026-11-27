@@ -56,7 +56,7 @@ const UNLOCK_AT = 4200;
               <div class="pc" [class.in]="cardsDown()" [class.up]="cardsUp()">
                 <div class="inner">
                   <div class="back"></div>
-                  <div class="face"><app-playing-card [card]="side.player.card" size="normal" /></div>
+                  <div class="face"><app-playing-card [card]="side.player.card" [size]="cardSize" /></div>
                 </div>
               </div>
             </div>
@@ -132,6 +132,22 @@ const UNLOCK_AT = 4200;
     .seconds { min-width: 3ch; font-variant-numeric: tabular-nums; }
     .bar { flex: 1; height: 6px; border-radius: 3px; background: var(--mat-sys-surface-container-highest); overflow: hidden; }
     .fill { display: block; height: 100%; background: var(--force); transition: width 1s linear; }
+    /* Phone board: the two cards stay side by side, and the source, result and outcome shrink so the
+       window fits a short landscape screen with the close timer still under them. */
+    :host-context([data-layout='compact']) .body { gap: 6px; }
+    :host-context([data-layout='compact']) .source { padding: 4px 8px; gap: 8px; }
+    :host-context([data-layout='compact']) .skill-text { display: none; }
+    :host-context([data-layout='compact']) .source { align-items: center; }
+    :host-context([data-layout='compact']) .source app-card-art { display: none; }
+    :host-context([data-layout='compact']) .versus { column-gap: 6px; }
+    :host-context([data-layout='compact']) .vs { width: 32px; height: 32px; }
+    :host-context([data-layout='compact']) .side { grid-template-rows: 22px 60px; row-gap: 2px; padding: 8px 6px 6px; }
+    :host-context([data-layout='compact']) .slot { width: 44px; height: 60px; }
+    :host-context([data-layout='compact']) .name { font: var(--mat-sys-label-large); }
+    :host-context([data-layout='compact']) .cmp { font: var(--mat-sys-title-small); }
+    :host-context([data-layout='compact']) .outcome { padding: 8px; }
+    :host-context([data-layout='compact']) .outcome p { margin: 2px 0 0; font: var(--mat-sys-body-medium); }
+    :host-context([data-layout='compact']) .timer { padding: 4px 12px 8px; }
     @media (prefers-reduced-motion: reduce) {
       .vs, .side, .tag, .pc, .inner, .cmp, .rise, .fill { transition-duration: 0s !important; transition-delay: 0s !important; }
     }
@@ -141,6 +157,7 @@ export class CompeteDialog implements OnInit {
   protected readonly data = inject<CompeteResult>(MAT_DIALOG_DATA);
   private readonly dialogRef = inject<MatDialogRef<CompeteDialog>>(MatDialogRef);
   private readonly i18n = inject(I18n);
+  protected readonly cardSize: 'normal' | 'small' = document.documentElement.dataset['layout'] === 'compact' ? 'small' : 'normal';
   protected readonly total = AUTO_CLOSE_SECONDS;
   protected readonly seconds = signal(AUTO_CLOSE_SECONDS);
 

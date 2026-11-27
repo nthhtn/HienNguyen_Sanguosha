@@ -94,9 +94,53 @@ describe('windows on the phone board', () => {
       expect(px(chip, 'font-size')).toBeGreaterThanOrEqual(12);
     });
 
-    it('the Judgment outcome box has no minimum height on the phone board', () => {
-      const rule = /:host-context\(\[data-layout='compact'\]\) \.cons \{([^}]*)\}/.exec(read('game-board/judgment-stage.ts'))?.[1] ?? '';
-      expect(rule).toMatch(/min-height:\s*0/);
+    it('the Judgment outcome box is not shown on the phone board, and the set-aside cards take its space without the label', () => {
+      const stage = read('game-board/judgment-stage.ts');
+      const cons = /:host-context\(\[data-layout='compact'\]\) \.cons \{([^}]*)\}/.exec(stage)?.[1] ?? '';
+      const aside = /:host-context\(\[data-layout='compact'\]\) \.aside \{([^}]*)\}/.exec(stage)?.[1] ?? '';
+      const label = /:host-context\(\[data-layout='compact'\]\) \.aside-label \{([^}]*)\}/.exec(stage)?.[1] ?? '';
+      expect(cons).toMatch(/display:\s*none/);
+      expect(aside).toMatch(/flex:\s*1 1 auto/);
+      expect(label).toMatch(/clip-path:\s*inset\(50%\)/);
+    });
+
+    it('puts the Judgment card beside the choice, and a long card pick scrolls with its buttons kept (iPhone 18)', () => {
+      const stage = read('game-board/judgment-stage.ts');
+      const grid = /:host-context\(\[data-layout='compact'\]\) \.stage \{([^}]*)\}/.exec(stage)?.[1] ?? '';
+      expect(grid).toMatch(/grid-template-columns:\s*180px minmax\(0, 1fr\)/);
+      expect(grid).toMatch(/"result source"/);
+      expect(grid).toMatch(/"result choice"/);
+      const picks = /:host-context\(\[data-layout='compact'\]\) \.choice app-selection-panel \{([^}]*)\}/.exec(stage)?.[1] ?? '';
+      expect(picks).toMatch(/max-height:\s*calc\(100dvh/);
+      const dialog = read('game-board/judgment-dialog.ts');
+      expect(dialog).toMatch(/display: flex; flex-direction: column/);
+      expect(read('../styles.scss')).toMatch(/max-height: calc\(100dvh - env\(safe-area-inset-top, 0px\) - env\(safe-area-inset-bottom, 0px\) - 48px\)/);
+      expect(dialog).toMatch(/overflow-y: auto/);
+      expect(dialog).toMatch(/class="header-timer"/);
+      expect(dialog).toMatch(/:host-context\(\[data-layout='compact'\]\) \.timer \{ display: none; \}/);
+      expect(stage).toMatch(/:host-context\(\[data-layout='compact'\]\) \.decide app-decision-countdown \{ display: none; \}/);
+    });
+
+    it('puts the decision clock in the title row on the phone board', () => {
+      const countdown = read('game-board/decision-countdown.ts');
+      expect(countdown).toMatch(/:host\(\.header-timer\) \{ display: none; \}/);
+      expect(countdown).toMatch(/:host-context\(\[data-layout='compact'\]\)\.header-timer \{ display: flex;/);
+      for (const file of ['ask-dialog.ts', 'choice-dialog.ts', 'selection-dialog.ts', 'arrange-dialog.ts', 'start-reveal-dialog.ts', 'response-dialog.ts', 'discard-dialog.ts']) {
+        const src = read(`game-board/${file}`);
+        expect(src).toMatch(/class="header-timer"/);
+        expect(src).toMatch(/:host-context\(\[data-layout='compact'\]\)[^{]*\.timer \{ display: none; \}/);
+      }
+    });
+
+    it('Compete and Resolution notices shrink to a short phone screen', () => {
+      const compete = read('game-board/compete-dialog.ts');
+      expect(compete).toMatch(/:host-context\(\[data-layout='compact'\]\) \.side \{[^}]*grid-template-rows:\s*22px 60px/);
+      expect(compete).toMatch(/:host-context\(\[data-layout='compact'\]\) \.skill-text \{ display: none; \}/);
+      expect(compete).toMatch(/:host-context\(\[data-layout='compact'\]\) \.source app-card-art \{ display: none; \}/);
+      const notice = read('game-board/resolution-notice-dialog.ts');
+      expect(notice).toMatch(/:host-context\(\[data-layout='compact'\]\) \.source app-card-art \{ display: none; \}/);
+      expect(notice).toMatch(/:host-context\(\[data-layout='compact'\]\) \.has-cards \.actors \{ display: none; \}/);
+      expect(notice).toMatch(/:host-context\(\[data-layout='compact'\]\) \.seat-card > \.generals/);
     });
 
     it('the centre band gives the countdown room for its icon, seconds and bar', () => {

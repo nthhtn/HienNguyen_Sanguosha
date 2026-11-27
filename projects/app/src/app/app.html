@@ -140,6 +140,9 @@
     @if (flags.tutorial) {
       <a class="drawer-link" routerLink="/tutorial" [class.active]="tutorialActive()" [attr.aria-current]="tutorialActive() ? 'page' : null"><mat-icon>school</mat-icon>{{ 'nav.tutorial' | t }}</a>
     }
+    @if (devPreview) {
+      <a class="drawer-link nav-preview" routerLink="/preview" [class.active]="previewActive()" [attr.aria-current]="previewActive() ? 'page' : null"><mat-icon>science</mat-icon>{{ 'nav.preview' | t }}</a>
+    }
     @if (backgrounds.available()) {
       <div class="drawer-group drawer-battlefield">
         <div class="drawer-heading"><mat-icon>landscape</mat-icon>{{ 'nav.battlefield' | t }}</div>

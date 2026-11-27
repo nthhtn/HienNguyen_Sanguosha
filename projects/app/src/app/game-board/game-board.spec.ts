@@ -1000,11 +1000,53 @@ describe('GameBoard: the judgment popup', () => {
   });
 
   it('opens the popup while a judgment is on show, and closes it when it is acknowledged', async () => {
+    jest.useFakeTimers();
     const fixture = start('vs-bots');
     await settle(fixture);
     expect(popups()).toHaveLength(1);
     expect(overlayText()).toContain('Judgment');
+    // The sequence has played: acknowledging it closes the popup at once.
+    jest.advanceTimersByTime(4100);
+    await settle(fixture);
     gameService.closeJudgment('seat-0');
+    await settle(fixture);
+    expect(popups()).toHaveLength(0);
+  });
+
+  it('keeps the sequence playing when a later state arrives and the viewer owes a decision', async () => {
+    jest.useFakeTimers();
+    const fixture = start('vs-bots');
+    await settle(fixture);
+    const dialog = popups()[0];
+    const stage = document.querySelector('.cdk-overlay-container app-judgment-stage');
+    expect(stage).not.toBeNull();
+    expect(document.querySelector('.cdk-overlay-container .pc.up')).toBeNull();
+    // Online: the server has moved on, and the viewer already owes the next decision.
+    const online = gameService as unknown as { clockWaitsForPlayback: boolean; legalActions: unknown };
+    online.clockWaitsForPlayback = false;
+    online.legalActions = signal<Action[]>([{ kind: 'EndPhaseAction', seatId: 'seat-0' }]);
+    (gameService as unknown as { _state: { update(f: (s: GameState) => GameState): void } })._state.update((s) => ({
+      ...s,
+      judgmentView: undefined,
+      pendingResponse: { id: 'r1', respondingSeatId: 'seat-0', allowedActionKinds: ['PassAction'], context: { effect: { kind: 'noop' } as never } },
+    }));
+    await settle(fixture);
+    expect(popups()).toHaveLength(1);
+    expect(popups()[0]).toBe(dialog);
+    expect(document.querySelector('.cdk-overlay-container app-judgment-stage')).toBe(stage);
+    expect(document.querySelector('.cdk-overlay-container .pc.up')).toBeNull();
+    jest.advanceTimersByTime(2100);
+    fixture.detectChanges();
+    expect(document.querySelector('.cdk-overlay-container .stamp.show')).not.toBeNull();
+    expect(popups()[0]).toBe(dialog);
+    jest.advanceTimersByTime(900);
+    fixture.detectChanges();
+    expect(document.querySelector('.cdk-overlay-container .cons.on')).not.toBeNull();
+    expect(popups()[0]).toBe(dialog);
+    jest.advanceTimersByTime(1099);
+    fixture.detectChanges();
+    expect(popups()[0]).toBe(dialog);
+    jest.advanceTimersByTime(1);
     await settle(fixture);
     expect(popups()).toHaveLength(0);
   });
@@ -1082,11 +1124,15 @@ describe('GameBoard: the judgment popup', () => {
   });
 
   it('a second judgment after the first is closed gets a new popup', async () => {
+    jest.useFakeTimers();
     const fixture = start('vs-bots');
     await settle(fixture);
     const [first] = popups();
+    jest.advanceTimersByTime(4100);
+    await settle(fixture);
     gameService.closeJudgment('seat-0');
     await settle(fixture);
+    expect(popups()).toHaveLength(0);
     settleJudgment(gameService);
     await settle(fixture);
     expect(popups()).toHaveLength(1);
@@ -1494,16 +1540,20 @@ describe('GameBoard battle playback', () => {
     create();
     await settle();
     expect(openDialogs(JudgmentDialog)).toHaveLength(1);
+    const [first] = openDialogs(JudgmentDialog);
     const view = gameService.state()!.judgmentView;
     const lost = (seatId: string): GameState['log'][number] => ({ kind: 'HpLostEvent', seatId, amount: 1 });
     // The first ends with beats still to play; the next arrives while they play.
+    // The open sequence finishes before that next judgment is shown.
     update((s) => ({ ...s, judgmentView: undefined, log: [...s.log, lost('seat-1')] }));
     await settle();
-    expect(openDialogs(JudgmentDialog)).toHaveLength(0);
+    expect(openDialogs(JudgmentDialog)).toHaveLength(1);
+    expect(openDialogs(JudgmentDialog)[0]).toBe(first);
     update((s) => ({ ...s, judgmentView: view, log: [...s.log, lost('seat-2')] }));
     await settle();
     expect(director().idle()).toBe(false);
-    expect(openDialogs(JudgmentDialog)).toHaveLength(0);
+    expect(openDialogs(JudgmentDialog)).toHaveLength(1);
+    expect(openDialogs(JudgmentDialog)[0]).toBe(first);
     tick(5000);
     await settle();
     expect(openDialogs(JudgmentDialog)).toHaveLength(1);

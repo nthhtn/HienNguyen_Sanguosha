@@ -1,8 +1,8 @@
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import type { GameState } from 'engine';
+import type { CardInstance, GameState } from 'engine';
 import { CARD_BACK_ART_URL, NoticeText, ResolutionNoticeContent } from 'content';
-import { abilityDisplayName, cardIdDisplayName, generalDisplayName, seatForce, seatName } from '../labels';
+import { abilityDisplayName, cardFaceLabel, cardIdDisplayName, generalDisplayName, seatForce, seatName } from '../labels';
 import type { Force } from '../labels';
 import { I18n } from '../i18n/i18n.service';
 import type { MessageKey } from '../i18n/messages';
@@ -38,7 +38,7 @@ export function noticeForce(content: ResolutionNoticeContent, state: GameState):
   imports: [MatDialogModule, CardArt, PlayingCard, SeatPortrait, HpIcons, TPipe],
   template: `
     <h2 mat-dialog-title>{{ 'notice.title' | t }}</h2>
-    <mat-dialog-content class="body">
+      <mat-dialog-content class="body" [class.has-cards]="data.content.cards.length > 0">
       <section class="source">
         @if (sourceArt(); as art) {
           <app-card-art [cropped]="art.cropped" [skin]="!art.cropped" [id]="art.id" [label]="sourceTitle()" size="small" />
@@ -85,11 +85,14 @@ export function noticeForce(content: ResolutionNoticeContent, state: GameState):
       @if (data.content.cards.length) {
         <div class="cards rise">
           @for (c of data.content.cards; track $index) {
-            @if (c.card; as card) {
-              <app-playing-card [card]="card" size="small" />
-            } @else {
-              <img class="card-back" [src]="cardBackUrl" alt="" />
-            }
+            <figure class="notice-card">
+              @if (c.card; as card) {
+                <app-playing-card [card]="card" size="small" />
+                <figcaption>{{ cardCaption(card) }}</figcaption>
+              } @else {
+                <img class="card-back" [src]="cardBackUrl" alt="" />
+              }
+            </figure>
           }
         </div>
       }
@@ -136,6 +139,8 @@ export function noticeForce(content: ResolutionNoticeContent, state: GameState):
     .seat-card > .generals { font: var(--mat-sys-label-large); color: var(--force-text); line-height: 1.2; overflow-wrap: anywhere; }
     .steps { margin: 0; padding-left: 20px; font: var(--mat-sys-body-medium); color: var(--mat-sys-on-surface-variant); }
     .cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+    .notice-card { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .notice-card figcaption { font: var(--mat-sys-label-medium); text-align: center; white-space: nowrap; }
     .card-back { width: 44px; height: 60px; object-fit: cover; border-radius: 6px; }
     .outcome { --tone: var(--force); display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; border-left: 4px solid var(--tone); background: color-mix(in srgb, var(--tone) 10%, transparent); }
     .outcome[data-tone='good'] { --tone: var(--good); }
@@ -149,6 +154,23 @@ export function noticeForce(content: ResolutionNoticeContent, state: GameState):
     .later { animation: rise 0.35s 0.8s both; }
     @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
     .timer { display: flex; align-items: center; gap: 8px; padding: 8px 24px 16px; font: var(--mat-sys-label-large); color: var(--force-text); }
+    /* Phone board: a short stack. Blaze drops the seat portraits when the cards already say who showed what.
+       Harvest keeps one line under each card (the name) and lets the cards wrap. */
+    :host-context([data-layout='compact']) .body { gap: 6px; }
+    :host-context([data-layout='compact']) .source { padding: 4px 8px; gap: 8px; }
+    :host-context([data-layout='compact']) .source app-card-art { display: none; }
+    :host-context([data-layout='compact']) .has-cards .actors { display: none; }
+    :host-context([data-layout='compact']) .side { padding: 6px 8px; gap: 4px; }
+    :host-context([data-layout='compact']) .seat-cards { gap: 8px; }
+    :host-context([data-layout='compact']) .seat-card { max-width: 84px; gap: 2px; }
+    :host-context([data-layout='compact']) .seat-card > .generals {
+      display: -webkit-box; -webkit-line-clamp: 1; line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    :host-context([data-layout='compact']) .steps { margin: 0; }
+    :host-context([data-layout='compact']) .outcome { padding: 8px; gap: 8px; }
+    :host-context([data-layout='compact']) .outcome .text { font: var(--mat-sys-body-medium); }
+    :host-context([data-layout='compact']) .symbol { width: 28px; height: 28px; }
+    :host-context([data-layout='compact']) .timer { padding: 4px 12px 8px; }
     .seconds { min-width: 3ch; font-variant-numeric: tabular-nums; }
     .bar { flex: 1; height: 6px; border-radius: 3px; background: var(--mat-sys-surface-container-highest); overflow: hidden; }
     .fill { display: block; height: 100%; background: var(--force); transition: width 1s linear; }
@@ -195,6 +217,11 @@ export class ResolutionNoticeDialog {
   protected readonly headline = computed(() => this.line(this.data.content.outcome.headline));
   protected readonly text = computed(() => this.line(this.data.content.outcome.text));
   protected readonly steps = computed(() => this.data.content.steps.map((s) => this.line(s)));
+
+  protected cardCaption(card: CardInstance): string {
+    const tr = this.i18n.translator;
+    return `${cardIdDisplayName(card.definitionId, tr)} (${cardFaceLabel(card)})`;
+  }
 
   private readonly sourceGeneral = computed(() => {
     const source = this.data.content.source;

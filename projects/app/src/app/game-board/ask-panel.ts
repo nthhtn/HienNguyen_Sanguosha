@@ -36,6 +36,9 @@ import { PlayingCard } from './playing-card';
     .prompt { margin: 0 0 8px; font: var(--mat-sys-title-medium); }
     .hint { margin: 0; font: var(--mat-sys-body-medium); color: var(--mat-sys-on-surface-variant); }
     .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+    :host-context([data-layout='compact']) .body { gap: 8px; align-items: center; }
+    :host-context([data-layout='compact']) .prompt { margin: 0 0 4px; font: var(--mat-sys-body-medium); }
+    :host-context([data-layout='compact']) .actions { margin-top: 6px; flex-wrap: wrap; }
   `,
 })
 export class AskPanel {

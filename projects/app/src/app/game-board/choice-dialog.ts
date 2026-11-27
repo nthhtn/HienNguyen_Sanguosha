@@ -49,6 +49,7 @@ export interface ChoiceDialogData {
   template: `
     <div class="title-row">
       <h2 mat-dialog-title>{{ data.description.title }}</h2>
+      <app-decision-countdown class="header-timer" />
       <app-minimize-button />
     </div>
     <mat-dialog-content>
@@ -107,6 +108,7 @@ export interface ChoiceDialogData {
     .card-back { display: block; width: 72px; height: 100px; object-fit: cover; border-radius: 6px; }
     .label { font: var(--mat-sys-body-small); text-align: center; }
     .timer { display: block; padding: 8px 24px 0; }
+    :host-context([data-layout='compact']) .timer { display: none; }
     .option[data-force] { --force: var(--force-none); --force-text: var(--force-none-text); }
     .option[data-force='Wei'] { --force: var(--force-wei); --force-text: var(--force-wei); }
     .option[data-force='Shu'] { --force: var(--force-shu); --force-text: var(--force-shu); }

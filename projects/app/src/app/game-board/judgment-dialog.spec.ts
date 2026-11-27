@@ -26,8 +26,9 @@ describe('JudgmentDialog', () => {
   it('carries the tutorial anchor of the judgment popup on its root', () => {
     const { el } = render(skillDescription());
     expect(el.getAttribute('data-tutorial')).toBe('judgment-dialog');
-    // A block, so the host has a box the spotlight can cut a hole around.
-    expect(el.style.display).toBe('block');
+    // A flex column, so the host has a box the spotlight can cut a hole around and the body can scroll.
+    expect(el.style.display).toBe('flex');
+    expect(el.style.flexDirection).toBe('column');
   });
 
   it('marks the result for the tutorial: the card, its verdict and what it does, but not the source or the rule', () => {

@@ -45,7 +45,7 @@ describe('dev scenarios', () => {
 
   it('Choice Prompts has its scenarios', () => {
     const ids = SCENARIOS.filter((s) => s.group === 'Choice Prompts').map((s) => s.id);
-    expect(ids).toEqual(['choice-start-popup', 'choice-pick-card', 'choice-judgment', 'choice-skill-optional', 'choice-pick-seat', 'choice-compete', 'choice-partners-full-hp', 'choice-partners-damaged', 'luo-first-ask', 'luo-judge-again', 'luo-chain-end', 'fantasy-hidden-spade']);
+    expect(ids).toEqual(['choice-start-popup', 'choice-pick-card', 'choice-judgment', 'choice-skill-optional', 'choice-pick-seat', 'choice-compete', 'choice-partners-full-hp', 'choice-partners-damaged', 'luo-first-ask', 'luo-judge-again', 'luo-chain-end', 'luo-demonic-talent', 'fantasy-hidden-spade']);
   });
 
   it('Resolution Notices has a scenario for each card and skill that gets one', () => {

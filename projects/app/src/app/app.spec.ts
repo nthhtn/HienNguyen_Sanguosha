@@ -428,7 +428,7 @@ describe('App', () => {
       const { drawer } = await openDrawer();
       const hrefs = [...drawer.querySelectorAll('a')].map((a) => a.getAttribute('href'));
       expect(hrefs).toEqual(
-        expect.arrayContaining(['/play', '/rooms', '/wiki/kingdom-wars/generals', '/wiki/identity/tools', '/wiki/rules', '/tutorial', '/sign-in'])
+        expect.arrayContaining(['/play', '/rooms', '/wiki/kingdom-wars/generals', '/wiki/identity/tools', '/wiki/rules', '/tutorial', '/preview', '/sign-in'])
       );
       expect(drawer.textContent).toContain('Play Online');
       expect(drawer.querySelectorAll('.drawer-playback-speed button').length).toBeGreaterThan(0);

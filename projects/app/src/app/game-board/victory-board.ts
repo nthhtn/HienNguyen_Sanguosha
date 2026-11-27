@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, DestroyRef, OnInit, computed, inject, input, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, effect, inject, input, signal } from '@angular/core';
 import { GameResult } from 'engine';
 import { FinalSeatView } from 'protocol';
 import { I18n } from '../i18n/i18n.service';
@@ -121,6 +121,9 @@ const LIGHT_AFTER_LAST = 500;
     }
     .col.shown { opacity: 1; transform: none; }
     .col.win {
+      /* A loser becomes visible when the light comes on (.lose sets opacity). The winner must too:
+         a column that missed its reveal beat would otherwise stay fully transparent. */
+      opacity: 1;
       background: color-mix(in srgb, var(--force) 13%, var(--mat-sys-surface-container));
       box-shadow: 0 0 0 2px var(--force), 0 6px 22px color-mix(in srgb, var(--force) 45%, transparent);
       transform: translateY(-4px);
@@ -248,6 +251,13 @@ export class VictoryBoard implements OnInit {
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.timers.forEach((id) => clearTimeout(id)));
+    // The reveal is scheduled once. If more columns arrive after it has finished (the preview
+    // switches to a 6-column ending), show them. Otherwise the winning column stays transparent:
+    // losers are made visible by .lose, and the winner is not.
+    effect(() => {
+      const columns = this.view().columns.length;
+      if (this.lit() && this.shownCount() < columns) this.shownCount.set(columns);
+    });
   }
 
   // The reveal is scheduled once, from the initial inputs: a later input change re-renders the

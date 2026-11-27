@@ -20,6 +20,7 @@ export interface SelectionDialogData {
   template: `
     <div class="title-row">
       <h2 mat-dialog-title>{{ d.title }}</h2>
+      <app-decision-countdown class="header-timer" />
       <app-minimize-button />
     </div>
     <mat-dialog-content>
@@ -29,6 +30,7 @@ export interface SelectionDialogData {
   `,
   styles: `
     .timer { display: block; padding: 8px 24px 0; }
+    :host-context([data-layout='compact']) .timer { display: none; }
     /* The phone board (spec 3h): the content is a column whose cards scroll, so the buttons never cover them. */
     :host-context([data-layout='compact']) mat-dialog-content { display: flex; flex-direction: column; overflow: hidden; }
     :host-context([data-layout='compact']) app-selection-panel { flex: 1 1 auto; min-height: 0; }

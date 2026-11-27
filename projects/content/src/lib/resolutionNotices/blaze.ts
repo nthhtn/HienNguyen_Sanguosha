@@ -1,6 +1,14 @@
 import type { CardInstance, EngineEvent } from 'engine';
 import type { NoticeCard, NoticeText, ResolutionNoticeDefinition } from '../resolutionNotice';
 
+const FACE_RANKS: Record<number, string> = { 1: 'A', 11: 'J', 12: 'Q', 13: 'K' };
+const SUIT_SYMBOLS: Record<CardInstance['suit'], string> = { spade: '♠', heart: '♥', club: '♣', diamond: '♦' };
+
+// "7 ♥": the printed corner, so the notice can say which card was turned up.
+function printedFace(card: CardInstance): string {
+  return `${FACE_RANKS[card.rank] ?? card.rank} ${SUIT_SYMBOLS[card.suit]}`;
+}
+
 // Blaze: the target shows a card; the user may discard a card of the same suit to deal 1 fire damage.
 // Nothing shown means Wuxie stopped it before it began: no notice.
 export const blazeNotice: ResolutionNoticeDefinition = {
@@ -14,7 +22,7 @@ export const blazeNotice: ResolutionNoticeDefinition = {
     const discard = after.find((e): e is Extract<EngineEvent, { kind: 'CardMovedEvent' }> => e.kind === 'CardMovedEvent' && e.toZoneId === discardPileId && e.card !== undefined);
     const damage = after.find((e): e is Extract<EngineEvent, { kind: 'DamageDealtEvent' }> => e.kind === 'DamageDealtEvent' && e.damage.target.seatId === target);
     const steps: NoticeText[] = [
-      { key: 'notice.blaze.shown', params: { targetSeat: target } },
+      { key: 'notice.blaze.shown', params: { targetSeat: target, card: shown.card.definitionId, face: printedFace(shown.card) } },
       discard ? { key: 'notice.blaze.discarded', params: { userSeat: span.userSeatId } } : { key: 'notice.blaze.noDiscard', params: { userSeat: span.userSeatId } },
     ];
     const cards: NoticeCard[] = [{ card: shown.card as CardInstance }, ...(discard?.card ? [{ card: discard.card }] : [])];
