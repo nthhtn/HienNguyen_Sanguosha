@@ -37,7 +37,7 @@ describe('HTTP app', () => {
       ({ app } = await setup());
       const res = await post(app, '/api/auth/signup', SIGN_UP);
       expect(res.statusCode).toBe(201);
-      expect(res.json()).toEqual({ id: expect.any(String), kind: 'registered', displayName: 'Ann', email: 'ann@example.com' });
+      expect(res.json()).toEqual({ id: expect.any(String), kind: 'registered', displayName: 'Ann', email: 'ann@example.com', hasPassword: true });
       const [cookie] = sessionCookies(res);
       expect(cookie).toMatchObject({ httpOnly: true, sameSite: 'Lax', path: '/' });
       expect(cookie.secure).toBeFalsy();

@@ -2,6 +2,7 @@ import { GameHistory } from './game/history';
 import { FastifyInstance } from 'fastify';
 import { AccountService } from './auth/accounts';
 import { seedDevAccount } from './auth/devAccount';
+import { createGoogleClient } from './auth/google';
 import { AuthRateLimits } from './auth/rateLimits';
 import { buildContentRegistry, guozhanMaxSeats } from 'content';
 import { MIN_SEATS } from 'protocol';
@@ -50,6 +51,7 @@ export async function createServer(config: ServerConfig, options: { logger?: boo
     rooms,
     history: new GameHistory(store.repos),
     profile: new ProfileService({ repos: store.repos }),
+    google: config.google ? createGoogleClient({ ...config.google, redirectUri: `${config.publicOrigin}/api/auth/google/callback` }) : null,
     publicOrigin: config.publicOrigin,
     production: config.production,
     cookieSecure: config.cookieSecure,
