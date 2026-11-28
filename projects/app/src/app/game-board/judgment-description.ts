@@ -119,3 +119,10 @@ export function judgmentDescription(state: GameState, registry: ContentRegistry,
     continuing: !!view.continuing,
   };
 }
+
+// A chain's popup (Goddess Luo's) stays open between its judgments: while the board is still playing what came between,
+// the next judgment is not reached yet, and the open popup keeps the card and the set-aside cards in view instead of
+// closing and opening again.
+export function keepsChainPopupOpen(shown: JudgmentDescription | null, reached: boolean): boolean {
+  return !reached && !!shown?.continuing;
+}

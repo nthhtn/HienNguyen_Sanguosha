@@ -40,7 +40,7 @@ export interface SelectionDialogData {
   styles: `
     .shown { display: flex; align-items: center; gap: 12px; margin: 0 0 12px; font: var(--mat-sys-title-small); }
     .shown app-playing-card { width: 72px; flex: none; }
-    .timer { display: block; padding: 8px 24px 0; }
+    .timer { display: block; padding: 8px 24px 16px; }
     :host-context([data-layout='compact']) .timer { display: none; }
     /* The phone board (spec 3h): the content is a column whose cards scroll, so the buttons never cover them. */
     :host-context([data-layout='compact']) mat-dialog-content { display: flex; flex-direction: column; overflow: hidden; }

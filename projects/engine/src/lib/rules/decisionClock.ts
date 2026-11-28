@@ -70,11 +70,11 @@ export function describeDecision(state: GameState, seatId: string, legal: readon
   const rounds = view?.rounds ?? 0;
   // A settled judgment closes on its own countdown, once the verdict and consequence have played
   // (and the card's first showing, if no skill was asked, which would have covered it).
-  // A chain reader's view waits out the longer chainEnd. An ended chain (a stop) has the same lead-in: its popup is opened
-  // again and plays the sequence from the start, and the clock waits for all of it.
+  // A chain reader's view waits out the longer chainEnd; one whose verdict already played (it ended on a stop) has no lead-in:
+  // the popup stays open through the chain, so nothing plays again.
   if (awaitsAcknowledgement(view)) {
     const kind = view!.aside ? 'chainEnd' : 'notice';
-    return { ...step(kind), leadInMs: leadIn(JUDGMENT_LEAD_IN_MS.tail + (rounds === 0 ? JUDGMENT_LEAD_IN_MS.head : 0)) };
+    return { ...step(kind), leadInMs: view!.ended ? 0 : leadIn(JUDGMENT_LEAD_IN_MS.tail + (rounds === 0 ? JUDGMENT_LEAD_IN_MS.head : 0)) };
   }
   // A chain's ask, once the verdict of the card just set aside has played (and the head, when no changer was asked).
   const chainAsk = !!view?.continuing && !!state.pendingChoice && !state.pendingChoice.judgmentChange && !state.pendingChoice.look;

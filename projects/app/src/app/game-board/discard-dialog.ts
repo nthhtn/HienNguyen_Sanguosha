@@ -77,7 +77,7 @@ export interface DiscardDialogData {
     .card.checked { border-color: var(--force); background: color-mix(in srgb, var(--force) 18%, white); }
     .card:disabled { opacity: 0.5; cursor: default; }
     .tick { position: absolute; top: 2px; right: 2px; z-index: 1; color: var(--force); background: #fff; border-radius: 50%; }
-    .timer { display: block; padding: 8px 24px 0; }
+    .timer { display: block; padding: 8px 24px 16px; }
     .foot { display: contents; }
     /* The phone board (spec 3h): full-size cards wrap into rows with room between them; a hand taller than the window
        scrolls vertically, and the countdown and the button share one row below it. */

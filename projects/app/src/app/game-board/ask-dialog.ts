@@ -28,7 +28,7 @@ export interface AskDialogData {
     <app-decision-countdown class="timer" />
   `,
   styles: `
-    .timer { display: block; padding: 8px 24px 0; }
+    .timer { display: block; padding: 8px 24px 16px; }
     :host-context([data-layout='compact']) .timer { display: none; }
   `,
 })

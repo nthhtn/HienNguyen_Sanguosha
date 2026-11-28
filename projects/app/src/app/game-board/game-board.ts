@@ -55,7 +55,7 @@ import { CompeteDialog } from './compete-dialog';
 import { JudgmentDialog, JudgmentDialogData } from './judgment-dialog';
 import { StartRevealDialog, StartRevealDialogData } from './start-reveal-dialog';
 import { judgmentDecision } from './judgment-decision';
-import { JudgmentDescription, judgmentDescription } from './judgment-description';
+import { JudgmentDescription, judgmentDescription, keepsChainPopupOpen } from './judgment-description';
 import { CompeteResult, competeResults } from './compete-result';
 import { chainEffectsFor, damageEffectsFor, ShownDamage } from './damage-effects';
 import { spriteDurationMs } from './sprite-plan';
@@ -926,6 +926,7 @@ export class GameBoard {
       return;
     }
     if (playing && shown.settled) return;
+    if (this.judgmentDialog && keepsChainPopupOpen(shown, reached)) return;
     if (!view || !reached) {
       this.judgmentSequenceDone = true;
       this.shownJudgment.set(null);

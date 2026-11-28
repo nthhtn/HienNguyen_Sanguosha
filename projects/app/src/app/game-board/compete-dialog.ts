@@ -128,7 +128,7 @@ const UNLOCK_AT = 4200;
     .outcome { padding: 12px; border-radius: 12px; border-left: 4px solid var(--force); background: color-mix(in srgb, var(--force) 10%, transparent); }
     .outcome .label { font: var(--mat-sys-label-large); color: var(--force-text); }
     .outcome p { margin: 4px 0 0; font: var(--mat-sys-body-large); }
-    .timer { display: flex; align-items: center; gap: 8px; padding: 8px 24px 0; font: var(--mat-sys-label-large); color: var(--force-text); }
+    .timer { display: flex; align-items: center; gap: 8px; padding: 8px 24px 16px; font: var(--mat-sys-label-large); color: var(--force-text); }
     .seconds { min-width: 3ch; font-variant-numeric: tabular-nums; }
     .bar { flex: 1; height: 6px; border-radius: 3px; background: var(--mat-sys-surface-container-highest); overflow: hidden; }
     .fill { display: block; height: 100%; background: var(--force); transition: width 1s linear; }

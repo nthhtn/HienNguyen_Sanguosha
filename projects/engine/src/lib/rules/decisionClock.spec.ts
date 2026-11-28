@@ -265,11 +265,9 @@ describe('describeDecision around a judgment chain', () => {
     expect(describeDecision(state({ judgmentView: { settled: true, rounds: 2 } }), 'seat-0', [ack], 'k')?.kind).toBe('notice');
   });
 
-  it('gives an ended chain the same lead-in: its popup plays the sequence again, and the clock waits for it', () => {
+  it('gives an ended chain no lead-in: its verdict has already played in the popup that stayed open', () => {
     const view = { settled: true, ended: true, rounds: 2, aside: [] };
-    expect(describeDecision(state({ judgmentView: view }), 'seat-0', [ack], 'k', withLeadIn)).toMatchObject({ kind: 'chainEnd', leadInMs: JUDGMENT_LEAD_IN_MS.tail });
-    const fresh = { settled: true, ended: true, rounds: 0, aside: [] };
-    expect(describeDecision(state({ judgmentView: fresh }), 'seat-0', [ack], 'k', withLeadIn)).toMatchObject({ kind: 'chainEnd', leadInMs: JUDGMENT_LEAD_IN_MS.head + JUDGMENT_LEAD_IN_MS.tail });
+    expect(describeDecision(state({ judgmentView: view }), 'seat-0', [ack], 'k', withLeadIn)).toMatchObject({ kind: 'chainEnd', leadInMs: 0 });
   });
 
   it('times the ask under a continuing view as a judge-again ask of 8 seconds that waits for the verdict animation', () => {
