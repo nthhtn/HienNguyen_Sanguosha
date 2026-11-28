@@ -48,6 +48,7 @@ describe('CardInfoSplit on a wide window', () => {
     select(sha);
     const info = el.querySelector('.split > .info')!;
     expect(info.querySelector('app-card-info-pane')).not.toBeNull();
+    expect(info.querySelector('app-card-info-pane.side-by-side')).not.toBeNull();
     expect(info.nextElementSibling!.querySelector('.list')).not.toBeNull();
     expect(ref.updateSize).toHaveBeenCalled();
     expect(ref.updatePosition).toHaveBeenCalledWith(expect.objectContaining({ right: expect.stringMatching(/px$/) }));
@@ -62,6 +63,18 @@ describe('CardInfoSplit on a wide window', () => {
     expect(container.style.getPropertyValue('--mat-dialog-container-max-width')).toBe('none');
     select(null);
     expect(container.style.getPropertyValue('--mat-dialog-container-max-width')).toBe('');
+  });
+
+  it('moves the popup right by the shortfall when the left side has too little room, keeping a gap from the window edge', () => {
+    const { fixture, ref, select } = setup(1440);
+    const pane = document.createElement('div');
+    pane.className = 'cdk-overlay-pane';
+    pane.getBoundingClientRect = () => ({ left: 440, right: 1000, width: 560 }) as DOMRect;
+    pane.appendChild(fixture.nativeElement);
+    select(sha);
+    // Growing by 480 px would put the left edge at -40: the popup's right edge moves 64 px right of where it was.
+    expect(ref.updateSize).toHaveBeenCalledWith('1040px');
+    expect(ref.updatePosition).toHaveBeenCalledWith({ right: '376px' });
   });
 
   it('puts the popup back where it was when the pane closes', () => {

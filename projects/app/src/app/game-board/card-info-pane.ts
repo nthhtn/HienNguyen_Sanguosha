@@ -11,7 +11,7 @@ import { TPipe } from '../i18n/t.pipe';
 @Component({
   selector: 'app-card-info-pane',
   imports: [PlayingCard, TPipe],
-  host: { '[class.compact]': 'compact()' },
+  host: { '[class.compact]': 'compact()', '[class.side-by-side]': 'sideBySide()' },
   template: `
     @if (showName() && !compact()) {
       <h3 class="name">{{ name() }}</h3>
@@ -40,6 +40,9 @@ import { TPipe } from '../i18n/t.pipe';
     .details { flex: 1; min-width: 180px; }
     .kind { font: var(--mat-sys-label-large); color: var(--mat-sys-primary); margin: 4px 0 8px; }
     .text { margin: 0; font: var(--mat-sys-body-medium); }
+    :host(.side-by-side) .content { flex-wrap: nowrap; align-items: flex-start; }
+    :host(.side-by-side) app-playing-card { flex: none; }
+    :host(.side-by-side) .details { min-width: 0; }
     /* Compact (the board panel's tab): the card on the left, scaled down, and its info on the right in smaller type. */
     :host(.compact) .content { flex-wrap: nowrap; align-items: flex-start; gap: 10px; }
     :host(.compact) app-playing-card { flex: none; zoom: 0.6; }
@@ -55,6 +58,8 @@ export class CardInfoPane {
   readonly showName = input(true);
   // The board panel's narrow tab: the card on the left, scaled down, and the name and info on the right in smaller type.
   readonly compact = input(false);
+  // The card on the left and the info on the right, however narrow: the info never drops below the card (the big popups' pane).
+  readonly sideBySide = input(false);
   private readonly i18n = inject(I18n);
   protected readonly display = computed(() => cardDisplayData(this.card().definitionId, this.i18n.locale()));
   protected readonly name = computed(() => this.display()?.name ?? cardIdDisplayName(this.card().definitionId, this.i18n.translator));

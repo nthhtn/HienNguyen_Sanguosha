@@ -10,7 +10,7 @@ import { Layout } from '../layout.service';
 import { CardInfoPane } from './card-info-pane';
 
 // How much wider a popup becomes while its card info is open beside the list.
-const INFO_WIDTH_PX = 400;
+const INFO_WIDTH_PX = 480;
 // The room kept between the grown popup and the left edge of the window.
 const EDGE_GAP_PX = 24;
 
@@ -40,7 +40,7 @@ const EDGE_GAP_PX = 24;
         @if (card(); as c) {
           <aside class="info">
             <button mat-icon-button type="button" class="close" [attr.aria-label]="'card.info.close' | t" (click)="closed.emit()"><mat-icon>close</mat-icon></button>
-            <app-card-info-pane [card]="c" />
+            <app-card-info-pane [card]="c" [sideBySide]="true" />
           </aside>
         }
         <div class="main"><ng-container [ngTemplateOutlet]="main" /></div>
@@ -50,7 +50,7 @@ const EDGE_GAP_PX = 24;
   styles: `
     :host { display: block; }
     .split { display: flex; align-items: stretch; gap: 16px; }
-    .info { position: relative; flex: none; width: ${INFO_WIDTH_PX - 16}px; box-sizing: border-box; padding: 20px 8px 0 24px; border-right: 1px solid var(--mat-sys-outline-variant); }
+    .info { position: relative; flex: none; width: ${INFO_WIDTH_PX - 16}px; box-sizing: border-box; padding: 28px 20px 24px 32px; border-right: 1px solid var(--mat-sys-outline-variant); }
     .close { position: absolute; top: 4px; right: 4px; }
     .main { flex: 1; min-width: 0; }
     .tab-info { padding: 16px 24px; }
@@ -111,12 +111,12 @@ export class CardInfoSplit {
       const right = rect ? window.innerWidth - rect.right : 0;
       this.grown = { width, right };
       // Normally the right edge stays put and the popup grows to the left; with too little room on the left it also moves
-      // left by the shortfall, so it never touches the window's edge.
+      // right by the shortfall, so it keeps a gap from the window's edge.
       const shift = Math.max(0, INFO_WIDTH_PX - Math.max(0, (rect?.left ?? 0) - EDGE_GAP_PX));
       // Material caps the dialog's pane at 560 px with this variable: lift the cap while the info is beside the list.
       this.pane()?.style.setProperty('--mat-dialog-container-max-width', 'none');
       ref.updateSize(`${Math.min(width + INFO_WIDTH_PX, window.innerWidth * 0.96)}px`);
-      ref.updatePosition({ right: `${right + shift}px` });
+      ref.updatePosition({ right: `${Math.max(0, right - shift)}px` });
     } else if (!open && this.grown) {
       const { width } = this.grown;
       this.grown = null;

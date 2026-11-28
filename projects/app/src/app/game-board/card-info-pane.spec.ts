@@ -45,4 +45,18 @@ describe('CardInfoPane', () => {
     expect(el.querySelector('.details .name')).toBeNull();
     expect(el.classList.contains('compact')).toBe(false);
   });
+
+  it('keeps the card on the left and the info on the right, never wrapping, when asked to sit side by side', () => {
+    const fixture = TestBed.createComponent(CardInfoPane);
+    fixture.componentRef.setInput('card', sha);
+    fixture.componentRef.setInput('sideBySide', true);
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.classList.contains('side-by-side')).toBe(true);
+    // The name stays above, unlike the compact layout.
+    expect(el.querySelector(':scope > .name')).not.toBeNull();
+    const children = [...el.querySelector('.content')!.children];
+    expect(children[0].tagName.toLowerCase()).toBe('app-playing-card');
+    expect(children[1].classList.contains('details')).toBe(true);
+  });
 });
