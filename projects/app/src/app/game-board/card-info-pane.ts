@@ -11,13 +11,17 @@ import { TPipe } from '../i18n/t.pipe';
 @Component({
   selector: 'app-card-info-pane',
   imports: [PlayingCard, TPipe],
+  host: { '[class.compact]': 'compact()' },
   template: `
-    @if (showName()) {
+    @if (showName() && !compact()) {
       <h3 class="name">{{ name() }}</h3>
     }
     <div class="content">
       <app-playing-card size="large" [card]="card()" [showName]="false" [showStat]="false" />
       <div class="details">
+        @if (showName() && compact()) {
+          <h3 class="name">{{ name() }}</h3>
+        }
         @if (display(); as d) {
           <div class="kind">
             {{ categoryName(d.category) }}@if (d.subtype) { · {{ subtypeName(d.subtype) }} }@if (d.range !== null) { · {{ 'card.range' | t: { n: d.range } }} }@if (d.mount) { · {{ 'card.distance' | t: { n: d.mount === 'offensive' ? '-1' : '+1' } }} }
@@ -36,12 +40,21 @@ import { TPipe } from '../i18n/t.pipe';
     .details { flex: 1; min-width: 180px; }
     .kind { font: var(--mat-sys-label-large); color: var(--mat-sys-primary); margin: 4px 0 8px; }
     .text { margin: 0; font: var(--mat-sys-body-medium); }
+    /* Compact (the board panel's tab): the card on the left, scaled down, and its info on the right in smaller type. */
+    :host(.compact) .content { flex-wrap: nowrap; align-items: flex-start; gap: 10px; }
+    :host(.compact) app-playing-card { flex: none; zoom: 0.6; }
+    :host(.compact) .details { min-width: 0; }
+    :host(.compact) .name { margin: 0 0 2px; font: var(--mat-sys-title-small); }
+    :host(.compact) .kind { margin: 0 0 4px; font: var(--mat-sys-label-medium); }
+    :host(.compact) .text { font: var(--mat-sys-body-small); }
   `,
 })
 export class CardInfoPane {
   readonly card = input.required<CardInstance>();
   // Off where the host already shows the name as its title (the Info popup).
   readonly showName = input(true);
+  // The board panel's narrow tab: the card on the left, scaled down, and the name and info on the right in smaller type.
+  readonly compact = input(false);
   private readonly i18n = inject(I18n);
   protected readonly display = computed(() => cardDisplayData(this.card().definitionId, this.i18n.locale()));
   protected readonly name = computed(() => this.display()?.name ?? cardIdDisplayName(this.card().definitionId, this.i18n.translator));

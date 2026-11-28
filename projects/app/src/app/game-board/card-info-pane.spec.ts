@@ -24,4 +24,25 @@ describe('CardInfoPane', () => {
   it('leaves the name out when its host already has it as a title', () => {
     expect(render({ showName: false }).querySelector('.name')).toBeNull();
   });
+
+  it('puts the name with the info, on the right of the card, in the compact layout of the board panel', () => {
+    const fixture = TestBed.createComponent(CardInfoPane);
+    fixture.componentRef.setInput('card', sha);
+    fixture.componentRef.setInput('compact', true);
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.classList.contains('compact')).toBe(true);
+    expect(el.querySelector('.content > .name')).toBeNull();
+    expect(el.querySelector('.details .name')!.textContent).toContain('Slash');
+    const children = [...el.querySelector('.content')!.children];
+    expect(children[0].tagName.toLowerCase()).toBe('app-playing-card');
+    expect(children[1].classList.contains('details')).toBe(true);
+  });
+
+  it('keeps the name above the card and the info when it is not compact', () => {
+    const el = render();
+    expect(el.querySelector(':scope > .name')).not.toBeNull();
+    expect(el.querySelector('.details .name')).toBeNull();
+    expect(el.classList.contains('compact')).toBe(false);
+  });
 });

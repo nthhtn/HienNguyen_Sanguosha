@@ -36,7 +36,7 @@ import { ChatPanel } from '../online/chat-panel';
       }
       @if (card(); as c) {
         <mat-tab [label]="'card.info.tab' | t">
-          <div class="list"><app-card-info-pane [card]="c" /></div>
+          <div class="list"><app-card-info-pane [card]="c" [compact]="true" /></div>
         </mat-tab>
       }
     </mat-tab-group>

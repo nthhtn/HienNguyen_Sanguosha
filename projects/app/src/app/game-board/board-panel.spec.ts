@@ -83,6 +83,8 @@ describe('BoardPanel', () => {
       expect(tabs().map((t) => t.textContent!.trim())).toEqual(['Action History', 'Discard Pile', 'Card Info']);
       expect(tabs()[2].getAttribute('aria-selected')).toBe('true');
       expect(el.querySelector('app-card-info-pane')!.textContent).toContain('Slash');
+      // The panel is narrow: the card on the left, its info on the right, at a smaller size.
+      expect(el.querySelector('app-card-info-pane.compact')).not.toBeNull();
     });
 
     it('does the same for a card in the discard list, with the chat tab keeping its place', async () => {
