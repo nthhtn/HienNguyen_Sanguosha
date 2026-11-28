@@ -333,3 +333,16 @@ From the Resolution Notice, picker and Judgment work (PR #62, 2026-11-09). The d
   - The browser pane available while building could not paint (screenshots timed out and animation frames ran about once a second).
 - **Revisit when.**
   - Before the Tutorial is announced, or the next time `/tutorial` is opened in a visible browser.
+
+### Experiment flags are code constants, not feature toggles
+
+- **What is missing.**
+  - The beginner-friendly experiments (skip windows with no answer, show the Blaze card in the picker) sit behind entries in `FEATURE_FLAGS` (`projects/app/src/app/feature-flags.ts`).
+  - Those entries are build-time constants that ship off.
+  - There is no toggle a player or an operator can flip at run time, per user or per room.
+- **Why it waits.**
+  - The experiments are not yet judged worth turning on.
+  - A real toggle system (settings menu, server-side flags, per-room rules) is a design of its own.
+- **Revisit when.**
+  - Feature toggles are designed.
+  - Then move the experiment flags onto them, and either turn the experiments on or delete their code.
