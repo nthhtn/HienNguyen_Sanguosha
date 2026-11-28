@@ -19,7 +19,7 @@ import { TPipe } from '../i18n/t.pipe';
   selector: 'app-setup',
   imports: [MatButtonModule, MatCheckboxModule, MatButtonToggleModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule, DeckPicker, SmallScreenNotice, TPipe],
   template: `
-    <div class="home" style="background-image: url('/images/ui/brand/landing.jpg')">
+    <div class="home">
       <mat-card class="hero" appearance="raised">
         <div class="kingdoms" aria-hidden="true">
           <span class="wei"></span><span class="shu"></span><span class="wu"></span><span class="qun"></span>
@@ -113,9 +113,18 @@ import { TPipe } from '../i18n/t.pipe';
       place-items: center;
       padding: 24px 16px;
       box-sizing: border-box;
+      /* The picture is a fixed layer the size of the window (below), so the page's height never resizes it. */
+      position: relative;
+      isolation: isolate;
       background-color: var(--mat-sys-surface-container-low);
-      background-size: cover;
-      background-position: center;
+    }
+    .home::before {
+      content: '';
+      position: fixed;
+      inset: var(--mat-toolbar-standard-height, 64px) 0 0 0;
+      z-index: -1;
+      pointer-events: none;
+      background: url('/images/ui/brand/landing.jpg') center / cover no-repeat;
     }
     .hero { width: min(100%, 520px); overflow: hidden; }
     .kingdoms { display: flex; height: 6px; }

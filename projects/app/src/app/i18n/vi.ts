@@ -477,6 +477,8 @@ export const vi: Messages = {
   'card.subtype.treasure': 'Bảo vật',
   'card.range': 'Tầm {n}',
   'card.distance': 'Khoảng cách {n}',
+  'card.info.tab': 'Thông tin lá bài',
+  'card.info.close': 'Đóng thông tin lá bài',
   'card.noText': 'Chưa có nội dung luật.',
   'general.noSkills': 'Không có kỹ năng nào.',
   'avatar.hidden': 'Tướng ẩn',

@@ -7,7 +7,19 @@
   place-items: start center;
   padding: 24px var(--content-inline-end, 16px) 24px var(--content-inline-start, 16px);
   box-sizing: border-box;
-  background: var(--mat-sys-surface-container-low) url('/images/ui/brand/landing.jpg') center / cover no-repeat;
+  /* The picture is a fixed layer the size of the window (below), so the page's height never resizes it. */
+  position: relative;
+  isolation: isolate;
+  background: var(--mat-sys-surface-container-low);
+}
+.online-page::before {
+  content: '';
+  position: fixed;
+  /* Under the toolbar (44 px on phones, 64 px elsewhere), to the bottom of the screen. */
+  inset: var(--mat-toolbar-standard-height, 64px) 0 0 0;
+  z-index: -1;
+  pointer-events: none;
+  background: url('/images/ui/brand/landing.jpg') center / cover no-repeat;
 }
 .online-card {
   width: min(100%, 640px);

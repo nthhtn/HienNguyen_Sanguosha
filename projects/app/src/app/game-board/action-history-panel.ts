@@ -1,10 +1,11 @@
-import { Component, Signal, computed, inject, input } from '@angular/core';
+import { Component, Signal, computed, inject, input, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { CardInstance } from 'engine';
 import { cardIdDisplayName } from '../labels';
 import { ActionHistoryList } from './action-history-list';
+import { CardInfoSplit } from './card-info-split';
 import { PlayingCard } from './playing-card';
 import { ActionHistoryEntry } from './action-history';
 import { I18n } from '../i18n/i18n.service';
@@ -19,19 +20,28 @@ export interface ActionHistoryDialogData {
 // Everything that happened at the table, most recent first, one divider per turn.
 @Component({
   selector: 'app-action-history-dialog',
-  imports: [MatDialogModule, MatButtonModule, ActionHistoryList, TPipe],
+  imports: [MatDialogModule, MatButtonModule, CardInfoSplit, ActionHistoryList, TPipe],
   template: `
-    <h2 mat-dialog-title>{{ 'history.title' | t }}</h2>
-    <mat-dialog-content>
-      <app-action-history-list [history]="data.history()" />
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close type="button">{{ 'ui.close' | t }}</button>
-    </mat-dialog-actions>
+    <app-card-info-split [card]="selected()" [listLabel]="'history.title' | t" (closed)="selected.set(null)">
+      <h2 mat-dialog-title>{{ 'history.title' | t }}</h2>
+      <mat-dialog-content>
+        <app-action-history-list [history]="data.history()" [selectable]="true" [selectedId]="selected()?.instanceId ?? null" (cardSelected)="toggle($event)" />
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button mat-button mat-dialog-close type="button">{{ 'ui.close' | t }}</button>
+      </mat-dialog-actions>
+    </app-card-info-split>
   `,
 })
 export class ActionHistoryDialog {
   protected readonly data = inject<ActionHistoryDialogData>(MAT_DIALOG_DATA);
+  // The card whose info is open beside the list, or null.
+  protected readonly selected = signal<CardInstance | null>(null);
+
+  // Choosing the open card again closes its info.
+  protected toggle(card: CardInstance): void {
+    this.selected.update((current) => (current?.instanceId === card.instanceId ? null : card));
+  }
 }
 
 // Beside the table, under the discard pile: the latest action, face-up when

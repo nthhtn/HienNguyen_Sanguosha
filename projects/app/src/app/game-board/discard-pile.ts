@@ -1,8 +1,9 @@
-import { Component, Signal, computed, inject, input } from '@angular/core';
+import { Component, Signal, computed, inject, input, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { CardInstance } from 'engine';
 import { cardIdDisplayName } from '../labels';
+import { CardInfoSplit } from './card-info-split';
 import { DiscardHistoryList } from './discard-history-list';
 import { PlayingCard } from './playing-card';
 import { DiscardHistoryEntry } from './discard-history';
@@ -19,19 +20,28 @@ export interface DiscardHistoryDialogData {
 // the draw pile sit below a reshuffle divider, dimmed.
 @Component({
   selector: 'app-discard-history-dialog',
-  imports: [MatDialogModule, MatButtonModule, DiscardHistoryList, TPipe],
+  imports: [MatDialogModule, MatButtonModule, CardInfoSplit, DiscardHistoryList, TPipe],
   template: `
-    <h2 mat-dialog-title>{{ 'discard.title' | t }}</h2>
-    <mat-dialog-content>
-      <app-discard-history-list [history]="data.history()" />
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close type="button">{{ 'ui.close' | t }}</button>
-    </mat-dialog-actions>
+    <app-card-info-split [card]="selected()" [listLabel]="'discard.title' | t" (closed)="selected.set(null)">
+      <h2 mat-dialog-title>{{ 'discard.title' | t }}</h2>
+      <mat-dialog-content>
+        <app-discard-history-list [history]="data.history()" [selectable]="true" [selectedId]="selected()?.instanceId ?? null" (cardSelected)="toggle($event)" />
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button mat-button mat-dialog-close type="button">{{ 'ui.close' | t }}</button>
+      </mat-dialog-actions>
+    </app-card-info-split>
   `,
 })
 export class DiscardHistoryDialog {
   protected readonly data = inject<DiscardHistoryDialogData>(MAT_DIALOG_DATA);
+  // The card whose info is open beside the list, or null.
+  protected readonly selected = signal<CardInstance | null>(null);
+
+  // Choosing the open card again closes its info.
+  protected toggle(card: CardInstance): void {
+    this.selected.update((current) => (current?.instanceId === card.instanceId ? null : card));
+  }
 }
 
 // The discard pile, kept beside the table: only the top (most recent) card is
