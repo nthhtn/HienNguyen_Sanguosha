@@ -552,6 +552,16 @@ describe('GameRunner: a settled judgment', () => {
     expect(askedClock.startsAt - askedClock.serverNow).toBe(JUDGMENT_LEAD_IN_MS.tail);
   });
 
+  it('starts the countdown after the board has played what led to the judgment, then the popup animation', () => {
+    const { runner } = setup();
+    // What the last move set the board to play (battle playback) before the popup opens.
+    (runner as unknown as { playbackUntil: number }).playbackUntil = T0 + 1_500;
+    settle(runner);
+    const clock = runner.updateFor('p0', 0)!.clock!;
+    expect(clock.startsAt - clock.serverNow).toBe(1_500 + JUDGMENT_LEAD_IN_MS.head + JUDGMENT_LEAD_IN_MS.tail);
+    expect(clock.endsAt - clock.startsAt).toBe(5_000);
+  });
+
   it('has no lead-in in a game with no person playing: the bot closes it after its normal delay', async () => {
     const { runner, host, scheduler } = setup({ kinds: ['bot', 'bot'], connected: [] });
     settle(runner);

@@ -330,7 +330,9 @@ export class GameRunner {
     // The animation of what just happened plays before a bot moves or a person's new clock starts; a person may still act at once.
     const animation = Math.max(0, this.playbackUntil - now);
     const wait = Math.max(hold, animation);
-    const decision = spec && wait > 0 ? { ...spec, leadInMs: Math.max(spec.leadInMs ?? 0, wait) } : spec;
+    // A judgment's own animation (its lead-in) plays in the popup, which opens once the board has played what led to it: the
+    // two add up. Any other decision just waits for the board.
+    const decision = spec && wait > 0 ? { ...spec, leadInMs: (spec.leadInMs ?? 0) > 0 ? (spec.leadInMs ?? 0) + wait : wait } : spec;
     if (this.isBotPlayed(seatId) && !this.closedByClock()) {
       // A human's Play phase clock waits while a bot responds.
       this.clock = switchClock(this.clock, null, now);
