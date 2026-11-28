@@ -23,11 +23,13 @@ export const DECISION_SECONDS = {
   discard: 30,
   selection: 300,
   // A settled judgment, for anyone to read and close: the countdown after its animation.
-  notice: 3,
+  notice: 5,
   // The end of a chain of judgments (Goddess Luo's): her cards in view a moment longer.
   chainEnd: 5,
   // A look at cards or a General that is only shown, then closed (Ascertain's look).
   look: 30,
+  // A Goddess Luo chain's "judge again?" ask: the first use of the skill is an ordinary ask (20), every later ask is quicker.
+  judgeAgain: 8,
   // A skill's decision whether to change a judgment's card; the card pick that follows has its own clock of the same length.
   judgmentChange: 20,
   // One budget for a whole Play phase, paused while a response is under way.
@@ -85,7 +87,7 @@ export function describeDecision(state: GameState, seatId: string, legal: readon
   }
   if (state.pendingArrangement) return step('arrange');
   if (state.pendingChoice?.look) return step('look');
-  if (chainAsk) return { ...step('ask'), leadInMs: leadIn(JUDGMENT_LEAD_IN_MS.tail + (rounds === 0 ? JUDGMENT_LEAD_IN_MS.head : 0)) };
+  if (chainAsk) return { ...step('judgeAgain'), leadInMs: leadIn(JUDGMENT_LEAD_IN_MS.tail + (rounds === 0 ? JUDGMENT_LEAD_IN_MS.head : 0)) };
   if (state.pendingChoice) return step(state.pendingChoice.verb === 'use' ? 'ask' : 'pick');
   if (state.pendingSelection) return step('pick');
   if (state.pendingResponse) {

@@ -142,18 +142,20 @@ How long a person has is a rule, so the engine owns it, in
 
 | Kind | Seconds | Clock |
 |---|---|---|
-| `wuxie` (a Wuxie, or a Wuxie against one) | 15 | One per decision |
+| `wuxie` (a Wuxie, or a Wuxie against one) | 20 |
+| `noAnswer` (a response window the seat cannot answer: only Pass is left) | 5 | One per decision | One per decision |
 | `dying` (the dying round's Peach) | 20 | One per decision |
 | `response` (any other response window) | 20 | One per decision |
-| `ask` (a skill's use-it-or-not) | 15 | One per decision |
+| `ask` (a skill's use-it-or-not) | 20 | One per decision |
 | `pick` (a card, seat, suit or recipient: Steal, Break, Harvest, Compete) | 30 | One per decision |
-| `arrange` (Astrology) | 60 | One per decision |
+| `arrange` (Astrology) | 90 | One per decision |
 | `start` (the Start window's reveal) | 20 | One per window |
 | `discard` | 30 | One per decision |
 | `selection` (General Selection) | 300 | One per seat for the whole pick |
 | `play` | 300 | One for the whole Play Phase, paused while a response is under way |
-| `judgmentChange` | 15 | A skill's decision (ask, then card pick) to change an unsettled judgment, one clock per ask |
-| `notice` | 3 | A settled judgment popup, after its animation |
+| `judgmentChange` | 20 | A skill's decision (ask, then card pick) to change an unsettled judgment, one clock per ask |
+| `notice` | 5 | A settled judgment popup, after its animation |
+| `judgeAgain` | 8 | Each "Judge again?" ask of a Goddess Luo chain; The first use of the skill is an ordinary `ask` |
 | `chainEnd` | 5 | The end of a judgment chain (Goddess Luo): Her cards stay in view a moment longer |
 
 `GAME_START_LEAD_IN_MS` (3000) is the wait after the last seat has chosen its Generals, before the first decision of the game: The server holds its clocks, bot moves and legal actions for that long and the app shows "Game starts in 3".
@@ -173,7 +175,7 @@ decision follows, and a *new* clock starts counting at `startsAt = now + leadInM
   notice waits `tail`, plus `head` when no changer was ever asked.
 - **A judgment chain** (`SkillDefinition.chainsJudgment`, Goddess Luo) keeps one `judgmentView` across its judgments:
   - `aside` holds the cards set aside so far, `continuing` marks a final card that needs no close, `ended` a chain that is over.
-  - A continuing card's verdict plays (`tail`), then the owner's "Judge again?" ask runs as an `ask` clock with that lead-in.
+  - A continuing card's verdict plays (`tail`), then the owner's "Judge again?" ask runs as a `judgeAgain` clock with that lead-in.
   - A red card, a stop, no card left or her death ends it: The view awaits one close on a `chainEnd` clock, and closing it never reads the judgment again.
   - `awaitsAcknowledgement(view)` says whether the game waits for a close.
 - Only a caller with a person at the table passes `{ leadIn: true }`; the default is

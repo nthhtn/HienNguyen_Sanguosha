@@ -110,11 +110,11 @@ describe('ResolutionNoticeDialog', () => {
     expect(noticeForce(content({ source: { kind: 'skill', id: 'resurgence', seatId: 'seat-1' } }), state)).toBe('Wei');
   });
 
-  it('counts down 3 seconds by default, with no button, then closes itself once', () => {
-    expect(NOTICE_SECONDS).toBe(3);
+  it('counts down 5 seconds by default, with no button, then closes itself once', () => {
+    expect(NOTICE_SECONDS).toBe(5);
     const { fixture, el, close } = render(content());
-    expect(el.querySelector('.timer .seconds')!.textContent).toBe('3s');
-    jest.advanceTimersByTime(2000);
+    expect(el.querySelector('.timer .seconds')!.textContent).toBe('5s');
+    jest.advanceTimersByTime(4000);
     fixture.detectChanges();
     expect(el.querySelector('.timer .seconds')!.textContent).toBe('1s');
     expect(close).not.toHaveBeenCalled();

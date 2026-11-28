@@ -34,7 +34,7 @@ export interface ResolutionNoticeContent {
   // What happened, in order.
   steps: NoticeText[];
   cards: NoticeCard[];
-  // How long the popup stays, in seconds; absent means the default (5). A notice with more to read asks for more (Harvest).
+  // How long the popup stays, in seconds; absent means the default (NOTICE_SECONDS in the app, 5). A notice with more to read asks for more (Harvest).
   seconds?: number;
   // A card per seat, shown in a row with the seat's name and revealed Generals under each (Harvest). When set,
   // the popup shows this in place of the row of seats, the steps and the cards.
