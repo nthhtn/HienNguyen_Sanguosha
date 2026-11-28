@@ -337,7 +337,7 @@ From the Resolution Notice, picker and Judgment work (PR #62, 2026-11-09). The d
 ### Experiment flags are code constants, not feature toggles
 
 - **What is missing.**
-  - The beginner-friendly experiments (skip windows with no answer, show the Blaze card in the picker) sit behind entries in `FEATURE_FLAGS` (`projects/app/src/app/feature-flags.ts`).
+  - The beginner-friendly experiments (skip windows with no answer; the Blaze card in the picker is now on) sit behind entries in `FEATURE_FLAGS` (`projects/app/src/app/feature-flags.ts`).
   - Those entries are build-time constants that ship off.
   - There is no toggle a player or an operator can flip at run time, per user or per room.
 - **Why it waits.**

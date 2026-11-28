@@ -18,14 +18,14 @@ export interface FeatureFlags {
   // with. Empty: every window opens, as before. Put BEGINNER_SKIP_WINDOWS here to try it. A code constant for now: see
   // docs/deferrals.md, "Experiment flags are code constants, not feature toggles".
   skipNoAnswerWindows: readonly NoAnswerWindow[];
-  // Beginner experiment: the Blaze card the target showed is also shown in the "discard a card of the same suit" popup. Off: it
-  // shows only in the Resolution notice. See the same deferral as above.
+  // The Blaze card the target showed is also shown in the "discard a card of the same suit" popup. On everywhere; kept as a switch
+  // so it can be turned off in one line (see docs/deferrals.md, "Experiment flags are code constants, not feature toggles").
   showBlazeCard: boolean;
 }
 
 // Test-only features follow DEV_FEATURES (file-replaced in production builds); the phone board and the Tutorial are on in both.
 export function featureFlagsFor(dev: boolean): FeatureFlags {
-  return { playOffline: dev, playbackSettings: dev, phoneBoard: true, tutorial: true, skipNoAnswerWindows: [], showBlazeCard: false };
+  return { playOffline: dev, playbackSettings: dev, phoneBoard: true, tutorial: true, skipNoAnswerWindows: [], showBlazeCard: true };
 }
 
 export const FEATURE_FLAGS = new InjectionToken<FeatureFlags>('FEATURE_FLAGS', {
