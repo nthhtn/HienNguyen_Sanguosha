@@ -61,6 +61,21 @@ describe('JudgmentStage', () => {
     expect(count(cross.el, '.stamp.bad.show')).toBe(1);
   });
 
+  it('names the seat the effect lands on in the verdict label, not the judged seat', () => {
+    const { el, at } = render(skillDescription({ verdict: 'bad', judgedSeatName: 'Hing', affectedSeatName: 'Bo' }));
+    at(3000);
+    expect(el.querySelector('.verdict-label')!.textContent).toContain('Bo');
+    expect(el.querySelector('.verdict-label')!.textContent).not.toContain('Hing');
+  });
+
+  it('shrinks the consequence box when the consequence is only a sentence', () => {
+    const bare = render(skillDescription({ verdict: 'good', effect: { kind: 'none' }, outcome: 'Hing resumes the Play Phase normally' }));
+    expect(bare.el.querySelector('.cons.bare')).not.toBeNull();
+    TestBed.resetTestingModule();
+    const rich = render(skillDescription({ verdict: 'bad', effect: { kind: 'skip-phase', phase: 'Play' } }));
+    expect(rich.el.querySelector('.cons.bare')).toBeNull();
+  });
+
   it('draws no stamp for a neutral verdict', () => {
     const { el, at } = render(skillDescription({ verdict: 'neutral' }));
     at(10_000);

@@ -14,6 +14,8 @@ export interface JudgmentDescription {
   force: Force;
   source: JudgmentSource;
   judgedSeatName: string;
+  // The seat the verdict is read for: the one the effect lands on (the judged seat for a Delayed Tool).
+  affectedSeatName: string;
   // As it stands now, after any replacements.
   card: CardInstance;
   // One line per replacement, oldest first.
@@ -88,12 +90,14 @@ export function judgmentDescription(state: GameState, registry: ContentRegistry,
   let verdict: JudgmentVerdict | null = null;
   let effect: JudgmentEffect | null = null;
   let hp: JudgmentDescription['hp'] = null;
+  let affectedSeatName = name(view.seatId);
   if (view.settled) {
     const result = judgmentOutcome(state, view, registry);
     if (result) {
       const owner = name(result.seats.owner);
       outcome = judgmentOutcomeText(result.readerId, result.key, { seat: name(result.seats.seat), owner, source: result.seats.source ? name(result.seats.source) : owner }, localeOf(tr));
       verdict = result.verdict;
+      affectedSeatName = name(result.seats.affected);
       effect = result.effect;
       if (result.effect.kind === 'damage') {
         const subjectId = result.seats[result.effect.subject];
@@ -107,11 +111,18 @@ export function judgmentDescription(state: GameState, registry: ContentRegistry,
   const waiting = view.settled ? null : tr('judgment.waiting');
 
   return {
-    force, source, judgedSeatName: name(view.seatId), card: view.card, changes, settled: view.settled, outcome, waiting,
+    force, source, judgedSeatName: name(view.seatId), affectedSeatName, card: view.card, changes, settled: view.settled, outcome, waiting,
     rule: judgmentRuleText(judgmentReaderId(reader), localeOf(tr)), verdict, effect, hp,
     replaced: view.changes.slice(-REPLACED_IN_VIEW).map((change) => change.replaced),
     key: (view.changes[0]?.replaced ?? view.card).instanceId,
     aside: view.aside ?? [],
     continuing: !!view.continuing,
   };
+}
+
+// A chain's popup (Goddess Luo's) stays open between its judgments: while the board is still playing what came between,
+// the next judgment is not reached yet, and the open popup keeps the card and the set-aside cards in view instead of
+// closing and opening again.
+export function keepsChainPopupOpen(shown: JudgmentDescription | null, reached: boolean): boolean {
+  return !reached && !!shown?.continuing;
 }

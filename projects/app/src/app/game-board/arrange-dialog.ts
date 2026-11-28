@@ -70,7 +70,7 @@ interface Placed {
     }
     .place button.on { background: var(--mat-sys-primary); color: var(--mat-sys-on-primary); border-color: var(--mat-sys-primary); }
     .move button:disabled { opacity: 0.4; cursor: default; }
-    .timer { display: block; padding: 8px 24px 0; }
+    .timer { display: block; padding: 8px 24px 16px; }
     :host-context([data-layout='compact']) .timer { display: none; }
     .cdk-drag-preview { box-shadow: 0 4px 12px rgb(0 0 0 / 30%); }
     .cdk-drag-placeholder { opacity: 0.3; }

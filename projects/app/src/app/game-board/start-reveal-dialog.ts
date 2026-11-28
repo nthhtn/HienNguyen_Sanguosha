@@ -80,7 +80,7 @@ export interface StartRevealDialogData {
     .general.checked { border-color: var(--force); background: color-mix(in srgb, var(--force) 18%, white); }
     .name { font-weight: 600; line-height: 1.2; overflow-wrap: anywhere; }
     .slot { color: var(--mat-sys-on-surface-variant); font: var(--mat-sys-label-large); line-height: 1.15; }
-    .timer { display: block; padding: 8px 24px 0; }
+    .timer { display: block; padding: 8px 24px 16px; }
     :host-context([data-layout='compact']) .timer { display: none; }
     /* Phone board: both Generals on one row; tap the tile to select (spec 3h). */
     :host-context([data-layout='compact']) .hint { margin: 0 0 6px; }

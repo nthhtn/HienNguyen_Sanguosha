@@ -142,18 +142,20 @@ How long a person has is a rule, so the engine owns it, in
 
 | Kind | Seconds | Clock |
 |---|---|---|
-| `wuxie` (a Wuxie, or a Wuxie against one) | 15 | One per decision |
+| `wuxie` (a Wuxie, or a Wuxie against one) | 20 | One per decision |
+| `noAnswer` (a response window the seat cannot answer: only Pass is left) | 5 | One per decision |
 | `dying` (the dying round's Peach) | 20 | One per decision |
 | `response` (any other response window) | 20 | One per decision |
-| `ask` (a skill's use-it-or-not) | 15 | One per decision |
+| `ask` (a skill's use-it-or-not) | 20 | One per decision |
 | `pick` (a card, seat, suit or recipient: Steal, Break, Harvest, Compete) | 30 | One per decision |
-| `arrange` (Astrology) | 60 | One per decision |
+| `arrange` (Astrology) | 90 | One per decision |
 | `start` (the Start window's reveal) | 20 | One per window |
 | `discard` | 30 | One per decision |
 | `selection` (General Selection) | 300 | One per seat for the whole pick |
 | `play` | 300 | One for the whole Play Phase, paused while a response is under way |
-| `judgmentChange` | 15 | A skill's decision (ask, then card pick) to change an unsettled judgment, one clock per ask |
-| `notice` | 3 | A settled judgment popup, after its animation |
+| `judgmentChange` | 20 | A skill's decision (ask, then card pick) to change an unsettled judgment, one clock per ask |
+| `notice` | 5 | A settled judgment popup, after its animation |
+| `judgeAgain` | 8 | Each "Judge again?" ask of a Goddess Luo chain; The first use of the skill is an ordinary `ask` |
 | `chainEnd` | 5 | The end of a judgment chain (Goddess Luo): Her cards stay in view a moment longer |
 
 `GAME_START_LEAD_IN_MS` (3000) is the wait after the last seat has chosen its Generals, before the first decision of the game: The server holds its clocks, bot moves and legal actions for that long and the app shows "Game starts in 3".
@@ -173,7 +175,7 @@ decision follows, and a *new* clock starts counting at `startsAt = now + leadInM
   notice waits `tail`, plus `head` when no changer was ever asked.
 - **A judgment chain** (`SkillDefinition.chainsJudgment`, Goddess Luo) keeps one `judgmentView` across its judgments:
   - `aside` holds the cards set aside so far, `continuing` marks a final card that needs no close, `ended` a chain that is over.
-  - A continuing card's verdict plays (`tail`), then the owner's "Judge again?" ask runs as an `ask` clock with that lead-in.
+  - A continuing card's verdict plays (`tail`), then the owner's "Judge again?" ask runs as a `judgeAgain` clock with that lead-in.
   - A red card, a stop, no card left or her death ends it: The view awaits one close on a `chainEnd` clock, and closing it never reads the judgment again.
   - `awaitsAcknowledgement(view)` says whether the game waits for a close.
 - Only a caller with a person at the table passes `{ leadIn: true }`; the default is
@@ -307,7 +309,7 @@ Optional rules chosen at game creation are stored in `state.rules`
 | Rule | Meaning |
 |---|---|
 | `firstRevealDraw` | With five or more seats, the first seat to reveal a General draws 2 cards. Not a player's choice: The app and the server set it for any game with at least `FIRST_REVEAL_MIN_SEATS` (5) seats. |
-| `judgmentNotice` | Every judgment waits for the popup to be closed (or 3 s) before it is read. It changes the action sequence, so a stored game keeps the value it started with; the app and server turn it on for new games, and the simulator and most tests leave it off. |
+| `judgmentNotice` | Every judgment waits for the popup to be closed (or 5 s) before it is read. It changes the action sequence, so a stored game keeps the value it started with; the app and server turn it on for new games, and the simulator and most tests leave it off. |
 | `partnerReward` | • Guozhan's Synergistic Partners reward: The reveal that completes a listed pair of Kingdom Wars Generals lets the seat draw 2 cards or recover 1 HP (see "Reveal bonuses" in [the event chain](event-chain.md)).<br>• It adds a prompt, so a stored game keeps the value it started with; the app and server turn it on for new games, and absent means no reward. |
 | `deck` | The card distribution the draw pile is dealt from (a deck id). Absent means the default deck, Kingdom Wars (`DEFAULT_DECK_ID`). |
 

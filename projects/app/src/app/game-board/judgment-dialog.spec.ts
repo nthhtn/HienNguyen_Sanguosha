@@ -77,16 +77,19 @@ describe('JudgmentDialog', () => {
     expect(el.querySelector('.line')).toBeNull();
   });
 
-  it('unsettled: the waiting line, no countdown', () => {
+  it('unsettled: the waiting line, and the clock slot in the title row (it shows nothing until a decision is timed)', () => {
     const { el } = render(skillDescription({ settled: false, outcome: null, waiting: 'Waiting for the judgment to be resolved' }));
     expect(el.querySelector('.waiting')!.textContent).toContain('Waiting for the judgment to be resolved');
-    expect(el.querySelector('app-decision-countdown')).toBeNull();
+    expect(el.querySelector('.title-row app-decision-countdown')).not.toBeNull();
+    expect(el.querySelector('.body app-decision-countdown')).toBeNull();
   });
 
   it('settled: the countdown, and no button to skip it', () => {
     const { el } = render(skillDescription());
     expect(el.querySelector('.waiting')).toBeNull();
-    expect(el.querySelector('app-decision-countdown')).not.toBeNull();
+    expect(el.querySelector('.title-row app-decision-countdown')).not.toBeNull();
+    // One clock only, in the title where scrolling never hides it: none at the foot or in the decision area.
+    expect(el.querySelectorAll('app-decision-countdown')).toHaveLength(1);
     expect(el.querySelector('button.close')).toBeNull();
     expect(el.querySelector('mat-dialog-actions button')).toBeNull();
   });
@@ -121,7 +124,7 @@ describe('JudgmentDialog', () => {
       step: { kind: 'ask', description: { title: 'Devil', prompt: 'Change it?', hint: null, card: null, generalId: null, useLabel: 'Use', use, decline: { ...use, optionId: 'decline' } } },
     };
 
-    it('hands the viewer’s pick to the board to submit, and the countdown stays in the decision area, not the footer', () => {
+    it('hands the viewer’s pick to the board to submit, and the clock is in the title, not in the decision area', () => {
       const choose = jest.fn();
       const { el } = render(asking, { decision: signal(ask), choose });
       jest.advanceTimersByTime(2100);
@@ -129,6 +132,8 @@ describe('JudgmentDialog', () => {
       (el.querySelector('.decide button.use') as HTMLButtonElement).click();
       expect(choose).toHaveBeenCalledWith(use);
       expect(el.querySelector('mat-dialog-actions')).toBeNull();
+      expect(el.querySelector('.decide app-decision-countdown')).toBeNull();
+      expect(el.querySelector('.title-row app-decision-countdown')).not.toBeNull();
     });
 
     it('tells the board the device was handed over in Pass and Play', () => {
@@ -141,12 +146,12 @@ describe('JudgmentDialog', () => {
     });
   });
 
-  it('runs the countdown only when the judgment awaits a close, not while a chain goes on', () => {
+  it('keeps the clock in the title across a chain too, where the judge-again ask is timed', () => {
     const going = render(skillDescription({ continuing: true, aside: [seven] }));
-    expect(going.el.querySelector('app-decision-countdown')).toBeNull();
+    expect(going.el.querySelector('.title-row app-decision-countdown')).not.toBeNull();
     TestBed.resetTestingModule();
     const ended = render(skillDescription({ continuing: false, aside: [seven] }));
-    expect(ended.el.querySelector('app-decision-countdown')).not.toBeNull();
+    expect(ended.el.querySelector('.title-row app-decision-countdown')).not.toBeNull();
   });
 
   it('starts the stage afresh for the next judgment of a chain, in the same popup', () => {

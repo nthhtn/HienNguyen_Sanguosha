@@ -11,7 +11,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Action, CardInstance, ChooseGeneralsAction, Seat, describeDecision, discardOwed, isSeatDying } from 'engine';
+import { Action, CardInstance, ChooseGeneralsAction, GameState, Seat, describeDecision, discardOwed, isSeatDying } from 'engine';
 
 type DiscardCardAction = Extract<Action, { kind: 'DiscardCardAction' }>;
 import { finalSeatViews } from 'protocol';
@@ -38,6 +38,9 @@ import { actionHistory } from './action-history';
 import { DiscardDialog, DiscardDialogData } from './discard-dialog';
 import { ResponseDialog, ResponseDialogData, ResponseOption } from './response-dialog';
 import { describeResponse, startsOnNoResponse } from './response-description';
+import { FEATURE_FLAGS } from '../feature-flags';
+import { skipsNoAnswerWindow } from './no-answer-window';
+import { blazeShownCard } from './blaze-shown';
 import { ChoiceDialog, ChoiceDialogData } from './choice-dialog';
 import { AskDialog, AskDialogData } from './ask-dialog';
 import { SelectionDialog, SelectionDialogData } from './selection-dialog';
@@ -52,7 +55,7 @@ import { CompeteDialog } from './compete-dialog';
 import { JudgmentDialog, JudgmentDialogData } from './judgment-dialog';
 import { StartRevealDialog, StartRevealDialogData } from './start-reveal-dialog';
 import { judgmentDecision } from './judgment-decision';
-import { JudgmentDescription, judgmentDescription } from './judgment-description';
+import { JudgmentDescription, judgmentDescription, keepsChainPopupOpen } from './judgment-description';
 import { CompeteResult, competeResults } from './compete-result';
 import { chainEffectsFor, damageEffectsFor, ShownDamage } from './damage-effects';
 import { spriteDurationMs } from './sprite-plan';
@@ -336,6 +339,7 @@ export class GameBoard {
   private readonly i18n = inject(I18n);
   private readonly dock = inject(DecisionDock);
   private readonly injector = inject(Injector);
+  private readonly flags = inject(FEATURE_FLAGS);
   protected readonly director = inject(PlaybackDirector);
   protected readonly layout = inject(Layout);
   // Your own seat's zoom, shared with the other seats (Layout.seatScale, which shrinks with more players) on phone and
@@ -411,8 +415,22 @@ export class GameBoard {
     const pending = visible?.pendingResponse;
     if (!visible || !pending || pending.respondingSeatId !== this.viewerSeatId()) return null;
     const legal = this.legalActions();
+    // A window the beginner experiment skips has no popup: autoPass answers it.
+    if (this.autoPass()) return null;
     return legal.some((a) => a.kind === 'PassAction' || a.kind === 'RespondAction') ? pending.id : null;
   });
+
+  // The Pass the app submits in place of opening the popup of a window the viewer cannot answer, when the experiment lists
+  // that window (a flag that ships empty); null otherwise. Presentation only: the engine still opens the window and
+  // logs the pass as an ordinary one.
+  private readonly autoPass = computed(() => {
+    const pending = this.visibleState()?.pendingResponse;
+    if (!pending || pending.respondingSeatId !== this.viewerSeatId()) return null;
+    const action = skipsNoAnswerWindow(pending, this.legalActions(), this.flags.skipNoAnswerWindows, this.gameService.tutorialActive());
+    return action ? { pendingId: pending.id, action } : null;
+  });
+  // The window already passed for, so a rebuild or a language change never passes twice.
+  private autoPassedFor: string | null = null;
 
   // The turn whose Start window the viewer owes a Confirm for, while the board is on screen and the
   // engine offers it: the popup that picks which hidden Generals to reveal.
@@ -548,6 +566,18 @@ export class GameBoard {
         // Timed out (or otherwise settled): the open dialog has nothing left to ask.
         if (count === 0) this.closeDialog(this.discardDialog);
         else this.openDiscardDialog(count);
+      });
+    });
+    effect(() => {
+      const due = this.autoPass();
+      untracked(() => {
+        if (!due) {
+          this.autoPassedFor = null;
+          return;
+        }
+        if (this.autoPassedFor === due.pendingId) return;
+        this.autoPassedFor = due.pendingId;
+        this.submit(due.action);
       });
     });
     effect(() => {
@@ -896,6 +926,7 @@ export class GameBoard {
       return;
     }
     if (playing && shown.settled) return;
+    if (this.judgmentDialog && keepsChainPopupOpen(shown, reached)) return;
     if (!view || !reached) {
       this.judgmentSequenceDone = true;
       this.shownJudgment.set(null);
@@ -1016,7 +1047,7 @@ export class GameBoard {
     if (!description) return;
     this.selectionDialogFor = selectionId;
     const ref = openForceDialog<SelectionDialog, SelectionDialogData, Action>(this.dialog, SelectionDialog, this.viewerForce(), {
-      data: { description, pickedChanged: (action) => this.timer.setTimeoutChoice([action]) },
+      data: { description, pickedChanged: (action) => this.timer.setTimeoutChoice([action]), shown: this.blazeShown(visible) },
       width: 'min(92vw, 640px)',
       disableClose: true,
     });
@@ -1026,6 +1057,14 @@ export class GameBoard {
       this.selectionDialog = null;
       if (action) this.submit(action);
     });
+  }
+
+  // The Blaze card the target showed, with its caption, when the experiment is on and the selection is Blaze's discard.
+  private blazeShown(visible: GameState): SelectionDialogData['shown'] {
+    if (!this.flags.showBlazeCard) return undefined;
+    const found = blazeShownCard(visible);
+    if (!found) return undefined;
+    return { card: found.card, caption: this.i18n.translator('selection.blazeShown', { seat: seatName(visible.players, found.seatId, this.i18n.translator) }) };
   }
 
   // Opens the Arrange dialog for one pending arrangement; it closes with the

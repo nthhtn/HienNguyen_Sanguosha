@@ -47,7 +47,7 @@ describe('describeDecision', () => {
   });
 
   it('gives each kind of decision its seconds', () => {
-    expect(DECISION_SECONDS).toMatchObject({ wuxie: 20, noAnswer: 5, look: 30, dying: 20, response: 20, ask: 20, pick: 30, arrange: 90, start: 20, discard: 30, selection: 300, play: 300, judgmentChange: 20, notice: 3 });
+    expect(DECISION_SECONDS).toMatchObject({ wuxie: 20, noAnswer: 5, look: 30, dying: 20, response: 20, ask: 20, pick: 30, arrange: 90, start: 20, discard: 30, selection: 300, play: 300, judgmentChange: 20, notice: 5, judgeAgain: 8, chainEnd: 5 });
   });
 
   it('times a pending response as a response of this state', () => {
@@ -126,9 +126,9 @@ describe('a settled judgment', () => {
   const ack: Action = { kind: 'AcknowledgeJudgmentAction', seatId: 'seat-0' };
   const settled = state({ judgmentView: { settled: true }, phase: 'Play' });
 
-  it('is a notice decision of 3 seconds', () => {
+  it('is a notice decision of 5 seconds', () => {
     expect(describeDecision(settled, 'seat-0', [ack], 'k')).toEqual({ kind: 'notice', seatId: 'seat-0', key: 'step:k', leadInMs: 0 });
-    expect(DECISION_SECONDS.notice).toBe(3);
+    expect(DECISION_SECONDS.notice).toBe(5);
   });
 
   it('gets its own clock for each judgment', () => {
@@ -152,15 +152,15 @@ describe('a clock lead-in', () => {
   it('starts a new clock at now plus the lead-in and ends a full total later', () => {
     const clock = switchClock(EMPTY_CLOCK, notice, 1_000);
     expect(clock.running?.startsAt).toBe(3_000);
-    expect(clock.running?.endsAt).toBe(6_000);
-    expect(clock.running?.totalMs).toBe(3_000);
+    expect(clock.running?.endsAt).toBe(8_000);
+    expect(clock.running?.totalMs).toBe(5_000);
   });
 
   it('reports the full total while the lead-in plays, then counts down', () => {
     const clock = switchClock(EMPTY_CLOCK, notice, 1_000);
-    expect(clockRemainingMs(clock, 1_000)).toBe(3_000);
-    expect(clockRemainingMs(clock, 2_999)).toBe(3_000);
-    expect(clockRemainingMs(clock, 4_000)).toBe(2_000);
+    expect(clockRemainingMs(clock, 1_000)).toBe(5_000);
+    expect(clockRemainingMs(clock, 2_999)).toBe(5_000);
+    expect(clockRemainingMs(clock, 4_000)).toBe(4_000);
     expect(clockRemainingMs(clock, 99_000)).toBe(0);
   });
 
@@ -176,17 +176,28 @@ describe('a clock lead-in', () => {
     const other: DecisionSpec = { kind: 'response', seatId: 'seat-1', key: 'step:k9' };
     const started = switchClock(EMPTY_CLOCK, notice, 0);
     const away = switchClock(started, other, 3_500);
-    expect(away.paused).toEqual({ 'step:j1': 1_500 });
+    expect(away.paused).toEqual({ 'step:j1': 3_500 });
     const back = switchClock(away, notice, 10_000);
     expect(back.running?.startsAt).toBe(10_000);
-    expect(back.running?.endsAt).toBe(11_500);
+    expect(back.running?.endsAt).toBe(13_500);
+  });
+
+  it('keeps its lead-in when it is switched away during the lead-in, and back: the countdown has not started, so nothing is paused', () => {
+    const other: DecisionSpec = { kind: 'response', seatId: 'seat-1', key: 'step:k9' };
+    const started = switchClock(EMPTY_CLOCK, notice, 1_000);
+    // The board starts playing again 500 ms in: the popup's animation is still ahead of the countdown.
+    const away = switchClock(started, other, 1_500);
+    expect(away.paused).toEqual({});
+    const back = switchClock(away, notice, 10_000);
+    expect(back.running?.startsAt).toBe(12_000);
+    expect(back.running?.endsAt).toBe(17_000);
   });
 
   it('keeps the same clock, lead-in included, when the key stays', () => {
     const started = switchClock(EMPTY_CLOCK, notice, 1_000);
     const later = switchClock(started, { ...notice }, 2_000);
     expect(later.running?.startsAt).toBe(3_000);
-    expect(later.running?.endsAt).toBe(6_000);
+    expect(later.running?.endsAt).toBe(8_000);
   });
 });
 
@@ -254,19 +265,24 @@ describe('describeDecision around a judgment chain', () => {
     expect(describeDecision(state({ judgmentView: { settled: true, rounds: 2 } }), 'seat-0', [ack], 'k')?.kind).toBe('notice');
   });
 
-  it('gives an ended chain no lead-in: its verdict has already played', () => {
+  it('gives an ended chain no lead-in: its verdict has already played in the popup that stayed open', () => {
     const view = { settled: true, ended: true, rounds: 2, aside: [] };
     expect(describeDecision(state({ judgmentView: view }), 'seat-0', [ack], 'k', withLeadIn)).toMatchObject({ kind: 'chainEnd', leadInMs: 0 });
   });
 
-  it('times the ask under a continuing view as an ask that waits for the verdict animation', () => {
+  it('times the ask under a continuing view as a judge-again ask of 8 seconds that waits for the verdict animation', () => {
     const view = { settled: true, continuing: true, rounds: 0, aside: [{ instanceId: 's1' }] };
     const pending = { judgmentView: view, pendingChoice: { verb: 'use' } };
     // No changer was asked: the popup plays its head as well, so the ask waits for both.
-    expect(describeDecision(state(pending), 'seat-0', [endPhase], 'k', withLeadIn)).toEqual({ kind: 'ask', seatId: 'seat-0', key: 'step:k', leadInMs: JUDGMENT_LEAD_IN_MS.head + JUDGMENT_LEAD_IN_MS.tail });
+    expect(describeDecision(state(pending), 'seat-0', [endPhase], 'k', withLeadIn)).toEqual({ kind: 'judgeAgain', seatId: 'seat-0', key: 'step:k', leadInMs: JUDGMENT_LEAD_IN_MS.head + JUDGMENT_LEAD_IN_MS.tail });
     const asked = { judgmentView: { ...view, rounds: 2 }, pendingChoice: { verb: 'use' } };
     expect(describeDecision(state(asked), 'seat-0', [endPhase], 'k', withLeadIn)?.leadInMs).toBe(JUDGMENT_LEAD_IN_MS.tail);
-    expect(describeDecision(state(pending), 'seat-0', [endPhase], 'k')).toEqual({ kind: 'ask', seatId: 'seat-0', key: 'step:k', leadInMs: 0 });
+    expect(describeDecision(state(pending), 'seat-0', [endPhase], 'k')).toEqual({ kind: 'judgeAgain', seatId: 'seat-0', key: 'step:k', leadInMs: 0 });
+  });
+
+  it('keeps the first use of a judging skill (no judgment on view yet) at the 20-second ask', () => {
+    expect(describeDecision(state({ pendingChoice: { verb: 'use' } }), 'seat-0', [endPhase], 'k')?.kind).toBe('ask');
+    expect(DECISION_SECONDS.ask).toBe(20);
   });
 });
 

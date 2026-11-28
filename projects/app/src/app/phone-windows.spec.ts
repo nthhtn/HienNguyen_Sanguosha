@@ -116,9 +116,10 @@ describe('windows on the phone board', () => {
       expect(dialog).toMatch(/display: flex; flex-direction: column/);
       expect(read('../styles.scss')).toMatch(/max-height: calc\(100dvh - env\(safe-area-inset-top, 0px\) - env\(safe-area-inset-bottom, 0px\) - 48px\)/);
       expect(dialog).toMatch(/overflow-y: auto/);
-      expect(dialog).toMatch(/class="header-timer"/);
-      expect(dialog).toMatch(/:host-context\(\[data-layout='compact'\]\) \.timer \{ display: none; \}/);
-      expect(stage).toMatch(/:host-context\(\[data-layout='compact'\]\) \.decide app-decision-countdown \{ display: none; \}/);
+      // The clock sits in the title on every layout; the popup keeps no second copy in the footer or the decision area.
+      expect(dialog).toMatch(/class="header-timer title-timer"/);
+      expect(dialog).not.toMatch(/class="timer"/);
+      expect(stage).not.toMatch(/app-decision-countdown/);
     });
 
     it('puts the decision clock in the title row on the phone board', () => {

@@ -69,6 +69,7 @@ export const en = {
   'selection.useAs.one': 'Choose a card to use as {card}',
   'selection.useAs.other': 'Choose {count} hand cards to use as {card}',
   'selection.anyCard': 'card',
+  'selection.blazeShown': '{seat} showed this card',
   'selection.play': 'Choose a {what} to play',
   'selection.play.at': 'Choose a {what} to play at {seat}',
   'selection.targets.one': 'Choose {count} more target',

@@ -1,7 +1,7 @@
 import { englishTranslator } from '../i18n/translator';
 import { abilityDisplayName } from '../labels';
-import { judgmentDescription } from './judgment-description';
-import { card, cardReader, publicOf, registry, skillReader, table, view, xiahouOwner } from './judgment-description.testing';
+import { judgmentDescription, keepsChainPopupOpen } from './judgment-description';
+import { card, cardReader, publicOf, registry, seven, skillDescription, skillReader, table, view, xiahouOwner } from './judgment-description.testing';
 
 const describeIt = (state: ReturnType<typeof table>) => judgmentDescription(publicOf(state), registry, englishTranslator);
 
@@ -15,6 +15,8 @@ describe('judgmentDescription', () => {
     expect(describeIt(state)).toMatchObject({
       force: 'Wei',
       judgedSeatName: 'Hing',
+      // Unyielding's verdict is read from the damage source, the seat the cost lands on.
+      affectedSeatName: 'Bo',
       card: card('j', 'club', 5),
       settled: true,
       source: { kind: 'skill', generalId: 'xiahou-dun', generalName: 'Xiahou Dun', abilityName: abilityDisplayName('unyielding') },
@@ -25,7 +27,7 @@ describe('judgmentDescription', () => {
 
   it('a card judgment names the card and the judged seat, in the judged seat’s force', () => {
     const description = describeIt(table(view(cardReader('lightning'), 'seat-1', card('j', 'spade', 5))));
-    expect(description).toMatchObject({ force: 'Shu', judgedSeatName: 'Bo', source: { kind: 'card', cardName: 'Lightning', seatName: 'Bo' } });
+    expect(description).toMatchObject({ force: 'Shu', judgedSeatName: 'Bo', affectedSeatName: 'Bo', source: { kind: 'card', cardName: 'Lightning', seatName: 'Bo' } });
   });
 
   it('a seat that has shown no General is the neutral force', () => {
@@ -126,5 +128,20 @@ describe('judgmentDescription', () => {
     expect(describeIt(table(replaced))!.key).toBe('j');
     expect(describeIt(table(view(skillReader(), 'seat-0', first)))!.key).toBe('j');
     expect(describeIt(table(view(skillReader(), 'seat-0', card('k', 'club', 6))))!.key).toBe('k');
+  });
+});
+
+describe('keepsChainPopupOpen', () => {
+  const chain = skillDescription({ continuing: true, aside: [seven] });
+
+  it('keeps the popup open between the judgments of a chain, while playback has not reached the next one', () => {
+    expect(keepsChainPopupOpen(chain, false)).toBe(true);
+  });
+
+  it('lets go once playback has reached the table, and for any judgment that is not a chain in progress', () => {
+    expect(keepsChainPopupOpen(chain, true)).toBe(false);
+    expect(keepsChainPopupOpen(skillDescription({ continuing: false, aside: [seven] }), false)).toBe(false);
+    expect(keepsChainPopupOpen(skillDescription(), false)).toBe(false);
+    expect(keepsChainPopupOpen(null, false)).toBe(false);
   });
 });

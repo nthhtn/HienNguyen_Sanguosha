@@ -121,7 +121,7 @@ describe('the display functions by locale', () => {
     expect(competeOutcomeText('rouse-the-tiger', true, names)).toBe("Hing will choose a seat within Seat 1's attack range; Seat 1 deals it 1 damage");
     expect(competeOutcomeText('rouse-the-tiger', true, names, 'vi')).toBe('Hing sẽ chọn một người chơi trong tầm đánh của Seat 1; Seat 1 gây cho họ 1 sát thương');
     expect(competeOutcomeText('rouse-the-tiger', false, names, 'vi')).toBe('Seat 1 gây 1 sát thương cho Hing');
-    expect(competeOutcomeText('intense-edge', false, names, 'vi')).toBe('Không có gì xảy ra');
+    expect(competeOutcomeText('intense-edge', false, names, 'vi')).toBe('Không lấy được lá bài nào');
     expect(competeOutcomeText('heavens-justice', false, names, 'vi')).toBe('Hing không thể đánh Sát trong lượt này');
   });
 });

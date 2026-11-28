@@ -80,3 +80,27 @@ describe('SelectionDialog', () => {
     expect(el.querySelector('[data-item-id="seat-2"]')!.textContent).toContain('Seat 2');
   });
 });
+
+describe('SelectionDialog: a shown card', () => {
+  const shown = { card: c('h5'), caption: 'Seat 1 showed this card' };
+
+  function renderWith(data: Partial<SelectionDialogData>) {
+    const description: SelectionDescription = { title: 'Blaze', prompt: 'Discard a card of the same suit', confirmLabel: 'Discard', cancelLabel: 'Cancel', min: 1, max: 1, items: [{ id: 'a', card: c('a'), label: 'Slash (7 ♠)' }], template, cancel: null };
+    TestBed.configureTestingModule({
+      providers: [{ provide: MAT_DIALOG_DATA, useValue: { description, ...data } satisfies SelectionDialogData }, { provide: MatDialogRef, useValue: { close: jest.fn() } }],
+    });
+    const fixture = TestBed.createComponent(SelectionDialog);
+    fixture.detectChanges();
+    return fixture.nativeElement as HTMLElement;
+  }
+
+  it('shows the card the target revealed above the choices, with its caption', () => {
+    const el = renderWith({ shown });
+    expect(el.querySelector('.shown app-playing-card')).not.toBeNull();
+    expect(el.querySelector('.shown')!.textContent).toContain('Seat 1 showed this card');
+  });
+
+  it('shows nothing extra for an ordinary selection', () => {
+    expect(renderWith({}).querySelector('.shown')).toBeNull();
+  });
+});

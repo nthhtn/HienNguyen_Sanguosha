@@ -107,7 +107,7 @@ export interface ChoiceDialogData {
     .option.picked { border-color: var(--mat-sys-primary); background: var(--mat-sys-primary-container); }
     .card-back { display: block; width: 72px; height: 100px; object-fit: cover; border-radius: 6px; }
     .label { font: var(--mat-sys-body-small); text-align: center; }
-    .timer { display: block; padding: 8px 24px 0; }
+    .timer { display: block; padding: 8px 24px 16px; }
     :host-context([data-layout='compact']) .timer { display: none; }
     .option[data-force] { --force: var(--force-none); --force-text: var(--force-none-text); }
     .option[data-force='Wei'] { --force: var(--force-wei); --force-text: var(--force-wei); }

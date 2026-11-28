@@ -399,7 +399,7 @@ const COMPETE_OUTCOMES: Record<string, { won: string; lost: string }> = {
   },
   'intense-edge': {
     won: "{user} will take one of {target}'s cards",
-    lost: 'Nothing happens',
+    lost: 'No card is taken',
   },
   'kingdomWars:double-edged': {
     won: '{user} will use Sha on {target} or a seat of its Kingdom',
@@ -421,23 +421,23 @@ const JUDGMENT_OUTCOMES: Record<string, Record<string, string>> = {
     moves: 'Lightning moves to the next seat',
     stays: 'Lightning stays where it is',
   },
-  capture: { skip: '{seat} skips the Play Phase', spared: 'Nothing happens' },
-  starvation: { skip: '{seat} skips the Draw Phase', spared: 'Nothing happens' },
-  'eight-trigrams': { shan: '{seat} counts as having played a Shan', none: 'Nothing happens' },
-  'eight-arrays': { shan: '{seat} counts as having played a Shan', none: 'Nothing happens' },
+  capture: { skip: '{seat} skips the Play Phase', spared: '{seat} resumes the Play Phase normally' },
+  starvation: { skip: '{seat} skips the Draw Phase', spared: '{seat} resumes the Draw Phase normally' },
+  'eight-trigrams': { shan: '{seat} counts as having played a Shan', none: '{seat} does not count as having played a Shan' },
+  'eight-arrays': { shan: '{seat} counts as having played a Shan', none: '{seat} does not count as having played a Shan' },
   unyielding: {
     'discard-or-damage': '{source} discards 2 cards or takes 1 damage',
     damage: '{source} takes 1 damage',
-    spared: 'Nothing happens',
+    spared: '{source} takes no damage and discards nothing',
   },
   'river-goddess': { again: '{owner} takes the card and judges again', ends: 'The card is discarded and the judging ends' },
   'kingdomWars:goddess-luo': {
     again: '{owner} sets the card aside and may judge again',
     ends: 'The card is discarded and the judging ends; {owner} takes any cards set aside',
   },
-  'iron-cavalry': { unblockable: 'The Slash cannot be dodged', none: 'Nothing happens' },
-  'lightning-strike': { damage: '{seat} takes 2 thunder damage', none: 'Nothing happens' },
-  'kingdomWars:lightning-strike': { damage: '{seat} takes 2 thunder damage', none: 'Nothing happens' },
+  'iron-cavalry': { unblockable: 'The Slash cannot be dodged', none: 'The Slash can still be dodged' },
+  'lightning-strike': { damage: '{seat} takes 2 thunder damage', none: '{seat} takes no damage' },
+  'kingdomWars:lightning-strike': { damage: '{seat} takes 2 thunder damage', none: '{seat} takes no damage' },
   'dueling-heroes': {
     red: '{owner} takes the card and may play black hand cards as Duel this turn',
     black: '{owner} takes the card and may play red hand cards as Duel this turn',
@@ -450,7 +450,7 @@ const JUDGMENT_OUTCOMES: Record<string, Record<string, string>> = {
     discard1: '{source} discards 1 card',
     'face-down': '{source} turns face down',
     'face-up': '{source} turns face up',
-    none: 'Nothing happens',
+    none: 'No effect: the damage source is gone or has no cards',
   },
 };
 

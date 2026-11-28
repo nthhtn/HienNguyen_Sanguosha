@@ -3,6 +3,10 @@ import type { ResolutionNoticeDefinition } from '../resolutionNotice';
 
 type Chose = Extract<EngineEvent, { kind: 'ChoiceMadeEvent' }>;
 
+// How long the Harvest notice stays: 1.5 seconds per participant, rounded up to whole seconds (the countdown shows whole
+// seconds), at least 3 and at most 7.
+export const harvestSeconds = (participants: number): number => Math.min(7, Math.max(3, Math.ceil(participants * 1.5)));
+
 // Harvest: every living seat took one of the turned-up cards, in turn order from the user. The cards were
 // face up on the table, so every seat sees what each one took.
 export const harvestNotice: ResolutionNoticeDefinition = {
@@ -12,8 +16,8 @@ export const harvestNotice: ResolutionNoticeDefinition = {
     return {
       source: { kind: 'card', id: 'harvest' },
       seatIds: picks.map((p) => p.seatId),
-      // A card and a name per seat is more to read than most notices: a second per participant, at most 5.
-      seconds: Math.min(picks.length, 5),
+      // A card and a name per seat is more to read than most notices.
+      seconds: harvestSeconds(picks.length),
       steps: [],
       cards: [],
       seatCards: picks.map((p) => ({ seatId: p.seatId, card: p.shows.card })),

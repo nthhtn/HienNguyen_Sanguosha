@@ -23,11 +23,13 @@ export const DECISION_SECONDS = {
   discard: 30,
   selection: 300,
   // A settled judgment, for anyone to read and close: the countdown after its animation.
-  notice: 3,
+  notice: 5,
   // The end of a chain of judgments (Goddess Luo's): her cards in view a moment longer.
   chainEnd: 5,
   // A look at cards or a General that is only shown, then closed (Ascertain's look).
   look: 30,
+  // A Goddess Luo chain's "judge again?" ask: the first use of the skill is an ordinary ask (20), every later ask is quicker.
+  judgeAgain: 8,
   // A skill's decision whether to change a judgment's card; the card pick that follows has its own clock of the same length.
   judgmentChange: 20,
   // One budget for a whole Play phase, paused while a response is under way.
@@ -68,7 +70,8 @@ export function describeDecision(state: GameState, seatId: string, legal: readon
   const rounds = view?.rounds ?? 0;
   // A settled judgment closes on its own countdown, once the verdict and consequence have played
   // (and the card's first showing, if no skill was asked, which would have covered it).
-  // A chain reader's view waits out the longer chainEnd; one whose verdict already played (it ended on a stop) has no lead-in.
+  // A chain reader's view waits out the longer chainEnd; one whose verdict already played (it ended on a stop) has no lead-in:
+  // the popup stays open through the chain, so nothing plays again.
   if (awaitsAcknowledgement(view)) {
     const kind = view!.aside ? 'chainEnd' : 'notice';
     return { ...step(kind), leadInMs: view!.ended ? 0 : leadIn(JUDGMENT_LEAD_IN_MS.tail + (rounds === 0 ? JUDGMENT_LEAD_IN_MS.head : 0)) };
@@ -85,7 +88,7 @@ export function describeDecision(state: GameState, seatId: string, legal: readon
   }
   if (state.pendingArrangement) return step('arrange');
   if (state.pendingChoice?.look) return step('look');
-  if (chainAsk) return { ...step('ask'), leadInMs: leadIn(JUDGMENT_LEAD_IN_MS.tail + (rounds === 0 ? JUDGMENT_LEAD_IN_MS.head : 0)) };
+  if (chainAsk) return { ...step('judgeAgain'), leadInMs: leadIn(JUDGMENT_LEAD_IN_MS.tail + (rounds === 0 ? JUDGMENT_LEAD_IN_MS.head : 0)) };
   if (state.pendingChoice) return step(state.pendingChoice.verb === 'use' ? 'ask' : 'pick');
   if (state.pendingSelection) return step('pick');
   if (state.pendingResponse) {
@@ -125,7 +128,9 @@ export function switchClock(clock: ClockState, decision: DecisionSpec | null, no
   const running = clock.running;
   if (decision && running && decision.key === running.decision.key) return { ...clock, running: { ...running, decision } };
   const paused: Record<string, number> = { ...clock.paused };
-  if (running) paused[running.decision.key] = clockRemainingMs(clock, now) ?? 0;
+  // A clock still in its lead-in has used none of its time and has not shown its animation through: it is not paused, so
+  // it comes back with its whole lead-in (a resumed clock has none, and would start while the popup is still playing).
+  if (running && now >= running.startsAt) paused[running.decision.key] = clockRemainingMs(clock, now) ?? 0;
   if (!decision) return { running: null, paused };
   const totalMs = DECISION_SECONDS[decision.kind] * 1000;
   const resumed = paused[decision.key];

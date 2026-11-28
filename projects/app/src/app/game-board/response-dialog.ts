@@ -123,7 +123,7 @@ const NO_RESPONSE = 'no-response';
     .card-option app-playing-card { display: block; padding: 4px 0; }
     .empty { margin: 0 0 4px 12px; color: var(--mat-sys-on-surface-variant); font: var(--mat-sys-body-medium); }
     .no-response { margin-top: 12px; }
-    .timer { display: block; padding: 8px 24px 0; }
+    .timer { display: block; padding: 8px 24px 16px; }
     .foot { display: contents; }
     /* The phone board (spec 4b): the description beside the choices, an empty Skills block gone, and the countdown
        and the button on one row, so a Response window needs no scrolling at 800 x 366. */

@@ -333,3 +333,47 @@ From the Resolution Notice, picker and Judgment work (PR #62, 2026-11-09). The d
   - The browser pane available while building could not paint (screenshots timed out and animation frames ran about once a second).
 - **Revisit when.**
   - Before the Tutorial is announced, or the next time `/tutorial` is opened in a visible browser.
+
+### Experiment flags are code constants, not feature toggles
+
+- **What is missing.**
+  - The beginner-friendly experiments (skip windows with no answer; the Blaze card in the picker is now on) sit behind entries in `FEATURE_FLAGS` (`projects/app/src/app/feature-flags.ts`).
+  - Those entries are build-time constants that ship off.
+  - There is no toggle a player or an operator can flip at run time, per user or per room.
+- **Why it waits.**
+  - The experiments are not yet judged worth turning on.
+  - A real toggle system (settings menu, server-side flags, per-room rules) is a design of its own.
+- **Revisit when.**
+  - Feature toggles are designed.
+  - Then move the experiment flags onto them, and either turn the experiments on or delete their code.
+
+### Beginner-friendly changes: only the Lightning Judgment was looked at
+
+- **What is missing.**
+  - In the browser, only the Lightning Judgment preview (`/preview/choice-judgment`) was opened: It renders, with the new 5 s clock.
+  - Not looked at by eye: The Iron Cavalry and Unyielding verdict stamps (affected seat), the tight outcome box for "no effect" outcomes, the new Vietnamese outcome lines, the Harvest notice length, Goddess Luo's 8 s asks, and both experiment flags switched on (skipped windows, the Blaze card in the picker).
+- **Why it waits.**
+  - Reaching those windows needs staged scenarios that do not exist yet (no preview for Iron Cavalry, Capture "spared" or the Blaze picker).
+- **Revisit when.**
+  - Before the experiment flags are turned on, or the next time those windows are opened in a visible browser.
+
+### Identity River Goddess keeps a 20 s "judge again" ask
+
+- **What is missing.**
+  - Kingdom Wars Goddess Luo's "judge again" asks run on the 8 s `judgeAgain` clock.
+  - Identity River Goddess (`river-goddess` in `projects/content/src/lib/generals/wei.ts`) does not chain its judgments (no `chainsJudgment`), so each ask is an ordinary 20 s `ask`.
+- **Why it waits.**
+  - The Identity deck is disabled in setup, so no game reaches it.
+  - Fixing it means either chaining its judgments like Goddess Luo or keying the clock on the ability id, which is a rules-presentation change of its own.
+- **Revisit when.**
+  - The Identity deck is turned on.
+
+### Skipped windows still leave a timing tell online
+
+- **What is missing.**
+  - The server sends every seat the clock kind `noAnswer` (5 s) for a window the seat cannot answer, so an online opponent can already tell that a seat holds no Shan.
+  - This predates the skip experiment and goes against the `announcePass` intent.
+- **Why it waits.**
+  - Hiding it needs a uniform clock for every seat, a design change on the server and the protocol.
+- **Revisit when.**
+  - Online play is judged on fairness, or the skip experiment is turned on.
