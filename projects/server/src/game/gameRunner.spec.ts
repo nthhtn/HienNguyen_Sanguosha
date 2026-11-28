@@ -529,11 +529,11 @@ function settle(runner: GameRunner, rounds = 0): void {
 describe('GameRunner: a settled judgment', () => {
   const ack = (seatId: string, extra: object = {}) => ({ kind: 'AcknowledgeJudgmentAction', seatId, ...extra });
 
-  it('runs the 3 second notice clock while a person plays, and acknowledges by timeout', async () => {
+  it('runs the 5 second notice clock while a person plays, and acknowledges by timeout', async () => {
     const { runner, host, scheduler } = setup();
     settle(runner);
-    expect(runner.updateFor('p0', 0)!.clock).toMatchObject({ seatId: 'seat-0', kind: 'notice', totalSeconds: 3 });
-    await scheduler.advance(JUDGMENT_LEAD_IN_MS.head + JUDGMENT_LEAD_IN_MS.tail + 2_999);
+    expect(runner.updateFor('p0', 0)!.clock).toMatchObject({ seatId: 'seat-0', kind: 'notice', totalSeconds: 5 });
+    await scheduler.advance(JUDGMENT_LEAD_IN_MS.head + JUDGMENT_LEAD_IN_MS.tail + 4_999);
     expect(host.stored).toHaveLength(0);
     await scheduler.advance(1);
     expect(host.stored).toEqual([expect.objectContaining({ seatId: 'seat-0', source: 'timeout', action: ack('seat-0', { timeout: true }) })]);
@@ -545,7 +545,7 @@ describe('GameRunner: a settled judgment', () => {
     settle(none.runner);
     const noneClock = none.runner.updateFor('p0', 0)!.clock!;
     expect(noneClock.startsAt - noneClock.serverNow).toBe(JUDGMENT_LEAD_IN_MS.head + JUDGMENT_LEAD_IN_MS.tail);
-    expect(noneClock.endsAt - noneClock.startsAt).toBe(3_000);
+    expect(noneClock.endsAt - noneClock.startsAt).toBe(5_000);
     const asked = setup();
     settle(asked.runner, 2);
     const askedClock = asked.runner.updateFor('p0', 0)!.clock!;
@@ -582,11 +582,11 @@ describe('GameRunner: a settled judgment', () => {
     expect(runner.botControlled('p0')).toBe(true);
     const before = host.stored.length;
     settle(runner);
-    expect(runner.updateFor('p1', 0)!.clock).toMatchObject({ seatId: 'seat-0', kind: 'notice', totalSeconds: 3 });
+    expect(runner.updateFor('p1', 0)!.clock).toMatchObject({ seatId: 'seat-0', kind: 'notice', totalSeconds: 5 });
     await scheduler.advance(BOT_DELAY_MS);
     expect(host.stored).toHaveLength(before);
-    // The person at the table closes it once the animation and the 3 s countdown have played.
-    await scheduler.advance(JUDGMENT_LEAD_IN_MS.head + JUDGMENT_LEAD_IN_MS.tail + 3_000 - BOT_DELAY_MS);
+    // The person at the table closes it once the animation and the 5 s countdown have played.
+    await scheduler.advance(JUDGMENT_LEAD_IN_MS.head + JUDGMENT_LEAD_IN_MS.tail + 5_000 - BOT_DELAY_MS);
     expect(host.stored[before]).toMatchObject({ seatId: 'seat-0', source: 'timeout', action: ack('seat-0', { timeout: true }) });
   });
 
@@ -952,7 +952,7 @@ describe('GameRunner: a judgment chain', () => {
     const { runner } = setup();
     chain(runner, { continuing: true }, 'seat-0');
     const clock = runner.updateFor('p0', 0)!.clock!;
-    expect(clock).toMatchObject({ seatId: 'seat-0', kind: 'ask', totalSeconds: 20 });
+    expect(clock).toMatchObject({ seatId: 'seat-0', kind: 'judgeAgain', totalSeconds: 8 });
     expect(clock.startsAt - clock.serverNow).toBe(JUDGMENT_LEAD_IN_MS.tail);
   });
 

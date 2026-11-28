@@ -256,7 +256,7 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
     @keyframes pop { 30% { transform: scale(1.5) rotate(-8deg); } }
     .dmg { margin-left: 10px; font: var(--mat-sys-title-medium); font-weight: 700; color: var(--mat-sys-error); opacity: 0; transition: opacity 0.3s 0.3s; white-space: nowrap; }
     .cons.on .dmg { opacity: 1; }
-    // A consequence that is only a sentence needs no tall box: the box hugs it and the sentence reads larger.
+    /* A consequence that is only a sentence needs no tall box: the box hugs it and the sentence reads larger. */
     .cons.bare { min-height: 0; padding: 18px 12px; }
     .cons.bare .line { font: var(--mat-sys-title-medium); }
     .line { margin: 0; font: var(--mat-sys-title-small); text-align: center; opacity: 0; transform: translateY(6px); transition: opacity 0.3s, transform 0.3s; }
