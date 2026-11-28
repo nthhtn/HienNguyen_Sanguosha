@@ -1,4 +1,5 @@
 import manifest from '../../assets/manifest.json';
+import { DEFAULT_ART_CHOICE, resolveArtSet, type ArtChoice } from './artSets';
 import { baseGeneralId, isKingdomWarsGeneralId } from './generalIds';
 import skins from '../../assets/generals/skins/skins.json';
 import previews from '../../assets/preview/index.json';
@@ -39,23 +40,42 @@ export function croppedCardArtUrl(id: string): string | null {
 
 const GENERAL_SKINS: Record<string, string> = skins;
 
+// A portrait lives at generals/skins/<art set>/<force>/<pinyin>, a face at generals/faces/<art set>/....
+const skinFile = (set: string, skin: string): string => `generals/skins/${set}/${skin}`;
+const faceFile = (set: string, skin: string): string => `generals/faces/${set}/${skin}`;
+
 // A General's skin: the portrait used on the Play screen. A General with no
 // skin falls back to its crawled card art (the one the Wiki always shows).
 // A Kingdom Wars General uses its base General's art; one with none gets the placeholder.
-export function generalSkinUrl(id: string): string | null {
+// The art set comes from the viewer's choice (`classic` when none is given).
+export function generalSkinUrl(id: string, choice: ArtChoice = DEFAULT_ART_CHOICE): string | null {
   if (isKingdomWarsGeneralId(id)) {
     const base = baseGeneralId(id);
-    return generalSkinUrl(base) ?? GENERAL_PLACEHOLDER_ART_URL;
+    return generalSkinUrl(base, choice) ?? GENERAL_PLACEHOLDER_ART_URL;
   }
   const skin = GENERAL_SKINS[id];
-  return skin ? `/images/${assetFile(`generals/skins/${skin}`)}` : cardArtUrl(id);
+  return skin ? `/images/${assetFile(skinFile(resolveArtSet(id, choice), skin))}` : cardArtUrl(id);
+}
+
+export type GeneralForce = 'Wei' | 'Shu' | 'Wu' | 'Qun';
+
+// The force a General's skin is filed under (the folder before the slash in skins.json), which is also where its death
+// voice lives; null for a General with no skin.
+export function generalSkinForce(id: string): GeneralForce | null {
+  const folder = GENERAL_SKINS[isKingdomWarsGeneralId(id) ? baseGeneralId(id) : id]?.split('/')[0];
+  return folder ? ((folder.charAt(0).toUpperCase() + folder.slice(1)) as GeneralForce) : null;
 }
 
 // A General's face, cut square from its portrait for the phone board's small tiles (asset-crops-faces.json), filed like
 // the portrait. Null for a General with no portrait, so the tile falls back to whatever art it has.
-export function generalFaceUrl(id: string): string | null {
-  const skin = GENERAL_SKINS[isKingdomWarsGeneralId(id) ? baseGeneralId(id) : id];
-  return skin ? `/images/${assetFile(`generals/faces/${skin}`)}` : null;
+// The face comes only from the set that supplies the portrait: a set with a portrait but no face crop gives
+// none, so the tile shows that portrait and never another set's face.
+export function generalFaceUrl(id: string, choice: ArtChoice = DEFAULT_ART_CHOICE): string | null {
+  const base = isKingdomWarsGeneralId(id) ? baseGeneralId(id) : id;
+  const skin = GENERAL_SKINS[base];
+  if (!skin) return null;
+  const set = resolveArtSet(base, choice);
+  return choice.catalog.sets[set]?.faces.includes(base) ? `/images/${assetFile(faceFile(set, skin))}` : null;
 }
 
 // Generals whose skin has no death voice file yet.

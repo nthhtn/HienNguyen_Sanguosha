@@ -310,6 +310,20 @@ From the Resolution Notice, picker and Judgment work (PR #62, 2026-11-09). The d
 - **Revisit when.**
   - A native speaker reviews the catalogs.
 
+### Art sets: Follow-ups
+
+From the art sets work (spec `docs/superpowers/specs/2026-11-25-art-sets-design.md`).
+
+- **What is missing.**
+  - **First real set:** Only `classic` ships, so the picker is hidden. The artwork and its provenance are still to be made.
+  - **Account sync:** The choice lives in the browser only. It is not shared across devices.
+  - **Wiki card art:** The Rules Wiki's card pictures (`cardArtUrl`) stay outside art sets.
+  - **Bigger previews:** The Art Sets page and popup show tiles at the game's portrait size, with no zoom.
+- **Why it waits.**
+  - The developer scoped the first version to portraits and faces, with the choice stored per browser.
+- **Revisit when.**
+  - A second set is added, or accounts need to carry the choice.
+
 ### Tutorial: free play with hints
 
 - **What is missing.**

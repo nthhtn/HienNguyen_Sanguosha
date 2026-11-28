@@ -5,6 +5,8 @@ import { WikiCardEntry } from './wiki-card-entry';
 import { WikiGeneralEntry } from './wiki-general-entry';
 import { WikiKingdomWarsGeneralEntry } from './wiki-kingdom-wars-general-entry';
 import { I18n } from '../i18n/i18n.service';
+import { ArtSets } from '../art-sets.service';
+import { provideFakeArtSets } from '../art-sets.testing';
 
 const caoCao: WikiGeneral = {
   id: 'cao-cao', name: 'Cao Cao', nameZh: '曹操', title: 'Martial Emperor of Wei', titleZh: '魏武帝',
@@ -62,7 +64,7 @@ describe('WikiGeneralEntry', () => {
       expect(text).toContain(part);
     }
     expect(el.querySelectorAll('.hearts app-hp-icons img')).toHaveLength(4);
-    expect(el.querySelector('app-card-art img')!.getAttribute('src')).toBe('/images/generals/skins/wei/caocao.webp');
+    expect(el.querySelector('app-card-art img')!.getAttribute('src')).toBe('/images/generals/skins/classic/wei/caocao.webp');
     expect(el.querySelector('.expansion-tag')!.textContent!.trim()).toBe('Base');
   });
 
@@ -298,3 +300,33 @@ describe('WikiKingdomWarsGeneralEntry', () => {
 function text(el: Element | null): string {
   return el!.textContent!.replace(/\s+/g, ' ').trim();
 }
+
+describe('WikiGeneralEntry art sets', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    TestBed.configureTestingModule({ providers: provideFakeArtSets() });
+  });
+  afterEach(() => {
+    localStorage.clear();
+    document.querySelector('.cdk-overlay-container')?.replaceChildren();
+  });
+
+  it('has an Art Sets button for a General two sets cover, and none for one only classic covers', () => {
+    expect(renderGeneral({ ...caoCao, id: 'guan-yu' }).querySelector('app-general-art-button button.art-sets-button')).not.toBeNull();
+    expect(renderGeneral({ ...caoCao, id: 'zhao-yun' }).querySelector('app-general-art-button button.art-sets-button')).toBeNull();
+  });
+
+  it('changes its portrait when a tile is chosen in the popup', async () => {
+    const fixture = TestBed.createComponent(WikiGeneralEntry);
+    fixture.componentRef.setInput('general', { ...caoCao, id: 'guan-yu' });
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    (el.querySelector('button.art-sets-button') as HTMLButtonElement).click();
+    await new Promise((resolve) => setTimeout(resolve));
+    fixture.detectChanges();
+    (document.querySelector('app-general-art-dialog button.tile[data-set="ink"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(TestBed.inject(ArtSets).overrides()).toEqual({ 'guan-yu': 'ink' });
+    expect(el.querySelector('app-card-art img')!.getAttribute('src')).toBe('/images/generals/skins/ink/shu/guanyu.webp');
+  });
+});

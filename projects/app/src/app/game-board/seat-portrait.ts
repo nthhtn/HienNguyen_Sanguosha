@@ -1,6 +1,7 @@
-import { Component, computed, input, signal } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { SeatGenerals } from 'engine';
 import { HIDDEN_GENERAL_ART_URL, generalSkinUrl } from 'content';
+import { ArtSets } from '../art-sets.service';
 
 const HIDDEN_ID = 'hidden';
 
@@ -44,13 +45,15 @@ export class SeatPortrait {
   readonly generals = input<SeatGenerals | null>(null);
   readonly size = input<'small' | 'medium' | 'fill'>('medium');
 
+  private readonly artSets = inject(ArtSets);
   private readonly failed = signal<ReadonlySet<string>>(new Set());
 
   protected readonly urls = computed(() => {
     const generals = this.generals();
     const ids = generals ? [generals.main.generalDefinitionId, generals.deputy.generalDefinitionId] : [HIDDEN_ID, HIDDEN_ID];
+    const choice = this.artSets.choice();
     return ids.map((id) => {
-      const url = id === HIDDEN_ID ? null : generalSkinUrl(id);
+      const url = id === HIDDEN_ID ? null : generalSkinUrl(id, choice);
       return url && !this.failed().has(url) ? url : HIDDEN_GENERAL_ART_URL;
     });
   });

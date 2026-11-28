@@ -2,6 +2,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { TestBed } from '@angular/core/testing';
 import { CardArt } from './card-art';
+import { provideFakeArtSets } from '../art-sets.testing';
 
 describe('CardArt', () => {
   it('renders an image with the crawled URL and given alt text when art exists', () => {
@@ -78,8 +79,8 @@ describe('CardArt', () => {
       fixture.detectChanges();
       return (fixture.nativeElement as HTMLElement).querySelector('img')!.getAttribute('src');
     };
-    expect(src('cao-cao')).toBe('/images/generals/skins/wei/caocao.webp');
-    expect(src('zuo-ci')).toBe('/images/generals/skins/qun/zuoci.webp');
+    expect(src('cao-cao')).toBe('/images/generals/skins/classic/wei/caocao.webp');
+    expect(src('zuo-ci')).toBe('/images/generals/skins/classic/qun/zuoci.webp');
   });
 
   it('renders the cropped art of a card when asked', () => {
@@ -89,5 +90,23 @@ describe('CardArt', () => {
     fixture.componentRef.setInput('cropped', true);
     fixture.detectChanges();
     expect((fixture.nativeElement as HTMLElement).querySelector('img')!.getAttribute('src')).toBe('/images/playing-cards/cropped/equipment/weapon/axe.webp');
+  });
+});
+
+describe('CardArt art sets', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    TestBed.configureTestingModule({ providers: provideFakeArtSets() });
+  });
+  afterEach(() => localStorage.clear());
+
+  it('shows the art set the viewer chose for a General skin', () => {
+    localStorage.setItem('art-set-overrides', JSON.stringify({ 'cao-cao': 'ink' }));
+    const fixture = TestBed.createComponent(CardArt);
+    fixture.componentRef.setInput('id', 'cao-cao');
+    fixture.componentRef.setInput('label', 'Cao Cao');
+    fixture.componentRef.setInput('skin', true);
+    fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).querySelector('img')!.getAttribute('src')).toBe('/images/generals/skins/ink/wei/caocao.webp');
   });
 });

@@ -127,6 +127,8 @@ crawl date, dimensions).
 - **Resolving:** The assets module (`assets.ts`) resolves a card's or General's image
   for the UI; references in `manifest.json` and `skins.json` carry no file extension,
   and `assetFile()` adds the one the recipes ship.
+- **Art sets:** A set is a folder of alternate General portraits under `generals/skins/<set>/`, registered in `generals/skins/sets.json`. The build merges the registry with what each set covers into `assets/generals/skins/art-sets.json`; adding a set needs no code (see "Add an art set" in the [README](../../projects/content/assets-src/README.md)).
+- **Choosing the set:** `resolveArtSet` (`artSets.ts`) picks a General's override, then the global set, then `classic`, counting a set only if it has a portrait for that General. `generalSkinUrl` and `generalFaceUrl` take an `ArtChoice` and return today's URLs when given none.
 - **Design:** It is in the
   [assets-src pipeline spec](../superpowers/specs/2026-11-06-assets-src-pipeline-design.md).
 

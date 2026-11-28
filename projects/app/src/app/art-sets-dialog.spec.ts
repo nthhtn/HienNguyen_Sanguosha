@@ -1,0 +1,119 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import type { ArtSetCatalog } from 'content';
+import { ART_SET_CATALOG_TOKEN, ArtSets } from './art-sets.service';
+import { fakeCatalog, provideFakeArtSets } from './art-sets.testing';
+import { ArtSetsDialog } from './art-sets-dialog';
+import { I18n } from './i18n/i18n.service';
+
+function render() {
+  TestBed.configureTestingModule({ imports: [ArtSetsDialog], providers: [...provideFakeArtSets(), provideRouter([])] });
+  const fixture = TestBed.createComponent(ArtSetsDialog);
+  fixture.detectChanges();
+  return { fixture, el: fixture.nativeElement as HTMLElement, arts: TestBed.inject(ArtSets) };
+}
+
+const radios = (el: HTMLElement) => [...el.querySelectorAll('input[type="radio"]')] as HTMLInputElement[];
+const row = (el: HTMLElement, id: string) => el.querySelector(`li[data-general="${id}"]`) as HTMLLIElement | null;
+
+// The per General choice is Material's select: open the row's, and its options appear in the overlay.
+async function openRow(fixture: ComponentFixture<ArtSetsDialog>, el: HTMLElement, id: string): Promise<HTMLElement[]> {
+  (row(el, id)!.querySelector('mat-select .mat-mdc-select-trigger') as HTMLElement).click();
+  fixture.detectChanges();
+  await fixture.whenStable();
+  fixture.detectChanges();
+  return [...document.querySelectorAll('mat-option')] as HTMLElement[];
+}
+const texts = (options: HTMLElement[]) => options.map((o) => o.textContent!.trim());
+const shown = (el: HTMLElement, id: string) => row(el, id)!.querySelector('.mat-mdc-select-value')!.textContent!.trim();
+
+describe('ArtSetsDialog', () => {
+  beforeEach(() => localStorage.clear());
+  afterEach(() => {
+    localStorage.clear();
+    document.querySelector('.cdk-overlay-container')?.replaceChildren();
+  });
+
+  it('offers one radio per set with its coverage, and checks the global set', () => {
+    const { el } = render();
+    expect(radios(el).map((r) => r.value)).toEqual(['classic', 'ink']);
+    expect(radios(el).map((r) => r.checked)).toEqual([true, false]);
+    const labels = [...el.querySelectorAll('label.set')].map((l) => l.textContent!.replace(/\s+/g, ' ').trim());
+    expect(labels[0]).toContain('Classic');
+    expect(labels[0]).toContain('4 of 4 Generals');
+    expect(labels[1]).toContain('Ink Wash');
+    expect(labels[1]).toContain('2 of 4 Generals');
+  });
+
+  it('chooses the global set when a radio is picked', () => {
+    const { fixture, el, arts } = render();
+    radios(el)[1].click();
+    fixture.detectChanges();
+    expect(arts.global()).toBe('ink');
+    expect(radios(el).map((r) => r.checked)).toEqual([false, true]);
+  });
+
+  it('lists only Generals that some other set covers, each offering only the sets that have art for it', async () => {
+    const { fixture, el } = render();
+    expect([...el.querySelectorAll('li[data-general]')].map((li) => li.getAttribute('data-general'))).toEqual(['cao-cao', 'guan-yu']);
+    expect(row(el, 'zhao-yun')).toBeNull();
+    expect(texts(await openRow(fixture, el, 'cao-cao'))).toEqual(['Use Global Set (Classic)', 'Classic', 'Ink Wash']);
+  });
+
+  it('sets an override from a row, and clears it with the first option', async () => {
+    const { fixture, el, arts } = render();
+    (await openRow(fixture, el, 'guan-yu'))[2].click();
+    fixture.detectChanges();
+    expect(arts.overrides()).toEqual({ 'guan-yu': 'ink' });
+    expect(shown(el, 'guan-yu')).toBe('Ink Wash');
+    await fixture.whenStable();
+    (await openRow(fixture, el, 'guan-yu'))[0].click();
+    fixture.detectChanges();
+    expect(arts.overrides()).toEqual({});
+  });
+
+  it('keeps Clear All Overrides disabled until there is an override, then clears them all', () => {
+    const { fixture, el, arts } = render();
+    const clear = el.querySelector('button.clear') as HTMLButtonElement;
+    expect(clear.disabled).toBe(true);
+    arts.setOverride('cao-cao', 'ink');
+    arts.setOverride('guan-yu', 'ink');
+    fixture.detectChanges();
+    expect(clear.disabled).toBe(false);
+    clear.click();
+    expect(arts.overrides()).toEqual({});
+  });
+
+  it('names the set that will actually show in the Use Global Set option, not one that lacks the General', async () => {
+    const base = fakeCatalog();
+    const catalog: ArtSetCatalog = {
+      order: [...base.order, 'studio'],
+      sets: { ...base.sets, studio: { names: { en: 'Studio', vi: 'Studio' }, provenance: { en: 'test', vi: 'thử' }, portraits: ['zhao-yun'], faces: [] } },
+    };
+    localStorage.setItem('art-set', 'ink');
+    TestBed.configureTestingModule({ imports: [ArtSetsDialog], providers: [{ provide: ART_SET_CATALOG_TOKEN, useValue: catalog }, provideRouter([])] });
+    const fixture = TestBed.createComponent(ArtSetsDialog);
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+    // Ink covers Cao Cao and Guan Yu but not Zhao Yun, who falls back to Classic under the global Ink Wash.
+    expect(texts(await openRow(fixture, el, 'zhao-yun'))).toEqual(['Use Global Set (Classic)', 'Classic', 'Studio']);
+    document.querySelector('.cdk-overlay-container')?.replaceChildren();
+    expect(texts(await openRow(fixture, el, 'cao-cao'))[0]).toBe('Use Global Set (Ink Wash)');
+  });
+
+  it('has a Browse All Art Sets link to the Art Sets page that closes the dialog', () => {
+    const { el } = render();
+    const browse = el.querySelector('a.browse') as HTMLAnchorElement;
+    expect(browse.textContent!.trim()).toBe('Browse All Art Sets');
+    expect(browse.getAttribute('href')).toBe('/wiki/art-sets');
+    expect(browse.hasAttribute('mat-dialog-close')).toBe(true);
+  });
+
+  it('shows set names in Vietnamese', async () => {
+    const { fixture, el } = render();
+    await TestBed.inject(I18n).setLocale('vi');
+    fixture.detectChanges();
+    expect(el.textContent).toContain('Thủy mặc');
+    expect(el.textContent).toContain('Cổ điển');
+  });
+});

@@ -6,7 +6,8 @@ import { wikiKingdomWarsGenerals } from './wikiKingdomWarsGenerals';
 import { generalsData } from '../../data/generals';
 import { kingdomWarsGeneralIds } from './kingdomWarsGenerals';
 import { kingdomWarsGeneralId } from './generalIds';
-import { AMBITIONIST_ICON_URL, assetFile, SPRITE_IDS, CARD_BACK_ART_URL, kingdomBannerUrl, spriteSheet, cardArtUrl, GENERAL_PLACEHOLDER_ART_URL, generalDeathVoiceUrl, generalFaceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls, skillFileId, skillPreviewUrl } from './assets';
+import { ART_SET_CATALOG, ArtChoice, ArtSetCatalog } from './artSets';
+import { AMBITIONIST_ICON_URL, assetFile, SPRITE_IDS, CARD_BACK_ART_URL, kingdomBannerUrl, spriteSheet, cardArtUrl, GENERAL_PLACEHOLDER_ART_URL, generalDeathVoiceUrl, generalFaceUrl, generalSkinForce, generalSkinUrl, HIDDEN_GENERAL_ART_URL, hpIconUrls, skillFileId, skillPreviewUrl } from './assets';
 
 describe('cardArtUrl', () => {
   it('returns the /images/ URL for a crawled id', () => {
@@ -172,7 +173,7 @@ describe('Kingdom Wars General art', () => {
     const fresh = kingdomWarsGeneralIds().filter((id) => !Object.prototype.hasOwnProperty.call(generalsData, id));
     expect(fresh).toHaveLength(9);
     for (const id of fresh) {
-      expect(generalSkinUrl(kingdomWarsGeneralId(id))).toMatch(/^\/images\/generals\/skins\/\w+\/\w+\.webp$/);
+      expect(generalSkinUrl(kingdomWarsGeneralId(id))).toMatch(/^\/images\/generals\/skins\/classic\/\w+\/\w+\.webp$/);
       const voice = generalDeathVoiceUrl(kingdomWarsGeneralId(id));
       expect(voice).toMatch(/^\/audio\/death\/generals\/\w+\/\w+\.ogg$/);
       expect(existsSync(join(__dirname, '../../assets', voice!.replace('/audio/', 'audio/')))).toBe(true);
@@ -263,7 +264,7 @@ describe('Starvation art', () => {
 describe('assetFile', () => {
   it('adds the extension its recipe ships to a reference without one', () => {
     expect(assetFile('effects/sheets/slash')).toBe('effects/sheets/slash.webp');
-    expect(assetFile('generals/skins/wei/caocao')).toBe('generals/skins/wei/caocao.webp');
+    expect(assetFile('generals/skins/classic/wei/caocao')).toBe('generals/skins/classic/wei/caocao.webp');
     expect(assetFile('generals/cards/wei/cao-cao')).toBe('generals/cards/wei/cao-cao.webp');
     expect(assetFile('playing-cards/full/tool/duel')).toBe('playing-cards/full/tool/duel.webp');
     expect(assetFile('playing-cards/cropped/tool/duel')).toBe('playing-cards/cropped/tool/duel.webp');
@@ -298,7 +299,7 @@ describe('shipped files', () => {
   });
 
   it('has a file for every skin', () => {
-    const missing = Object.entries(read('generals/skins/skins.json')).filter(([, skin]) => !existsSync(join(assets, assetFile(`generals/skins/${skin as string}`))));
+    const missing = Object.entries(read('generals/skins/skins.json')).filter(([, skin]) => !existsSync(join(assets, assetFile(`generals/skins/classic/${skin as string}`))));
     expect(missing.map(([id]) => id)).toEqual([]);
   });
 
@@ -314,7 +315,7 @@ describe('shipped files', () => {
 
 describe('generalFaceUrl', () => {
   it("gives the General's face crop, filed like its portrait", () => {
-    expect(generalFaceUrl('cao-cao')).toBe('/images/generals/faces/wei/caocao.webp');
+    expect(generalFaceUrl('cao-cao')).toBe('/images/generals/faces/classic/wei/caocao.webp');
   });
 
   it('maps a Kingdom Wars General through its base General', () => {
@@ -325,11 +326,81 @@ describe('generalFaceUrl', () => {
     expect(generalFaceUrl('kingdomWars:nobody')).toBeNull();
     expect(generalFaceUrl('nobody')).toBeNull();
   });
+});
 
-  it('has a built face crop for every portrait', () => {
-    for (const skin of Object.values(skins as Record<string, string>)) {
-      expect(existsSync(join(__dirname, '../../assets/generals/faces', `${skin}.webp`))).toBe(true);
-    }
+
+describe('portraits and faces by art set', () => {
+  const entry = (portraits: string[], faces: string[]) => ({ names: { en: 'x', vi: 'x' }, provenance: { en: 'test', vi: 'thử' }, portraits, faces });
+  const catalog: ArtSetCatalog = {
+    order: ['classic', 'ink'],
+    sets: { classic: entry(['cao-cao', 'guan-yu', 'zhang-fei'], ['cao-cao', 'guan-yu', 'zhang-fei']), ink: entry(['cao-cao', 'guan-yu'], ['cao-cao']) },
+  };
+  const choice = (global: string, overrides: Record<string, string> = {}): ArtChoice => ({ global, overrides, catalog });
+
+  it('serves the chosen set for a General it covers and classic for one it does not', () => {
+    expect(generalSkinUrl('guan-yu', choice('ink'))).toBe('/images/generals/skins/ink/shu/guanyu.webp');
+    expect(generalSkinUrl('zhang-fei', choice('ink'))).toBe('/images/generals/skins/classic/shu/zhangfei.webp');
+  });
+
+  it('uses the override of the base General for a Kingdom Wars id', () => {
+    expect(generalSkinUrl('kingdomWars:guan-yu', choice('classic', { 'guan-yu': 'ink' }))).toBe('/images/generals/skins/ink/shu/guanyu.webp');
+  });
+
+  it('gives the face of the set that supplied the portrait', () => {
+    expect(generalFaceUrl('cao-cao', choice('ink'))).toBe('/images/generals/faces/ink/wei/caocao.webp');
+  });
+
+  it('gives no face for a classic General that has no face crop, without an error', () => {
+    const noFace: ArtSetCatalog = { order: ['classic'], sets: { classic: entry(['zhang-fei'], []) } };
+    expect(generalFaceUrl('zhang-fei', { global: 'classic', overrides: {}, catalog: noFace })).toBeNull();
+  });
+
+  it('gives no face when the set that supplied the portrait has none, so no other set\'s face is borrowed', () => {
+    expect(generalFaceUrl('guan-yu', choice('ink'))).toBeNull();
   });
 });
 
+describe('the shipped art set catalog', () => {
+  const assets = join(__dirname, '../../assets');
+
+  it('starts with classic', () => {
+    expect(ART_SET_CATALOG.order[0]).toBe('classic');
+  });
+
+  it('has a portrait file, and a face file where listed, for every General of every set', () => {
+    const missing: string[] = [];
+    for (const [set, entry] of Object.entries(ART_SET_CATALOG.sets)) {
+      for (const id of entry.portraits) {
+        const skin = (skins as Record<string, string>)[id];
+        if (!existsSync(join(assets, assetFile(`generals/skins/${set}/${skin}`)))) missing.push(`${set}/${id} portrait`);
+        if (entry.faces.includes(id) && !existsSync(join(assets, assetFile(`generals/faces/${set}/${skin}`)))) missing.push(`${set}/${id} face`);
+      }
+    }
+    expect(missing).toEqual([]);
+  });
+
+  it('describes every set in English and Vietnamese, without a pointer to the README', () => {
+    for (const entry of Object.values(ART_SET_CATALOG.sets)) {
+      for (const text of [entry.provenance.en, entry.provenance.vi, entry.names.en, entry.names.vi]) {
+        expect(text.trim()).not.toBe('');
+        expect(text).not.toMatch(/README/);
+      }
+    }
+  });
+
+  it('gives classic a portrait for every General with a skin; a face crop is optional', () => {
+    expect([...ART_SET_CATALOG.sets['classic'].portraits].sort()).toEqual(Object.keys(skins).sort());
+  });
+});
+
+describe('generalSkinForce', () => {
+  it('gives the force folder of the General\'s skin', () => {
+    expect(generalSkinForce('cao-cao')).toBe('Wei');
+    expect(generalSkinForce('guan-yu')).toBe('Shu');
+    expect(generalSkinForce('kingdomWars:diao-chan')).toBe('Qun');
+  });
+
+  it('gives null for a General with no skin', () => {
+    expect(generalSkinForce('nobody')).toBeNull();
+  });
+});

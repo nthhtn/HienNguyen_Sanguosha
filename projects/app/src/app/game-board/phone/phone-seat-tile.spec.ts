@@ -5,6 +5,7 @@ import type { CardInstance, Seat } from 'engine';
 import { generalFaceUrl, generalSkinUrl, HIDDEN_GENERAL_ART_URL } from 'content';
 import { PhoneSeatTile, generalArtFitsFaceCrop } from './phone-seat-tile';
 import { testSeat } from './phone.testing';
+import { provideFakeArtSets } from '../../art-sets.testing';
 
 const card = (instanceId: string, definitionId: string): CardInstance => ({ instanceId, definitionId, suit: 'spade', rank: 7 });
 
@@ -172,6 +173,30 @@ describe('PhoneSeatTile', () => {
       el.querySelector('.general[data-slot="main"] img')!.dispatchEvent(new Event('error'));
       fixture.detectChanges();
       expect(src(el, 'main')).toBe(generalSkinUrl('cao-cao'));
+    });
+
+    describe('art sets', () => {
+      beforeEach(() => {
+        localStorage.clear();
+        TestBed.configureTestingModule({ providers: provideFakeArtSets() });
+        localStorage.setItem('art-set', 'ink');
+      });
+      afterEach(() => localStorage.clear());
+
+      it("shows the chosen set's face crop for a General that has one", () => {
+        const el = render(testSeat('seat-3', 3, { generals: generalsOf('cao-cao') }), { tileWidth: 100, tileHeight: 100 });
+        expect(src(el, 'main')).toBe('/images/generals/faces/ink/wei/caocao.webp');
+      });
+
+      it("shows the chosen set's portrait, never another set's face, when the set has no face crop", () => {
+        const el = render(testSeat('seat-3', 3, { generals: generalsOf('guan-yu') }), { tileWidth: 100, tileHeight: 100 });
+        expect(src(el, 'main')).toBe('/images/generals/skins/ink/shu/guanyu.webp');
+      });
+
+      it('keeps the shared card back for a face-down General', () => {
+        const el = render(testSeat('seat-3', 3, { generals: generalsOf('hidden') }), { tileWidth: 100, tileHeight: 100 });
+        expect(src(el, 'main')).toBe(HIDDEN_GENERAL_ART_URL);
+      });
     });
 
     it("keeps the face crop on the viewer's tile even when the tile is large", () => {

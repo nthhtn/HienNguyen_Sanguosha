@@ -13,6 +13,7 @@ const MERGED_RULES_PAGES: Record<string, string> = {
 
 const generals = () => import('./wiki-generals').then((m) => m.WikiGenerals);
 const kingdomWarsGenerals = () => import('./wiki-kingdom-wars-generals').then((m) => m.WikiKingdomWarsGenerals);
+const artSets = () => import('./wiki-art-sets').then((m) => m.WikiArtSets);
 const cards = () => import('./wiki-cards').then((m) => m.WikiCards);
 
 // Each deck has its own set of pages; the deck comes from the parent route's
@@ -63,5 +64,6 @@ export const WIKI_ROUTES: Routes = [
       ...Object.entries(MERGED_RULES_PAGES).map(([path, target]): Route => ({ path, pathMatch: 'full', redirectTo: () => inject(Router).parseUrl(`/wiki/rules/${target}`) })),
     ],
   },
+  { path: 'art-sets', loadComponent: artSets },
   { path: '', redirectTo: 'kingdom-wars/generals', pathMatch: 'full' },
 ];

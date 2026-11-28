@@ -32,8 +32,7 @@
 .spacer {
   flex: 1;
 }
-.music-toggle,
-.effects-toggle,
+.sound-menu,
 .playback-speed {
   color: var(--mat-sys-on-primary);
 }
@@ -55,6 +54,7 @@
 
 .app-bar .nav-preview,
 .app-bar .nav-battlefield,
+.app-bar .nav-art-sets,
 .app-bar .account,
 .app-bar .sign-in {
   --mat-button-text-label-text-color: var(--mat-sys-on-primary);
@@ -144,7 +144,7 @@
   border-top: 1px solid color-mix(in srgb, var(--mat-sys-on-primary) 25%, transparent);
 }
 
-/* Phone layout: the bar is a menu button, the title and two toggles; the title gives way (an ellipsis) rather
+/* Phone layout: the bar is a menu button, the title and the sound menu; the title gives way (an ellipsis) rather
    than push the page sideways on a narrow screen. */
 :host-context([data-layout='phone']) .app-bar,
 :host-context([data-layout='compact']) .app-bar {
@@ -162,17 +162,10 @@
   white-space: nowrap;
 }
 
-/* The dev Preview link is one more item on the right, so its label folds to the icon sooner (its aria-label and
-   title stay). */
-@media (max-width: 1559px) {
-  .nav-preview .label {
-    display: none;
-  }
-}
-
-/* Wide layout on a tablet or a small laptop: the full bar with every label is about 1350 px wide, so below that
-   the links show their icons only (each already has an aria-label). Phones use the drawer instead. */
-@media (max-width: 1359px) {
+/* Wide layout on a tablet or a small laptop: the links show their icons only (each already has an aria-label) when the labels
+   do not fit. Measured with the Art Sets link, the picker button (icon only) and the Sound menu, the full bar needs
+   1391 px in English and 1532 px in Vietnamese, so the breakpoints keep about 30 px of room. Phones use the drawer instead. */
+@media (max-width: 1419px) {
   .nav .label,
   .nav-battlefield .label,
   .account .label,
@@ -181,6 +174,19 @@
   }
   .nav a,
   .nav button {
+    min-width: 0;
+    padding: 0 8px;
+  }
+}
+@media (max-width: 1569px) {
+  :host-context(html[lang='vi']) .nav .label,
+  :host-context(html[lang='vi']) .nav-battlefield .label,
+  :host-context(html[lang='vi']) .account .label,
+  :host-context(html[lang='vi']) .sign-in .label {
+    display: none;
+  }
+  :host-context(html[lang='vi']) .nav a,
+  :host-context(html[lang='vi']) .nav button {
     min-width: 0;
     padding: 0 8px;
   }

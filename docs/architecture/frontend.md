@@ -228,7 +228,7 @@ On the `compact` layout (the installed app on a landscape phone), `GameBoard` re
 
 - **Placement:** [phone-seat-layout.ts](../../projects/app/src/app/game-board/phone/phone-seat-layout.ts) puts opponents along the top, then down the sides from 9 seats (1, 2 or 2 per side), turn order running up the right, along the top and down the left. `phoneSizes` gives the bottom row (30% of the height, 104 to 124 px), tile heights and widths; a tile under 110 px is slim, never under 76 px.
 - **Seat tile:** `PhoneSeatTile`: Name with up to 3 Judgment boxes, both Generals, HP and hand count with the chained mark, 4 Equipment boxes. A slim tile drops the bot icon, shows only filled Judgment boxes and HP as numbers.
-  - **Faces:** Each General is its face crop (`generalFaceUrl` in `content`), cut square by the asset pipeline from the portrait with the boxes in `projects/content/asset-crops-faces.json` (recipe `generals/faces`, which names its own box file). A General with no crop, or a crop that fails to load, shows its portrait.
+  - **Faces:** Each General is its face crop (`generalFaceUrl` in `content`), cut square by the asset pipeline from the portrait with the boxes in `projects/content/asset-crops-faces.json` (recipe `generals/faces`, which names its own box file; keys are `<art set>/<force>/<pinyin>` and a box is optional for any art set). A General with no crop, or a crop that fails to load, shows its portrait.
   - **HP:** One HP ramp icon per point of maximum HP (up to 8), lost points dark; a slim tile shows "♥ 3/4".
   - **Badges:** No Skills for one General and Form lie on that General; Face Down, No Skills for the seat and Dying (red) lie across both.
   - **Seat Details:** Every tile is one button; [SeatDetailsDialog](../../projects/app/src/app/game-board/phone/seat-details-dialog.ts) shows the seat from the visible state (a signal, so it follows the game): Generals with their skills, states, Equipment, Judgment and the cards under a General, each opening its existing info window. A hidden General shows only "Hidden".
@@ -570,6 +570,23 @@ displays it.
 custom properties (`--force`, `--force-text`) and recolors the Material tokens,
 so a dialog needs no per-Force code. A decision dialog is themed by the
 deciding seat's Force; the Compete popup by the source General's.
+
+### Art sets
+
+A viewer chooses which art set the General portraits come from. Nothing about it reaches the engine, the server or other players.
+
+- **Service:** `ArtSets` (`art-sets.service.ts`) holds the global set and per-General overrides as signals and stores them in `localStorage` (`art-set`, `art-set-overrides`). Stored values the catalog no longer supports are dropped on read, and blocked storage only means the choice is not remembered.
+- **Choice:** `ArtSets.choice()` is an `ArtChoice`. Every portrait call site passes it to `generalSkinUrl` or `generalFaceUrl`: `SeatAvatar`, `SeatPortrait`, `CardArt` (with `skin`), `PhoneSeatTile`, `SeatDetailsDialog` and the Rules Wiki's `SceneSeat`.
+- **Fallback:** A set that lacks a General falls back to `classic`. A face comes only from the set that supplied the portrait, so a set with no face crop shows its portrait on the phone tile.
+- **Picker:** `ArtSetsDialog` (a global radio per set and a per General override list), opened from the toolbar button or the phone drawer. Both entries are hidden while only one set ships.
+- **Page:** `WikiArtSets` (`/wiki/art-sets`, tabs `sets` and `generals` in `?tab=`). It exists even while only `classic` ships.
+  - **By Set:** `ArtSetsBySet` shows each set's gallery grouped by Force (a General's Force is the force folder of its skin, `generalSkinForce`), with a Use This Set button.
+  - **By General:** `ArtSetsByGeneral` lists each General that more than one set covers.
+  - **Entry points:** A toolbar link, a drawer link, and the picker's Browse All Art Sets button.
+  - **Names:** `artGeneralName` gives a General's name by its base id, falling back to its Kingdom Wars name for the nine Generals that exist only there.
+- **Tiles:** `GeneralArtChoices` draws all of one General's artwork: a tile per covering set, marked In Use and Pinned, a press pins the General to that set, and Follow Global Set clears the pin. It is shared by the By General rows and the popup below, so they cannot drift apart.
+- **Wiki entries:** `GeneralArtButton` ("Art Sets (n)") sits under the portrait of each Identity and Kingdom Wars General entry, only for a General with alternates, and opens `GeneralArtDialog` (a lazy import) with the same tiles at a larger size.
+- **Tests:** `ART_SET_CATALOG_TOKEN` replaces the catalog, and `provideFakeArtSets()` (`art-sets.testing.ts`) supplies a second, partial set.
 
 ## Tutorial
 

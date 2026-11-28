@@ -28,6 +28,9 @@
       <a mat-button class="nav-rules" routerLink="/wiki/rules" [class.active]="rulesActive()" [attr.aria-current]="rulesActive() ? 'page' : null" [attr.aria-label]="'nav.rules' | t">
         <mat-icon>menu_book</mat-icon><span class="label">{{ 'nav.rules' | t }}</span>
       </a>
+      <a mat-button class="nav-art-page" routerLink="/wiki/art-sets" [class.active]="artPageActive()" [attr.aria-current]="artPageActive() ? 'page' : null" [attr.aria-label]="'nav.artSetsPage' | t">
+        <mat-icon>collections</mat-icon><span class="label">{{ 'nav.artSetsPage' | t }}</span>
+      </a>
       @if (flags.tutorial) {
         <a mat-button class="nav-tutorial" routerLink="/tutorial" [class.active]="tutorialActive()" [attr.aria-current]="tutorialActive() ? 'page' : null" [attr.aria-label]="'nav.tutorial' | t">
           <mat-icon>school</mat-icon><span class="label">{{ 'nav.tutorial' | t }}</span>
@@ -36,8 +39,8 @@
     </nav>
     <span class="spacer"></span>
     @if (devPreview) {
-      <a mat-button class="nav-preview" routerLink="/preview" [attr.title]="'nav.preview' | t" [class.active]="previewActive()" [attr.aria-current]="previewActive() ? 'page' : null" [attr.aria-label]="'nav.preview' | t">
-        <mat-icon>science</mat-icon><span class="label">{{ 'nav.preview' | t }}</span>
+      <a mat-icon-button class="nav-preview" routerLink="/preview" [attr.title]="'nav.preview' | t" [class.active]="previewActive()" [attr.aria-current]="previewActive() ? 'page' : null" [attr.aria-label]="'nav.preview' | t">
+        <mat-icon>science</mat-icon>
       </a>
     }
     @if (backgrounds.available()) {
@@ -49,6 +52,11 @@
           <button mat-menu-item type="button" [class.active]="backgrounds.choice() === option.value" [attr.aria-current]="backgrounds.choice() === option.value ? 'true' : null" (click)="backgrounds.select(option.value)">{{ option.label | t }}</button>
         }
       </mat-menu>
+    }
+    @if (artSetsOffered()) {
+      <button mat-icon-button type="button" class="nav-art-sets" (click)="openArtSets()" [attr.aria-label]="'nav.artSets' | t" [attr.title]="'nav.artSets' | t">
+        <mat-icon>palette</mat-icon>
+      </button>
     }
     @if (auth.loaded()) {
       @if (auth.me(); as me) {
@@ -98,28 +106,19 @@
   <h1><a class="brand" routerLink="/play">{{ title() }}</a></h1>
 </ng-template>
 <ng-template #toggles>
-  <button
-    mat-icon-button
-    type="button"
-    class="music-toggle"
-    (click)="music.toggle()"
-    [attr.aria-label]="(music.enabled() ? 'nav.musicOff' : 'nav.musicOn') | t"
-    [attr.aria-pressed]="music.enabled()"
-    [attr.title]="(music.enabled() ? 'nav.musicOff' : 'nav.musicOn') | t"
-  >
-    <mat-icon>{{ music.enabled() ? 'music_note' : 'music_off' }}</mat-icon>
+  <button mat-icon-button type="button" class="sound-menu" [matMenuTriggerFor]="soundMenu" [attr.aria-label]="'nav.sound' | t" [attr.title]="'nav.sound' | t">
+    <mat-icon>{{ music.enabled() || effects.enabled() ? 'volume_up' : 'volume_off' }}</mat-icon>
   </button>
-  <button
-    mat-icon-button
-    type="button"
-    class="effects-toggle"
-    (click)="effects.toggle()"
-    [attr.aria-label]="(effects.enabled() ? 'nav.effectsOff' : 'nav.effectsOn') | t"
-    [attr.aria-pressed]="effects.enabled()"
-    [attr.title]="(effects.enabled() ? 'nav.effectsOff' : 'nav.effectsOn') | t"
-  >
-    <mat-icon>{{ effects.enabled() ? 'volume_up' : 'volume_off' }}</mat-icon>
-  </button>
+  <mat-menu #soundMenu="matMenu">
+    <button mat-menu-item type="button" class="music-toggle" role="menuitemcheckbox" [attr.aria-checked]="music.enabled()" (click)="music.toggle()">
+      <mat-icon>{{ music.enabled() ? 'music_note' : 'music_off' }}</mat-icon>
+      <span>{{ 'nav.sound.music' | t }}</span>
+    </button>
+    <button mat-menu-item type="button" class="effects-toggle" role="menuitemcheckbox" [attr.aria-checked]="effects.enabled()" (click)="effects.toggle()">
+      <mat-icon>{{ effects.enabled() ? 'volume_up' : 'volume_off' }}</mat-icon>
+      <span>{{ 'nav.sound.effects' | t }}</span>
+    </button>
+  </mat-menu>
 </ng-template>
 @if (!layout.wide() && layout.navOpen()) {
   <div class="nav-scrim" role="presentation" (click)="layout.closeNav()"></div>
@@ -139,6 +138,7 @@
       }
     }
     <a class="drawer-link" routerLink="/wiki/rules" [class.active]="rulesActive()" [attr.aria-current]="rulesActive() ? 'page' : null"><mat-icon>menu_book</mat-icon>{{ 'nav.rules' | t }}</a>
+    <a class="drawer-link drawer-art-page" routerLink="/wiki/art-sets" [class.active]="artPageActive()" [attr.aria-current]="artPageActive() ? 'page' : null"><mat-icon>collections</mat-icon>{{ 'nav.artSetsPage' | t }}</a>
     @if (flags.tutorial) {
       <a class="drawer-link" routerLink="/tutorial" [class.active]="tutorialActive()" [attr.aria-current]="tutorialActive() ? 'page' : null"><mat-icon>school</mat-icon>{{ 'nav.tutorial' | t }}</a>
     }
@@ -151,6 +151,11 @@
         @for (option of backgroundOptions; track option.value) {
           <button type="button" class="drawer-link sub" [class.active]="backgrounds.choice() === option.value" [attr.aria-current]="backgrounds.choice() === option.value ? 'true' : null" (click)="backgrounds.select(option.value)">{{ option.label | t }}</button>
         }
+      </div>
+    }
+    @if (artSetsOffered()) {
+      <div class="drawer-group drawer-art-sets">
+        <button type="button" class="drawer-link" (click)="openArtSets()"><mat-icon>palette</mat-icon>{{ 'nav.artSets' | t }}</button>
       </div>
     }
     <div class="drawer-group">

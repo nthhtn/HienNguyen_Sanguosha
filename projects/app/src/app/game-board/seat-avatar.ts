@@ -2,7 +2,8 @@ import { Component, computed, inject, input, output, signal } from '@angular/cor
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { Action, GeneralInstance, SeatGenerals } from 'engine';
-import { generalDisplayData, HIDDEN_GENERAL_ART_URL, generalSkinUrl } from 'content';
+import { type ArtChoice, generalDisplayData, HIDDEN_GENERAL_ART_URL, generalSkinUrl } from 'content';
+import { ArtSets } from '../art-sets.service';
 import { generalDisplayName } from '../labels';
 import { GeneralInfoDialog, GeneralInfoDialogData } from './general-info-dialog';
 import { AvatarSkill } from './avatar-skills';
@@ -24,14 +25,14 @@ interface AvatarHalf {
   name: string;
 }
 
-function toHalf(slot: 'main' | 'deputy', general: GeneralInstance, tr: Translator): AvatarHalf {
+function toHalf(slot: 'main' | 'deputy', general: GeneralInstance, tr: Translator, choice: ArtChoice): AvatarHalf {
   const id = general.generalDefinitionId;
   if (id === HIDDEN_ID) {
     return { slot, id, masked: true, ownHidden: false, url: HIDDEN_GENERAL_ART_URL, caption: tr('avatar.hidden'), name: generalDisplayName(id, tr) };
   }
   const name = generalDisplayData(id, localeOf(tr))?.name ?? generalDisplayName(id, tr);
   const ownHidden = !general.revealed;
-  return { slot, id, masked: false, ownHidden, url: generalSkinUrl(id), caption: ownHidden ? tr('avatar.hiddenOwn', { name }) : name, name };
+  return { slot, id, masked: false, ownHidden, url: generalSkinUrl(id, choice), caption: ownHidden ? tr('avatar.hiddenOwn', { name }) : name, name };
 }
 
 // One seat's Generals as a single split portrait: Main left, Deputy right.
@@ -134,12 +135,16 @@ export class SeatAvatar {
   readonly skills = input<AvatarSkill[]>([]);
   readonly useSkill = output<Action>();
   private readonly i18n = inject(I18n);
+  private readonly artSets = inject(ArtSets);
   protected readonly slots = ['main', 'deputy'] as const;
   protected skillsOf(slot: 'main' | 'deputy'): AvatarSkill[] {
     return this.skills().filter((s) => s.slot === slot);
   }
 
-  protected readonly halves = computed(() => [toHalf('main', this.generals().main, this.i18n.translator), toHalf('deputy', this.generals().deputy, this.i18n.translator)]);
+  protected readonly halves = computed(() => {
+    const choice = this.artSets.choice();
+    return [toHalf('main', this.generals().main, this.i18n.translator, choice), toHalf('deputy', this.generals().deputy, this.i18n.translator, choice)];
+  });
 
   // Art that didn't load (e.g. not crawled on this machine) falls back to the
   // captioned placeholder rather than a broken image.

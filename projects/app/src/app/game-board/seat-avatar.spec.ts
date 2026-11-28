@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Action, SeatGenerals } from 'engine';
 import { SeatAvatar } from './seat-avatar';
+import { provideFakeArtSets } from '../art-sets.testing';
 import { AvatarSkill } from './avatar-skills';
 
 function render(generals: SeatGenerals): HTMLElement {
@@ -23,8 +24,8 @@ describe('SeatAvatar', () => {
     });
     const halves = [...el.querySelectorAll('.frame > .half')];
     expect(halves.map((h) => h.getAttribute('data-slot'))).toEqual(['main', 'deputy']);
-    expect(src(halves[0])).toBe('/images/generals/skins/shu/guanyu.webp');
-    expect(src(halves[1])).toBe('/images/generals/skins/shu/zhangfei.webp');
+    expect(src(halves[0])).toBe('/images/generals/skins/classic/shu/guanyu.webp');
+    expect(src(halves[1])).toBe('/images/generals/skins/classic/shu/zhangfei.webp');
     expect(half(el, 'main').querySelector('.caption')!.textContent!.trim()).toBe('Guan Yu');
     expect(half(el, 'deputy').querySelector('.caption')!.textContent!.trim()).toBe('Zhang Fei');
   });
@@ -36,7 +37,7 @@ describe('SeatAvatar', () => {
     });
     expect(src(half(el, 'main'))).toBe('/images/generals/special/hidden.jpg');
     expect(half(el, 'main').querySelector('.caption')!.textContent!.trim()).toBe('Hidden');
-    expect(src(half(el, 'deputy'))).toBe('/images/generals/skins/shu/zhaoyun.webp');
+    expect(src(half(el, 'deputy'))).toBe('/images/generals/skins/classic/shu/zhaoyun.webp');
     expect(el.textContent).not.toContain('hidden');
   });
 
@@ -46,7 +47,7 @@ describe('SeatAvatar', () => {
       deputy: { generalDefinitionId: 'zhen-ji', revealed: true },
     });
     const main = half(el, 'main');
-    expect(src(main)).toBe('/images/generals/skins/wei/caocao.webp');
+    expect(src(main)).toBe('/images/generals/skins/classic/wei/caocao.webp');
     expect(main.classList).toContain('own-hidden');
     expect(main.querySelector('mat-icon')!.textContent!.trim()).toBe('visibility_off');
     expect(main.querySelector('.caption')!.textContent!.trim()).toBe('Cao Cao (hidden)');
@@ -77,7 +78,7 @@ describe('SeatAvatar', () => {
     expect(half(el, 'main').querySelector('img')).toBeNull();
     expect(half(el, 'main').querySelector('.placeholder')).not.toBeNull();
     expect(half(el, 'main').querySelector('.caption')!.textContent!.trim()).toBe('Hidden');
-    expect(src(half(el, 'deputy'))).toBe('/images/generals/skins/shu/zhaoyun.webp');
+    expect(src(half(el, 'deputy'))).toBe('/images/generals/skins/classic/shu/zhaoyun.webp');
   });
 
   it('opens the General’s info from a known half, and nothing from another seat’s hidden half (Review Focus 4)', async () => {
@@ -123,4 +124,25 @@ describe('SeatAvatar', () => {
     expect(el.querySelector('.skills')).toBeNull();
   });
 
+});
+
+describe('SeatAvatar art sets', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    TestBed.configureTestingModule({ providers: provideFakeArtSets() });
+  });
+  afterEach(() => localStorage.clear());
+
+  it('shows the art set the viewer chose, and classic where the set lacks the General', () => {
+    localStorage.setItem('art-set', 'ink');
+    const el = render({ main: { generalDefinitionId: 'guan-yu', revealed: true }, deputy: { generalDefinitionId: 'zhang-fei', revealed: true } });
+    expect(src(half(el, 'main'))).toBe('/images/generals/skins/ink/shu/guanyu.webp');
+    expect(src(half(el, 'deputy'))).toBe('/images/generals/skins/classic/shu/zhangfei.webp');
+  });
+
+  it('keeps the shared card back for a face-down General in every set', () => {
+    localStorage.setItem('art-set', 'ink');
+    const el = render({ main: { generalDefinitionId: 'hidden', revealed: false }, deputy: { generalDefinitionId: 'guan-yu', revealed: true } });
+    expect(src(half(el, 'main'))).toBe('/images/generals/special/hidden.jpg');
+  });
 });

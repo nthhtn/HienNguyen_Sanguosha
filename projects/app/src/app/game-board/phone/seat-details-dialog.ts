@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { CardInstance, EQUIP_SLOTS, GameState, GeneralInstance, isSeatDying } from 'engine';
 import { abilityName, equipSlotOf, generalDisplayData, generalSkinUrl, HIDDEN_GENERAL_ART_URL } from 'content';
+import { ArtSets } from '../../art-sets.service';
 import { cardIdDisplayName, generalDisplayName, seatForce, seatName } from '../../labels';
 import { I18n } from '../../i18n/i18n.service';
 import { TPipe } from '../../i18n/t.pipe';
@@ -164,6 +165,7 @@ export class SeatDetailsDialog {
   protected readonly ref = inject(MatDialogRef<SeatDetailsDialog>);
   private readonly dialog = inject(MatDialog);
   private readonly i18n = inject(I18n);
+  private readonly artSets = inject(ArtSets);
 
   private readonly state = computed(() => this.data.state());
   protected readonly seat = computed(() => this.state().seats.find((s) => s.id === this.data.seatId) ?? null);
@@ -253,7 +255,7 @@ export class SeatDetailsDialog {
       slot,
       id,
       hidden: false,
-      url: generalSkinUrl(id),
+      url: generalSkinUrl(id, this.artSets.choice()),
       name: display?.name ?? generalDisplayName(id, this.i18n.translator),
       skills: (display?.skills ?? []).map((s) => s.name),
       form,

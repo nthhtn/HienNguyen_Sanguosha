@@ -1,6 +1,6 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { CdkTrapFocus } from '@angular/cdk/a11y';
-import { Component, HostListener, computed, effect, inject, untracked } from '@angular/core';
+import { Component, HostListener, Injector, computed, effect, inject, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
@@ -60,6 +60,10 @@ export class App {
     },
   ];
 
+  private readonly injector = inject(Injector);
+  // Whether more than one art set ships, so the picker is offered. Both it and the picker load after start-up: they need
+  // the content package, which would otherwise weigh on every first load.
+  protected readonly artSetsOffered = signal(false);
   protected readonly backgrounds = inject(BattlefieldBackgrounds);
   protected readonly backgroundOptions = BATTLEFIELD_BACKGROUNDS.map((value) => ({
     value,
@@ -79,9 +83,17 @@ export class App {
   protected readonly previewActive = computed(() => /^\/preview(\/|$|\?)/.test(this.url()));
   protected readonly onlineActive = computed(() => /^\/(rooms|my-games)(\/|$|\?)/.test(this.url()));
 
+  // The picker is offered from the bar, and from the drawer on a phone, which closes behind it.
+  protected async openArtSets(): Promise<void> {
+    this.layout.closeNav();
+    const { openArtSetsDialog } = await import('./art-sets-dialog');
+    openArtSetsDialog(this.injector);
+  }
+
   protected deckActive(route: string): boolean {
     return new RegExp(`^/wiki/${route}(/|$|\\?)`).test(this.url());
   }
+  protected readonly artPageActive = computed(() => /^\/wiki\/art-sets(\/|$|\?)/.test(this.url()));
   protected readonly rulesActive = computed(() => /^\/wiki\/rules(\/|$|\?)/.test(this.url()));
   protected readonly tutorialActive = computed(() => /^\/tutorial(\/|$|\?)/.test(this.url()));
 
@@ -105,6 +117,7 @@ export class App {
     });
     this.music.start();
     void this.auth.load();
+    void import('./art-sets.service').then(({ ArtSets }) => this.artSetsOffered.set(this.injector.get(ArtSets).multiple));
   }
 
   @HostListener('document:keydown.escape')

@@ -26,7 +26,7 @@ class PlanError(Exception):
 @dataclass(frozen=True)
 class Output:
     path: str  # relative to assets/
-    op: str  # copy | image | video | crop | sheet | sheets-meta
+    op: str  # copy | image | video | crop | sheet | sheets-meta | art-sets
     sources: Tuple[str, ...]  # relative to assets-src/
     recipe_key: str
     settings: dict = field(default_factory=dict)  # per-output extras: the crop box, the sheet id and folder
@@ -102,10 +102,11 @@ def _crop_outputs(layout: Layout, key: str, recipe: dict) -> List[Output]:
             raise PlanError('crop box for {} in {} has no art in {}'.format(card, boxes_file.name, from_dir))
         if not _is_box(box):
             raise PlanError('crop box for {} in {} must be [x, y, width, height] as whole numbers with x, y >= 0 and width, height > 0, not {!r}'.format(card, boxes_file.name, box))
+    optional = recipe.get('boxesOptional', False)  # An art set may have portraits without a face crop.
     for card in full:
-        if card not in boxes:
+        if card not in boxes and not optional:
             raise PlanError('art {} has no crop box in {}'.format(card, boxes_file.name))
-    return [Output('{}/{}.{}'.format(key, card, recipe['ext']), 'crop', (full[card],), key, {'box': boxes[card]}) for card in sorted(full)]
+    return [Output('{}/{}.{}'.format(key, card, recipe['ext']), 'crop', (full[card],), key, {'box': boxes[card]}) for card in sorted(full) if card in boxes]
 
 
 def _frames(layout: Layout, from_dir: str, folder: str) -> List[str]:
@@ -126,6 +127,70 @@ def _sheet_outputs(layout: Layout, key: str, recipe: dict) -> List[Output]:
         outputs.append(Output('{}/{}.{}'.format(key, effect, recipe.get('ext', 'png')), 'sheet', tuple(frames), key, {'id': effect, 'folder': folder}))
     outputs.append(Output('{}/sheets.json'.format(key), 'sheets-meta', tuple(everything), key, {'map': recipe['map']}))
     return outputs
+
+
+def _read_json(path: Path, what: str):
+    if not path.is_file():
+        raise PlanError('{} is missing: {}'.format(what, path.name))
+    return json.loads(path.read_text())
+
+
+def _art_sets_outputs(layout: Layout, key: str, recipe: dict, planned: List[Output]) -> List[Output]:
+    """The art set index: the registry merged with which Generals each set has a portrait and a face for."""
+    skins_dir = recipe['skins']
+    registry_rel = recipe['registry']
+    skins_rel = '{}/skins.json'.format(skins_dir)
+    registry = _read_json(layout.src / registry_rel, 'the art set registry')
+    skins = _read_json(layout.src / skins_rel, 'skins.json')
+    for set_id, entry in registry.items():
+        for field in ('names', 'provenance'):
+            text = entry.get(field) if isinstance(entry, dict) else None
+            if not isinstance(text, dict) or not all(isinstance(text.get(lang), str) and text[lang].strip() for lang in ('en', 'vi')):
+                raise PlanError('art set {} needs {} in English and Vietnamese ({{"en": ..., "vi": ...}}) in {}'.format(set_id, field, Path(registry_rel).name))
+    base = layout.src / skins_dir
+    folders = sorted(p.name for p in base.iterdir() if p.is_dir()) if base.is_dir() else []
+    for folder in folders:
+        if folder not in registry:
+            raise PlanError('art set folder {} has no entry in {}'.format(folder, Path(registry_rel).name))
+    for set_id in registry:
+        if set_id not in folders:
+            raise PlanError('{} lists art set {}, which has no folder in {}'.format(Path(registry_rel).name, set_id, skins_dir))
+    if 'classic' not in registry:
+        raise PlanError('{} must list the art set classic'.format(Path(registry_rel).name))
+    ids = {path: general for general, path in skins.items()}
+    sources = [registry_rel, skins_rel]
+    portraits: Dict[str, List[str]] = {set_id: [] for set_id in registry}
+    for set_id in registry:
+        for rel in files_under(base / set_id):
+            if Path(rel).suffix.lower() not in CROP_SOURCES:
+                continue
+            path = Path(rel).with_suffix('').as_posix()
+            if path not in ids:
+                raise PlanError('skin {}/{} is not in skins.json'.format(set_id, path))
+            portraits[set_id].append(ids[path])
+            sources.append('{}/{}/{}'.format(skins_dir, set_id, rel))
+    missing = sorted(set(skins) - set(portraits['classic']))
+    if missing:
+        raise PlanError('art set classic has no portrait for {}'.format(', '.join(missing)))
+    faces: Dict[str, List[str]] = {set_id: [] for set_id in registry}
+    prefix = recipe['faces'] + '/'
+    for output in planned:
+        if output.op == 'crop' and output.recipe_key == recipe['faces']:
+            set_id, _, rest = output.path[len(prefix):].partition('/')
+            faces[set_id].append(ids[Path(rest).with_suffix('').as_posix()])
+    index = {
+        'order': list(registry),
+        'sets': {
+            set_id: {
+                'names': entry['names'],
+                'provenance': entry['provenance'],
+                'portraits': sorted(portraits[set_id]),
+                'faces': sorted(faces[set_id]),
+            }
+            for set_id, entry in registry.items()
+        },
+    }
+    return [Output(key, 'art-sets', tuple(sorted(set(sources))), key, {'index': index})]
 
 
 def plan_outputs(layout: Layout) -> List[Output]:
@@ -157,6 +222,9 @@ def plan_outputs(layout: Layout) -> List[Output]:
             outputs.extend(_crop_outputs(layout, key, recipe))
         elif recipe['op'] == 'sheets':
             outputs.extend(_sheet_outputs(layout, key, recipe))
+    for key, recipe in recipes.items():
+        if recipe['op'] == 'art-sets':
+            outputs.extend(_art_sets_outputs(layout, key, recipe, list(outputs)))
     seen: Dict[str, str] = {}
     for output in outputs:
         if output.path in seen:
