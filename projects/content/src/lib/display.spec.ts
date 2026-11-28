@@ -1,4 +1,4 @@
-import { abilityHint, abilityName, competeOutcomeText, cardDisplayData, choicePromptText, seatPickText, selectionText, skillIdOf, stepSelectionText } from './display';
+import { ENGLISH_PROSE, abilityHint, abilityName, competeOutcomeText, cardDisplayData, choicePromptText, judgmentOutcomeText, seatPickText, selectionText, skillIdOf, stepSelectionText } from './display';
 import { generalDisplayData } from './generalDisplay';
 import * as kingdomWarsSkills from './kingdomWarsSkills';
 import { kingdomWarsCardIds } from './kingdomWarsCards';
@@ -166,7 +166,7 @@ describe('competeOutcomeText', () => {
     expect(competeOutcomeText('rouse-the-tiger', true, names)).toBe("Seat 0 will choose a seat within Seat 1's attack range; Seat 1 deals it 1 damage");
     expect(competeOutcomeText('rouse-the-tiger', false, names)).toBe('Seat 1 deals 1 damage to Seat 0');
     expect(competeOutcomeText('intense-edge', true, names)).toBe("Seat 0 will take one of Seat 1's cards");
-    expect(competeOutcomeText('intense-edge', false, names)).toBe('Nothing happens');
+    expect(competeOutcomeText('intense-edge', false, names)).toBe('No card is taken');
   });
   it('has nothing to say for an ability that does not compete', () => {
     expect(competeOutcomeText('sha', true, names)).toBeNull();
@@ -225,5 +225,19 @@ describe('generalDisplayData skill traits', () => {
     const { generalDisplayData: display } = await import('./generalDisplay');
     expect(display('kingdomWars:ding-feng')!.skills.find((k) => k.name === 'Swift and Deadly')!.traits).toEqual(['oncePerTurn']);
     expect(display('cao-cao')!.skills[0].traits).toEqual([]);
+  });
+});
+
+describe('judgmentOutcomeText', () => {
+  const names = { seat: 'Seat 0', owner: 'Seat 1', source: 'Seat 2' };
+  it('says what happens instead of "Nothing happens"', () => {
+    expect(judgmentOutcomeText('capture', 'spared', names)).toBe('Seat 0 resumes the Play Phase normally');
+    expect(judgmentOutcomeText('starvation', 'spared', names)).toBe('Seat 0 resumes the Draw Phase normally');
+    expect(judgmentOutcomeText('iron-cavalry', 'none', names)).toBe('The Slash can still be dodged');
+    expect(judgmentOutcomeText('lightning-strike', 'none', names)).toBe('Seat 0 takes no damage');
+  });
+  it('never leaves a bare "Nothing happens" in a judgment or compete outcome', () => {
+    const texts = [...Object.values(ENGLISH_PROSE.judgmentOutcomes).flatMap((o) => Object.values(o)), ...Object.values(ENGLISH_PROSE.competeOutcomes).flatMap((o) => [o.won, o.lost])];
+    expect(texts.filter((t) => /^nothing happens$/i.test(t))).toEqual([]);
   });
 });

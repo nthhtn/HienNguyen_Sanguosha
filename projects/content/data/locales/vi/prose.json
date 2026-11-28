@@ -151,7 +151,7 @@
     },
     "intense-edge": {
       "won": "{user} sẽ lấy một lá bài của {target}",
-      "lost": "Không có gì xảy ra"
+      "lost": "Không lấy được lá bài nào"
     },
     "kingdomWars:double-edged": {
       "won": "{user} sẽ dùng Sát lên {target} hoặc một người chơi cùng thế lực với họ",
@@ -166,24 +166,24 @@
     },
     "capture": {
       "skip": "{seat} bỏ qua giai đoạn ra bài",
-      "spared": "Không có gì xảy ra"
+      "spared": "{seat} tiếp tục giai đoạn ra bài như bình thường"
     },
     "starvation": {
       "skip": "{seat} bỏ qua giai đoạn rút bài",
-      "spared": "Không có gì xảy ra"
+      "spared": "{seat} tiếp tục giai đoạn rút bài như bình thường"
     },
     "eight-trigrams": {
       "shan": "{seat} được tính là đã đánh Thiểm",
-      "none": "Không có gì xảy ra"
+      "none": "{seat} không được tính là đã đánh Thiểm"
     },
     "eight-arrays": {
       "shan": "{seat} được tính là đã đánh Thiểm",
-      "none": "Không có gì xảy ra"
+      "none": "{seat} không được tính là đã đánh Thiểm"
     },
     "unyielding": {
       "discard-or-damage": "{source} bỏ 2 lá bài hoặc chịu 1 sát thương",
       "damage": "{source} chịu 1 sát thương",
-      "spared": "Không có gì xảy ra"
+      "spared": "{source} không chịu sát thương và không phải bỏ bài"
     },
     "river-goddess": {
       "again": "{owner} nhận lá bài và phán xét lại",
@@ -195,15 +195,15 @@
     },
     "iron-cavalry": {
       "unblockable": "Sát không thể bị né",
-      "none": "Không có gì xảy ra"
+      "none": "Sát vẫn có thể bị né"
     },
     "lightning-strike": {
       "damage": "{seat} chịu 2 sát thương sét",
-      "none": "Không có gì xảy ra"
+      "none": "{seat} không chịu sát thương"
     },
     "kingdomWars:lightning-strike": {
       "damage": "{seat} chịu 2 sát thương sét",
-      "none": "Không có gì xảy ra"
+      "none": "{seat} không chịu sát thương"
     },
     "dueling-heroes": {
       "red": "{owner} nhận lá bài và có thể đánh bài đen trên tay làm Quyết Đấu trong lượt này",
@@ -220,7 +220,7 @@
       "discard1": "{source} bỏ 1 lá bài",
       "face-down": "{source} chồng Tướng",
       "face-up": "{source} bỏ chồng Tướng",
-      "none": "Không có gì xảy ra"
+      "none": "Không có tác dụng: nguồn sát thương đã trận vong hoặc không còn bài"
     }
   },
   "judgmentRules": {
