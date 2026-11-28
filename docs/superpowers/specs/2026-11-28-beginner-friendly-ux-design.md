@@ -20,8 +20,8 @@ Fewer dead-end windows, clearer verdicts and outcomes, and clocks that do not le
 ## Design
 
 1. **Skip windows with no answer (experiment flag, off).**
-   - Covers Sha with no Shan, Arrows, Barbarians, Duel and Coerce.
-   - A new `FEATURE_FLAGS` entry; when on, `responseDue` in `game-board.ts` submits the Pass instead of opening the dialog.
+   - Covers Sha with no Shan, Hail of Arrows, Barbarians and Duel (chosen by the developer). Coerce, Upheaval and Instigate keep their popups as notices.
+   - A new `FEATURE_FLAGS` entry holding a list of window names, empty by default; when a window's name is listed, `responseDue` in `game-board.ts` submits the Pass instead of opening the dialog.
    - The Tutorial is excluded. The dialog code stays.
 2. **Judgment verdict.**
    - Good or bad reads from the seat the effect lands on (for Iron Cavalry, the Sha target), not the judged seat.

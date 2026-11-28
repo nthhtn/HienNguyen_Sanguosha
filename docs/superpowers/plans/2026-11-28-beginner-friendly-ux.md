@@ -15,7 +15,7 @@
 - Decision clocks (response, Wuxie, ask, dying, pick) keep their current values.
 - Notice popups and the Judgment final result: 5 s. Harvest notice: `1.5 s × participants`, minimum 3 s, maximum 7 s.
 - Zhen Ji (`river-goddess`, `kingdomWars:goddess-luo`): the first use of the effect asks for 20 s (as now); every "judge again" ask is 8 s.
-- The engine never hides a window (`announcePass` stays); the skip is in the app only, behind a flag that is off.
+- The engine never hides a window (`announcePass` stays); the skip is in the app only, behind a flag that ships off. Only Sha, Hail of Arrows, Barbarians and Duel may be skipped; Coerce, Upheaval and Instigate keep their popups.
 - Skipped code is kept, not deleted. Tutorial lessons never skip.
 - UI text style from `CLAUDE.md`: English sentence case for outcome lines with keywords capitalised ("Play Phase"); Vietnamese sentence case; new Vietnamese is draft.
 - Docs follow the documentation style rules in `CLAUDE.md`.
@@ -85,18 +85,21 @@
 
 ### Task 4: Skip windows with no answer (experiment flag)
 
+The windows that can open with only Pass legal are: Sha, Hail of Arrows, Barbarians, Duel, Coerce, Upheaval, Instigate. The developer chose to skip the first four. Coerce, Upheaval and Instigate keep their popups (a pass costs a weapon, HP or a card, so they work as notices).
+
 **Files:**
 - Modify: `projects/app/src/app/feature-flags.ts` and `feature-flags.spec.ts`
 - Modify: `projects/app/src/app/game-board/game-board.ts` (`responseDue` ~409, effect ~553), plus a spec beside it
 
 **Interfaces:**
-- Produces: `FeatureFlags.skipNoAnswerWindows: boolean`, `false` in `featureFlagsFor` for dev and production.
+- Produces: `type NoAnswerWindow = 'sha' | 'hail-of-arrows' | 'barbarians' | 'duel' | 'coerce' | 'upheaval' | 'instigate'`; `FeatureFlags.skipNoAnswerWindows: readonly NoAnswerWindow[]`, `[]` in `featureFlagsFor` (off); `export const BEGINNER_SKIP_WINDOWS: readonly NoAnswerWindow[] = ['sha', 'hail-of-arrows', 'barbarians', 'duel']`, the list to put in the flag to turn the experiment on.
+- Produces: `noAnswerWindowOf(pending: PendingResponse): NoAnswerWindow | null` in `projects/app/src/app/game-board/response-description.ts`, from the pending response's reason (the card's definition id for card effects; `abilityId` `upheaval` or `instigate` for skills). Verify the real ids for Arrows and Barbarians in `mass-attack.ts` callers.
 - Consumes: `FEATURE_FLAGS`, `GameService.submit(action)`, the legal `PassAction`.
 
-- [ ] **Step 1: Write failing tests.** Flag off: a viewer with only a PassAction still sees the dialog open (as today). Flag on, not in a Tutorial lesson: no dialog opens and `submit` is called once with the PassAction. Flag on, a legal `UseConversionAction` present: dialog opens. Flag on, in a Tutorial lesson: dialog opens.
+- [ ] **Step 1: Write failing tests.** Flag `[]`: a viewer with only a PassAction sees the dialog (as today). Flag `BEGINNER_SKIP_WINDOWS`, Sha window: no dialog and `submit` is called once with the PassAction. Same flag, a Coerce, Upheaval or Instigate window: the dialog opens. A legal `UseConversionAction` present: the dialog opens. In a Tutorial lesson: the dialog opens. `noAnswerWindowOf` returns the right name for each of the seven.
 - [ ] **Step 2: Run** the specs; expect FAIL.
-- [ ] **Step 3: Implement.** Add the flag with a comment pointing to `docs/deferrals.md` ("Experiment flags are code constants, not feature toggles"). In `game-board.ts` add a private `skipsWindow(pending)`: flag on, not a Tutorial lesson, and every legal action is a `PassAction`. In the effect at ~553, when it is true submit the Pass once (remember the pending id in a field so a rebuild does not submit twice) and do not open the dialog; keep `openResponseDialog` untouched.
-- [ ] **Step 4: Run** `npx jest projects/app`; expect PASS. Commit `Add an experiment flag to skip response windows with no answer`.
+- [ ] **Step 3: Implement.** Add the flag with a comment pointing to `docs/deferrals.md` ("Experiment flags are code constants, not feature toggles"). In `game-board.ts` add a private `skipsWindow(pending)`: its window name is in the flag's list, not a Tutorial lesson, and every legal action is a `PassAction`. In the effect at ~553, when true, submit the Pass once (remember the pending id so a rebuild does not submit twice) and do not open the dialog; keep `openResponseDialog` untouched.
+- [ ] **Step 4: Run** `npx jest projects/app`; expect PASS. Commit `Add an experiment flag to skip chosen response windows with no answer`.
 
 ### Task 5: Show the revealed card in the Blaze picker (experiment flag)
 
