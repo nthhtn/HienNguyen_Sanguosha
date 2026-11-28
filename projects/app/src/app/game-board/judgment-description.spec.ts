@@ -15,6 +15,8 @@ describe('judgmentDescription', () => {
     expect(describeIt(state)).toMatchObject({
       force: 'Wei',
       judgedSeatName: 'Hing',
+      // Unyielding's verdict is read from the damage source, the seat the cost lands on.
+      affectedSeatName: 'Bo',
       card: card('j', 'club', 5),
       settled: true,
       source: { kind: 'skill', generalId: 'xiahou-dun', generalName: 'Xiahou Dun', abilityName: abilityDisplayName('unyielding') },
@@ -25,7 +27,7 @@ describe('judgmentDescription', () => {
 
   it('a card judgment names the card and the judged seat, in the judged seat’s force', () => {
     const description = describeIt(table(view(cardReader('lightning'), 'seat-1', card('j', 'spade', 5))));
-    expect(description).toMatchObject({ force: 'Shu', judgedSeatName: 'Bo', source: { kind: 'card', cardName: 'Lightning', seatName: 'Bo' } });
+    expect(description).toMatchObject({ force: 'Shu', judgedSeatName: 'Bo', affectedSeatName: 'Bo', source: { kind: 'card', cardName: 'Lightning', seatName: 'Bo' } });
   });
 
   it('a seat that has shown no General is the neutral force', () => {

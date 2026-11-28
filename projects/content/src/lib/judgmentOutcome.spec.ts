@@ -130,7 +130,7 @@ describe('judgmentOutcome: Unyielding', () => {
 
   it('a heart spares the damage source', () => {
     const { outcome: o, effects } = run(table(handOf(3, 'seat-b')), 'heart');
-    expect(o).toMatchObject({ readerId: 'unyielding', key: 'spared', seats: { seat: 'seat-a', owner: 'seat-a', source: 'seat-b' } });
+    expect(o).toMatchObject({ readerId: 'unyielding', key: 'spared', seats: { seat: 'seat-a', owner: 'seat-a', source: 'seat-b', affected: 'seat-b' } });
     expect(kinds(effects)).toEqual(['JudgmentDoneEffect']);
   });
 
@@ -203,7 +203,7 @@ describe('judgmentOutcome: Iron Cavalry', () => {
     const judged = card('j', 'x', suit, 5);
     const red = suit === 'heart' || suit === 'diamond';
     const o = outcome(table(), view(skillReader('iron-cavalry'), 'seat-a', judged, { step }));
-    expect(o).toMatchObject({ readerId: 'iron-cavalry', key: red ? 'unblockable' : 'none', seats: { seat: 'seat-a', owner: 'seat-a', source: null } });
+    expect(o).toMatchObject({ readerId: 'iron-cavalry', key: red ? 'unblockable' : 'none', verdict: red ? 'bad' : 'good', seats: { seat: 'seat-a', owner: 'seat-a', source: null, affected: 'seat-b' } });
     const effects = readSkill(ironCavalry, table(), owner, 'seat-a', judged, { step });
     expect(kinds(effects).includes('AbilityUsedEffect')).toBe(red);
   });
@@ -384,15 +384,15 @@ describe('how a judgment outcome is presented', () => {
     ['eight-trigrams', 'none', 'bad', none],
     ['eight-arrays', 'shan', 'good', none],
     ['eight-arrays', 'none', 'bad', none],
-    ['unyielding', 'discard-or-damage', 'good', none],
-    ['unyielding', 'damage', 'good', { kind: 'damage', amount: 1, subject: 'source' }],
-    ['unyielding', 'spared', 'bad', none],
+    ['unyielding', 'discard-or-damage', 'bad', none],
+    ['unyielding', 'damage', 'bad', { kind: 'damage', amount: 1, subject: 'source' }],
+    ['unyielding', 'spared', 'good', none],
     ['river-goddess', 'again', 'good', none],
     ['river-goddess', 'ends', 'bad', none],
     ['kingdomWars:goddess-luo', 'again', 'good', none],
     ['kingdomWars:goddess-luo', 'ends', 'bad', none],
-    ['iron-cavalry', 'unblockable', 'good', none],
-    ['iron-cavalry', 'none', 'bad', none],
+    ['iron-cavalry', 'unblockable', 'bad', none],
+    ['iron-cavalry', 'none', 'good', none],
     ['lightning-strike', 'damage', 'bad', { kind: 'damage', amount: 2, subject: 'seat' }],
     ['lightning-strike', 'none', 'good', none],
     ['kingdomWars:lightning-strike', 'damage', 'bad', { kind: 'damage', amount: 2, subject: 'seat' }],
@@ -410,7 +410,7 @@ describe('how a judgment outcome is presented', () => {
     ['lament', 'none', 'bad', none],
   ];
 
-  it.each(rows)('%s / %s is %s for the judged seat', (readerId, key, verdict, effect) => {
+  it.each(rows)('%s / %s is %s for the affected seat', (readerId, key, verdict, effect) => {
     expect(judgmentPresentation(readerId, key)).toEqual({ verdict, effect });
   });
 
@@ -444,5 +444,12 @@ describe('judgmentRuleText', () => {
 
   it('gives null for an id that is not an entry, never an inherited value', () => {
     for (const locale of ['en', 'vi']) for (const readerId of ['constructor', '__proto__', 'nope']) expect(judgmentRuleText(readerId, locale)).toBeNull();
+  });
+});
+
+describe('judgmentOutcome: the affected seat', () => {
+  it('is the judged seat for a Delayed Tool, whose holder is the one affected', () => {
+    const o = outcome(table(), view(cardReader('lightning'), 'seat-b', card('j', 'x', 'spade', 5)));
+    expect(o?.seats.affected).toBe('seat-b');
   });
 });

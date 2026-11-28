@@ -80,7 +80,7 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
         @if (d.verdict === 'good' || d.verdict === 'bad') {
           <div class="stamp-wrap">
             <svg class="stamp" [class.good]="d.verdict === 'good'" [class.bad]="d.verdict === 'bad'" [class.show]="stampShown()" viewBox="0 0 64 64" role="img"
-                 [attr.aria-label]="(d.verdict === 'good' ? 'judgment.verdict.good' : 'judgment.verdict.bad') | t: { seat: d.judgedSeatName }">
+                 [attr.aria-label]="(d.verdict === 'good' ? 'judgment.verdict.good' : 'judgment.verdict.bad') | t: { seat: d.affectedSeatName }">
               <circle cx="32" cy="32" r="28" pathLength="1" />
               @if (d.verdict === 'good') {
                 <path d="M18 33 L28 43 L47 21" pathLength="1" />
@@ -88,7 +88,7 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
                 <path d="M21 21 L43 43 M43 21 L21 43" pathLength="1" />
               }
             </svg>
-            <div class="verdict-label" [class.show]="stampShown()">{{ (d.verdict === 'good' ? 'judgment.verdict.good' : 'judgment.verdict.bad') | t: { seat: d.judgedSeatName } }}</div>
+            <div class="verdict-label" [class.show]="stampShown()">{{ (d.verdict === 'good' ? 'judgment.verdict.good' : 'judgment.verdict.bad') | t: { seat: d.affectedSeatName } }}</div>
           </div>
         }
       </div>
@@ -114,7 +114,7 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
       }
 
       @if (d.settled) {
-        <section class="cons" [class.on]="consequenceOn()">
+        <section class="cons" [class.on]="consequenceOn()" [class.bare]="!d.effect || d.effect.kind === 'none'">
           @switch (d.effect?.kind) {
             @case ('damage') {
               @if (hpView(); as hp) {
@@ -256,6 +256,9 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
     @keyframes pop { 30% { transform: scale(1.5) rotate(-8deg); } }
     .dmg { margin-left: 10px; font: var(--mat-sys-title-medium); font-weight: 700; color: var(--mat-sys-error); opacity: 0; transition: opacity 0.3s 0.3s; white-space: nowrap; }
     .cons.on .dmg { opacity: 1; }
+    // A consequence that is only a sentence needs no tall box: the box hugs it and the sentence reads larger.
+    .cons.bare { min-height: 0; padding: 18px 12px; }
+    .cons.bare .line { font: var(--mat-sys-title-medium); }
     .line { margin: 0; font: var(--mat-sys-title-small); text-align: center; opacity: 0; transform: translateY(6px); transition: opacity 0.3s, transform 0.3s; }
     .line.in { opacity: 1; transform: none; }
     /* The phone board (spec 3g): the outcome box is only as tall as its contents, and the stage is tighter.

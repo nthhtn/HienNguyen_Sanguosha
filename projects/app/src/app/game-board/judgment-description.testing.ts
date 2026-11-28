@@ -48,6 +48,7 @@ export const skillDescription = (over: Partial<JudgmentDescription> = {}): Judgm
   force: 'Wei',
   source: { kind: 'skill', generalId: 'xiahou-dun', generalName: 'Xiahou Dun', abilityName: 'Unyielding', skillText: 'After you take damage, judge.' },
   judgedSeatName: 'Hing',
+  affectedSeatName: 'Hing',
   card: seven,
   changes: [],
   settled: true,
