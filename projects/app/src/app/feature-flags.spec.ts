@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
+import { BEGINNER_SKIP_WINDOWS } from './game-board/no-answer-window';
 import { FEATURE_FLAGS, FeatureFlags, featureFlagsFor, offlineOnly, tutorialEnabled } from './feature-flags';
 
 function setup(flags: FeatureFlags) {
@@ -17,12 +18,12 @@ function setup(flags: FeatureFlags) {
 }
 
 describe('feature flags', () => {
-  it('turn the phone board and the Tutorial on in a production build, and keep the test-only features off (the Blaze card is on everywhere)', () => {
-    expect(featureFlagsFor(false)).toEqual({ playOffline: false, playbackSettings: false, phoneBoard: true, tutorial: true, skipNoAnswerWindows: [], showBlazeCard: true });
+  it('turn the phone board and the Tutorial on in a production build, and keep the test-only features off (the Blaze card and the skipped windows are on everywhere)', () => {
+    expect(featureFlagsFor(false)).toEqual({ playOffline: false, playbackSettings: false, phoneBoard: true, tutorial: true, skipNoAnswerWindows: BEGINNER_SKIP_WINDOWS, showBlazeCard: true });
   });
 
   it('are on by default in dev mode', () => {
-    expect(TestBed.inject(FEATURE_FLAGS)).toEqual({ playOffline: true, playbackSettings: true, phoneBoard: true, tutorial: true, skipNoAnswerWindows: [], showBlazeCard: true });
+    expect(TestBed.inject(FEATURE_FLAGS)).toEqual({ playOffline: true, playbackSettings: true, phoneBoard: true, tutorial: true, skipNoAnswerWindows: BEGINNER_SKIP_WINDOWS, showBlazeCard: true });
   });
 
   it('lets offline routes through when offline play is on', async () => {

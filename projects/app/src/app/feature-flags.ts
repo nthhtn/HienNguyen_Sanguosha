@@ -1,7 +1,7 @@
 import { inject, InjectionToken } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { DEV_FEATURES } from './dev/dev-routes';
-import type { NoAnswerWindow } from './game-board/no-answer-window';
+import { BEGINNER_SKIP_WINDOWS, type NoAnswerWindow } from './game-board/no-answer-window';
 
 export interface FeatureFlags {
   // Offline play (Setup and Game against bots on this device).
@@ -15,7 +15,7 @@ export interface FeatureFlags {
   // is on in production while Setup and Play vs Bots are not.
   tutorial: boolean;
   // Beginner experiment: the response windows whose popup is skipped (the app passes for the seat) when it has nothing to answer
-  // with. Empty: every window opens, as before. Put BEGINNER_SKIP_WINDOWS here to try it. A code constant for now: see
+  // with. On for BEGINNER_SKIP_WINDOWS (Sha, Hail of Arrows, Barbarians, Duel); an empty list opens every window, as before. A code constant for now: see
   // docs/deferrals.md, "Experiment flags are code constants, not feature toggles".
   skipNoAnswerWindows: readonly NoAnswerWindow[];
   // The Blaze card the target showed is also shown in the "discard a card of the same suit" popup. On everywhere; kept as a switch
@@ -25,7 +25,7 @@ export interface FeatureFlags {
 
 // Test-only features follow DEV_FEATURES (file-replaced in production builds); the phone board and the Tutorial are on in both.
 export function featureFlagsFor(dev: boolean): FeatureFlags {
-  return { playOffline: dev, playbackSettings: dev, phoneBoard: true, tutorial: true, skipNoAnswerWindows: [], showBlazeCard: true };
+  return { playOffline: dev, playbackSettings: dev, phoneBoard: true, tutorial: true, skipNoAnswerWindows: BEGINNER_SKIP_WINDOWS, showBlazeCard: true };
 }
 
 export const FEATURE_FLAGS = new InjectionToken<FeatureFlags>('FEATURE_FLAGS', {
