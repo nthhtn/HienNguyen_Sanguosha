@@ -15,6 +15,9 @@ import { cardIdDisplayName } from '../labels';
 import { spriteDurationMs } from './sprite-plan';
 import { ScreenWakeLock } from '../screen-wake-lock.service';
 import { GameBoard } from './game-board';
+import { FEATURE_FLAGS, featureFlagsFor } from '../feature-flags';
+import { BEGINNER_SKIP_WINDOWS, NoAnswerWindow } from './no-answer-window';
+import { ResponseDialog } from './response-dialog';
 import { BattlefieldBackgrounds } from '../battlefield-background.service';
 import { GameService } from '../game.service';
 import { PlaybackSpeed } from '../playback-speed.service';
@@ -1731,3 +1734,56 @@ describe('GameBoard battle playback', () => {
   });
 });
 
+
+describe('GameBoard: skipping response windows with no answer (experiment)', () => {
+  let gameService: GameService;
+  const used = { as: 'sha', colour: 'black', physical: [{ instanceId: 'sha-1', definitionId: 'sha', suit: 'spade', rank: 7 }] };
+  const window = (as: string, allowed: string[]) =>
+    ({ id: `w-${as}`, respondingSeatId: 'seat-0', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: allowed, reason: { kind: 'card-effect', card: { ...used, as }, userSeatId: 'seat-1' }, context: { effect: { kind: 'noop' } } }) as never;
+  const pass = { kind: 'PassAction', seatId: 'seat-0', pendingResponseId: 'w-sha' } as Action;
+
+  const setup = async (skip: readonly NoAnswerWindow[], pending: unknown) => {
+    await TestBed.configureTestingModule({
+      imports: [GameBoard],
+      providers: [provideRouter([{ path: 'setup', children: [] }]), { provide: FEATURE_FLAGS, useValue: { ...featureFlagsFor(true), skipNoAnswerWindows: skip } }],
+    }).compileComponents();
+    gameService = TestBed.inject(GameService);
+    TestBed.inject(PlaybackSpeed).speed.set('instant');
+    gameService.startGame(2, 1, 'vs-bots');
+    const owed = signal<Action[]>([pass]);
+    const online = gameService as unknown as { clockWaitsForPlayback: boolean; legalActions: unknown; _state: { update(f: (s: GameState) => GameState): void } };
+    online.clockWaitsForPlayback = false;
+    online.legalActions = owed;
+    const submit = jest.spyOn(gameService, 'submit').mockImplementation(() => undefined);
+    const fixture = TestBed.createComponent(GameBoard);
+    fixture.detectChanges();
+    online._state.update((s) => ({ ...s, pendingResponse: pending as never }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    return { fixture, submit, owed };
+  };
+  const dialogs = () => TestBed.inject(MatDialog).openDialogs.filter((d) => d.componentInstance instanceof ResponseDialog);
+
+  it('opens the popup as before while the list is empty', async () => {
+    const { submit } = await setup([], window('sha', ['shan']));
+    expect(dialogs()).toHaveLength(1);
+    expect(submit).not.toHaveBeenCalled();
+  });
+
+  it('passes for the seat, once, and opens no popup for a listed window it cannot answer', async () => {
+    const { fixture, submit } = await setup(BEGINNER_SKIP_WINDOWS, window('sha', ['shan']));
+    expect(dialogs()).toHaveLength(0);
+    expect(submit).toHaveBeenCalledTimes(1);
+    expect(submit).toHaveBeenCalledWith(pass);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(submit).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the popup for a window the list leaves out (Coerce)', async () => {
+    const { submit } = await setup(BEGINNER_SKIP_WINDOWS, window('coerce', ['sha']));
+    expect(dialogs()).toHaveLength(1);
+    expect(submit).not.toHaveBeenCalled();
+  });
+});

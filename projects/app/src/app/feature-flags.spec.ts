@@ -18,33 +18,33 @@ function setup(flags: FeatureFlags) {
 
 describe('feature flags', () => {
   it('turn the phone board and the Tutorial on in a production build, and keep the test-only features off', () => {
-    expect(featureFlagsFor(false)).toEqual({ playOffline: false, playbackSettings: false, phoneBoard: true, tutorial: true });
+    expect(featureFlagsFor(false)).toEqual({ playOffline: false, playbackSettings: false, phoneBoard: true, tutorial: true, skipNoAnswerWindows: [] });
   });
 
   it('are on by default in dev mode', () => {
-    expect(TestBed.inject(FEATURE_FLAGS)).toEqual({ playOffline: true, playbackSettings: true, phoneBoard: true, tutorial: true });
+    expect(TestBed.inject(FEATURE_FLAGS)).toEqual({ playOffline: true, playbackSettings: true, phoneBoard: true, tutorial: true, skipNoAnswerWindows: [] });
   });
 
   it('lets offline routes through when offline play is on', async () => {
-    const router = setup({ playOffline: true, playbackSettings: true, phoneBoard: true, tutorial: true });
+    const router = setup({ playOffline: true, playbackSettings: true, phoneBoard: true, tutorial: true, skipNoAnswerWindows: [] });
     await router.navigateByUrl('/setup');
     expect(router.url).toBe('/setup');
   });
 
   it('redirects offline routes to the online page when offline play is off', async () => {
-    const router = setup({ playOffline: false, playbackSettings: false, phoneBoard: false, tutorial: false });
+    const router = setup({ playOffline: false, playbackSettings: false, phoneBoard: false, tutorial: false, skipNoAnswerWindows: [] });
     await router.navigateByUrl('/setup');
     expect(router.url).toBe('/rooms');
   });
 
   it('lets the Tutorial route through when offline play is off, as it is in production', async () => {
-    const router = setup({ playOffline: false, playbackSettings: false, phoneBoard: true, tutorial: true });
+    const router = setup({ playOffline: false, playbackSettings: false, phoneBoard: true, tutorial: true, skipNoAnswerWindows: [] });
     await router.navigateByUrl('/tutorial');
     expect(router.url).toBe('/tutorial');
   });
 
   it('redirects the Tutorial route to the online page when the Tutorial is off', async () => {
-    const router = setup({ playOffline: true, playbackSettings: true, phoneBoard: true, tutorial: false });
+    const router = setup({ playOffline: true, playbackSettings: true, phoneBoard: true, tutorial: false, skipNoAnswerWindows: [] });
     await router.navigateByUrl('/tutorial');
     expect(router.url).toBe('/rooms');
   });

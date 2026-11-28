@@ -38,6 +38,8 @@ import { actionHistory } from './action-history';
 import { DiscardDialog, DiscardDialogData } from './discard-dialog';
 import { ResponseDialog, ResponseDialogData, ResponseOption } from './response-dialog';
 import { describeResponse, startsOnNoResponse } from './response-description';
+import { FEATURE_FLAGS } from '../feature-flags';
+import { skipsNoAnswerWindow } from './no-answer-window';
 import { ChoiceDialog, ChoiceDialogData } from './choice-dialog';
 import { AskDialog, AskDialogData } from './ask-dialog';
 import { SelectionDialog, SelectionDialogData } from './selection-dialog';
@@ -336,6 +338,7 @@ export class GameBoard {
   private readonly i18n = inject(I18n);
   private readonly dock = inject(DecisionDock);
   private readonly injector = inject(Injector);
+  private readonly flags = inject(FEATURE_FLAGS);
   protected readonly director = inject(PlaybackDirector);
   protected readonly layout = inject(Layout);
   // Your own seat's zoom, shared with the other seats (Layout.seatScale, which shrinks with more players) on phone and
@@ -411,8 +414,22 @@ export class GameBoard {
     const pending = visible?.pendingResponse;
     if (!visible || !pending || pending.respondingSeatId !== this.viewerSeatId()) return null;
     const legal = this.legalActions();
+    // A window the beginner experiment skips has no popup: autoPass answers it.
+    if (this.autoPass()) return null;
     return legal.some((a) => a.kind === 'PassAction' || a.kind === 'RespondAction') ? pending.id : null;
   });
+
+  // The Pass the app submits in place of opening the popup of a window the viewer cannot answer, when the experiment lists
+  // that window (a flag that ships empty); null otherwise. Presentation only: the engine still opens the window and
+  // logs the pass as an ordinary one.
+  private readonly autoPass = computed(() => {
+    const pending = this.visibleState()?.pendingResponse;
+    if (!pending || pending.respondingSeatId !== this.viewerSeatId()) return null;
+    const action = skipsNoAnswerWindow(pending, this.legalActions(), this.flags.skipNoAnswerWindows, this.gameService.tutorialActive());
+    return action ? { pendingId: pending.id, action } : null;
+  });
+  // The window already passed for, so a rebuild or a language change never passes twice.
+  private autoPassedFor: string | null = null;
 
   // The turn whose Start window the viewer owes a Confirm for, while the board is on screen and the
   // engine offers it: the popup that picks which hidden Generals to reveal.
@@ -548,6 +565,18 @@ export class GameBoard {
         // Timed out (or otherwise settled): the open dialog has nothing left to ask.
         if (count === 0) this.closeDialog(this.discardDialog);
         else this.openDiscardDialog(count);
+      });
+    });
+    effect(() => {
+      const due = this.autoPass();
+      untracked(() => {
+        if (!due) {
+          this.autoPassedFor = null;
+          return;
+        }
+        if (this.autoPassedFor === due.pendingId) return;
+        this.autoPassedFor = due.pendingId;
+        this.submit(due.action);
       });
     });
     effect(() => {
