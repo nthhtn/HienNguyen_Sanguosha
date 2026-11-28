@@ -60,4 +60,19 @@ describe('ActionHistoryPanel', () => {
     await fixture.whenStable();
     expect(dialog.querySelector('.entry')!.textContent).toContain('seat-1 was eliminated');
   });
+
+  it('opens the info of a line’s card beside the list when it is clicked', async () => {
+    const { fixture, el } = render(history);
+    (el.querySelector('button.latest') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const dialog = overlay().querySelector('app-action-history-dialog')!;
+    expect(dialog.querySelectorAll('button.entry-card')).toHaveLength(1);
+    expect(dialog.querySelector('app-card-info-pane')).toBeNull();
+    (dialog.querySelector('button.entry-card') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(dialog.querySelector('app-card-info-pane')!.textContent).toContain('Slash');
+  });
 });

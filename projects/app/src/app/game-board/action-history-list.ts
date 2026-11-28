@@ -1,4 +1,4 @@
-import { Component, inject, input } from '@angular/core';
+import { Component, inject, input, output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CardInstance } from 'engine';
 import { cardIdDisplayName } from '../labels';
@@ -17,12 +17,19 @@ import { TPipe } from '../i18n/t.pipe';
       @for (entry of history(); track $index) {
         @if (entry.kind === 'action') {
           <li class="entry">
-            @if (entry.card; as card) {
-              <app-card-art size="tiny" [cropped]="true" [id]="card.definitionId" [label]="name(card)" />
+            @if (selectable() && entry.card; as card) {
+              <button type="button" class="entry-card" [class.selected]="card.instanceId === selectedId()" [attr.aria-pressed]="card.instanceId === selectedId()" (click)="cardSelected.emit(card)">
+                <app-card-art size="tiny" [cropped]="true" [id]="card.definitionId" [label]="name(card)" />
+                <span class="text" [class.force-status]="!!entry.force" [attr.data-force]="entry.force ?? null">{{ entry.text }}</span>
+              </button>
             } @else {
-              <span class="no-card" aria-hidden="true"></span>
+              @if (entry.card; as card) {
+                <app-card-art size="tiny" [cropped]="true" [id]="card.definitionId" [label]="name(card)" />
+              } @else {
+                <span class="no-card" aria-hidden="true"></span>
+              }
+              <span class="text" [class.force-status]="!!entry.force" [attr.data-force]="entry.force ?? null">{{ entry.text }}</span>
             }
-            <span class="text" [class.force-status]="!!entry.force" [attr.data-force]="entry.force ?? null">{{ entry.text }}</span>
           </li>
         } @else {
           <li class="turn">
@@ -39,6 +46,10 @@ import { TPipe } from '../i18n/t.pipe';
     .history { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
     .entry { display: flex; align-items: center; gap: 10px; font: var(--mat-sys-body-medium); }
     .no-card { flex: none; width: 26px; }
+    .entry-card { display: flex; align-items: center; gap: 10px; width: 100%; padding: 2px 4px; border: 0; border-radius: 6px; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+    .entry-card:hover { background: var(--mat-sys-surface-container-high); }
+    .entry-card:focus-visible { outline: 3px solid var(--mat-sys-primary); outline-offset: 2px; }
+    .entry-card.selected { background: var(--mat-sys-primary-container); }
     .turn {
       display: flex; align-items: center; gap: 8px; margin-top: 6px;
       padding: 6px 0; border-top: 1px dashed var(--mat-sys-outline); border-bottom: 1px dashed var(--mat-sys-outline);
@@ -51,6 +62,10 @@ import { TPipe } from '../i18n/t.pipe';
 export class ActionHistoryList {
   // Most recent first (action-history.ts).
   readonly history = input.required<ActionHistoryEntry[]>();
+  // The popup lets a line with a card be chosen to show the card's info; the board panel does not.
+  readonly selectable = input(false);
+  readonly selectedId = input<string | null>(null);
+  readonly cardSelected = output<CardInstance>();
   private readonly i18n = inject(I18n);
   protected readonly name = (card: CardInstance) => cardIdDisplayName(card.definitionId, this.i18n.translator);
 }

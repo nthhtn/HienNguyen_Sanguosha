@@ -1,5 +1,6 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { CardInstance } from 'engine';
 import { PlayingCard } from './playing-card';
 import { DiscardHistoryEntry } from './discard-history';
 import { TPipe } from '../i18n/t.pipe';
@@ -16,7 +17,13 @@ import { TPipe } from '../i18n/t.pipe';
       @for (entry of history(); track $index) {
         @if (entry.kind === 'card') {
           <li class="entry" [class.gone]="!entry.inPile" [attr.data-card-id]="entry.card.instanceId">
-            <app-playing-card [card]="entry.card" />
+            @if (selectable()) {
+              <button type="button" class="card" [class.selected]="entry.card.instanceId === selectedId()" [attr.aria-pressed]="entry.card.instanceId === selectedId()" (click)="cardSelected.emit(entry.card)">
+                <app-playing-card [card]="entry.card" />
+              </button>
+            } @else {
+              <app-playing-card [card]="entry.card" />
+            }
           </li>
         } @else {
           <li class="reshuffle">
@@ -32,6 +39,9 @@ import { TPipe } from '../i18n/t.pipe';
     .history { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 12px; }
     .entry { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2px; }
     .entry.gone { opacity: 0.5; }
+    .card { padding: 2px; border: 2px solid transparent; border-radius: 8px; background: none; color: inherit; cursor: pointer; }
+    .card:focus-visible { outline: 3px solid var(--mat-sys-primary); outline-offset: 2px; }
+    .card.selected { border-color: var(--mat-sys-primary); background: var(--mat-sys-primary-container); }
     .reshuffle {
       grid-column: 1 / -1; display: flex; align-items: center; gap: 8px;
       padding: 6px 0; border-top: 1px dashed var(--mat-sys-outline); border-bottom: 1px dashed var(--mat-sys-outline);
@@ -42,6 +52,10 @@ import { TPipe } from '../i18n/t.pipe';
 export class DiscardHistoryList {
   // Most recent first (discard-history.ts).
   readonly history = input.required<DiscardHistoryEntry[]>();
+  // The popup lets a card be chosen to show its info; the board panel does not.
+  readonly selectable = input(false);
+  readonly selectedId = input<string | null>(null);
+  readonly cardSelected = output<CardInstance>();
   protected readonly discardCount = computed(() => this.history().filter((e) => e.kind === 'card').length);
   protected readonly inPileCount = computed(() => this.history().filter((e) => e.kind === 'card' && e.inPile).length);
 }

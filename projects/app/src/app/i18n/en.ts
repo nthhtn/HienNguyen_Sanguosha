@@ -478,6 +478,8 @@ export const en = {
   'card.subtype.treasure': 'Treasure',
   'card.range': 'Range {n}',
   'card.distance': 'Distance {n}',
+  'card.info.tab': 'Card Info',
+  'card.info.close': 'Close Card Info',
   'card.noText': 'No rules text available yet.',
   'general.noSkills': 'No skills listed.',
   'avatar.hidden': 'Hidden',

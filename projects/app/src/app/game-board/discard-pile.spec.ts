@@ -63,6 +63,28 @@ describe('DiscardPile', () => {
     expect(dialog.querySelector('[data-card-id="d2"] app-playing-card .name')!.textContent).toBe('Peach');
   });
 
+  it('opens a card’s info beside the list when it is clicked, and closes it when it is clicked again', async () => {
+    const { fixture, el } = render([sha], [{ kind: 'card', card: sha, inPile: true }, { kind: 'card', card: peach, inPile: true }]);
+    const dialog = await openDialog(fixture, el);
+    expect(dialog.querySelector('app-card-info-pane')).toBeNull();
+    (dialog.querySelector('[data-card-id="d2"] button.card') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const pane = dialog.querySelector('app-card-info-pane')!;
+    expect(pane.textContent).toContain('Peach');
+    // This window is narrow: the info is a tab, so go back to the list tab to choose the card again.
+    (dialog.querySelector('[role="tab"]') as HTMLElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    (dialog.querySelector('[data-card-id="d2"] button.card') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(dialog.querySelector('app-card-info-pane')).toBeNull();
+  });
+
   it('keeps the open history up to date as more cards are discarded', async () => {
     const { fixture, el } = render([sha], [{ kind: 'card', card: sha, inPile: true }]);
     const dialog = await openDialog(fixture, el);
