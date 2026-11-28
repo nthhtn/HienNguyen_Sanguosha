@@ -1,5 +1,5 @@
 import { Action, CardInstance, PendingResponse, usedCardOf } from 'engine';
-import { BEGINNER_SKIP_WINDOWS, NoAnswerWindow, noAnswerWindowOf, skipsNoAnswerWindow } from './no-answer-window';
+import { AUTO_PASS_WINDOWS, AutoPassWindow, autoPassWindowOf, autoPassAction } from './auto-pass-window';
 
 const card = (id: string): CardInstance => ({ instanceId: `${id}-1`, definitionId: id, suit: 'spade', rank: 7 });
 const used = (as: string) => ({ ...usedCardOf(card(as)), as });
@@ -23,8 +23,8 @@ const pass: Action = { kind: 'PassAction', seatId: 'seat-0', pendingResponseId: 
 const respond: Action = { kind: 'RespondAction', seatId: 'seat-0', pendingResponseId: 'w1', cardInstanceId: 'shan-1' } as Action;
 const convert = { kind: 'UseConversionAction' } as unknown as Action;
 
-describe('noAnswerWindowOf', () => {
-  it.each<[string, PendingResponse, NoAnswerWindow]>([
+describe('autoPassWindowOf', () => {
+  it.each<[string, PendingResponse, AutoPassWindow]>([
     ['sha', cardWindow('sha', ['shan']), 'sha'],
     ['hail-of-arrows', cardWindow('hail-of-arrows', ['shan']), 'hail-of-arrows'],
     ['barbarians', cardWindow('barbarians', ['sha']), 'barbarians'],
@@ -36,46 +36,46 @@ describe('noAnswerWindowOf', () => {
     ['kingdom wars upheaval', skillWindow('kingdomWars:upheaval'), 'upheaval'],
     ['instigate', skillWindow('instigate'), 'instigate'],
   ])('names the %s window', (_name, pending, expected) => {
-    expect(noAnswerWindowOf(pending)).toBe(expected);
+    expect(autoPassWindowOf(pending)).toBe(expected);
   });
 
   it('has no name for a Wuxie window or another skill', () => {
-    expect(noAnswerWindowOf({ ...cardWindow('wuxie', ['wuxie']), reason: { kind: 'wuxie' } } as unknown as PendingResponse)).toBeNull();
-    expect(noAnswerWindowOf(skillWindow('bewilder'))).toBeNull();
+    expect(autoPassWindowOf({ ...cardWindow('wuxie', ['wuxie']), reason: { kind: 'wuxie' } } as unknown as PendingResponse)).toBeNull();
+    expect(autoPassWindowOf(skillWindow('bewilder'))).toBeNull();
   });
 });
 
-describe('skipsNoAnswerWindow', () => {
+describe('autoPassAction', () => {
   it('returns the Pass to submit for a listed window with only Pass legal', () => {
-    expect(skipsNoAnswerWindow(cardWindow('sha', ['shan']), [pass], BEGINNER_SKIP_WINDOWS, false)).toBe(pass);
-    expect(skipsNoAnswerWindow(cardWindow('duel', ['sha']), [pass], BEGINNER_SKIP_WINDOWS, false)).toBe(pass);
+    expect(autoPassAction(cardWindow('sha', ['shan']), [pass], AUTO_PASS_WINDOWS, false)).toBe(pass);
+    expect(autoPassAction(cardWindow('duel', ['sha']), [pass], AUTO_PASS_WINDOWS, false)).toBe(pass);
   });
 
   it('skips nothing while the list is empty', () => {
-    expect(skipsNoAnswerWindow(cardWindow('sha', ['shan']), [pass], [], false)).toBeNull();
+    expect(autoPassAction(cardWindow('sha', ['shan']), [pass], [], false)).toBeNull();
   });
 
   it('skips a real Duel window, which has no reason', () => {
-    expect(skipsNoAnswerWindow(duelStep(), [pass], BEGINNER_SKIP_WINDOWS, false)).toBe(pass);
+    expect(autoPassAction(duelStep(), [pass], AUTO_PASS_WINDOWS, false)).toBe(pass);
   });
 
   it('keeps the popup for Coerce, Upheaval and Instigate, which work as notices', () => {
-    expect(BEGINNER_SKIP_WINDOWS).toEqual(['sha', 'hail-of-arrows', 'barbarians', 'duel']);
-    expect(skipsNoAnswerWindow(cardWindow('coerce', ['sha']), [pass], BEGINNER_SKIP_WINDOWS, false)).toBeNull();
-    expect(skipsNoAnswerWindow(skillWindow('upheaval'), [pass], BEGINNER_SKIP_WINDOWS, false)).toBeNull();
-    expect(skipsNoAnswerWindow(skillWindow('instigate'), [pass], BEGINNER_SKIP_WINDOWS, false)).toBeNull();
+    expect(AUTO_PASS_WINDOWS).toEqual(['sha', 'hail-of-arrows', 'barbarians', 'duel']);
+    expect(autoPassAction(cardWindow('coerce', ['sha']), [pass], AUTO_PASS_WINDOWS, false)).toBeNull();
+    expect(autoPassAction(skillWindow('upheaval'), [pass], AUTO_PASS_WINDOWS, false)).toBeNull();
+    expect(autoPassAction(skillWindow('instigate'), [pass], AUTO_PASS_WINDOWS, false)).toBeNull();
   });
 
   it('keeps the popup when the seat can answer: a card to play or a conversion to use', () => {
-    expect(skipsNoAnswerWindow(cardWindow('sha', ['shan']), [pass, respond], BEGINNER_SKIP_WINDOWS, false)).toBeNull();
-    expect(skipsNoAnswerWindow(cardWindow('sha', ['shan']), [pass, convert], BEGINNER_SKIP_WINDOWS, false)).toBeNull();
+    expect(autoPassAction(cardWindow('sha', ['shan']), [pass, respond], AUTO_PASS_WINDOWS, false)).toBeNull();
+    expect(autoPassAction(cardWindow('sha', ['shan']), [pass, convert], AUTO_PASS_WINDOWS, false)).toBeNull();
   });
 
   it('never skips in a Tutorial lesson', () => {
-    expect(skipsNoAnswerWindow(cardWindow('sha', ['shan']), [pass], BEGINNER_SKIP_WINDOWS, true)).toBeNull();
+    expect(autoPassAction(cardWindow('sha', ['shan']), [pass], AUTO_PASS_WINDOWS, true)).toBeNull();
   });
 
   it('skips nothing when Pass is not offered', () => {
-    expect(skipsNoAnswerWindow(cardWindow('sha', ['shan']), [], BEGINNER_SKIP_WINDOWS, false)).toBeNull();
+    expect(autoPassAction(cardWindow('sha', ['shan']), [], AUTO_PASS_WINDOWS, false)).toBeNull();
   });
 });

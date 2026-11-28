@@ -16,7 +16,7 @@ import { spriteDurationMs } from './sprite-plan';
 import { ScreenWakeLock } from '../screen-wake-lock.service';
 import { GameBoard } from './game-board';
 import { FEATURE_FLAGS, featureFlagsFor } from '../feature-flags';
-import { BEGINNER_SKIP_WINDOWS, NoAnswerWindow } from './no-answer-window';
+import { AUTO_PASS_WINDOWS, AutoPassWindow } from './auto-pass-window';
 import { ResponseDialog } from './response-dialog';
 import { BattlefieldBackgrounds } from '../battlefield-background.service';
 import { GameService } from '../game.service';
@@ -1742,10 +1742,10 @@ describe('GameBoard: skipping response windows with no answer (experiment)', () 
     ({ id: `w-${as}`, respondingSeatId: 'seat-0', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: allowed, reason: { kind: 'card-effect', card: { ...used, as }, userSeatId: 'seat-1' }, context: { effect: { kind: 'noop' } } }) as never;
   const pass = { kind: 'PassAction', seatId: 'seat-0', pendingResponseId: 'w-sha' } as Action;
 
-  const setup = async (skip: readonly NoAnswerWindow[], pending: unknown) => {
+  const setup = async (skip: readonly AutoPassWindow[], pending: unknown) => {
     await TestBed.configureTestingModule({
       imports: [GameBoard],
-      providers: [provideRouter([{ path: 'setup', children: [] }]), { provide: FEATURE_FLAGS, useValue: { ...featureFlagsFor(true), skipNoAnswerWindows: skip } }],
+      providers: [provideRouter([{ path: 'setup', children: [] }]), { provide: FEATURE_FLAGS, useValue: { ...featureFlagsFor(true), autoPassWindows: skip } }],
     }).compileComponents();
     gameService = TestBed.inject(GameService);
     TestBed.inject(PlaybackSpeed).speed.set('instant');
@@ -1772,7 +1772,7 @@ describe('GameBoard: skipping response windows with no answer (experiment)', () 
   });
 
   it('passes for the seat, once, and opens no popup for a listed window it cannot answer', async () => {
-    const { fixture, submit } = await setup(BEGINNER_SKIP_WINDOWS, window('sha', ['shan']));
+    const { fixture, submit } = await setup(AUTO_PASS_WINDOWS, window('sha', ['shan']));
     expect(dialogs()).toHaveLength(0);
     expect(submit).toHaveBeenCalledTimes(1);
     expect(submit).toHaveBeenCalledWith(pass);
@@ -1782,7 +1782,7 @@ describe('GameBoard: skipping response windows with no answer (experiment)', () 
   });
 
   it('keeps the popup for a window the list leaves out (Coerce)', async () => {
-    const { submit } = await setup(BEGINNER_SKIP_WINDOWS, window('coerce', ['sha']));
+    const { submit } = await setup(AUTO_PASS_WINDOWS, window('coerce', ['sha']));
     expect(dialogs()).toHaveLength(1);
     expect(submit).not.toHaveBeenCalled();
   });

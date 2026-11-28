@@ -39,7 +39,7 @@ import { DiscardDialog, DiscardDialogData } from './discard-dialog';
 import { ResponseDialog, ResponseDialogData, ResponseOption } from './response-dialog';
 import { describeResponse, startsOnNoResponse } from './response-description';
 import { FEATURE_FLAGS } from '../feature-flags';
-import { skipsNoAnswerWindow } from './no-answer-window';
+import { autoPassAction } from './auto-pass-window';
 import { blazeShownCard } from './blaze-shown';
 import { ChoiceDialog, ChoiceDialogData } from './choice-dialog';
 import { AskDialog, AskDialogData } from './ask-dialog';
@@ -426,7 +426,7 @@ export class GameBoard {
   private readonly autoPass = computed(() => {
     const pending = this.visibleState()?.pendingResponse;
     if (!pending || pending.respondingSeatId !== this.viewerSeatId()) return null;
-    const action = skipsNoAnswerWindow(pending, this.legalActions(), this.flags.skipNoAnswerWindows, this.gameService.tutorialActive());
+    const action = autoPassAction(pending, this.legalActions(), this.flags.autoPassWindows, this.gameService.tutorialActive());
     return action ? { pendingId: pending.id, action } : null;
   });
   // The window already passed for, so a rebuild or a language change never passes twice.
