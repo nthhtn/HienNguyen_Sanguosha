@@ -346,3 +346,13 @@ From the Resolution Notice, picker and Judgment work (PR #62, 2026-11-09). The d
 - **Revisit when.**
   - Feature toggles are designed.
   - Then move the experiment flags onto them, and either turn the experiments on or delete their code.
+
+### Beginner-friendly changes: only the Lightning Judgment was looked at
+
+- **What is missing.**
+  - In the browser, only the Lightning Judgment preview (`/preview/choice-judgment`) was opened: It renders, with the new 5 s clock.
+  - Not looked at by eye: The Iron Cavalry and Unyielding verdict stamps (affected seat), the tight outcome box for "no effect" outcomes, the new Vietnamese outcome lines, the Harvest notice length, Goddess Luo's 8 s asks, and both experiment flags switched on (skipped windows, the Blaze card in the picker).
+- **Why it waits.**
+  - Reaching those windows needs staged scenarios that do not exist yet (no preview for Iron Cavalry, Capture "spared" or the Blaze picker).
+- **Revisit when.**
+  - Before the experiment flags are turned on, or the next time those windows are opened in a visible browser.
