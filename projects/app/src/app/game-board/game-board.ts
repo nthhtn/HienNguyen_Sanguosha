@@ -11,7 +11,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Action, CardInstance, ChooseGeneralsAction, Seat, describeDecision, discardOwed, isSeatDying } from 'engine';
+import { Action, CardInstance, ChooseGeneralsAction, GameState, Seat, describeDecision, discardOwed, isSeatDying } from 'engine';
 
 type DiscardCardAction = Extract<Action, { kind: 'DiscardCardAction' }>;
 import { finalSeatViews } from 'protocol';
@@ -40,6 +40,7 @@ import { ResponseDialog, ResponseDialogData, ResponseOption } from './response-d
 import { describeResponse, startsOnNoResponse } from './response-description';
 import { FEATURE_FLAGS } from '../feature-flags';
 import { skipsNoAnswerWindow } from './no-answer-window';
+import { blazeShownCard } from './blaze-shown';
 import { ChoiceDialog, ChoiceDialogData } from './choice-dialog';
 import { AskDialog, AskDialogData } from './ask-dialog';
 import { SelectionDialog, SelectionDialogData } from './selection-dialog';
@@ -1045,7 +1046,7 @@ export class GameBoard {
     if (!description) return;
     this.selectionDialogFor = selectionId;
     const ref = openForceDialog<SelectionDialog, SelectionDialogData, Action>(this.dialog, SelectionDialog, this.viewerForce(), {
-      data: { description, pickedChanged: (action) => this.timer.setTimeoutChoice([action]) },
+      data: { description, pickedChanged: (action) => this.timer.setTimeoutChoice([action]), shown: this.blazeShown(visible) },
       width: 'min(92vw, 640px)',
       disableClose: true,
     });
@@ -1055,6 +1056,14 @@ export class GameBoard {
       this.selectionDialog = null;
       if (action) this.submit(action);
     });
+  }
+
+  // The Blaze card the target showed, with its caption, when the experiment is on and the selection is Blaze's discard.
+  private blazeShown(visible: GameState): SelectionDialogData['shown'] {
+    if (!this.flags.showBlazeCard) return undefined;
+    const found = blazeShownCard(visible);
+    if (!found) return undefined;
+    return { card: found.card, caption: this.i18n.translator('selection.blazeShown', { seat: seatName(visible.players, found.seatId, this.i18n.translator) }) };
   }
 
   // Opens the Arrange dialog for one pending arrangement; it closes with the

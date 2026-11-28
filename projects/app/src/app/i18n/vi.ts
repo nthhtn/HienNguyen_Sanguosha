@@ -68,6 +68,7 @@ export const vi: Messages = {
   'selection.useAs.one': 'Chọn một lá bài để dùng làm {card}',
   'selection.useAs.other': 'Chọn {count} lá bài trên tay để dùng làm {card}',
   'selection.anyCard': 'lá bài',
+  'selection.blazeShown': '{seat} đã lật lá bài này',
   'selection.play': 'Chọn {what} để đánh',
   'selection.play.at': 'Chọn {what} để đánh vào {seat}',
   'selection.targets.one': 'Chọn thêm {count} mục tiêu',
