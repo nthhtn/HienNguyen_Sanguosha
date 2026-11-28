@@ -42,6 +42,7 @@ export type BoardGame = Pick<
   | 'clearError'
   | 'clockWaitsForPlayback'
   | 'lastMoveStart'
+  | 'tutorialActive'
 >;
 
 // The running clock, moved onto this device's time.
@@ -128,6 +129,8 @@ export class RemoteGameService implements BoardGame {
   readonly clockWaitsForPlayback: boolean = false;
   // There is no Pass and Play gate online: playback never restarts from an earlier move.
   readonly lastMoveStart: Signal<GameState | null> = signal<GameState | null>(null).asReadonly();
+  // There is no Tutorial online: the board reads this for every response window.
+  readonly tutorialActive: Signal<boolean> = signal(false).asReadonly();
   // The Tutorial refuses nothing online, so no window ever needs to open again.
   readonly refusals: Signal<number> = signal(0).asReadonly();
 

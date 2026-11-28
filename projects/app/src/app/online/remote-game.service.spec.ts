@@ -21,6 +21,10 @@ describe('RemoteGameService', () => {
     socket.serverOpens();
   });
 
+  it('is never a Tutorial: the board reads tutorialActive from it for every response window', () => {
+    expect(game.tutorialActive()).toBe(false);
+  });
+
   it('has no game until one arrives', () => {
     socket.serverSends(welcome(ROOM));
     expect(game.state()).toBeNull();

@@ -9,6 +9,9 @@ const cardWindow = (as: string, allowed: string[]): PendingResponse =>
     reason: { kind: 'card-effect', card: used(as), userSeatId: 'seat-1' },
     context: { effect: { kind: 'DamageEffect' } },
   }) as unknown as PendingResponse;
+// A real Duel window: it names its card by sourceCard and carries no reason (content/src/lib/cards/duel.ts).
+const duelStep = (): PendingResponse =>
+  ({ id: 'duel-response-d1', respondingSeatId: 'seat-0', allowedActionKinds: ['RespondAction', 'PassAction'], announcePass: true, allowedCardIds: ['sha'], sourceCard: { instanceId: 'd1', definitionId: 'duel' }, context: { effect: { kind: 'DamageEffect' } } }) as unknown as PendingResponse;
 const skillWindow = (abilityId: string): PendingResponse =>
   ({
     id: 'w2', respondingSeatId: 'seat-0', allowedActionKinds: ['RespondAction', 'PassAction'], allowedCardIds: ['sha'],
@@ -26,6 +29,8 @@ describe('noAnswerWindowOf', () => {
     ['hail-of-arrows', cardWindow('hail-of-arrows', ['shan']), 'hail-of-arrows'],
     ['barbarians', cardWindow('barbarians', ['sha']), 'barbarians'],
     ['duel', cardWindow('duel', ['sha']), 'duel'],
+    ['a real duel window with no reason', duelStep(), 'duel'],
+    ['kingdom wars descend into chaos', skillWindow('kingdomWars:descend-into-chaos'), 'upheaval'],
     ['coerce', cardWindow('coerce', ['sha']), 'coerce'],
     ['upheaval', skillWindow('upheaval'), 'upheaval'],
     ['kingdom wars upheaval', skillWindow('kingdomWars:upheaval'), 'upheaval'],
@@ -48,6 +53,10 @@ describe('skipsNoAnswerWindow', () => {
 
   it('skips nothing while the list is empty', () => {
     expect(skipsNoAnswerWindow(cardWindow('sha', ['shan']), [pass], [], false)).toBeNull();
+  });
+
+  it('skips a real Duel window, which has no reason', () => {
+    expect(skipsNoAnswerWindow(duelStep(), [pass], BEGINNER_SKIP_WINDOWS, false)).toBe(pass);
   });
 
   it('keeps the popup for Coerce, Upheaval and Instigate, which work as notices', () => {

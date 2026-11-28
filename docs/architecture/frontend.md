@@ -318,7 +318,7 @@ logs two `CardShownEvent`s and an `AbilityUsedEvent` with outcome
   - The outcome
     appears (3400).
   - The sequence ends (4200).
-- A 3 s countdown then closes it (5 s at the end of a Goddess Luo chain);
+- A 5 s countdown then closes it (5 s at the end of a Goddess Luo chain);
 - A Goddess Luo chain keeps this one popup across its judgments:
   - Each judgment plays its sequence afresh (one `app-judgment-stage` per `description.key`).
   - A **Set Aside** row shows her cards, the card just judged joining it once its verdict has played.
@@ -348,7 +348,7 @@ logs two `CardShownEvent`s and an `AbilityUsedEvent` with outcome
   - The consequence (HP hearts popping, a
     phase struck through, or Lightning moving on, always with its sentence).
   - Then
-    a 3 s countdown closes it, with no button to skip it; its timeout submits the
+    a 5 s countdown closes it, with no button to skip it; its timeout submits the
     acknowledgement.
 - A skill that may change the card is asked **inside the popup**: The Ask and
   Selection dialogs are built from `AskPanel` and `SelectionPanel`, which the
@@ -457,7 +457,7 @@ pass.
 
 A card or skill with a visible outcome gets a **Resolution Notice**: A centred, force-themed dialog laid
 out like the Compete and Judgment popups (source, the seats involved, steps, cards, outcome), with a
-countdown (3 seconds by default; a notice can ask for more: Harvest one second per participant, at most 5) at its foot.
+countdown (5 seconds by default; a notice can ask for more: Harvest 1.5 seconds per participant, rounded up, from 3 to 7) at its foot.
 
 - It closes itself: No button, no skip.
 - Like the Compete popup, **locally**
@@ -645,7 +645,7 @@ deciding seat's Force; the Compete popup by the source General's.
   - The General Selection: 300 s.
   - A whole Play Phase: 300 s.
   - A skill's decision to change a judgment: 15 s.
-  - A settled judgment notice: 3 s.
+  - A settled judgment notice: 5 s.
   - The end of a judgment chain: 5 s.
 - **A lead-in follows an animation.** A decision that follows an animation has a lead-in (`leadInMs`): Its countdown holds its full length and starts only when the animation has played (`startsInMs`).
 - **Pausing and zero.** The timer pauses when the decision is not on screen. At zero it submits the UI's current pick or an engine-legal default (`defaultActionsFor`: No Response, the first option, End Phase).

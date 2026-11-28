@@ -17,11 +17,11 @@ describe('Harvest notice', () => {
     expect(n.cards).toEqual([]);
     expect(n.outcome).toMatchObject({ tone: 'neutral', headline: { key: 'notice.harvest.done' }, text: { key: 'notice.harvest.text' } });
   });
-  it('lasts 1.5 seconds per participant, at least 3 and at most 7', () => {
+  it('lasts 1.5 seconds per participant in whole seconds, at least 3 and at most 7', () => {
     const seats = ['a', 'b', 'c', 'd', 'e', 'f'];
     const lasts = (n: number) =>
       harvestNotice.describe(span('harvest', 'a', seats.slice(0, n), [played('harvest', 'a', seats.slice(0, n)), ...seats.slice(0, n).map((id) => picks(id, card(`c-${id}`, 'peach')))]), view())!.seconds;
-    expect([lasts(1), lasts(2), lasts(4), lasts(5), lasts(6)]).toEqual([3, 3, 6, 7, 7]);
+    expect([lasts(1), lasts(2), lasts(3), lasts(4), lasts(5), lasts(6)]).toEqual([3, 3, 5, 6, 7, 7]);
     expect(harvestSeconds(9)).toBe(7);
   });
   it('has nothing to show when no seat took a card', () => {

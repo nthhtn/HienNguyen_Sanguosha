@@ -356,3 +356,24 @@ From the Resolution Notice, picker and Judgment work (PR #62, 2026-11-09). The d
   - Reaching those windows needs staged scenarios that do not exist yet (no preview for Iron Cavalry, Capture "spared" or the Blaze picker).
 - **Revisit when.**
   - Before the experiment flags are turned on, or the next time those windows are opened in a visible browser.
+
+### Identity River Goddess keeps a 20 s "judge again" ask
+
+- **What is missing.**
+  - Kingdom Wars Goddess Luo's "judge again" asks run on the 8 s `judgeAgain` clock.
+  - Identity River Goddess (`river-goddess` in `projects/content/src/lib/generals/wei.ts`) does not chain its judgments (no `chainsJudgment`), so each ask is an ordinary 20 s `ask`.
+- **Why it waits.**
+  - The Identity deck is disabled in setup, so no game reaches it.
+  - Fixing it means either chaining its judgments like Goddess Luo or keying the clock on the ability id, which is a rules-presentation change of its own.
+- **Revisit when.**
+  - The Identity deck is turned on.
+
+### Skipped windows still leave a timing tell online
+
+- **What is missing.**
+  - The server sends every seat the clock kind `noAnswer` (5 s) for a window the seat cannot answer, so an online opponent can already tell that a seat holds no Shan.
+  - This predates the skip experiment and goes against the `announcePass` intent.
+- **Why it waits.**
+  - Hiding it needs a uniform clock for every seat, a design change on the server and the protocol.
+- **Revisit when.**
+  - Online play is judged on fairness, or the skip experiment is turned on.

@@ -142,8 +142,8 @@ How long a person has is a rule, so the engine owns it, in
 
 | Kind | Seconds | Clock |
 |---|---|---|
-| `wuxie` (a Wuxie, or a Wuxie against one) | 20 |
-| `noAnswer` (a response window the seat cannot answer: only Pass is left) | 5 | One per decision | One per decision |
+| `wuxie` (a Wuxie, or a Wuxie against one) | 20 | One per decision |
+| `noAnswer` (a response window the seat cannot answer: only Pass is left) | 5 | One per decision |
 | `dying` (the dying round's Peach) | 20 | One per decision |
 | `response` (any other response window) | 20 | One per decision |
 | `ask` (a skill's use-it-or-not) | 20 | One per decision |
@@ -309,7 +309,7 @@ Optional rules chosen at game creation are stored in `state.rules`
 | Rule | Meaning |
 |---|---|
 | `firstRevealDraw` | With five or more seats, the first seat to reveal a General draws 2 cards. Not a player's choice: The app and the server set it for any game with at least `FIRST_REVEAL_MIN_SEATS` (5) seats. |
-| `judgmentNotice` | Every judgment waits for the popup to be closed (or 3 s) before it is read. It changes the action sequence, so a stored game keeps the value it started with; the app and server turn it on for new games, and the simulator and most tests leave it off. |
+| `judgmentNotice` | Every judgment waits for the popup to be closed (or 5 s) before it is read. It changes the action sequence, so a stored game keeps the value it started with; the app and server turn it on for new games, and the simulator and most tests leave it off. |
 | `partnerReward` | • Guozhan's Synergistic Partners reward: The reveal that completes a listed pair of Kingdom Wars Generals lets the seat draw 2 cards or recover 1 HP (see "Reveal bonuses" in [the event chain](event-chain.md)).<br>• It adds a prompt, so a stored game keeps the value it started with; the app and server turn it on for new games, and absent means no reward. |
 | `deck` | The card distribution the draw pile is dealt from (a deck id). Absent means the default deck, Kingdom Wars (`DEFAULT_DECK_ID`). |
 

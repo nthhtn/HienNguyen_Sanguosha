@@ -12,11 +12,17 @@ const CARD_WINDOWS: readonly NoAnswerWindow[] = ['sha', 'hail-of-arrows', 'barba
 const SKILL_WINDOWS: readonly NoAnswerWindow[] = ['upheaval', 'instigate'];
 
 // Kingdom Wars versions carry a prefix ("kingdomWars:upheaval") and play as their base.
-const baseId = (id: string): string => id.slice(id.indexOf(':') + 1);
+// Kingdom Wars' Upheaval is named Descend into Chaos.
+const baseId = (id: string): string => {
+  const base = id.slice(id.indexOf(':') + 1);
+  return base === 'descend-into-chaos' ? 'upheaval' : base;
+};
 
 // Which of those windows `pending` is, or null for any other (a Wuxie, a dying round, another skill).
 export function noAnswerWindowOf(pending: PendingResponse): NoAnswerWindow | null {
   const reason = pending.reason;
+  // A Duel window names its card by `sourceCard` and carries no reason.
+  if (!reason && pending.sourceCard) return CARD_WINDOWS.find((w) => w === baseId(pending.sourceCard!.definitionId)) ?? null;
   if (reason?.kind === 'card-effect') return CARD_WINDOWS.find((w) => w === baseId(reason.card.as)) ?? null;
   if (reason?.kind === 'ability') return SKILL_WINDOWS.find((w) => w === baseId(reason.abilityId)) ?? null;
   return null;
