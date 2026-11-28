@@ -11,7 +11,6 @@ import { Beat, BeatPlayback, playBeats, prefersReducedMotion } from './beat-play
 import { AskPanel } from './ask-panel';
 import { CardArt } from './card-art';
 import { HpIcons } from '../hp-icons';
-import { DecisionCountdown } from './decision-countdown';
 import { JudgmentDecisionView } from './judgment-decision';
 import { JudgmentDescription } from './judgment-description';
 import { PlayingCard } from './playing-card';
@@ -38,7 +37,7 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
 // it on, and a language switch only changes the words.
 @Component({
   selector: 'app-judgment-stage',
-  imports: [MatButtonModule, NgTemplateOutlet, AskPanel, CardArt, DecisionCountdown, HpIcons, PlayingCard, SelectionPanel, TPipe, TutorialAnchor],
+  imports: [MatButtonModule, NgTemplateOutlet, AskPanel, CardArt, HpIcons, PlayingCard, SelectionPanel, TPipe, TutorialAnchor],
   template: `
     @let d = description();
     <div class="stage" [style.--verdict]="verdictColour()">
@@ -182,7 +181,6 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
             } @else {
               <app-selection-panel [description]="dec.step.description" (chosen)="chosen.emit($event)" />
             }
-            <app-decision-countdown />
           }
           @case ('watching') {
             <p class="waiting"><span class="spin"></span>{{ 'judgment.waiting' | t }}</p>
@@ -289,7 +287,6 @@ const PHASES = ['Draw', 'Play', 'Discard'] as const;
       align-items: stretch; justify-content: flex-start;
     }
     /* A hand of cards is taller than the screen: the cards scroll and Cancel and Confirm stay under them. */
-    :host-context([data-layout='compact']) .decide app-decision-countdown { display: none; }
     :host-context([data-layout='compact']) .choice app-selection-panel {
       max-height: calc(100dvh - 220px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
     }
