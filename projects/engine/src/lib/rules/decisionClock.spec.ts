@@ -182,6 +182,17 @@ describe('a clock lead-in', () => {
     expect(back.running?.endsAt).toBe(13_500);
   });
 
+  it('keeps its lead-in when it is switched away during the lead-in, and back: the countdown has not started, so nothing is paused', () => {
+    const other: DecisionSpec = { kind: 'response', seatId: 'seat-1', key: 'step:k9' };
+    const started = switchClock(EMPTY_CLOCK, notice, 1_000);
+    // The board starts playing again 500 ms in: the popup's animation is still ahead of the countdown.
+    const away = switchClock(started, other, 1_500);
+    expect(away.paused).toEqual({});
+    const back = switchClock(away, notice, 10_000);
+    expect(back.running?.startsAt).toBe(12_000);
+    expect(back.running?.endsAt).toBe(17_000);
+  });
+
   it('keeps the same clock, lead-in included, when the key stays', () => {
     const started = switchClock(EMPTY_CLOCK, notice, 1_000);
     const later = switchClock(started, { ...notice }, 2_000);
@@ -254,9 +265,11 @@ describe('describeDecision around a judgment chain', () => {
     expect(describeDecision(state({ judgmentView: { settled: true, rounds: 2 } }), 'seat-0', [ack], 'k')?.kind).toBe('notice');
   });
 
-  it('gives an ended chain no lead-in: its verdict has already played', () => {
+  it('gives an ended chain the same lead-in: its popup plays the sequence again, and the clock waits for it', () => {
     const view = { settled: true, ended: true, rounds: 2, aside: [] };
-    expect(describeDecision(state({ judgmentView: view }), 'seat-0', [ack], 'k', withLeadIn)).toMatchObject({ kind: 'chainEnd', leadInMs: 0 });
+    expect(describeDecision(state({ judgmentView: view }), 'seat-0', [ack], 'k', withLeadIn)).toMatchObject({ kind: 'chainEnd', leadInMs: JUDGMENT_LEAD_IN_MS.tail });
+    const fresh = { settled: true, ended: true, rounds: 0, aside: [] };
+    expect(describeDecision(state({ judgmentView: fresh }), 'seat-0', [ack], 'k', withLeadIn)).toMatchObject({ kind: 'chainEnd', leadInMs: JUDGMENT_LEAD_IN_MS.head + JUDGMENT_LEAD_IN_MS.tail });
   });
 
   it('times the ask under a continuing view as a judge-again ask of 8 seconds that waits for the verdict animation', () => {
